@@ -1,0 +1,73 @@
+{
+  "name": "expo-pico-storage",
+  "version": "0.1.0",
+  "description": "PICO OS cloud storage for Expo",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/index.js",
+      "require": "./plugin/build/index.js",
+      "types": "./plugin/build/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "expo-module build",
+    "build:plugin": "tsc --project plugin/tsconfig.json",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "jest --config jest.config.js",
+    "prepare": "expo-module prepare && yarn build:plugin",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "xr",
+    "storage",
+    "cloud-save"
+  ],
+  "repository": "https://github.com/your-org/expo-pico",
+  "bugs": "https://github.com/your-org/expo-pico/issues",
+  "license": "MIT",
+  "homepage": "https://github.com/your-org/expo-pico/packages/expo-pico-storage",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@expo-pico/platform-service-common": "*"
+  },
+  "devDependencies": {
+    "expo-module-scripts": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "expo": ">=55.0.0",
+    "expo-pico-core": ">=0.1.0",
+    "react": "*",
+    "react-native": "*"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "expo-pico-core": {
+      "optional": false
+    }
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "expo-pico-storage"
+      ]
+    }
+  }
+}

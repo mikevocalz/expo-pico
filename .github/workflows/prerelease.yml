@@ -1,0 +1,56 @@
+name: Prerelease Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: prerelease channel
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    env:
+      PICO_APP_ID: ci-placeholder-app-id
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          registry-url: https://registry.npmjs.org
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: yarn install --frozen-lockfile
+      - run: yarn prettier:check
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+      - run: yarn build
+      - run: yarn test:pack
+      - run: yarn example:prebuild:android
+      - run: yarn example:assemble:mobile
+      - run: yarn example:assemble:pico
+      - name: Publish prerelease
+        run: |
+          if [ "${{ github.event.inputs.channel }}" = "alpha" ]; then
+            yarn release:alpha
+          elif [ "${{ github.event.inputs.channel }}" = "beta" ]; then
+            yarn release:beta
+          else
+            yarn release:rc
+          fi

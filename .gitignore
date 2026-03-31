@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+*.tsbuildinfo
+.expo/
+*.log
+.DS_Store
+*.local
+plugin/build/
+
+# CNG-generated native projects (example app only)
+# Do NOT ignore packages/*/android/ — those contain library source code
+example/android/
+example/ios/

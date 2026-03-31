@@ -1,0 +1,15 @@
+{
+  "extends": "expo-module-scripts/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "build",
+    "types": []
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/__tests__/*",
+    "build"
+  ]
+}

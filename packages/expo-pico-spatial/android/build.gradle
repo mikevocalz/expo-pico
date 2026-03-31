@@ -1,0 +1,31 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+android {
+    namespace "expo.modules.pico.spatial"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lint {
+        abortOnError false
+    }
+    // Inherit device flavor dimension from expo-pico-core
+    // The consuming app project declares this dimension; the library
+    // uses missingDimensionStrategy to select 'mobile' as fallback.
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    // expo-pico-core is a peer dep — declared by the app, not us
+    // PICO Spatial SDK — extension seam, commented out until stable AAR
+    // implementation "com.pvr:pvr-spatial-sdk:1.0.0"
+}

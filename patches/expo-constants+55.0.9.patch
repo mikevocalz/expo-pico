@@ -1,0 +1,26 @@
+diff --git a/node_modules/expo-constants/scripts/get-app-config-android.gradle b/node_modules/expo-constants/scripts/get-app-config-android.gradle
+index 7758672..e38c665 100644
+--- a/node_modules/expo-constants/scripts/get-app-config-android.gradle
++++ b/node_modules/expo-constants/scripts/get-app-config-android.gradle
+@@ -2,14 +2,19 @@
+ 
+ import org.apache.tools.ant.taskdefs.condition.Os
+ 
++// expo-pico-core: resolve node binary from local.properties
++def __expoConstLocalProps = new Properties()
++def __expoConstLocalPropsFile = new File(rootDir, 'local.properties')
++if (__expoConstLocalPropsFile.exists()) { __expoConstLocalProps.load(new FileInputStream(__expoConstLocalPropsFile)) }
++def __expoConstNodeBin = __expoConstLocalProps.getProperty('node.dir') ? "${__expoConstLocalProps.getProperty('node.dir')}/node" : 'node'
+ 
+ def expoConstantsDir = project.providers.exec {
+   workingDir(projectDir)
+-  commandLine("node", "-e", "console.log(require('path').dirname(require.resolve('expo-constants/package.json')));")
++  commandLine(__expoConstNodeBin, "-e", "console.log(require('path').dirname(require.resolve('expo-constants/package.json')));")
+ }.standardOutput.asText.get().trim()
+ 
+ def config = project.hasProperty("react") ? project.react : [];
+-def nodeExecutableAndArgs = config.nodeExecutableAndArgs ?: ["node"]
++def nodeExecutableAndArgs = config.nodeExecutableAndArgs ?: [__expoConstNodeBin]
+ 
+ afterEvaluate {
+   def expoGradleExtension = gradle.extensions.findByName("expoGradle")

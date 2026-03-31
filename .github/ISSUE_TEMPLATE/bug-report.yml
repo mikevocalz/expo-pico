@@ -1,0 +1,102 @@
+name: Bug report
+description: Report a validation or release issue in the expo-pico package family.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: input
+    id: package_name
+    attributes:
+      label: Package
+      description: Which package is affected?
+      placeholder: expo-pico-rtc
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 0.1.0-alpha.0
+    validations:
+      required: true
+  - type: input
+    id: expo_sdk
+    attributes:
+      label: Expo SDK
+      placeholder: "55"
+    validations:
+      required: true
+  - type: input
+    id: react_native
+    attributes:
+      label: React Native version
+      placeholder: 0.79.2
+    validations:
+      required: true
+  - type: dropdown
+    id: build_variant
+    attributes:
+      label: Build variant
+      options:
+        - mobile
+        - pico
+        - dual
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Android emulator
+        - PICO hardware
+        - Two-device validation
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device or emulator
+      placeholder: PICO 4 Ultra / Project Swan emulator
+    validations:
+      required: true
+  - type: dropdown
+    id: provisioned
+    attributes:
+      label: Platform service provisioning complete?
+      options:
+        - "yes"
+        - "no"
+        - unsure
+    validations:
+      required: true
+  - type: input
+    id: error_code
+    attributes:
+      label: Normalized error code
+      description: Include `SERVICE_UNAVAILABLE`, `NOT_IMPLEMENTED`, `TIMEOUT`, etc.
+      placeholder: NOT_IMPLEMENTED
+  - type: textarea
+    id: harness_result
+    attributes:
+      label: Last harness result
+      description: Paste the last result JSON or summary from the example harness.
+      render: json
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true

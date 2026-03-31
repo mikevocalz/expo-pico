@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+android {
+    namespace "expo.modules.pico.subscription"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lint {
+        abortOnError false
+    }
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    // PICO IAP SDK (includes subscription APIs) — extension seam
+    // implementation "com.pvr:pvr-iap-sdk:2.1.0"
+}

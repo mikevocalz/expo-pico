@@ -1,0 +1,48 @@
+{
+  "name": "@expo-pico/platform-service-common",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal shared service utilities for the expo-pico monorepo. Not for public use.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./build/index.js",
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./testing": {
+      "require": "./build/testing/contractFactory.js",
+      "import": "./build/testing/contractFactory.js",
+      "types": "./build/testing/contractFactory.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "testing": ["./build/testing/contractFactory.d.ts"]
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf build",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "expo": ">=50.0.0",
+    "expo-modules-core": ">=1.12.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "expo-modules-core": "^1.12.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "~5.3.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.ts"]
+  }
+}

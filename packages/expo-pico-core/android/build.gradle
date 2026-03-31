@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+def picoAppIdConfigField = "\"${project.findProperty('picoAppId') ?: ''}\""
+def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
+def picoTargetProfileConfigField = "\"${project.findProperty('picoTargetProfile') ?: ''}\""
+def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
+def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
+
+android {
+    namespace "expo.modules.pico"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+        buildConfigField "String", "PICO_APP_ID", picoAppIdConfigField
+        buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
+        buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileConfigField
+        buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
+        buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", picoEmulatorOptimizationsConfigField
+    }
+    lint {
+        abortOnError false
+    }
+
+    flavorDimensions += "device"
+    productFlavors {
+        pico { dimension "device" }
+        mobile { dimension "device" }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}

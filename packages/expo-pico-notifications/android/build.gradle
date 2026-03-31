@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+android {
+    namespace "expo.modules.pico.notifications"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lint {
+        abortOnError false
+    }
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    // PICO Push SDK — extension seam
+    // implementation "com.pvr:pvr-push-sdk:1.0.0"
+}

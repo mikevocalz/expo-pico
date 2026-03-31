@@ -1,0 +1,28 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+android {
+    namespace "expo.modules.pico.account"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lint {
+        abortOnError false
+    }
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    // PICO Platform SDK — extension seam
+    // Uncomment when SDK AAR is available from PICO Maven:
+    // implementation "com.pvr.platform:pvr-platform-sdk:3.2.0"
+}

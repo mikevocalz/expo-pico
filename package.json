@@ -1,0 +1,58 @@
+{
+  "name": "expo-pico",
+  "private": true,
+  "workspaces": [
+    "packages/internal/pico-platform-service-common",
+    "packages/expo-pico-core",
+    "packages/expo-pico-spatial",
+    "packages/expo-pico-account",
+    "packages/expo-pico-iap",
+    "packages/expo-pico-notifications",
+    "packages/expo-pico-rtc",
+    "packages/expo-pico-rooms",
+    "packages/expo-pico-subscription",
+    "packages/expo-pico-storage",
+    "packages/expo-pico-social",
+    "packages/expo-pico-achievements",
+    "packages/expo-pico-leaderboards",
+    "example"
+  ],
+  "scripts": {
+    "postinstall": "patch-package",
+    "build": "turbo run build build:plugin",
+    "prepare": "yarn workspaces run prepare",
+    "clean": "turbo run clean",
+    "lint": "turbo run lint",
+    "prettier:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "prettier:write": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "release": "changeset publish",
+    "release:alpha": "changeset publish --tag alpha",
+    "release:beta": "changeset publish --tag beta",
+    "release:rc": "changeset publish --tag rc",
+    "release:stable": "changeset publish",
+    "version-packages": "changeset version",
+    "test:pack": "for dir in packages/expo-pico-*; do (cd \"$dir\" && npm pack --dry-run >/dev/null); done",
+    "example:prebuild:android": "cd example && npx expo prebuild --platform android --no-install",
+    "example:assemble:mobile": "cd example/android && ./gradlew assembleMobileDebug",
+    "example:assemble:pico": "cd example/android && ./gradlew assemblePicoDebug",
+    "studio": "open -a 'Android Studio' example/android"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@react-native/eslint-config": "^0.84.1",
+    "@types/jest": "^29.5.12",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "patch-package": "^8.0.1",
+    "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
+    "typescript": "~5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "yarn@1.22.22"
+}

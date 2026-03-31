@@ -1,0 +1,28 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    canBePublished false
+}
+
+android {
+    namespace "expo.modules.pico.rtc"
+    defaultConfig {
+        versionCode 1
+        versionName "0.1.0"
+    }
+    lint {
+        abortOnError false
+    }
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    // PICO RTC SDK — extension seam
+    // Uncomment when the RTC SDK AAR is available from PICO Maven:
+    // implementation "com.pvr:pvr-rtc-sdk:1.0.0"
+}

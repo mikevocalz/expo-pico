@@ -1,0 +1,77 @@
+{
+  "name": "expo-pico-notifications",
+  "version": "0.1.0",
+  "description": "PICO push notification registration and token APIs for Expo apps.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/src/withPicoNotifications.js",
+      "require": "./plugin/build/src/withPicoNotifications.js",
+      "types": "./plugin/build/src/withPicoNotifications.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "expo-module build",
+    "build:plugin": "tsc --project plugin/tsconfig.json",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "jest --config jest.config.js",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "notifications",
+    "push",
+    "pico-platform"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/expo-pico.git",
+    "directory": "packages/expo-pico-notifications"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@expo-pico/platform-service-common": "*"
+  },
+  "devDependencies": {
+    "@expo/config-plugins": "~9.0.0",
+    "@types/jest": "^29.5.12",
+    "@types/react": "~18.3.0",
+    "expo": "~55.0.0",
+    "expo-modules-core": "~2.3.0",
+    "expo-module-scripts": "~4.0.0",
+    "expo-pico-core": "*",
+    "jest": "^29.7.0",
+    "react-native": "0.79.2",
+    "ts-jest": "^29.1.0",
+    "typescript": "~5.3.3"
+  },
+  "peerDependencies": {
+    "expo": ">=55.0.0",
+    "expo-pico-core": ">=0.1.0",
+    "react": "*",
+    "react-native": "*"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "expo-pico-core": {
+      "optional": false
+    }
+  }
+}

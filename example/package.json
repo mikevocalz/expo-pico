@@ -1,0 +1,37 @@
+{
+  "name": "expo-pico-example",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "android:pico": "expo run:android --variant picoDebug",
+    "android:mobile": "expo run:android --variant mobileDebug",
+    "prebuild": "expo prebuild --clean",
+    "prebuild:pico": "expo prebuild --clean && echo 'Run: cd android && ./gradlew assemblePicoDebug'",
+    "postinstall": "patch-package",
+    "prepare": "echo 'No prepare needed for example app'"
+  },
+  "dependencies": {
+    "expo": "~55.0.9",
+    "expo-pico-account": "*",
+    "expo-pico-achievements": "*",
+    "expo-pico-core": "*",
+    "expo-pico-iap": "*",
+    "expo-pico-leaderboards": "*",
+    "expo-pico-notifications": "*",
+    "expo-pico-rooms": "*",
+    "expo-pico-rtc": "*",
+    "expo-pico-social": "*",
+    "expo-pico-spatial": "*",
+    "expo-pico-storage": "*",
+    "expo-pico-subscription": "*",
+    "react": "19.2.0",
+    "react-native": "0.83.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "patch-package": "^8.0.1"
+  }
+}
