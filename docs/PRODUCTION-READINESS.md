@@ -93,6 +93,7 @@ This checklist covers the PICO-specific plumbing. Standard release hygiene (auto
 
 ## Links
 
+- [QUICKSTART.md](./QUICKSTART.md) — if you haven't shipped a PICO app before, start here
 - [EAS.md](./EAS.md) — EAS Build + submit integration
 - [RELEASING.md](../RELEASING.md) — releasing `expo-pico-*` packages themselves
 - [ARCHITECTURE.md](../ARCHITECTURE.md) — full design reference (§1–§22)

@@ -4,6 +4,8 @@ Expo-native package family for **PICO OS 6** and **Project Swan** XR devices.
 
 Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@react-three/fiber/native`, `@babylonjs/react-native`, Unity-as-a-Library, and anything else that uses the system OpenXR loader.
 
+**New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes.
+
 ## Packages
 
 | Package                                                          | Status            | Description                                                    |

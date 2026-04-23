@@ -195,6 +195,7 @@ Same as above with the trigger changed to `push: branches: [main]` and `--profil
 
 ## Links
 
+- [QUICKSTART.md](./QUICKSTART.md) — zero-to-running guide for first-time setup
 - Top-level [README](../README.md)
 - [PRODUCTION-READINESS.md](./PRODUCTION-READINESS.md) — single-page pre-ship checklist
 - [RELEASING.md](../RELEASING.md) — how `expo-pico-*` packages themselves are released
