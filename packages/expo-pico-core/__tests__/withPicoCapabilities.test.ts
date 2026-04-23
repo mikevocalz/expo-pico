@@ -269,6 +269,64 @@ describe('applyCapabilityContract — boundary + scene mesh (Phase D)', () => {
   });
 });
 
+describe('applyCapabilityContract — uses-native-library (Phase E)', () => {
+  function nativeLibs(m: Manifest): Array<{ name: string; required: string }> {
+    const app = m.manifest.application![0] as any;
+    const list = (app['uses-native-library'] as any[]) ?? [];
+    return list.map((e: any) => ({
+      name: e.$?.['android:name'],
+      required: e.$?.['android:required'],
+    }));
+  }
+
+  it('emits libopenxr_loader.so (required=false) when openXrLoaderDeclaration is true', () => {
+    const options = resolveOptions({ xrMode: 'pico-swan' });
+    const m = emptyManifest();
+    applyCapabilityContract(m, options);
+
+    const libs = nativeLibs(m);
+    expect(libs).toEqual([{ name: 'libopenxr_loader.so', required: 'false' }]);
+  });
+
+  it('does not emit native library when openXrLoaderDeclaration is false', () => {
+    const options = resolveOptions({
+      xrMode: 'pico-swan',
+      openXrLoaderDeclaration: false,
+    });
+    const m = emptyManifest();
+    applyCapabilityContract(m, options);
+
+    expect(nativeLibs(m)).toHaveLength(0);
+  });
+
+  it('removes native library on toggle-off between applies', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ xrMode: 'pico-swan' }));
+    expect(nativeLibs(m)).toHaveLength(1);
+
+    applyCapabilityContract(
+      m,
+      resolveOptions({ xrMode: 'pico-swan', openXrLoaderDeclaration: false })
+    );
+    expect(nativeLibs(m)).toHaveLength(0);
+  });
+
+  it('does not duplicate native library on repeat apply', () => {
+    const options = resolveOptions({ xrMode: 'pico-swan' });
+    const m = emptyManifest();
+    applyCapabilityContract(m, options);
+    applyCapabilityContract(m, options);
+    applyCapabilityContract(m, options);
+    expect(nativeLibs(m)).toHaveLength(1);
+  });
+
+  it('defaults to no loader declaration under xrMode=mobile', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ buildVariant: 'mobile' }));
+    expect(nativeLibs(m)).toHaveLength(0);
+  });
+});
+
 describe('applyCapabilityContract — combined capability fan-out', () => {
   it('emits every enabled capability simultaneously without cross-interference', () => {
     const options = resolveOptions({

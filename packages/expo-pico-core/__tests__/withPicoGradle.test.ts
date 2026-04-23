@@ -103,3 +103,54 @@ describe('BuildConfig fields injection', () => {
     expect(shouldInject).toBe(false);
   });
 });
+
+describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
+  // Local imports so the utility-focused tests above stay light.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { renderFlavorBlock } = require('../plugin/src/withPicoGradle');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { resolveOptions } = require('../plugin/src/types');
+
+  it('injects ndk abiFilters arm64-v8a on the pico flavor when enabled', () => {
+    const out: string = renderFlavorBlock(
+      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: true })
+    );
+    expect(out).toMatch(
+      /pico \{[\s\S]+?ndk \{ abiFilters 'arm64-v8a' \}[\s\S]+?\}/
+    );
+  });
+
+  it('omits ndk abiFilters when disabled', () => {
+    const out: string = renderFlavorBlock(
+      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: false })
+    );
+    expect(out).not.toContain('ndk { abiFilters');
+  });
+
+  it('defaults to abiFilters enabled under pico-os6', () => {
+    const out: string = renderFlavorBlock(resolveOptions({ xrMode: 'pico-os6' }));
+    expect(out).toContain("ndk { abiFilters 'arm64-v8a' }");
+  });
+
+  it('defaults to abiFilters enabled under pico-swan', () => {
+    const out: string = renderFlavorBlock(resolveOptions({ xrMode: 'pico-swan' }));
+    expect(out).toContain("ndk { abiFilters 'arm64-v8a' }");
+  });
+
+  it('never applies abiFilters to the mobile flavor', () => {
+    const out: string = renderFlavorBlock(
+      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: true })
+    );
+    // The mobile flavor declaration should have nothing but `dimension`.
+    expect(out).toMatch(/mobile \{ dimension "device" \}/);
+  });
+
+  it('applies abiFilters to the dual flavor when buildVariant is dual', () => {
+    const out: string = renderFlavorBlock(
+      resolveOptions({ xrMode: 'pico-swan', buildVariant: 'dual', ndkAbiFilters: true })
+    );
+    const matches = out.match(/ndk \{ abiFilters 'arm64-v8a' \}/g) ?? [];
+    // Both pico and dual flavors should carry the filter.
+    expect(matches).toHaveLength(2);
+  });
+});

@@ -241,3 +241,34 @@ export const PICO_PROHIBITED_PERMISSIONS = [
   'ACCEPT_HANDOVER',
   'MODIFY_PHONE_STATE',
 ] as const;
+
+/**
+ * Native libraries declared via `<uses-native-library>` in the PICO-flavor
+ * manifest. Required once `targetSdkVersion >= 31` per AOSP: apps that
+ * link against any non-Bionic native library must declare it, or
+ * `System.loadLibrary` calls fail at runtime.
+ *
+ * `libopenxr_loader.so` is the PICO OS OpenXR loader that any OpenXR
+ * app binds to at init. Declaring it with `android:required="false"`
+ * keeps the APK installable on non-PICO Android targets where the
+ * loader is absent — the app must still guard `loadLibrary` with a
+ * try/catch at runtime (standard PICO + Quest pattern).
+ */
+export const PICO_NATIVE_LIBRARIES = [
+  {
+    name: 'libopenxr_loader.so',
+    required: false,
+    purpose: 'OpenXR loader — required for PICO OS immersive session bootstrap.',
+  },
+] as const;
+
+/**
+ * ABI filter applied to the `pico` product flavor.
+ *
+ * PICO 4 / 4 Ultra / Swan are all 64-bit ARM. Shipping `armeabi-v7a`
+ * wastes ~30% APK size for zero install coverage (no 32-bit PICO
+ * hardware exists) and x86 is not supported at all. The `mobile`
+ * flavor deliberately does NOT get this filter so developers can
+ * still target phones/tablets across the full ABI matrix.
+ */
+export const PICO_FLAVOR_ABI_FILTERS: readonly string[] = ['arm64-v8a'];

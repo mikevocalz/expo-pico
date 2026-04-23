@@ -3,6 +3,7 @@ import { ConfigPlugin } from '@expo/config-plugins';
 import type { PicoPluginOptions } from './types';
 import { resolveOptions } from './types';
 import { withPicoAndroidManifest } from './withPicoAndroidManifest';
+import { withPicoDiagnostics } from './withPicoDiagnostics';
 import { withPicoAppBuildGradle, withPicoProjectBuildGradle } from './withPicoGradle';
 import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
@@ -39,6 +40,7 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   }
 
   config = withPicoNewArchCheck(config, options);
+  config = withPicoDiagnostics(config, options);
   config = withPicoGradleProperties(config, options);
   config = withPicoProjectBuildGradle(config, options);
   config = withPicoAppBuildGradle(config, options);

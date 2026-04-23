@@ -79,6 +79,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // the Phase C toggles.
         boundary: false, // Guardian / boundary system; opt in for room-scale apps.
         sceneMesh: false, // Scene mesh capture; distinct from plane-only sceneUnderstanding.
+        // Phase E — toolchain. Both default to true when xrMode !== 'mobile',
+        // so these lines are only here for documentation / override. Set
+        // ndkAbiFilters: false to keep the 32-bit slice; set
+        // openXrLoaderDeclaration: false if your renderer (e.g. a custom
+        // Babylon Native build) bundles its own non-system OpenXR loader.
+        ndkAbiFilters: true,
+        openXrLoaderDeclaration: true,
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,

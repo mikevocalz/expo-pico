@@ -3,6 +3,7 @@ import type { AndroidConfig } from '@expo/config-plugins';
 import {
   MANIFEST_META,
   PICO_FEATURES,
+  PICO_NATIVE_LIBRARIES,
   PICO_PERMISSIONS,
 } from './constants';
 import type { ResolvedPicoOptions } from './types';
@@ -76,7 +77,36 @@ export function applyCapabilityContract(
     options.refreshRates.length > 0 ? options.refreshRates.join(',') : null
   );
 
+  // ── <uses-native-library> (Phase E) ─────────────────────────────
+  // Declared at <application> scope. Renderer-agnostic — works the same
+  // for Babylon Native's OpenXR integration, react-three-fiber /
+  // expo-gl, and Unity-as-a-Library. Opt out via
+  // `openXrLoaderDeclaration: false` when the renderer bundles its own
+  // non-system loader.
+  upsertNativeLibraries(application, options.openXrLoaderDeclaration);
+
   return manifest;
+}
+
+function upsertNativeLibraries(application: any, declare: boolean): void {
+  const list = ensureArray(application, 'uses-native-library');
+  for (const lib of PICO_NATIVE_LIBRARIES) {
+    const idx = list.findIndex(
+      (entry: any) => entry.$?.['android:name'] === lib.name
+    );
+    if (!declare) {
+      if (idx !== -1) list.splice(idx, 1);
+      continue;
+    }
+    const entry = {
+      $: {
+        'android:name': lib.name,
+        'android:required': lib.required ? 'true' : 'false',
+      },
+    };
+    if (idx === -1) list.push(entry);
+    else list[idx] = entry;
+  }
 }
 
 function upsertFeature(features: any[], name: string, enabled: boolean): void {

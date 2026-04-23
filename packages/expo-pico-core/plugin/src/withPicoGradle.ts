@@ -1,6 +1,11 @@
 import { ConfigPlugin, withAppBuildGradle, withProjectBuildGradle } from '@expo/config-plugins';
 
-import { PICO_MAVEN_REPO, PICO_PLATFORM_SDK_GROUP, PICO_SDK_GROUP } from './constants';
+import {
+  PICO_FLAVOR_ABI_FILTERS,
+  PICO_MAVEN_REPO,
+  PICO_PLATFORM_SDK_GROUP,
+  PICO_SDK_GROUP,
+} from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
 import { gradleContains, insertAfterPattern } from './utils';
@@ -31,6 +36,50 @@ const PICO_REPO_BLOCK = `
         }
 `;
 
+/**
+ * Render the `productFlavors { ... }` block injected into `app/build.gradle`.
+ *
+ * Extracted from the plugin so unit tests can verify the string shape
+ * (ABI filter presence, dual-flavor suffix, SDK version interpolation)
+ * without spinning up the full @expo/config-plugins mod pipeline.
+ *
+ * Phase E: the `pico` (and `dual`) flavors get `ndk { abiFilters 'arm64-v8a' }`
+ * when `options.ndkAbiFilters` is true. PICO 4 / 4 Ultra / Swan are all
+ * 64-bit ARM. Renderer-agnostic — same filter whether the app renders
+ * with react-three-fiber + expo-gl, Babylon React Native, or any other
+ * Android-side renderer.
+ *
+ * The `mobile` flavor is deliberately never ABI-filtered so phone /
+ * tablet builds keep whatever abiFilters the consuming app already set.
+ */
+export function renderFlavorBlock(options: ResolvedPicoOptions): string {
+  const abiFiltersLine = options.ndkAbiFilters
+    ? `\n            ndk { abiFilters ${PICO_FLAVOR_ABI_FILTERS.map((a) => `'${a}'`).join(', ')} }`
+    : '';
+
+  const dualFlavor = options.buildVariant === 'dual'
+    ? `
+        dual {
+            dimension "device"
+            minSdkVersion ${options.minSdkVersion}
+            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
+        }`
+    : '';
+
+  return `
+    ${FLAVOR_MARKER}
+    flavorDimensions += "device"
+    productFlavors {
+        mobile { dimension "device" }
+        pico {
+            dimension "device"
+            minSdkVersion ${options.minSdkVersion}
+            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
+        }${dualFlavor}
+    }
+`;
+}
+
 export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   return withAppBuildGradle(config, (config) => {
     let contents = config.modResults.contents;
@@ -49,27 +98,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
 
     if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
       if (!gradleContains(contents, FLAVOR_MARKER)) {
-        const dualFlavor = options.buildVariant === 'dual'
-          ? `
-        dual {
-            dimension "device"
-            minSdkVersion ${options.minSdkVersion}
-            targetSdkVersion ${options.targetSdkVersion}
-        }`
-          : '';
-
-        const flavorBlock = `
-    ${FLAVOR_MARKER}
-    flavorDimensions += "device"
-    productFlavors {
-        mobile { dimension "device" }
-        pico {
-            dimension "device"
-            minSdkVersion ${options.minSdkVersion}
-            targetSdkVersion ${options.targetSdkVersion}
-        }${dualFlavor}
-    }
-`;
+        const flavorBlock = renderFlavorBlock(options);
         const result = insertAfterPattern(contents, /android\s*\{/, flavorBlock);
         if (result) {
           contents = result;

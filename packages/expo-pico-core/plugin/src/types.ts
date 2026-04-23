@@ -189,6 +189,40 @@ export interface PicoPluginOptions {
    */
   sceneMesh?: boolean;
   /**
+   * Restrict the `pico` (and `dual`) product flavor(s) to `arm64-v8a`
+   * via `ndk { abiFilters 'arm64-v8a' }`. PICO 4 / 4 Ultra / Swan are
+   * all 64-bit ARM; shipping 32-bit or x86 slices is wasted APK bloat
+   * for zero install coverage. The `mobile` flavor is always left
+   * unconstrained so phone/tablet builds pick up whatever ABIs the
+   * app already declares.
+   *
+   * Compatible with Babylon React Native (requires arm64-v8a on PICO),
+   * react-three-fiber / expo-gl, and Unity-as-a-Library — the filter is
+   * a build-output concern, not a runtime rendering choice.
+   *
+   * Set to `false` if your CI pipeline depends on producing a 32-bit
+   * slice for another purpose and you accept the larger PICO APK.
+   * @default true when xrMode !== 'mobile', false otherwise
+   */
+  ndkAbiFilters?: boolean;
+  /**
+   * Emit `<uses-native-library android:name="libopenxr_loader.so"
+   * android:required="false"/>` in the PICO-flavor manifest. Required
+   * for `targetSdkVersion >= 31` so `System.loadLibrary("openxr_loader")`
+   * succeeds at runtime — both Khronos-conformant OpenXR loaders used
+   * by Babylon Native's XR plugin and by the PICO Native SDK hit this
+   * requirement.
+   *
+   * Opt this to `false` if your renderer bundles its own OpenXR loader
+   * and does NOT go through the system loader (rare — Babylon Native
+   * and Unity both use the system loader). Setting to `true` when
+   * `xrMode === 'mobile'` has no observable effect on mobile builds
+   * but also no harm; defaults track xrMode to keep mobile builds
+   * minimal.
+   * @default true when xrMode !== 'mobile', false otherwise
+   */
+  openXrLoaderDeclaration?: boolean;
+  /**
    * Enable PICO developer tools overlay (OS 6 dev builds only).
    * @default false
    */
@@ -390,6 +424,8 @@ export interface ResolvedPicoOptions {
   refreshRates: number[];
   boundary: boolean;
   sceneMesh: boolean;
+  ndkAbiFilters: boolean;
+  openXrLoaderDeclaration: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
@@ -451,6 +487,8 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   refreshRates: [],
   boundary: false,
   sceneMesh: false,
+  ndkAbiFilters: true,
+  openXrLoaderDeclaration: true,
   developerTools: false,
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,
@@ -493,6 +531,15 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     options.minSdkVersion ??
     (xrMode === 'pico-swan' ? swan.swanMinSdkVersion : PICO_OPTION_DEFAULTS.minSdkVersion);
 
+  // Phase E — toolchain / loader defaults. When the build is an
+  // immersive PICO build, default to ABI-filtered arm64 and declare the
+  // OpenXR loader. Mobile builds keep both off to stay ABI-flexible and
+  // avoid an unused loader declaration.
+  const ndkAbiFilters =
+    options.ndkAbiFilters ?? xrMode !== 'mobile';
+  const openXrLoaderDeclaration =
+    options.openXrLoaderDeclaration ?? xrMode !== 'mobile';
+
   return {
     ...PICO_OPTION_DEFAULTS,
     ...options,
@@ -502,6 +549,8 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     appType,
     platformService,
     minSdkVersion,
+    ndkAbiFilters,
+    openXrLoaderDeclaration,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     // Copy refreshRates to avoid mutating user input, and filter out
     // non-positive / non-finite entries that would produce invalid

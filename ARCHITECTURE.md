@@ -1271,3 +1271,159 @@ The one exception is `<uses-permission>` entries that carry `tools:node="remove"
 | Combined capability fan-out (all enabled simultaneously)              | Jest                                                                  |
 | Merged manifest actually carries the entries after prebuild           | Requires `npx expo prebuild --clean` + `aapt dump xmltree` (deferred) |
 | Runtime behavior on real PICO 4 Pro hardware                          | Requires device with eye / face tracking (deferred)                   |
+
+---
+
+## 19. Platform hardening + renderer-agnostic plugin contract (Phase E)
+
+### 19.1 Why this phase
+
+Three concerns left over from the original Viro-style audit and from the
+"works with any renderer" design goal:
+
+1. **`<uses-native-library>` for `libopenxr_loader.so`.** Required once
+   `targetSdkVersion >= 31` per AOSP. Without it, `System.loadLibrary`
+   calls the OpenXR loader hits a silent fallback and the immersive
+   session fails to initialize.
+2. **NDK ABI filter for the PICO flavor.** PICO 4 / 4 Ultra / Swan are
+   all 64-bit ARM. Shipping `armeabi-v7a` is ~30% APK bloat for zero
+   install coverage; x86 is unsupported. The flavor should be pinned to
+   `arm64-v8a` while leaving `mobile` unconstrained.
+3. **Prebuild diagnostics for common misconfigs.** The plugin's
+   three-axis option space (`xrMode × appType × platformService`) has
+   combinations that build successfully but behave non-obviously — e.g.
+   an immersive `xrMode` without `picoAppId` ships an APK that silently
+   fails every Platform SDK call at runtime. These are soft-errors at
+   prebuild rather than runtime surprises.
+
+This phase is also where the plugin's renderer-agnostic contract gets
+made explicit: nothing the plugin does favors `react-three-fiber` over
+`@babylonjs/react-native` over Unity-as-a-Library. All three consume
+the same manifest + Gradle output.
+
+### 19.2 New plugin options
+
+```ts
+interface PicoPluginOptions {
+  // ... Phases A–D ...
+  ndkAbiFilters?: boolean;          // default true when xrMode !== 'mobile'
+  openXrLoaderDeclaration?: boolean; // default true when xrMode !== 'mobile'
+}
+```
+
+Both options track `xrMode` so the common case (immersive PICO build)
+needs no explicit opt-in, while escape hatches exist for:
+
+- Shipping a 32-bit companion APK alongside the immersive build for CI
+  / legacy reasons → `ndkAbiFilters: false`.
+- Using a renderer whose own runtime bundles a non-system OpenXR loader
+  → `openXrLoaderDeclaration: false`. This is rare in practice;
+  Babylon React Native and Unity-as-a-Library both use the system
+  loader.
+
+### 19.3 What lands in the flavor manifest
+
+`applyCapabilityContract` now also writes
+`<uses-native-library>` entries for every library in
+`PICO_NATIVE_LIBRARIES`. Currently a single entry:
+
+```xml
+<uses-native-library
+    android:name="libopenxr_loader.so"
+    android:required="false" />
+```
+
+`required="false"` keeps the APK installable on PICO hardware that
+predates the loader library name and on non-PICO Android targets used
+for development builds. Consumers still guard `System.loadLibrary` at
+runtime (the standard OpenXR pattern).
+
+### 19.4 What lands in `app/build.gradle`
+
+`renderFlavorBlock` now emits `ndk { abiFilters 'arm64-v8a' }` inside
+the `pico` flavor (and the `dual` flavor when `buildVariant: 'dual'`):
+
+```gradle
+productFlavors {
+    mobile { dimension "device" }
+    pico {
+        dimension "device"
+        minSdkVersion 32
+        targetSdkVersion 34
+        ndk { abiFilters 'arm64-v8a' }
+    }
+}
+```
+
+The `mobile` flavor is deliberately never touched. A phone/tablet
+build pulling this plugin keeps whatever `abiFilters` the app had,
+or none at all.
+
+### 19.5 Prebuild diagnostics
+
+`withPicoDiagnostics` runs immediately after `withPicoNewArchCheck` and
+emits `WarningAggregator.addWarningAndroid` for seven misconfig
+patterns, each with a user-visible consequence and a suggested fix:
+
+| # | Condition                                                                                         | Consequence                                                                         |
+| - | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 1 | `xrMode !== 'mobile'` + `appType !== '2d'` + no `picoAppId`                                     | Platform SDK calls all fail with "SDK unavailable" at runtime.                      |
+| 2 | `xrMode !== 'mobile'` + `appType === '2d'`                                                       | APK builds but does not appear in the PICO immersive launcher.                      |
+| 3 | `buildVariant === 'mobile'` + `appType !== '2d'`                                                 | Flavor manifest never written; launcher categories and pvr.app.type never land.     |
+| 4 | `xrMode === 'mobile'` + any of handTracking / passthrough / sceneUnderstanding / eye / face / body / foveation / boundary / sceneMesh toggled on | Toggles have no effect; flavor manifest isn't written. Lists the enabled toggles by name. |
+| 5 | `picoSwan.swanRuntimeProject` set + `xrMode !== 'pico-swan'`                                     | `settings.gradle` mutation skipped; the subproject path is ignored.                 |
+| 6 | `xrMode === 'mobile'` + non-empty `refreshRates`                                                 | Rates are declared but never emitted because the flavor manifest isn't written.     |
+| 7 | Exactly one of `picoMerchantId` / `picoPayKey` set (per region)                                  | IAP calls will fail at runtime. Reports which region(s) are partial.                |
+
+All are warnings, never errors. The pattern matches Viro's
+`WarningAggregator` soft-check and the existing `withPicoNewArchCheck`.
+
+### 19.6 Renderer compatibility matrix
+
+The plugin is renderer-agnostic. Confirmed compositions:
+
+| Renderer                                | Android surface | OpenXR loader | PICO plugin compat                                                            |
+| --------------------------------------- | --------------- | ------------- | ----------------------------------------------------------------------------- |
+| `@react-three/fiber/native` + `expo-gl` | `GLView`        | System loader | ✅ (example app demonstrates)                                                 |
+| `@babylonjs/react-native` + OpenXR      | Babylon Native native view | System loader | ✅ (Babylon uses system loader; `openXrLoaderDeclaration: true` is correct) |
+| Unity-as-a-Library                      | Unity-managed   | System loader | ✅ (Unity's own PICO integration module expects the system loader declaration) |
+| Custom renderer with bundled loader     | Custom          | Bundled       | ✅ with `openXrLoaderDeclaration: false`                                       |
+| Pure 2D RN                              | View hierarchy  | —             | ✅ under `xrMode: 'mobile'` (plugin is a mostly-no-op)                         |
+
+There is no runtime or renderer code in `expo-pico-core`. Sibling
+packages (account / IAP / notifications / rtc / rooms / subscription /
+storage / social / achievements / leaderboards) are Expo Modules that
+bind to PICO Platform SDK surfaces independently of the rendering
+stack — a Babylon Native app calls `getUserProfile()` from
+`expo-pico-account` the same way a three.js app does.
+
+### 19.7 Babylon React Native — integration notes
+
+1. Install `@babylonjs/react-native` alongside `@babylonjs/core`.
+   Follow Babylon's Expo config plugin docs for the initial
+   `AndroidManifest` + Gradle wiring Babylon needs for its XR view.
+2. Keep `expo-pico-core` listed **before** `@babylonjs/react-native` in
+   the `plugins` array. The PICO plugin's flavor manifest / launcher
+   categories must land first so Babylon's own manifest merges land on
+   top.
+3. `openXrLoaderDeclaration` default `true` is the correct setting —
+   Babylon's OpenXR integration uses the system loader (`libopenxr_loader.so`).
+4. `ndkAbiFilters: true` is also correct — Babylon React Native ships
+   `arm64-v8a` on Android by default; the filter enforces that the
+   final PICO APK doesn't accidentally include a non-functional 32-bit
+   slice from another dep.
+5. `xrMode: 'pico-os6'` or `'pico-swan'` tells Babylon you're on PICO;
+   Babylon's XR plugin reads system features (`pico.hardware.*`) to
+   decide which tracking surfaces to enable. The `uses-feature`
+   declarations emitted by `expo-pico-core` Phases A / C / D are what
+   Babylon queries.
+
+### 19.8 Validation matrix
+
+| Validation                                                              | When                                                               |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `renderFlavorBlock` emits `ndk { abiFilters 'arm64-v8a' }` correctly    | Jest (`__tests__/withPicoGradle.test.ts`, 6 Phase E cases)         |
+| `applyCapabilityContract` emits `<uses-native-library>` + idempotency   | Jest (`__tests__/withPicoCapabilities.test.ts`, 5 Phase E cases)   |
+| Every diagnostic fires on the right misconfig                            | Jest (`__tests__/withPicoDiagnostics.test.ts`, 16 cases)           |
+| The actual built APK carries the filter and the `<uses-native-library>` | Requires `npx expo prebuild --clean` + `aapt dump xmltree` / `aapt dump badging` (deferred) |
+| Babylon React Native boots under `xrMode: 'pico-swan'`                  | Requires a Babylon + PICO sample wiring (deferred)                 |
