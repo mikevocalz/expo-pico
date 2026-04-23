@@ -94,7 +94,7 @@ npx expo run:android --variant picoDebug
 - **Expo SDK 55** (stable baseline)
 - **New Architecture only**
 - **Android / PICO OS 6** (PICO 4, PICO 4 Ultra, Swan, Neo3)
-- Forward-compatible with Expo SDK 56+ / RN 0.84.1+
+- Tracks RN 0.84.1 today; forward-compatible with Expo SDK 56+ per Expo's own support matrix
 
 ## Doctor
 

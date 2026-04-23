@@ -17,9 +17,9 @@ Expo config plugin + runtime module + diagnostics CLI for **PICO OS 6** / **Proj
 
 | `expo-pico-core` | Expo SDK | React Native | Architecture     |
 | ----------------- | -------- | ------------ | ---------------- |
-| 0.1.x → 1.0       | 55       | 0.79.x       | New Architecture |
+| 0.1.x → 1.0       | 55       | 0.84.1       | New Architecture |
 
-Forward-compatibility target: Expo SDK 56+ / RN 0.84.1+ through Expo SDK 56.
+Forward-compatibility target: Expo SDK 56+ through Expo SDK's own support matrix.
 
 ## Install
 

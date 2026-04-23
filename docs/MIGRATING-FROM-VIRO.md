@@ -123,7 +123,7 @@ Delete the Viro plugin entry from `app.config.ts`. Delete any `<ViroARSceneNavig
 **Babylon React Native** (what the example app uses — 2.x line):
 
 ```bash
-yarn add @babylonjs/react-native@^2.0.3 @babylonjs/core@^8.0.0 @babylonjs/loaders@^8.0.0
+yarn add @babylonjs/react-native@^2.0.3 @babylonjs/core@^9.0.0 @babylonjs/loaders@^9.0.0
 ```
 
 Depending on your React Native version, you may also need a matching iOS/Android native variant package (the 1.x line shipped these as `@babylonjs/react-native-iosandroid-0-74` / `-0-75` / etc.; the 2.x line's install step may have changed). Follow the [Babylon React Native install docs](https://github.com/BabylonJS/BabylonReactNative#installation) for the exact variant your RN version requires.

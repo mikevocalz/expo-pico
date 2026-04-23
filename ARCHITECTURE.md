@@ -43,7 +43,7 @@ Nitro Modules are designed for high-performance native interop scenarios (e.g., 
 
 If a future sibling package (e.g., `expo-pico-spatial`) needs low-latency frame-synchronized data from PICO's spatial SDK, Nitro can be evaluated at that point — scoped to that package, not forced onto core.
 
-### How the design supports SDK 55 now and SDK 56+/RN 0.84.1+ later
+### How the design supports SDK 55 + RN 0.84.1 today and SDK 56+ later
 
 - **No private RN internals**: All native code uses public Android APIs (`Build.MANUFACTURER`, `Build.MODEL`, system properties) and the stable Expo Modules Kotlin DSL.
 - **No version-specific hacks**: Gradle injection uses string insertion with idempotency markers — no regex replacements that assume specific Gradle file shapes.
@@ -544,7 +544,7 @@ Key points:
 ### Explicit version honesty
 
 - SDK 55 is the **stable implementation baseline**. All code is tested and validated against it.
-- Forward compatibility to RN 0.84.1 is **through Expo SDK 56+**, not directly under SDK 55. We do not claim SDK 55 supports RN 0.84.1 — that would be a false version pairing.
+- RN 0.84.1 is the current pin under SDK 55. Future RN versions ride in through Expo SDK 56+ per Expo's published support matrix; we do not claim arbitrary RN versions on an older SDK — that would be a false version pairing.
 - If Expo SDK 56 introduces breaking changes to config plugin APIs, a new major version of `expo-pico-core` will be required.
 
 ---
