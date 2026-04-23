@@ -17,6 +17,11 @@ declare class ExpoPicoModule extends NativeModule {
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
   os6RuntimeInitialized: boolean;
+
+  // Phase F — async runtime introspection.
+  hasSystemFeature(name: string): Promise<boolean>;
+  getDeclaredFeatures(): Promise<Array<{ name: string; required: boolean; glEsVersion?: string }>>;
+  getDeclaredPermissions(): Promise<Array<{ name: string; granted: boolean }>>;
 }
 
 export default requireNativeModule<ExpoPicoModule>('ExpoPico');

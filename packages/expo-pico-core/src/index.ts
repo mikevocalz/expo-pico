@@ -103,4 +103,21 @@ export function getPicoRuntimeInfo(): PicoRuntimeInfo {
   };
 }
 
+// Phase F — runtime diagnostics.
+export {
+  getPicoDiagnostics,
+  buildDiagnosticsReport,
+  readBuildTimeFacts,
+  readRuntimeFacts,
+  formatDiagnostics,
+} from './diagnostics';
+export type { BuildTimeFacts, RuntimeFacts } from './diagnostics';
+export type {
+  DeclaredFeature,
+  DeclaredPermission,
+  DiagnosticFinding,
+  DiagnosticSeverity,
+  PicoDiagnosticsReport,
+} from './types';
+
 export default ExpoPicoModule;

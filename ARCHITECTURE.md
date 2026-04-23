@@ -1427,3 +1427,141 @@ stack — a Babylon Native app calls `getUserProfile()` from
 | Every diagnostic fires on the right misconfig                            | Jest (`__tests__/withPicoDiagnostics.test.ts`, 16 cases)           |
 | The actual built APK carries the filter and the `<uses-native-library>` | Requires `npx expo prebuild --clean` + `aapt dump xmltree` / `aapt dump badging` (deferred) |
 | Babylon React Native boots under `xrMode: 'pico-swan'`                  | Requires a Babylon + PICO sample wiring (deferred)                 |
+
+---
+
+## 20. Runtime diagnostics (Phase F)
+
+### 20.1 Why runtime diagnostics
+
+Phase E added prebuild warnings: misconfigs visible at
+`npx expo prebuild` time. That catches configuration mistakes before
+the APK ships.
+
+What it *can't* catch: state that only exists at runtime. Examples:
+
+- App manifest declares `pico.hardware.eyetracking` (Phase C) but the
+  running device is a PICO 4 base model that lacks eye-tracking
+  hardware.
+- App was built with `xrMode: 'pico-swan'` but is being sideloaded onto
+  a mobile phone for screenshot generation.
+- `RECORD_AUDIO` is declared (via the RTC sibling) but the user denied
+  the runtime prompt so voice channels will fail silently.
+- `PicoSwanRuntime.initialize` never ran because `MainApplication.kt`
+  lost the `PicoCorePackage` line during a merge conflict.
+
+Phase F adds a runtime pass that compares what the plugin *declared*
+at build time against what `PackageManager` and the native runtime
+actually report, and surfaces the diff as a structured diagnostic
+report.
+
+### 20.2 New public API
+
+```ts
+import {
+  getPicoDiagnostics,
+  buildDiagnosticsReport,
+  readBuildTimeFacts,
+  readRuntimeFacts,
+  formatDiagnostics,
+  type PicoDiagnosticsReport,
+  type DiagnosticFinding,
+  type DiagnosticSeverity,
+} from 'expo-pico-core';
+
+const report = await getPicoDiagnostics();
+if (report.summary.hasError) {
+  console.error(formatDiagnostics(report));
+}
+```
+
+`PicoDiagnosticsReport` exposes a summary boolean triple
+(`hasError` / `hasWarning` / counts), an ordered `findings` array
+(errors before warnings before info), and the raw
+`declaredFeatures` / `declaredPermissions` / `systemFeatureHits`
+objects so consumers can build their own views.
+
+### 20.3 Native additions
+
+`ExpoPicoModule.kt` gains three async functions, all read-only:
+
+| Kotlin method                              | JS name                   | Backs                                                                              |
+| ------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------- |
+| `PicoRuntimeCapabilities.hasSystemFeature` | `hasSystemFeature(name)`  | `PackageManager.hasSystemFeature(name)` — probes a single feature.                 |
+| `PicoRuntimeCapabilities.getDeclaredFeatures` | `getDeclaredFeatures()` | Reads `PackageInfo.reqFeatures` for the running app — returns every `<uses-feature>` in the merged manifest. |
+| `PicoRuntimeCapabilities.getDeclaredPermissions` | `getDeclaredPermissions()` | Reads `PackageInfo.requestedPermissions` + runtime grant state.       |
+
+All three are defensive: a thrown SecurityException / null PackageManager
+falls through to an empty list or `false`. No new Kotlin dependencies.
+
+### 20.4 Reducer contract
+
+`buildDiagnosticsReport(build, runtime)` is pure and synchronous. It
+takes the two fact objects and emits the report. Classification
+summary:
+
+| Finding                                      | Severity | Condition                                                                                                     |
+| -------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `identity.missing`                           | error    | Immersive xrMode + non-2d appType + no platform identity.                                                    |
+| `feature.missing:<name>`                     | error    | Required `<uses-feature>` entry not reported by device.                                                      |
+| `build-device-mismatch`                      | warning  | Pico-flavor APK running on a non-PICO device.                                                                |
+| `mobile-on-pico-device`                      | warning  | Mobile-flavor APK on PICO hardware.                                                                          |
+| `feature.optional-missing:<name>`            | info     | Optional `<uses-feature>` missing at runtime. Non-fatal; app is expected to gate with `hasSystemFeature`.    |
+| `swan.uninitialized` / `os6.uninitialized`   | info     | Runtime init seam has not run yet. Normal during early app boot.                                             |
+| `permission.ungranted:<name>`                | info     | Runtime-dangerous permission declared but not granted. Skipped for tools:node="remove" telephony leftovers. |
+
+Findings are sorted: `error` → `warning` → `info` → `ok`, then by id
+for stability.
+
+### 20.5 Pure-reducer test surface
+
+Native calls are not available in the Jest env, so the tests drive
+`buildDiagnosticsReport` with synthetic `BuildTimeFacts` and
+`RuntimeFacts`. 18 cases cover: clean baselines (immersive + mobile),
+identity errors, runtime-init info, build/device mismatch, required vs
+optional feature hits, telephony-strip permission skipping, severity
+ordering, and `formatDiagnostics` output.
+
+The live `getPicoDiagnostics` entry point composes `readBuildTimeFacts`
+(sync, Constants-only) + `readRuntimeFacts` (async, three PackageManager
+probes) + `buildDiagnosticsReport`. Each is independently exported for
+consumers who want to cache the reducer input or swap in a mock.
+
+### 20.6 Example app integration
+
+`example/src/scene/DiagnosticsPanel.tsx` renders a ScrollView card
+between the 3D scene and the `ValidationHarness`. On mount it calls
+`getPicoDiagnostics()` and shows:
+
+- A summary line (errors? warnings? feature / permission / missing
+  counts).
+- One row per finding with severity, id, message, and optional hint.
+- The raw `formatDiagnostics` output at the bottom for copy-paste.
+
+A "Refresh" button re-reads the report — useful after granting a
+runtime permission or after the Swan runtime finishes initializing.
+
+### 20.7 What Phase F does NOT cover
+
+- **Pre-auth probes of PICO Platform SDK state.** The report stops at
+  manifest-level declarations and PackageManager features; it doesn't
+  call `getUserProfile` / `isAccountAvailable` / etc. That is the
+  sibling packages' job and will remain so — Phase F reads public
+  Android surfaces only.
+- **OpenXR loader health.** Declaring `libopenxr_loader.so` (Phase E)
+  does not verify the loader actually dynamically links at app boot.
+  A Phase G check could run `System.loadLibrary` probe, but PICO's own
+  SDK handles that load with a proper error path; re-probing would
+  just duplicate work.
+- **Historical diagnostics / telemetry.** Reports are stateless —
+  each call re-reads. Consumers who want to track drift over time
+  should persist the reports themselves.
+
+### 20.8 Validation matrix
+
+| Validation                                                         | When                                                           |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `buildDiagnosticsReport` pure-reducer coverage                     | Jest (`src/__tests__/diagnostics.test.ts`, 18 cases)           |
+| `formatDiagnostics` output                                         | Jest                                                           |
+| Native PackageManager probes actually fire                         | Requires the example app on a device (deferred)                |
+| DiagnosticsPanel UI layout on PICO vs. mobile                      | Requires the example app on each target (deferred)             |

@@ -1,6 +1,7 @@
 import React from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 
+import { DiagnosticsPanel } from './src/scene/DiagnosticsPanel';
 import { PicoSceneRoot } from './src/scene/PicoSceneRoot';
 import { ValidationHarness } from './src/validation/ValidationHarness';
 
@@ -11,6 +12,7 @@ export default function App(): JSX.Element {
       <View style={styles.sceneContainer}>
         <PicoSceneRoot />
       </View>
+      <DiagnosticsPanel />
       <View style={styles.harnessContainer}>
         <ValidationHarness />
       </View>

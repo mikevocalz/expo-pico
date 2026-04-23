@@ -62,4 +62,55 @@ export interface ExpoPicoModuleInterface {
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
   os6RuntimeInitialized: boolean;
+  hasSystemFeature(name: string): Promise<boolean>;
+  getDeclaredFeatures(): Promise<DeclaredFeature[]>;
+  getDeclaredPermissions(): Promise<DeclaredPermission[]>;
+}
+
+export interface DeclaredFeature {
+  name: string;
+  required: boolean;
+  glEsVersion?: string;
+}
+
+export interface DeclaredPermission {
+  name: string;
+  granted: boolean;
+}
+
+/**
+ * Severity of a diagnostic finding. `ok` means the check passed;
+ * `info` is an informational note; `warning` is a likely misconfig that
+ * will still run; `error` is a state that will definitely fail at
+ * runtime.
+ */
+export type DiagnosticSeverity = 'ok' | 'info' | 'warning' | 'error';
+
+export interface DiagnosticFinding {
+  /** Stable identifier — safe to branch on in code. */
+  id: string;
+  severity: DiagnosticSeverity;
+  /** One-line human-readable summary. */
+  message: string;
+  /** Optional remediation hint. */
+  hint?: string;
+}
+
+export interface PicoDiagnosticsReport {
+  /** Summary booleans derived from the findings. */
+  summary: {
+    hasError: boolean;
+    hasWarning: boolean;
+    declaredFeatureCount: number;
+    declaredPermissionCount: number;
+    missingSystemFeatureCount: number;
+  };
+  /** Detail — ordered by severity then id. */
+  findings: DiagnosticFinding[];
+  /** Raw PackageManager output so consumers can build their own views. */
+  raw: {
+    declaredFeatures: DeclaredFeature[];
+    declaredPermissions: DeclaredPermission[];
+    systemFeatureHits: Record<string, boolean>;
+  };
 }

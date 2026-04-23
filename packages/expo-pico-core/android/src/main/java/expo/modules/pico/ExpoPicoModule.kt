@@ -27,5 +27,23 @@ class ExpoPicoModule : Module() {
             "swanRuntimeInitialized" to PicoSwanRuntime.isInitialized(),
             "os6RuntimeInitialized" to PicoOs6Runtime.isInitialized()
         )
+
+        // Phase F — runtime capability introspection. Async because each
+        // call hits PackageManager; a sync bridge would block the JS
+        // thread on cold-start readers.
+        AsyncFunction("hasSystemFeature") { name: String ->
+            val ctx = appContext.reactContext ?: return@AsyncFunction false
+            PicoRuntimeCapabilities.hasSystemFeature(ctx, name)
+        }
+
+        AsyncFunction("getDeclaredFeatures") {
+            val ctx = appContext.reactContext ?: return@AsyncFunction emptyList<Map<String, Any?>>()
+            PicoRuntimeCapabilities.getDeclaredFeatures(ctx)
+        }
+
+        AsyncFunction("getDeclaredPermissions") {
+            val ctx = appContext.reactContext ?: return@AsyncFunction emptyList<Map<String, Any?>>()
+            PicoRuntimeCapabilities.getDeclaredPermissions(ctx)
+        }
     }
 }
