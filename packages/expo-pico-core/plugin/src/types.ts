@@ -189,6 +189,39 @@ export interface PicoPluginOptions {
    */
   sceneMesh?: boolean;
   /**
+   * Declare PICO Sense / 6DoF controller input support. Emits
+   * `uses-feature pico.hardware.controller` +
+   * `com.picovr.permission.CONTROLLER`.
+   * EXTENSION SEAM — both key names are best-known naming patterns,
+   * not yet confirmed in open PICO developer docs. Device validation
+   * is required before shipping this to production — see
+   * `docs/DEVICE-TESTING-REQUIRED.md`. Emitted with
+   * `android:required="false"` so install-time damage on a misname is
+   * zero (unrecognized features are ignored by the installer).
+   * @default false
+   */
+  picoSenseController?: boolean;
+  /**
+   * Declare PICO Motion Tracker companion-device support. Emits
+   * `uses-feature pico.hardware.motiontracker` +
+   * `com.picovr.permission.MOTION_TRACKER`.
+   * EXTENSION SEAM — the Motion Tracker dongle may additionally
+   * require `android.permission.USB_HOST`. Consumers who enable this
+   * option should verify the full dongle flow on real hardware; see
+   * `docs/DEVICE-TESTING-REQUIRED.md`.
+   * @default false
+   */
+  motionTracker?: boolean;
+  /**
+   * Declare PICO controller haptic-feedback support. Emits
+   * `uses-feature pico.hardware.controller.haptic`.
+   * EXTENSION SEAM — no paired permission is known; the feature key
+   * is emitted opt-in so apps that don't use haptics don't declare
+   * hardware they don't drive.
+   * @default false
+   */
+  controllerHaptics?: boolean;
+  /**
    * Restrict the `pico` (and `dual`) product flavor(s) to `arm64-v8a`
    * via `ndk { abiFilters 'arm64-v8a' }`. PICO 4 / 4 Ultra / Swan are
    * all 64-bit ARM; shipping 32-bit or x86 slices is wasted APK bloat
@@ -424,6 +457,9 @@ export interface ResolvedPicoOptions {
   refreshRates: number[];
   boundary: boolean;
   sceneMesh: boolean;
+  picoSenseController: boolean;
+  motionTracker: boolean;
+  controllerHaptics: boolean;
   ndkAbiFilters: boolean;
   openXrLoaderDeclaration: boolean;
   developerTools: boolean;
@@ -487,6 +523,9 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   refreshRates: [],
   boundary: false,
   sceneMesh: false,
+  picoSenseController: false,
+  motionTracker: false,
+  controllerHaptics: false,
   ndkAbiFilters: true,
   openXrLoaderDeclaration: true,
   developerTools: false,

@@ -162,6 +162,28 @@ export const PICO_FEATURES = {
    * pending doc confirmation.
    */
   SCENE_MESH: 'pico.software.scenemesh',
+  /**
+   * PICO Sense / 6DoF controller hardware. EXTENSION SEAM — the feature
+   * key is the best-known naming pattern (`pico.hardware.controller`)
+   * but is not confirmed in open PICO developer documentation as of
+   * this writing. See `docs/DEVICE-TESTING-REQUIRED.md` for the
+   * validation list.
+   */
+  CONTROLLER: 'pico.hardware.controller',
+  /**
+   * PICO Motion Tracker accessory (waist / foot trackers sold as
+   * peripherals). EXTENSION SEAM — both the feature key and its
+   * USB-host coupling are unconfirmed; shipped opt-in with
+   * `android:required="false"` so mis-named declarations are install
+   * safe.
+   */
+  CONTROLLER_MOTION_TRACKER: 'pico.hardware.motiontracker',
+  /**
+   * PICO controller haptic-feedback capability. EXTENSION SEAM — apps
+   * using controller haptics declare this so the PICO OS can gate
+   * low-latency actuator access. Name pending doc confirmation.
+   */
+  CONTROLLER_HAPTIC: 'pico.hardware.controller.haptic',
 } as const;
 
 /**
@@ -192,6 +214,20 @@ export const PICO_PERMISSIONS = {
    * doc confirmation; follows the `com.picovr.permission.*` pattern.
    */
   BOUNDARY: 'com.picovr.permission.BOUNDARY',
+  /**
+   * PICO Sense / 6DoF controller input permission. EXTENSION SEAM —
+   * the permission key is not confirmed in open PICO docs as of this
+   * writing. Mis-named permissions are silently ignored by the
+   * installer, so shipping this seam today is install-safe.
+   */
+  CONTROLLER: 'com.picovr.permission.CONTROLLER',
+  /**
+   * PICO Motion Tracker companion device permission. EXTENSION SEAM —
+   * the Motion Tracker dongle may also require
+   * `android.permission.USB_HOST`; consumers enabling
+   * `motionTracker: true` should verify both on their target device.
+   */
+  MOTION_TRACKER: 'com.picovr.permission.MOTION_TRACKER',
 } as const;
 
 export const DEVICE_TARGET_MAP: Record<string, string> = {

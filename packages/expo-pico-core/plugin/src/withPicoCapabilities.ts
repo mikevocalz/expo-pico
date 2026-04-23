@@ -53,12 +53,19 @@ export function applyCapabilityContract(
   upsertFeature(features, PICO_FEATURES.FOVEATION, options.foveatedRendering);
   upsertFeature(features, PICO_FEATURES.BOUNDARY, options.boundary);
   upsertFeature(features, PICO_FEATURES.SCENE_MESH, options.sceneMesh);
+  // Phase I — controller input. All three are seams; required="false"
+  // keeps mis-named features install-safe on current PICO OS builds.
+  upsertFeature(features, PICO_FEATURES.CONTROLLER, options.picoSenseController);
+  upsertFeature(features, PICO_FEATURES.CONTROLLER_MOTION_TRACKER, options.motionTracker);
+  upsertFeature(features, PICO_FEATURES.CONTROLLER_HAPTIC, options.controllerHaptics);
 
   // ── Permissions ─────────────────────────────────────────────────
   upsertPermission(permissions, PICO_PERMISSIONS.EYE_TRACKING, options.eyeTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.FACE_TRACKING, options.faceTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.BODY_TRACKING, options.bodyTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.BOUNDARY, options.boundary);
+  upsertPermission(permissions, PICO_PERMISSIONS.CONTROLLER, options.picoSenseController);
+  upsertPermission(permissions, PICO_PERMISSIONS.MOTION_TRACKER, options.motionTracker);
   upsertPermission(
     permissions,
     PICO_PERMISSIONS.HIGH_SAMPLING_RATE_SENSORS,

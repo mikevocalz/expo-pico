@@ -269,6 +269,79 @@ describe('applyCapabilityContract — boundary + scene mesh (Phase D)', () => {
   });
 });
 
+describe('applyCapabilityContract — controller input (Phase I)', () => {
+  it('emits picoSenseController feature + permission', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ picoSenseController: true }));
+    expect(featureNames(m)).toContain(PICO_FEATURES.CONTROLLER);
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.CONTROLLER);
+  });
+
+  it('emits motionTracker feature + permission (seam)', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ motionTracker: true }));
+    expect(featureNames(m)).toContain(PICO_FEATURES.CONTROLLER_MOTION_TRACKER);
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.MOTION_TRACKER);
+  });
+
+  it('emits controllerHaptics feature without a permission', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ controllerHaptics: true }));
+    expect(featureNames(m)).toContain(PICO_FEATURES.CONTROLLER_HAPTIC);
+    expect(permissionNames(m)).not.toContain('com.picovr.permission.CONTROLLER_HAPTIC');
+  });
+
+  it('defaults all three to false (no emission)', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({}));
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER);
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER_MOTION_TRACKER);
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER_HAPTIC);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.CONTROLLER);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.MOTION_TRACKER);
+  });
+
+  it('required="false" on each controller uses-feature entry', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(
+      m,
+      resolveOptions({
+        picoSenseController: true,
+        motionTracker: true,
+        controllerHaptics: true,
+      })
+    );
+    const features = m.manifest['uses-feature'] as any[];
+    for (const name of [
+      PICO_FEATURES.CONTROLLER,
+      PICO_FEATURES.CONTROLLER_MOTION_TRACKER,
+      PICO_FEATURES.CONTROLLER_HAPTIC,
+    ]) {
+      const entry = features.find((f) => f.$?.['android:name'] === name);
+      expect(entry).toBeDefined();
+      expect(entry.$['android:required']).toBe('false');
+    }
+  });
+
+  it('removes all controller entries on toggle-off', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(
+      m,
+      resolveOptions({
+        picoSenseController: true,
+        motionTracker: true,
+        controllerHaptics: true,
+      })
+    );
+    applyCapabilityContract(m, resolveOptions({}));
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER);
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER_MOTION_TRACKER);
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.CONTROLLER_HAPTIC);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.CONTROLLER);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.MOTION_TRACKER);
+  });
+});
+
 describe('applyCapabilityContract — uses-native-library (Phase E)', () => {
   function nativeLibs(m: Manifest): Array<{ name: string; required: string }> {
     const app = m.manifest.application![0] as any;
