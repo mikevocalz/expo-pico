@@ -10,7 +10,9 @@
     "android:mobile": "expo run:android --variant mobileDebug",
     "prebuild": "expo prebuild --clean",
     "prebuild:pico": "expo prebuild --clean && echo 'Run: cd android && ./gradlew assemblePicoDebug'",
-    "postinstall": "patch-package",
+    "demo:model": "node scripts/download-demo-model.js --force --verbose",
+    "demo:model:clean": "node -e \"require('fs').rmSync(require('path').join('assets','models','pico-demo.glb'), { force: true }); console.log('removed')\"",
+    "postinstall": "patch-package && node scripts/download-demo-model.js --post-install",
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {

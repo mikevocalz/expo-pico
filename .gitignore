@@ -24,3 +24,8 @@ packages/*/src/**/*.d.ts
 # Do NOT ignore packages/*/android/ — those contain library source code
 example/android/
 example/ios/
+
+# Phase N — postinstall-downloaded demo glTF. Every checkout regenerates
+# via `example/scripts/download-demo-model.js`. Skippable via
+# EXPO_PICO_SKIP_DEMO_MODEL=1.
+example/assets/models/pico-demo.glb
