@@ -9,6 +9,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   // Bundle any GLB / glTF assets so the scene renderer can require() them.
   // See `assets/models/README.md` for which file the scene looks for.
+  // Babylon React Native's SceneLoader reads the localUri exposed by
+  // expo-asset, so asset bundling is still the right distribution path
+  // regardless of which 3D engine consumes the file.
   assetBundlePatterns: ['assets/**/*'],
   android: {
     package: 'com.example.expopico',

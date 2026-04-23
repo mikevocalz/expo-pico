@@ -84,7 +84,18 @@ Each row has:
 | `<uses-native-library android:name="libopenxr_loader.so"/>` reaches merged manifest | **[automated]** step 4 |
 | `ndk { abiFilters 'arm64-v8a' }` applied to the pico flavor | **[automated]** step 4 |
 | OpenXR loader actually loads at app boot | Manual — `System.loadLibrary("openxr_loader")` succeeds without `UnsatisfiedLinkError` on a real device |
-| Babylon React Native composes cleanly with `expo-pico-core` | Manual — install both, run a Babylon scene on PICO hardware, confirm the immersive session initializes |
+
+### Example app — Babylon React Native renderer
+
+The example's `PicoSceneRoot.tsx` / `GltfModel.tsx` use `@babylonjs/react-native`'s `<EngineView>` + `useEngine()` + `SceneLoader.AppendAsync`. None of this is covered by unit tests — Babylon Native can only run against its native module.
+
+| Item | Test procedure | Risk if wrong |
+| --- | --- | --- |
+| `@babylonjs/react-native-iosandroid-0-74` autolinks correctly under Expo + RN 0.83 | Run `cd example && yarn install && yarn example:prebuild:android`. Inspect `example/android/settings.gradle` — confirm a `:react-native-babylon` (or similar Babylon-prefixed) project is included. If not, the existing `example/patches/expo-modules-autolinking+55.0.12.patch` may need refreshing for this Expo minor. | `<EngineView>` renders but never gets an Engine (Babylon native bridge is absent). The HUD will report `renderer: babylon-native / scene: loading…` indefinitely. |
+| `useEngine()` returns a live engine within a few hundred ms of mount | Launch the example on Swan. Scene tab should switch from "Initializing Babylon engine…" to the rendered Babylon canvas within ~1 s. | Engine never binds → indefinite loading state. Common root cause: OpenGL ES 3 unsupported on the device (PICO 4 / 4 Ultra / Swan all support it, so should not hit on real hardware). |
+| `SceneLoader.AppendAsync` loads `pico-demo.glb` (auto-downloaded by `scripts/download-demo-model.js`) | Scene HUD should read `scene: gltf loaded`. The BrainStem model should play its first baked skeletal animation clip on loop. | Fallback: `scene: fallback primitive` + a rotating torus knot. Common cause: GLB download was skipped (check `EXPO_PICO_SKIP_DEMO_MODEL`) or localUri couldn't resolve through expo-asset. |
+| `fitNodeToUnitCube` keeps the loaded model in frame | BrainStem should render ~2 units tall centered at origin. If you swap in a different Khronos sample (Fox, DamagedHelmet), it should still fit — the fit logic walks the appended meshes' bounding boxes to compute the scale. | Model either renders too small (invisible) or too large (camera inside geometry). |
+| Babylon's system-OpenXR-loader binding is compatible with `expo-pico-core`'s `<uses-native-library>` declaration | On PICO hardware with the app built at `xrMode: 'pico-swan'` + `appType: 'vr'`, Babylon's XR session should initialize without `UnsatisfiedLinkError` on `libopenxr_loader.so`. Requires adding an XR-session init call to `PicoSceneRoot.tsx` — not done in the current example (scene is 2D only). | Current example doesn't exercise XR, so this is an untested compose path. Adding an `scene.createDefaultXRExperienceAsync()` call after `SceneLoader.AppendAsync` would close this gap. |
 
 ### Phase F — runtime diagnostics
 

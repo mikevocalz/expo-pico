@@ -1,94 +1,144 @@
-import React, { Suspense, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
-import type { Mesh } from 'three';
+import { EngineView, useEngine } from '@babylonjs/react-native';
+import {
+  ArcRotateCamera,
+  type Camera,
+  Color3,
+  Color4,
+  DirectionalLight,
+  HemisphericLight,
+  Mesh,
+  MeshBuilder,
+  Scene,
+  StandardMaterial,
+  Vector3,
+} from '@babylonjs/core';
 
-import { GltfModel } from './GltfModel';
 import { getPicoRuntimeInfo } from 'expo-pico-core';
 
+import { attachDemoModel } from './GltfModel';
+
 /**
- * Root 3D scene for the example app. Renders via `@react-three/fiber/native`
- * which wraps `expo-gl` + `three` for React Native.
+ * Root 3D scene for the example app, rendered via Babylon React Native.
+ *
+ * Why Babylon (not three/r3f): PICO Swan consumers frequently pair
+ * Babylon Native with PICO OS because Babylon's OpenXR path binds to
+ * the system OpenXR loader that `expo-pico-core` declares via
+ * `<uses-native-library android:name="libopenxr_loader.so"/>` (Phase E).
+ * Using Babylon here demonstrates the composition end-to-end on real
+ * hardware.
  *
  * Layout:
- *   - Fills the bounds of the surrounding View.
- *   - Centered animated glTF model loaded via `GltfModel` (see below). The
- *     component tries a bundled GLB at `assets/models/pico-demo.glb` first,
- *     then falls back to a procedurally generated animated cube so the
- *     scene always renders even before a real model is dropped in.
- *   - An ambient-only lighting rig so the fallback procedural material
- *     reads clearly.
+ *   - `<EngineView>` fills the tab body.
+ *   - A Babylon scene is constructed once on first frame via
+ *     `useEngine()` — the hook returns null until the native engine
+ *     has bound to the EngineView surface.
+ *   - A neutral camera + ambient lighting.
+ *   - `attachDemoModel` loads the bundled glTF (auto-downloaded by
+ *     `scripts/download-demo-model.js` at `yarn install` time). On
+ *     load failure the scene falls back to an animated torus knot —
+ *     the app never ends up with an empty scene.
  *
- * Runtime-info overlay: calls `getPicoRuntimeInfo()` once on mount and
- * displays the headline state (xrMode, appType, device match). This is
- * exactly the smoke test asked for — "example app tests main PICO modules
- * with an animating model" — on a PICO device the overlay flips to show
- * `isPicoDevice: true` and the runtime fields come alive; on a mobile
- * emulator it shows the 2D fallback state. Either way, the scene keeps
- * animating, which proves the GL pipeline + PICO core module both work.
+ * HUD overlay on top of the EngineView renders live runtime info from
+ * `getPicoRuntimeInfo()`. It's layered absolute-positioned so the
+ * Babylon canvas keeps its full render area.
  */
 export function PicoSceneRoot(): JSX.Element {
+  const engine = useEngine();
+  const [camera, setCamera] = useState<Camera | null>(null);
+  const sceneRef = useRef<Scene | null>(null);
   const info = useMemo(() => getPicoRuntimeInfo(), []);
+  const [sceneStatus, setSceneStatus] = useState<'booting' | 'glb' | 'fallback'>('booting');
+
+  const disposeScene = useCallback(() => {
+    const s = sceneRef.current;
+    if (!s) return;
+    s.animationGroups.forEach((g) => g.stop());
+    s.dispose();
+    sceneRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (!engine) return;
+    disposeScene();
+
+    const scene = new Scene(engine);
+    sceneRef.current = scene;
+    scene.clearColor = new Color4(0.043, 0.051, 0.102, 1); // #0b0d1a
+
+    const cam = new ArcRotateCamera(
+      'main',
+      Math.PI / 2, // alpha — rotate around Y
+      Math.PI / 2.4, // beta — slight tilt down
+      4, // radius
+      Vector3.Zero(),
+      scene
+    );
+    cam.lowerRadiusLimit = 1.5;
+    cam.upperRadiusLimit = 8;
+    cam.wheelDeltaPercentage = 0.02;
+    setCamera(cam);
+
+    const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene);
+    hemi.intensity = 0.7;
+    hemi.groundColor = new Color3(0.08, 0.09, 0.18);
+
+    const sun = new DirectionalLight('sun', new Vector3(-0.5, -1, -0.5), scene);
+    sun.intensity = 0.9;
+
+    // Load the demo model asynchronously. `attachDemoModel` returns a
+    // promise that resolves once the glTF has been appended + animated.
+    // On failure (missing asset, loader error), it falls back to a
+    // procedural torus knot and resolves with 'fallback'.
+    attachDemoModel(scene).then((status) => {
+      if (sceneRef.current === scene) setSceneStatus(status);
+    });
+
+    return disposeScene;
+  }, [engine, disposeScene]);
 
   return (
     <View style={styles.wrapper}>
-      <Canvas
-        style={styles.canvas}
-        camera={{ position: [0, 1.5, 4], fov: 55 }}
-        gl={{ antialias: true }}
-      >
-        <color attach="background" args={['#0b0d1a']} />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 5, 5]} intensity={0.9} />
-        <directionalLight position={[-5, -2, -5]} intensity={0.3} />
-
-        <Suspense fallback={<FallbackSpinner />}>
-          <GltfModel />
-        </Suspense>
-
-        <gridHelper args={[10, 10, '#2a2d45', '#1a1c30']} position={[0, -1, 0]} />
-      </Canvas>
+      {engine && camera ? (
+        <EngineView style={styles.canvas} camera={camera} displayFrameRate={false} />
+      ) : (
+        <View style={styles.canvas}>
+          <Text style={styles.loadingText}>Initializing Babylon engine…</Text>
+        </View>
+      )}
 
       <View style={styles.overlay} pointerEvents="none">
         <Text style={styles.overlayTitle}>PICO runtime</Text>
 
-        <OverlayRow label="xrMode" value={info.xrMode} accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os6' ? 'info' : undefined} />
-        <OverlayRow label="appType" value={info.appType} />
-        <OverlayRow label="spatialMode" value={info.spatialMode} />
-        <OverlayRow label="targetProfile" value={info.targetProfile} />
+        <Row label="xrMode" value={info.xrMode} accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os6' ? 'info' : undefined} />
+        <Row label="appType" value={info.appType} />
+        <Row label="spatialMode" value={info.spatialMode} />
+        <Row label="targetProfile" value={info.targetProfile} />
 
-        <OverlaySeparator />
+        <Separator />
 
-        <OverlayRow
+        <Row
           label="device"
           value={info.isPicoDevice ? 'pico' : 'non-pico'}
           accent={info.isPicoDevice ? 'good' : 'info'}
         />
-        <OverlayRow
+        <Row
           label="build"
           value={info.isPicoBuild ? 'pico flavor' : 'mobile flavor'}
           accent={info.isPicoBuild ? 'good' : 'info'}
         />
-        {info.deviceModel ? (
-          <OverlayRow label="model" value={info.deviceModel} />
-        ) : null}
-        {info.picoOsVersion ? (
-          <OverlayRow label="os" value={info.picoOsVersion} />
-        ) : null}
+        {info.deviceModel ? <Row label="model" value={info.deviceModel} /> : null}
+        {info.picoOsVersion ? <Row label="os" value={info.picoOsVersion} /> : null}
 
-        <OverlaySeparator />
+        <Separator />
 
-        <OverlayRow
+        <Row
           label="identity"
           value={info.hasPlatformIdentity ? 'wired' : 'missing'}
           accent={info.hasPlatformIdentity ? 'good' : 'warn'}
         />
-        <OverlayRow
-          label="iap identity"
-          value={info.hasIapIdentity ? 'wired' : 'missing'}
-          accent={info.hasIapIdentity ? 'good' : 'info'}
-        />
-        <OverlayRow
+        <Row
           label="platform sdk"
           value={
             info.platformSdkPresent
@@ -98,14 +148,33 @@ export function PicoSceneRoot(): JSX.Element {
           accent={info.platformSdkPresent ? 'good' : 'info'}
         />
 
+        <Separator />
+
+        <Row
+          label="renderer"
+          value="babylon-native"
+          accent="info"
+        />
+        <Row
+          label="scene"
+          value={
+            sceneStatus === 'booting'
+              ? 'loading…'
+              : sceneStatus === 'glb'
+                ? 'gltf loaded'
+                : 'fallback primitive'
+          }
+          accent={sceneStatus === 'glb' ? 'good' : sceneStatus === 'fallback' ? 'warn' : 'info'}
+        />
+
         {info.swanRuntimeInitialized || info.os6RuntimeInitialized ? (
           <>
-            <OverlaySeparator />
+            <Separator />
             {info.swanRuntimeInitialized ? (
-              <OverlayRow label="swan runtime" value="initialized" accent="good" />
+              <Row label="swan runtime" value="initialized" accent="good" />
             ) : null}
             {info.os6RuntimeInitialized ? (
-              <OverlayRow label="os6 runtime" value="initialized" accent="good" />
+              <Row label="os6 runtime" value="initialized" accent="good" />
             ) : null}
           </>
         ) : null}
@@ -116,7 +185,7 @@ export function PicoSceneRoot(): JSX.Element {
 
 type AccentStyle = 'good' | 'warn' | 'bad' | 'info';
 
-function OverlayRow({
+function Row({
   label,
   value,
   accent,
@@ -133,40 +202,25 @@ function OverlayRow({
   );
 }
 
-function OverlaySeparator(): JSX.Element {
+function Separator(): JSX.Element {
   return <View style={styles.separator} />;
-}
-
-/**
- * Minimal rotating mesh shown while the real model resolves. Intentionally
- * tiny so there is no visible gap on slow device reads.
- */
-function FallbackSpinner(): JSX.Element {
-  const ref = useRef<Mesh>(null);
-  useFrame((_, delta) => {
-    if (ref.current) {
-      ref.current.rotation.y += delta * 2;
-    }
-  });
-  return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[0.15, 16, 16]} />
-      <meshStandardMaterial color="#6d7cff" />
-    </mesh>
-  );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    // When mounted inside a tab the parent provides the full remaining
-    // height — flex: 1 makes the scene fill the tab body. When mounted
-    // without a flex parent, the minHeight keeps the canvas visible.
     flex: 1,
     minHeight: 320,
     backgroundColor: '#0b0d1a',
   },
   canvas: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#8a91c0',
+    fontSize: 13,
+    fontFamily: 'monospace',
   },
   overlay: {
     position: 'absolute',
@@ -175,7 +229,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     backgroundColor: 'rgba(10, 12, 25, 0.78)',
-    maxWidth: 240,
+    maxWidth: 260,
   },
   overlayTitle: {
     color: '#ffffff',

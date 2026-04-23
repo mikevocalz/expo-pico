@@ -220,7 +220,7 @@ On a mobile device or emulator (without `--variant picoDebug`):
 
 Pick the path that matches what you're building:
 
-- **A content / game app.** Add `@react-three/fiber/native` + `expo-gl` + `three`, or `@babylonjs/react-native`, and render an animated 3D scene. The PICO plugin is renderer-agnostic — both compose cleanly. See ARCHITECTURE §19.6.
+- **A content / game app.** Add `@babylonjs/react-native` + `@babylonjs/core` + `@babylonjs/loaders` (what the example app uses), or `@react-three/fiber/native` + `expo-gl` + `three`, and render an animated 3D scene. The PICO plugin is renderer-agnostic — both compose cleanly. See ARCHITECTURE §19.6.
 - **A social / multiplayer app.** Install `expo-pico-rtc` (voice) + `expo-pico-rooms` (matchmaking) + `expo-pico-social` (friends, presence, invites). Each sibling's README has a real usage snippet.
 - **A paid app with IAP.** Install `expo-pico-iap` + `expo-pico-subscription`. Add `picoMerchantId` + `picoPayKey` to your plugin's `platformService` block. Doctor warns on partial identity.
 - **A live service with backend.** Install `expo-pico-account` (identity) + `expo-pico-notifications` (push). Your backend talks to the PICO Platform push endpoint using the same app ID / key the app is built with.

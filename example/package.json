@@ -16,11 +16,13 @@
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {
-    "@react-three/fiber": "~8.17.10",
+    "@babylonjs/core": "^7.0.0",
+    "@babylonjs/loaders": "^7.0.0",
+    "@babylonjs/react-native": "^1.7.0",
+    "@babylonjs/react-native-iosandroid-0-74": "^1.7.0",
     "expo": "~55.0.9",
     "expo-asset": "~11.1.0",
     "expo-file-system": "~18.1.0",
-    "expo-gl": "~15.1.0",
     "expo-pico-account": "*",
     "expo-pico-achievements": "*",
     "expo-pico-core": "*",
@@ -34,12 +36,10 @@
     "expo-pico-storage": "*",
     "expo-pico-subscription": "*",
     "react": "19.2.0",
-    "react-native": "0.83.4",
-    "three": "~0.168.0"
+    "react-native": "0.83.4"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
-    "@types/three": "~0.168.0",
     "patch-package": "^8.0.1"
   }
 }

@@ -120,20 +120,20 @@ Delete the Viro plugin entry from `app.config.ts`. Delete any `<ViroARSceneNavig
 
 ### 2. Add a renderer
 
-**react-three-fiber + expo-gl + three** (the path the example app uses):
+**Babylon React Native** (what the example app uses):
+
+```bash
+yarn add @babylonjs/react-native @babylonjs/react-native-iosandroid-0-74 @babylonjs/core @babylonjs/loaders
+```
+
+**react-three-fiber + expo-gl + three**:
 
 ```bash
 yarn add @react-three/fiber expo-gl expo-asset three
 yarn add -D @types/three
 ```
 
-**Babylon React Native**:
-
-```bash
-yarn add @babylonjs/react-native @babylonjs/core
-```
-
-Both compose cleanly with `expo-pico-core`'s launcher contract. See the [FAQ](./FAQ.md#5-can-i-use-babylon-react-native-instead-of-react-three-fiber) for Babylon-specific plugin ordering.
+Both compose cleanly with `expo-pico-core`'s launcher contract. The example's current `example/src/scene/PicoSceneRoot.tsx` + `GltfModel.tsx` is a copy-pasteable Babylon reference. See the [FAQ](./FAQ.md#5-can-i-use-babylon-react-native-instead-of-react-three-fiber) for plugin-ordering rules.
 
 ### 3. Port scene code
 

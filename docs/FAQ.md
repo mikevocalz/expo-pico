@@ -38,8 +38,9 @@ See [ARCHITECTURE §15.5](../ARCHITECTURE.md#155-what-is-intentionally-not-copie
 
 Yes. The plugin touches only config / manifest / Gradle — never rendering code. Confirmed compatible renderers:
 
-- `@react-three/fiber/native` + `expo-gl` + `three` (the example app demonstrates)
-- `@babylonjs/react-native` + its OpenXR plugin
+- `@babylonjs/react-native` + `@babylonjs/core` + `@babylonjs/loaders` (what the example app uses; Khronos BrainStem glTF renders with one skeletal animation clip on loop)
+- `@babylonjs/react-native` + its OpenXR plugin for real immersive sessions
+- `@react-three/fiber/native` + `expo-gl` + `three`
 - Unity-as-a-Library
 - Any custom renderer that binds to the system OpenXR loader
 

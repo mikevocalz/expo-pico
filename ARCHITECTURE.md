@@ -1384,8 +1384,8 @@ The plugin is renderer-agnostic. Confirmed compositions:
 
 | Renderer                                | Android surface | OpenXR loader | PICO plugin compat                                                            |
 | --------------------------------------- | --------------- | ------------- | ----------------------------------------------------------------------------- |
-| `@react-three/fiber/native` + `expo-gl` | `GLView`        | System loader | ✅ (example app demonstrates)                                                 |
-| `@babylonjs/react-native` + OpenXR      | Babylon Native native view | System loader | ✅ (Babylon uses system loader; `openXrLoaderDeclaration: true` is correct) |
+| `@react-three/fiber/native` + `expo-gl` | `GLView`        | System loader | ✅ (prior example renderer; Phase X swapped to Babylon)                        |
+| `@babylonjs/react-native` + OpenXR      | Babylon Native native view | System loader | ✅ (example app demonstrates; Babylon uses system loader; `openXrLoaderDeclaration: true` is correct) |
 | Unity-as-a-Library                      | Unity-managed   | System loader | ✅ (Unity's own PICO integration module expects the system loader declaration) |
 | Custom renderer with bundled loader     | Custom          | Bundled       | ✅ with `openXrLoaderDeclaration: false`                                       |
 | Pure 2D RN                              | View hierarchy  | —             | ✅ under `xrMode: 'mobile'` (plugin is a mostly-no-op)                         |

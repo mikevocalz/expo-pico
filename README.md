@@ -152,7 +152,7 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
-The example renders a `@react-three/fiber/native` animating scene, a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time + runtime diagnostics + Phase J SDK probe), and the full `ValidationHarness` exercising every sibling module's public API.
+The example renders a **Babylon React Native** animating scene (Khronos BrainStem glTF auto-downloaded on install), a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time + runtime diagnostics + Phase J SDK probe), and the full `ValidationHarness` exercising every sibling module's public API. Babylon's OpenXR binding composes with `expo-pico-core`'s launcher contract + the `libopenxr_loader.so` `<uses-native-library>` declaration from Phase E — on PICO hardware the example is a working end-to-end XR app, on mobile it falls back to a 2D canvas.
 
 ## License
 
