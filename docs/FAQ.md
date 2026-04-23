@@ -32,7 +32,7 @@ Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that select
 | Prebuild diagnostics              | limited `WarningAggregator` on new-arch         | 7-check `withPicoDiagnostics` + standalone `expo-pico-doctor`    |
 | Renderer                          | bundles its own OpenGL scene graph              | renderer-agnostic                                                |
 
-See [ARCHITECTURE §15.5](../ARCHITECTURE.md#155-what-is-intentionally-not-copied-from-quest-support) for the full "what we deliberately did not copy from Viro" list.
+See [ARCHITECTURE §15.5](../ARCHITECTURE.md#155-what-is-intentionally-not-copied-from-quest-support) for the full "what we deliberately did not copy from Viro" list, and [docs/MIGRATING-FROM-VIRO.md](./MIGRATING-FROM-VIRO.md) for a step-by-step porting guide (including a JSX-component mapping table for the renderer swap).
 
 ## 5. Can I use Babylon React Native instead of react-three-fiber?
 

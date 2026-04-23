@@ -97,6 +97,7 @@ Ships with `expo-pico-core`. See [ARCHITECTURE §21](./ARCHITECTURE.md#21-expo-p
 
 - [docs/QUICKSTART.md](./docs/QUICKSTART.md) — zero-to-running in 5 minutes.
 - [docs/FAQ.md](./docs/FAQ.md) — why Expo, why Android-only, how this differs from Viro, Babylon compat, release versioning.
+- [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md) — porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
 - [docs/EAS.md](./docs/EAS.md) — EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
 - [docs/PRODUCTION-READINESS.md](./docs/PRODUCTION-READINESS.md) — single-page pre-ship checklist covering plugin config, identity, manifest contract, toolchain, diagnostics, and submission.
 
