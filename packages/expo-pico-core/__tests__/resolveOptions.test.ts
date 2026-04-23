@@ -58,3 +58,68 @@ describe('resolveOptions', () => {
     expect(result.targetSdkVersion).toBe(35);
   });
 });
+
+describe('xrMode resolution', () => {
+  it('defaults to pico-os6 when buildVariant is pico', () => {
+    const result = resolveOptions({ buildVariant: 'pico' });
+    expect(result.xrMode).toBe('pico-os6');
+  });
+
+  it('defaults to pico-os6 when buildVariant is dual', () => {
+    const result = resolveOptions({ buildVariant: 'dual' });
+    expect(result.xrMode).toBe('pico-os6');
+  });
+
+  it('defaults to mobile when buildVariant is mobile', () => {
+    const result = resolveOptions({ buildVariant: 'mobile' });
+    expect(result.xrMode).toBe('mobile');
+  });
+
+  it('respects explicit xrMode=pico-swan', () => {
+    const result = resolveOptions({ xrMode: 'pico-swan' });
+    expect(result.xrMode).toBe('pico-swan');
+  });
+
+  it('lifts minSdkVersion floor to Swan default (33) when xrMode=pico-swan', () => {
+    const result = resolveOptions({ xrMode: 'pico-swan' });
+    expect(result.minSdkVersion).toBe(33);
+  });
+
+  it('respects explicit minSdkVersion override even for Swan', () => {
+    const result = resolveOptions({ xrMode: 'pico-swan', minSdkVersion: 34 });
+    expect(result.minSdkVersion).toBe(34);
+  });
+
+  it('keeps minSdkVersion at 32 for pico-os6', () => {
+    const result = resolveOptions({ xrMode: 'pico-os6' });
+    expect(result.minSdkVersion).toBe(32);
+  });
+});
+
+describe('picoSwan resolution', () => {
+  it('applies defaults when picoSwan is omitted', () => {
+    const result = resolveOptions({ xrMode: 'pico-swan' });
+    expect(result.picoSwan.swanRuntimeProject).toBeNull();
+    expect(result.picoSwan.swanSdkArtifact).toBeNull();
+    expect(result.picoSwan.declareSpatialContainerCategory).toBe(true);
+    expect(result.picoSwan.swanMinSdkVersion).toBe(33);
+    expect(result.picoSwan.scaffoldSwanSourceSet).toBe(false);
+  });
+
+  it('preserves user-provided picoSwan fields', () => {
+    const result = resolveOptions({
+      xrMode: 'pico-swan',
+      picoSwan: {
+        swanRuntimeProject: { name: 'pico_swan_runtime', path: '../swan' },
+        swanSdkArtifact: 'com.pvr.swan:pvr-swan-runtime:0.1.0',
+        scaffoldSwanSourceSet: true,
+      },
+    });
+    expect(result.picoSwan.swanRuntimeProject).toEqual({
+      name: 'pico_swan_runtime',
+      path: '../swan',
+    });
+    expect(result.picoSwan.swanSdkArtifact).toBe('com.pvr.swan:pvr-swan-runtime:0.1.0');
+    expect(result.picoSwan.scaffoldSwanSourceSet).toBe(true);
+  });
+});

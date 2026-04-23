@@ -6,25 +6,30 @@ import { withPicoAndroidManifest } from './withPicoAndroidManifest';
 import { withPicoAppBuildGradle, withPicoProjectBuildGradle } from './withPicoGradle';
 import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
+import { withPicoMainApplication } from './withPicoMainApplication';
+import { withPicoNewArchCheck } from './withPicoNewArchCheck';
+import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
+import { withPicoSwan } from './withPicoSwan';
 
 /**
  * Main config plugin entrypoint for expo-pico-core.
  *
- * Orchestrates all Android project mutations required for PICO OS 6 support.
- * Each sub-plugin is responsible for a single concern and is idempotent.
+ * Orchestrates all Android project mutations required for PICO OS 6 / Swan
+ * support. Each sub-plugin is responsible for a single concern and is
+ * idempotent.
  *
- * Plugin execution order matters:
- * 1. Gradle properties first (consumed by Gradle files)
- * 2. Project-level Gradle (Maven repo for PICO SDK)
- * 3. App-level Gradle (flavors, BuildConfig)
- * 4. Strings (resource values)
- * 5. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
- *
- * The order ensures that:
- * - Gradle properties are available before Gradle files read them
- * - Flavor directories exist before manifest files are written into them
- * - No circular dependencies between mutation steps
+ * Execution order:
+ *   1. New-arch soft check (warning-only; never throws)
+ *   2. Gradle properties (consumed by Gradle files)
+ *   3. Project-level Gradle (PICO Maven repo)
+ *   4. App-level Gradle (flavors / missingDimensionStrategy + BuildConfig)
+ *   5. settings.gradle (Swan subproject inclusion, opt-in for xrMode='pico-swan')
+ *   6. Swan composite (Swan-only Gradle deps + optional source set)
+ *   7. strings.xml
+ *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
+ *   9. MainApplication injection (PicoCorePackage with xrMode platform)
+ *  10. local.properties (node binary path + optional PICO SDK paths)
  */
 const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) => {
   const options = resolveOptions(rawOptions ?? {});
@@ -33,27 +38,19 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
     return config;
   }
 
-  // 1. Gradle properties — consumed by native build.gradle files
+  config = withPicoNewArchCheck(config, options);
   config = withPicoGradleProperties(config, options);
-
-  // 2. Project-level build.gradle — PICO Maven repository
   config = withPicoProjectBuildGradle(config, options);
-
-  // 3. App-level build.gradle — product flavors / missingDimensionStrategy + BuildConfig fields
-  //    Always runs: when buildVariant='pico'/'dual', injects flavors; when 'mobile', injects
-  //    missingDimensionStrategy so the library's "device" flavor dimension resolves correctly.
   config = withPicoAppBuildGradle(config, options);
-
-  // 4. strings.xml — PICO string resources
+  config = withPicoSettingsGradle(config, options);
+  config = withPicoSwan(config, options);
   config = withPicoStrings(config, options);
 
-  // 5. PICO-flavor AndroidManifest.xml — only needed when flavors are injected
   if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
     config = withPicoAndroidManifest(config, options);
   }
 
-  // 6. local.properties + Gradle node-path patches — ensures Android Studio
-  //    can resolve `node` (nvm) and that PICO SDK/Editor paths are set.
+  config = withPicoMainApplication(config, options);
   config = withPicoLocalProperties(config, options);
 
   return config;

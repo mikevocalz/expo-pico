@@ -675,3 +675,149 @@ See `packages/expo-pico-core/README.md` for the full README, covering:
 - Limitations
 - Roadmap
 - License
+
+---
+
+## 15. PICO Swan OS support path (xrMode)
+
+### 15.1 Why a new `xrMode` axis
+
+`buildVariant` (`mobile` | `pico` | `dual`) and `targetProfile`
+(`pico4` | `pico4ultra` | `swan` | …) answer different questions:
+
+- `buildVariant` — **which Android artifacts are produced** (flavor source sets
+  and manifest merger inputs).
+- `targetProfile` — **which hardware family this build is aimed at** (a
+  runtime hint, exposed to JS, used for feature gating).
+
+Neither selects **which native XR runtime is registered at app boot**. That
+third axis is what a plugin like `@reactvision/react-viro` calls `xRMode`
+(`AR` | `GVR` | `OVR_MOBILE`) — it drives `MainApplication` package
+registration and the set of native subprojects linked into the APK.
+
+`expo-pico-core` adds this third axis as `xrMode` with three values:
+
+| `xrMode`     | MainApplication registration                        | When to use                                                                 |
+| ------------ | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| `mobile`     | none (Expo Module auto-registration only)           | Standard Android builds; `buildVariant='mobile'` default                    |
+| `pico-os6`   | `PicoCorePackage(PicoXRPlatform.PICO_OS6)`          | PICO 4 / 4 Ultra / Neo3 on PICO OS 6; `buildVariant='pico'` default         |
+| `pico-swan`  | `PicoCorePackage(PicoXRPlatform.PICO_SWAN)`         | Project Swan / next-gen spatial target; explicit opt-in                     |
+
+`xrMode` defaults to `pico-os6` when `buildVariant` is `pico` or `dual`, and
+to `mobile` when `buildVariant` is `mobile`.
+
+Reusing Meta's `OVR_MOBILE` enum for Swan would be wrong: (a) the name
+asserts an Oculus Mobile runtime that PICO Swan does not ship, (b) Quest
+VR manifest entries (`com.oculus.intent.category.VR`, `com.oculus.*`
+permissions, `oculus.software.*` features) are not valid on PICO OS, and
+(c) a single enum value cannot carry Swan-specific manifest meta-data
+(`com.pico.swan.spatialContainer`, `com.pico.swan.runtimeVersion`) or
+optional Swan Gradle-subproject inclusion.
+
+### 15.2 Plugin API additions
+
+```ts
+interface PicoPluginOptions {
+  // ... existing fields ...
+  xrMode?: 'mobile' | 'pico-os6' | 'pico-swan';
+  picoSwan?: PicoSwanPluginOptions;
+}
+
+interface PicoSwanPluginOptions {
+  swanRuntimeProject?: { name: string; path: string };
+  swanSdkArtifact?: string;
+  declareSpatialContainerCategory?: boolean; // default true
+  swanMinSdkVersion?: number;                 // default 33
+  scaffoldSwanSourceSet?: boolean;            // default false
+}
+```
+
+### 15.3 What each new plugin touches
+
+| File touched                                       | By                           | What is inserted / changed                                                                                      |
+| -------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `android/app/src/main/java/.../MainApplication.*` | `withPicoMainApplication`    | Adds `PicoCorePackage(PicoXRPlatform.<MODE>)` + the two imports. Marker-guarded idempotent.                     |
+| `android/settings.gradle`                          | `withPicoSettingsGradle`     | Adds `include ':<name>'` + `project(':<name>').projectDir = …` only when `picoSwan.swanRuntimeProject` is set.   |
+| `android/app/build.gradle`                         | `withPicoSwan`               | Adds an `implementation project(':…')` and/or `implementation '<artifact>'` dependencies block for Swan.        |
+| `android/app/src/picoSwan/java/.../PicoSwanBootstrap.kt` | `withPicoSwan`        | Scaffolds a minimal source-set file when `scaffoldSwanSourceSet: true`. Never overwrites.                        |
+| `android/app/src/pico/AndroidManifest.xml`         | `withPicoAndroidManifest`    | Always adds `<meta-data android:name="com.pico.xrMode" android:value="<MODE>"/>`; Swan-only extras when applicable. |
+| `android/gradle.properties`                        | `withPicoGradleProperties`   | Writes `picoXrMode=<MODE>` and `picoSwanEnabled=<true|false>`.                                                   |
+| `android/app/build.gradle` (BuildConfig)           | `withPicoGradle`             | Adds `buildConfigField "String", "PICO_XR_MODE", "<MODE>"`.                                                     |
+| `packages/expo-pico-core/android/build.gradle`     | (direct, not a plugin)       | Adds the same `PICO_XR_MODE` BuildConfig field so the library compiles.                                         |
+
+### 15.4 Native additions (Kotlin)
+
+| Class / file                                                  | Role                                                                          |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `expo.modules.pico.PicoXRPlatform`                            | Enum (`MOBILE`, `PICO_OS6`, `PICO_SWAN`) + `fromValue` / `fromBuildConfig`.   |
+| `expo.modules.pico.PicoCorePackage`                           | `ReactPackage` that dispatches to platform-specific runtime init in its ctor. |
+| `expo.modules.pico.swan.PicoSwanRuntime`                      | **Extension seam.** Documented no-op until a public Swan SDK ships.           |
+| `expo.modules.pico.os6.PicoOs6Runtime`                        | **Extension seam.** Placeholder for boot-time PICO OS 6 service registration. |
+
+### 15.5 What is intentionally NOT copied from Viro Quest support
+
+- **`OVR_MOBILE` enum value.** Replaced with a distinct `PICO_SWAN` value in a
+  PICO-owned `PicoXRPlatform` enum.
+- **Unconditional `settings.gradle` inclusion.** Viro's helper has no
+  idempotency check; re-prebuilds duplicate `include` lines. Our
+  `withPicoSettingsGradle` is marker-guarded and opt-in.
+- **Oculus-specific manifest categories.** None of
+  `com.oculus.intent.category.VR`, `com.oculus.supportedDevices`,
+  `com.oculus.permission.USE_ANCHOR_API`, `com.oculus.permission.USE_SCENE`,
+  or `oculus.software.handtracking` are valid on PICO OS and none are
+  emitted by this plugin. PICO-equivalent entries live under
+  `com.pico.*` / `pico.hardware.*` / `pico.software.*` namespaces.
+- **Per-mode package accumulation.** Viro registers one `ReactViroPackage`
+  per active `xRMode` entry. PICO Swan and PICO OS 6 are mutually exclusive
+  at boot; the plugin registers exactly one `PicoCorePackage`.
+- **Gradle classpath overrides.** Viro rewrites
+  `com.android.tools.build:gradle:4.1.1` in the root build.gradle. The
+  Expo SDK 55 toolchain already ships the right AGP; we do not force a
+  downgrade.
+- **Forced `minSdkVersion` floor across the project.** The Swan floor (33)
+  is applied only to the `pico` flavor when `xrMode === 'pico-swan'`.
+
+### 15.6 Extension seams
+
+The following are deliberately left as seams to keep Swan support
+extensible without overbuilding today:
+
+1. `PicoSwanRuntime.initialize(context)` — body is a no-op until the
+   PICO Spatial / Swan SDK is publicly available. Replace with real
+   binding calls then; no plugin changes needed.
+2. `picoSwan.swanSdkArtifact` + `picoSwan.swanRuntimeProject` — both are
+   null by default. Sibling plugins do not have to react to them.
+3. `PicoCorePackage.createViewManagers()` — currently empty. When a
+   Swan-native view (e.g., `<PicoSpatialContainer>`) arrives, it is added
+   here for `PICO_SWAN` only, not for `PICO_OS6`.
+4. `expo.modules.pico.swan` / `expo.modules.pico.os6` subpackages — keep
+   platform-specific Kotlin in its own package so deletion or branching
+   later is purely additive.
+5. `picoSwanEnabled` Gradle property — sibling plugins can gate their own
+   Swan-only mutations on this flag without needing to parse plugin
+   options.
+
+### 15.7 What can and cannot be tested without a device
+
+**Testable now (covered by the Jest suite):**
+
+- `resolveOptions` defaults, overrides, and the xrMode/minSdk interaction.
+- `insertLinesAfter`, `insertImportAfterPackage`, `removeBlock` helpers.
+- `withPicoMainApplication` Kotlin + Java injection, idempotency, and
+  toggling between PICO_OS6 and PICO_SWAN registration.
+- `withPicoSettingsGradle` no-op cases, include/projectDir writing,
+  idempotency, and path-update-in-place.
+- `withPicoSwan` dependency block writing and in-place artifact updates.
+- `xrModeToNativeEnum` mapping.
+
+**Requires a PICO device / emulator (deferred):**
+
+- `PicoCorePackage` actually being registered by a booted
+  `MainApplication` (requires assembling the `picoDebug` APK).
+- `PicoSwanRuntime.isInitialized()` flipping to `true` after boot on a
+  Swan device.
+- Manifest meta-data (`com.pico.xrMode`, `com.pico.swan.spatialContainer`)
+  reaching the merged manifest — best checked via
+  `aapt dump badging` on the assembled APK.
+- Anything that depends on a real PICO Swan SDK binary (currently an
+  extension seam, so it is correct that we cannot prove its behavior).

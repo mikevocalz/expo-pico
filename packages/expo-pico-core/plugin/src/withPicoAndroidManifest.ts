@@ -12,6 +12,7 @@ import {
   DEVICE_TARGET_MAP,
   TARGET_PROFILE_MAP,
   PICO_PROHIBITED_PERMISSIONS,
+  XR_MODE_MANIFEST_VALUE,
 } from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
@@ -146,6 +147,42 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
   application['meta-data'].push({
     $: { 'android:name': MANIFEST_META.TARGET_PROFILE, 'android:value': TARGET_PROFILE_MAP[effectiveProfile] ?? effectiveProfile },
   });
+
+  // Always write xrMode so PICO OS launchers / entitlement checks can read it
+  // without instantiating the app. Mirrors BuildConfig.PICO_XR_MODE.
+  application['meta-data'].push({
+    $: {
+      'android:name': MANIFEST_META.XR_MODE,
+      'android:value': XR_MODE_MANIFEST_VALUE[options.xrMode] ?? options.xrMode,
+    },
+  });
+
+  if (options.xrMode === 'pico-swan') {
+    if (options.picoSwan.declareSpatialContainerCategory) {
+      application['meta-data'].push({
+        $: {
+          'android:name': MANIFEST_META.SWAN_SPATIAL_CONTAINER,
+          'android:value': options.defaultContainerMode === 'none'
+            ? 'window-container'
+            : options.defaultContainerMode,
+        },
+      });
+    }
+    if (options.picoSwan.swanSdkArtifact) {
+      // Encode the artifact version into the manifest as a debug aid
+      // (PICO support tooling typically inspects manifest meta to know
+      // which Swan runtime an APK was built against).
+      const versionFragment = options.picoSwan.swanSdkArtifact.split(':').pop() ?? '';
+      if (versionFragment) {
+        application['meta-data'].push({
+          $: {
+            'android:name': MANIFEST_META.SWAN_RUNTIME_VERSION,
+            'android:value': versionFragment,
+          },
+        });
+      }
+    }
+  }
 
   if (options.entitlementCheck) {
     application['meta-data'].push({

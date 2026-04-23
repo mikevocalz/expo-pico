@@ -20,6 +20,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         picoAppId: process.env.PICO_APP_ID ?? '',
         buildVariant: 'pico',
+        xrMode: (process.env.PICO_XR_MODE ?? 'pico-swan') as
+          | 'mobile'
+          | 'pico-os6'
+          | 'pico-swan',
+        picoSwan: {
+          // swanRuntimeProject: {
+          //   name: 'pico_swan_runtime',
+          //   path: '../node_modules/@pico/swan-runtime-android/android',
+          // },
+          // swanSdkArtifact: 'com.pvr.swan:pvr-swan-runtime:0.1.0',
+          declareSpatialContainerCategory: true,
+          scaffoldSwanSourceSet: false,
+        },
         targetProfile: 'auto',
         targetDevices: ['pico-4', 'pico-4-ultra', 'swan'],
         spatialMode: 'shared-space',
@@ -30,7 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
-        minSdkVersion: 32,
         targetSdkVersion: 34,
       },
     ],

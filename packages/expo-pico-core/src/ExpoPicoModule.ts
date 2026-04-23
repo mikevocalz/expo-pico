@@ -6,10 +6,13 @@ declare class ExpoPicoModule extends NativeModule {
   spatialMode: string;
   targetProfile: string;
   containerMode: string;
+  xrMode: string;
   picoAppId: string | null;
   picoOsVersion: string | null;
   deviceModel: string | null;
   emulatorOptimizations: boolean;
+  swanRuntimeInitialized: boolean;
+  os6RuntimeInitialized: boolean;
 }
 
 export default requireNativeModule<ExpoPicoModule>('ExpoPico');

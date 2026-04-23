@@ -26,8 +26,11 @@ export const withPicoGradleProperties: ConfigPlugin<ResolvedPicoOptions> = (conf
     upsertProperty(props, 'picoSpatialMode', options.spatialMode);
     upsertProperty(props, 'picoTargetProfile', effectiveProfile);
     upsertProperty(props, 'picoContainerMode', options.defaultContainerMode);
+    upsertProperty(props, 'picoXrMode', options.xrMode);
     upsertProperty(props, 'picoEmulatorOptimizations', String(options.enableEmulatorOptimizations));
     upsertProperty(props, 'picoBuildEnabled', 'true');
+    // Sibling plugins gate Swan-specific mutations on this flag.
+    upsertProperty(props, 'picoSwanEnabled', String(options.xrMode === 'pico-swan'));
 
     return config;
   });

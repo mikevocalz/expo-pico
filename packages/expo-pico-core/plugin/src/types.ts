@@ -13,6 +13,28 @@ export interface PicoPluginOptions {
    */
   buildVariant?: 'mobile' | 'pico' | 'dual';
   /**
+   * Native XR runtime mode that drives MainApplication package registration
+   * and platform-specific subproject wiring. Orthogonal to {@link targetProfile}:
+   * `targetProfile` is a runtime hardware family hint, while `xrMode` selects
+   * which native runtime is registered at boot.
+   *
+   * - 'mobile': No PICO runtime registration. The PicoCorePackage is still
+   *   registered but in a no-op MOBILE platform mode.
+   * - 'pico-os6': Standard PICO OS 6 runtime registration. Default for
+   *   `buildVariant: 'pico'` and `'dual'`.
+   * - 'pico-swan': Project Swan / next-gen spatial runtime. Adds Swan-only
+   *   manifest meta-data, an optional Swan SDK Maven dependency, an optional
+   *   Swan runtime Gradle subproject inclusion via settings.gradle, and
+   *   constructs PicoCorePackage with PicoXRPlatform.PICO_SWAN at boot.
+   *
+   * @default 'pico-os6' when buildVariant is 'pico' or 'dual', otherwise 'mobile'
+   */
+  xrMode?: PicoXRMode;
+  /**
+   * Swan-mode-specific options. Only consulted when {@link xrMode} === `'pico-swan'`.
+   */
+  picoSwan?: PicoSwanPluginOptions;
+  /**
    * Target hardware profile.
    * - 'auto': Detect from targetDevices (default)
    * - 'legacy': PICO Neo3 / pre-OS6 devices
@@ -60,6 +82,65 @@ export interface PicoPluginOptions {
   targetSdkVersion?: number;
 }
 
+/**
+ * Swan-mode-specific plugin options. None of these are required — every
+ * field is an extension seam for the public PICO Swan / Spatial SDK once
+ * its surface stabilizes.
+ */
+export interface PicoSwanPluginOptions {
+  /**
+   * Optional Swan runtime Gradle subproject path, relative to the consuming
+   * app's `android/` directory. When provided, the plugin appends an
+   * `include`/`projectDir` pair to `settings.gradle` and an
+   * `implementation project(':<name>')` line to `app/build.gradle`.
+   *
+   * Example: `'../node_modules/@pico/swan-runtime-android/android'`.
+   *
+   * Leave undefined when no local Swan SDK subproject is available — the
+   * plugin still wires manifest meta-data and native package registration.
+   */
+  swanRuntimeProject?: {
+    /** Gradle module name without the leading colon, e.g. `'pico_swan_runtime'`. */
+    name: string;
+    /** Filesystem path to the subproject, relative to `android/`. */
+    path: string;
+  };
+  /**
+   * Optional Swan SDK Maven coordinates injected into `app/build.gradle`'s
+   * dependency block. The PICO Maven repo is already injected by the core
+   * plugin. No-op when undefined.
+   *
+   * Example: `'com.pvr.swan:pvr-swan-runtime:0.1.0'`.
+   */
+  swanSdkArtifact?: string;
+  /**
+   * Whether to declare the Swan spatial-container category on the launcher
+   * activity via the PICO-flavor manifest. Currently writes a meta-data
+   * tag `com.pico.swan.spatialContainer` for the launcher activity's parent
+   * application — the actual category name will be finalized when PICO ships
+   * the public Swan launcher contract.
+   * @default true when xrMode === 'pico-swan'
+   */
+  declareSpatialContainerCategory?: boolean;
+  /**
+   * Override min SDK for the pico flavor when targeting Swan. Swan
+   * historically requires API 33+; this lifts the default 32 floor when
+   * `xrMode === 'pico-swan'`.
+   * @default 33
+   */
+  swanMinSdkVersion?: number;
+  /**
+   * When true, scaffolds a `picoSwan` Kotlin source set under
+   * `android/app/src/picoSwan/` populated with a single `PicoSwanBootstrap.kt`
+   * file. Useful when the consuming app wants to add Swan-only Kotlin
+   * without polluting the shared `pico` flavor.
+   * @default false
+   */
+  scaffoldSwanSourceSet?: boolean;
+}
+
+export type PicoXRMode = 'mobile' | 'pico-os6' | 'pico-swan';
+
 export type PicoDeviceTarget = 'pico-4' | 'pico-4-ultra' | 'neo3' | 'swan';
 
 export type PicoSpatialMode =
@@ -71,10 +152,20 @@ export type PicoSpatialMode =
 
 export type PicoTargetProfile = 'auto' | 'legacy' | 'pico4' | 'pico4ultra' | 'swan';
 
+export interface ResolvedPicoSwanOptions {
+  swanRuntimeProject: { name: string; path: string } | null;
+  swanSdkArtifact: string | null;
+  declareSpatialContainerCategory: boolean;
+  swanMinSdkVersion: number;
+  scaffoldSwanSourceSet: boolean;
+}
+
 export interface ResolvedPicoOptions {
   enabled: boolean;
   picoAppId: string;
   buildVariant: 'mobile' | 'pico' | 'dual';
+  xrMode: PicoXRMode;
+  picoSwan: ResolvedPicoSwanOptions;
   targetProfile: PicoTargetProfile;
   targetDevices: PicoDeviceTarget[];
   spatialMode: PicoSpatialMode;
@@ -89,10 +180,20 @@ export interface ResolvedPicoOptions {
   targetSdkVersion: number;
 }
 
+export const PICO_SWAN_DEFAULTS: ResolvedPicoSwanOptions = {
+  swanRuntimeProject: null,
+  swanSdkArtifact: null,
+  declareSpatialContainerCategory: true,
+  swanMinSdkVersion: 33,
+  scaffoldSwanSourceSet: false,
+};
+
 export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   enabled: true,
   picoAppId: '',
   buildVariant: 'pico',
+  xrMode: 'pico-os6',
+  picoSwan: PICO_SWAN_DEFAULTS,
   targetProfile: 'auto',
   targetDevices: [],
   spatialMode: '2d',
@@ -108,23 +209,72 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
 };
 
 export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOptions {
+  const buildVariant = options.buildVariant ?? PICO_OPTION_DEFAULTS.buildVariant;
+  const defaultXrMode: PicoXRMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os6';
+
+  const swan: ResolvedPicoSwanOptions = {
+    ...PICO_SWAN_DEFAULTS,
+    ...(options.picoSwan ?? {}),
+    swanRuntimeProject:
+      options.picoSwan?.swanRuntimeProject !== undefined
+        ? options.picoSwan.swanRuntimeProject ?? null
+        : PICO_SWAN_DEFAULTS.swanRuntimeProject,
+    swanSdkArtifact:
+      options.picoSwan?.swanSdkArtifact !== undefined
+        ? options.picoSwan.swanSdkArtifact ?? null
+        : PICO_SWAN_DEFAULTS.swanSdkArtifact,
+  };
+
+  const xrMode = options.xrMode ?? defaultXrMode;
+
+  // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
+  // documented requirement unless the user explicitly overrides it.
+  const minSdkVersion =
+    options.minSdkVersion ??
+    (xrMode === 'pico-swan' ? swan.swanMinSdkVersion : PICO_OPTION_DEFAULTS.minSdkVersion);
+
   return {
     ...PICO_OPTION_DEFAULTS,
     ...options,
+    buildVariant,
+    xrMode,
+    picoSwan: swan,
+    minSdkVersion,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
   };
 }
 
 /**
  * Resolve the effective target profile from options.
- * When 'auto', infer from targetDevices.
+ * When 'auto', infer from targetDevices, then from xrMode.
  */
-export function resolveTargetProfile(options: ResolvedPicoOptions): Exclude<PicoTargetProfile, 'auto'> {
-  if (options.targetProfile !== 'auto') return options.targetProfile as Exclude<PicoTargetProfile, 'auto'>;
+export function resolveTargetProfile(
+  options: ResolvedPicoOptions
+): Exclude<PicoTargetProfile, 'auto'> {
+  if (options.targetProfile !== 'auto') {
+    return options.targetProfile as Exclude<PicoTargetProfile, 'auto'>;
+  }
   const devices = options.targetDevices;
   if (devices.includes('swan')) return 'swan';
   if (devices.includes('pico-4-ultra')) return 'pico4ultra';
   if (devices.includes('pico-4')) return 'pico4';
   if (devices.includes('neo3')) return 'legacy';
-  return 'pico4'; // sensible default when no devices specified
+  // When no devices are listed, fall back to xrMode-derived guess.
+  if (options.xrMode === 'pico-swan') return 'swan';
+  return 'pico4';
+}
+
+/**
+ * Map the plugin-facing xrMode string to the native PicoXRPlatform enum
+ * value rendered into MainApplication and BuildConfig.
+ */
+export function xrModeToNativeEnum(mode: PicoXRMode): 'MOBILE' | 'PICO_OS6' | 'PICO_SWAN' {
+  switch (mode) {
+    case 'mobile':
+      return 'MOBILE';
+    case 'pico-os6':
+      return 'PICO_OS6';
+    case 'pico-swan':
+      return 'PICO_SWAN';
+  }
 }

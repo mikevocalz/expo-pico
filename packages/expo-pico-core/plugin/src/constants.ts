@@ -10,9 +10,33 @@ export const MANIFEST_META = {
   SPATIAL_MODE: 'com.pico.spatial.mode',
   CONTAINER_MODE: 'com.pico.spatial.containerMode',
   TARGET_PROFILE: 'com.pico.targetProfile',
+  XR_MODE: 'com.pico.xrMode',
   ENTITLEMENT_CHECK: 'pvr.app.entitlement.check',
   DEVELOPER_TOOLS: 'com.pico.developerTools',
+  SWAN_SPATIAL_CONTAINER: 'com.pico.swan.spatialContainer',
+  SWAN_RUNTIME_VERSION: 'com.pico.swan.runtimeVersion',
 } as const;
+
+/**
+ * Plugin-facing xrMode string → manifest meta-data value rendered into
+ * `com.pico.xrMode`. The native PicoXRPlatform enum reads this at boot via
+ * BuildConfig.PICO_XR_MODE; the manifest copy lets PICO OS launchers and
+ * entitlement checks inspect it without instantiating the app.
+ */
+export const XR_MODE_MANIFEST_VALUE: Record<string, string> = {
+  mobile: 'mobile',
+  'pico-os6': 'pico-os6',
+  'pico-swan': 'pico-swan',
+} as const;
+
+/**
+ * Marker used by the MainApplication mod for idempotent insertion. When
+ * present in the file the mod is a no-op. The value is part of the
+ * inserted block so dedupe works on a re-run with the same xrMode.
+ */
+export const PICO_MAIN_APP_MARKER = '// expo-pico-core: PicoCorePackage registration';
+export const PICO_MAIN_APP_IMPORT_MARKER = '// expo-pico-core: PicoCorePackage import';
+export const PICO_SETTINGS_MARKER = '// expo-pico-core: pico subprojects';
 
 export const PICO_FEATURES = {
   HAND_TRACKING: 'pico.hardware.handtracking',

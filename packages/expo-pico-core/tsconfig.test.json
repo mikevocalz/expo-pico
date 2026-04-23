@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": ".",
-    "types": ["jest"],
+    "types": ["jest", "node"],
     "typeRoots": ["../../node_modules/@types"]
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts", "src/__tests__/**/*.ts"],

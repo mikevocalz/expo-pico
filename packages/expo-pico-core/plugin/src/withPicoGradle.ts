@@ -102,12 +102,14 @@ def picoAppIdValue = "\\"${options.picoAppId ?? ''}\\""
 def picoSpatialModeValue = "\\"${options.spatialMode}\\""
 def picoTargetProfileValue = "\\"${effectiveProfile}\\""
 def picoContainerModeValue = "\\"${options.defaultContainerMode}\\""
+def picoXrModeValue = "\\"${options.xrMode}\\""
 
 android.defaultConfig {
     buildConfigField "String", "PICO_APP_ID", picoAppIdValue
     buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeValue
     buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileValue
     buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeValue
+    buildConfigField "String", "PICO_XR_MODE", picoXrModeValue
     buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", "${emulatorFlag}"
 }
 `;

@@ -11,6 +11,7 @@ def picoAppIdConfigField = "\"${project.findProperty('picoAppId') ?: ''}\""
 def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
 def picoTargetProfileConfigField = "\"${project.findProperty('picoTargetProfile') ?: ''}\""
 def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
+def picoXrModeConfigField = "\"${project.findProperty('picoXrMode') ?: 'mobile'}\""
 def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
 
 android {
@@ -22,6 +23,7 @@ android {
         buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
         buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileConfigField
         buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
+        buildConfigField "String", "PICO_XR_MODE", picoXrModeConfigField
         buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", picoEmulatorOptimizationsConfigField
     }
     lint {
