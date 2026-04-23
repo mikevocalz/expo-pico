@@ -13,7 +13,7 @@ Expo-native package family for **PICO OS 6** and **Project Swan** XR devices.
 
 Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@react-three/fiber/native`, `@babylonjs/react-native`, Unity-as-a-Library, and anything else that uses the system OpenXR loader.
 
-**New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes.
+**New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes. Common questions live in [docs/FAQ.md](./docs/FAQ.md).
 
 ## Packages
 
@@ -95,6 +95,8 @@ Ships with `expo-pico-core`. See [ARCHITECTURE §21](./ARCHITECTURE.md#21-expo-p
 
 ## Shipping
 
+- [docs/QUICKSTART.md](./docs/QUICKSTART.md) — zero-to-running in 5 minutes.
+- [docs/FAQ.md](./docs/FAQ.md) — why Expo, why Android-only, how this differs from Viro, Babylon compat, release versioning.
 - [docs/EAS.md](./docs/EAS.md) — EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
 - [docs/PRODUCTION-READINESS.md](./docs/PRODUCTION-READINESS.md) — single-page pre-ship checklist covering plugin config, identity, manifest contract, toolchain, diagnostics, and submission.
 

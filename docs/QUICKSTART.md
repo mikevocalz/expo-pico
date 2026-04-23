@@ -232,4 +232,4 @@ When you're ready to submit to the PICO Store:
 | Doctor says `identity.missing` but env vars are set locally.                         | `app.config.ts` reads from `process.env` but vars weren't loaded.         | Use a `.env` file + `expo-dotenv`, or prefix the command: `PICO_PLATFORM_APP_ID=xyz npx expo prebuild`.       |
 | Prebuild hangs on first run.                                                         | Gradle downloading dependencies over slow network.                        | Wait. Subsequent runs use the warm cache.                                                                    |
 
-Still stuck? Open an issue: https://github.com/mikevocalz/expo-pico/issues
+Still stuck? Check [FAQ.md](./FAQ.md) for common questions, or open an issue: https://github.com/mikevocalz/expo-pico/issues
