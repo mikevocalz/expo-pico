@@ -1168,3 +1168,106 @@ an app in dev with no credentials degrades cleanly instead of crashing.
 | Unrelated string / activity entries preserved                                            | Jest                                                                 |
 | Merged manifest actually carries the two activities                                      | Requires `npx expo prebuild --clean` + `aapt dump xmltree` on the APK (deferred). |
 | Platform SDK actually authenticates / transacts                                          | Requires real PICO developer-console credentials + device (deferred).|
+
+---
+
+## 18. Hardware capability declarations (Phase C)
+
+### 18.1 Why this is separate from §15–§17
+
+The three prior phases cover:
+
+- §15: which native runtime boots (`xrMode` → `PicoCorePackage`).
+- §16: how the launcher enumerates the APK (`appType` → `pvr.app.type`).
+- §17: how the Platform SDK identifies the app (`platformService` → strings + activities).
+
+None of those answer **what hardware features the device must or may have**. Phase C is the hardware capability declaration layer: a flat set of booleans (plus one array) that emit `uses-feature`, `uses-permission`, and `<meta-data>` entries into the PICO-flavor manifest.
+
+### 18.2 New plugin options
+
+```ts
+interface PicoPluginOptions {
+  // ... §15–§17 fields ...
+  eyeTracking?: boolean;              // default false
+  faceTracking?: boolean;             // default false
+  bodyTracking?: boolean;             // default false  (seam — key unconfirmed)
+  spatialAudio?: boolean;             // default false  (seam — key unconfirmed)
+  foveatedRendering?: boolean;        // default false  (seam — key unconfirmed)
+  highSamplingRateSensors?: boolean;  // default false  (AOSP permission — confirmed)
+  refreshRates?: number[];            // default []     (seam — meta-data key unconfirmed)
+}
+```
+
+Every capability is opt-in. Nothing is emitted unless the consumer sets the field. PICO store reviewers historically flag APKs that declare hardware capabilities they do not use, so the defaults are deliberately empty.
+
+### 18.3 What each capability emits
+
+Implemented in `packages/expo-pico-core/plugin/src/withPicoCapabilities.ts`
+as the pure function `applyCapabilityContract(manifest, options)`. Called from `withPicoAndroidManifest` after `applyPlatformServiceContract`.
+
+| Option                    | `uses-feature` (required=false)         | `uses-permission`                                 | `<meta-data>`                              |
+| ------------------------- | --------------------------------------- | ------------------------------------------------- | ------------------------------------------ |
+| `eyeTracking`             | `pico.hardware.eyetracking`             | `com.picovr.permission.EYE_TRACKING`              | —                                          |
+| `faceTracking`            | `pico.hardware.facetracking`            | `com.picovr.permission.FACE_TRACKING`             | —                                          |
+| `bodyTracking`            | `pico.hardware.bodytracking` *(seam)*   | `com.picovr.permission.BODY_TRACKING` *(seam)*   | —                                          |
+| `spatialAudio`            | `pico.hardware.spatialaudio` *(seam)*   | —                                                 | —                                          |
+| `foveatedRendering`       | `pico.hardware.foveation` *(seam)*      | —                                                 | `com.pico.foveation.enabled=true` *(seam)* |
+| `highSamplingRateSensors` | —                                       | `android.permission.HIGH_SAMPLING_RATE_SENSORS`   | —                                          |
+| `refreshRates: [72,90]`   | —                                       | —                                                 | `com.pico.refreshRates="72,90"` *(seam)*   |
+
+All `uses-feature` entries are emitted with `android:required="false"`. This matches how the existing `handTracking` / `passthrough` features are declared in §15 and ensures a device that lacks the capability (e.g. a PICO 4 without eye-tracking) still installs the APK. Consumers gate runtime usage via `context.getPackageManager().hasSystemFeature("pico.hardware.eyetracking")`.
+
+### 18.4 Why some keys are marked *(seam)*
+
+The audit report (summarized in §15.5 of the prior doc work) found that several of these key names are not confirmed in open PICO developer documentation — the PICO developer portal pages that would document them are JavaScript-rendered and only returned navigation skeletons to WebFetch. The best-known keys are used (following the `pico.hardware.*` pattern for features and the `com.picovr.permission.*` pattern for permissions), and each constant carries an inline comment flagging the uncertainty.
+
+Rationale for shipping seam keys anyway:
+
+1. Declarations PICO OS does not recognize are silently ignored — there is no install-time penalty for a mis-named feature.
+2. When PICO publishes the canonical names, a single constants-file patch updates them without touching consumer `app.config.ts`.
+3. Keeping the options in the plugin's public surface today means consumers can begin wiring their app.config for these capabilities now and get automatic correctness when the constants are confirmed.
+
+### 18.5 Resolver semantics
+
+`resolveOptions` performs two pieces of input hygiene on `refreshRates`:
+
+1. Filters out non-finite and non-positive entries. `refreshRates: [72, 0, -90, NaN, 120]` → `[72, 120]`.
+2. Rounds fractional rates to the nearest integer. `refreshRates: [72.5, 120.2]` → `[73, 120]`.
+
+Both steps are defensive — PICO OS almost certainly parses the meta-data as integers, and a fractional or negative Hz value would either be ignored or interpreted incorrectly. Filtering in the resolver keeps that complexity out of the manifest writer and out of tests that consume the resolver's output.
+
+### 18.6 Idempotency and toggle-off cleanup
+
+Each capability's manifest entries are keyed by `android:name` and upserted in place on repeat apply. Toggling a capability off between prebuilds **removes** its entries — eye-tracking permission does not linger after the consumer drops `eyeTracking: true` from their config.
+
+The one exception is `<uses-permission>` entries that carry `tools:node="remove"`: the telephony / SMS permission-strip entries written by `buildPicoManifest` are preserved across capability toggles. Without that carve-out, turning off a capability could accidentally re-enable phone permissions — a subtle regression.
+
+### 18.7 What Phase C does NOT cover
+
+- **Runtime native bindings.** The eye-tracking provider, face-tracker callbacks, refresh-rate setter, and spatial-audio mixer remain extension seams in `PicoOs6Runtime` / sibling packages. Phase C only declares that the app *may* use the capability; actually calling into the corresponding PICO SDK surface is a native-binding task.
+- **Feature-grouped permission bundles.** For example, PICO Motion Tracker body-tracking likely requires one or more companion permissions (`BODY_TRACKING_ACCEL`, etc.). Phase C emits the single best-known permission; multi-permission feature bundles are a refinement for when the canonical list is published.
+- **Device-class gating.** If `eyeTracking: true` is set on a consumer config that also targets PICO Neo3 (a device without eye-tracking hardware), the plugin does not warn. The `android:required="false"` attribute already makes the APK installable on Neo3; runtime code is expected to branch on `hasSystemFeature`. Adding plugin-side validation is a larger scope project since it requires consulting `targetDevices` and maintaining a device-capability matrix.
+- **Runtime JS API for capability introspection.** The Android convention is `PackageManager.hasSystemFeature()`. Adding a `getDeclaredCapabilities()` JS helper would be a thin wrapper over that — deferred until a concrete consumer needs it. BuildConfig fields for these flags are also deliberately omitted to keep the compile-time surface minimal.
+
+### 18.8 Risks and mitigations
+
+| Risk                                                                                                 | Mitigation                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A seam key diverges from the eventual canonical name, producing a manifest entry the OS ignores.    | Each seam emits its entry with `required="false"`. A mis-named feature is a no-op rather than an install failure. Constants update in a minor plugin bump.      |
+| Consumer enables `eyeTracking` without checking `hasSystemFeature` at runtime and crashes on a PICO 4. | `android:required="false"` means install succeeds; the app must check at runtime. Documented in §18.3 and in the `eyeTracking` JSDoc comment.                  |
+| PICO review flags over-declared features.                                                            | All capabilities default to `false`. Consumers opt in per capability.                                                                                           |
+| Refresh-rate meta-data format is `min-max` rather than `csv` on a future PICO OS release.            | Single meta-data entry, easy to change the renderer without touching option shape. Consumers continue passing `number[]`; the plugin owns the serialization.    |
+
+### 18.9 Validation matrix
+
+| Validation                                                            | When                                                                  |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Each capability emits exactly the expected feature / permission / meta | Jest (`__tests__/withPicoCapabilities.test.ts`, 17 cases)             |
+| `uses-feature` entries all carry `required="false"`                   | Jest                                                                  |
+| Refresh-rate filtering and rounding                                   | Jest                                                                  |
+| Idempotency across three consecutive applies                          | Jest                                                                  |
+| Toggling a capability off removes its entries                         | Jest                                                                  |
+| `tools:node="remove"` telephony entries preserved when toggling off   | Jest                                                                  |
+| Combined capability fan-out (all enabled simultaneously)              | Jest                                                                  |
+| Merged manifest actually carries the entries after prebuild           | Requires `npx expo prebuild --clean` + `aapt dump xmltree` (deferred) |
+| Runtime behavior on real PICO 4 Pro hardware                          | Requires device with eye / face tracking (deferred)                   |

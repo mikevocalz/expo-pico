@@ -16,6 +16,7 @@ import {
 } from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
+import { applyCapabilityContract } from './withPicoCapabilities';
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
 
@@ -39,6 +40,11 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // Phase B Platform SDK contract: UnityAuthInterface + PicoSDKBrowser
       // activities. Gated on platformService.hasIdentity && declareActivities.
       applyPlatformServiceContract(manifest, options);
+      // Phase C hardware capabilities: eye/face/body tracking features +
+      // permissions, spatial-audio + foveation features, refresh-rate
+      // meta-data. Each capability is independently gated; all writes
+      // are idempotent and toggling off cleans up the entry.
+      applyCapabilityContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
 
       // If dual variant, also write a dual/ source set manifest

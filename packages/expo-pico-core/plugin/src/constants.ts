@@ -32,6 +32,20 @@ export const MANIFEST_META = {
   DEVELOPER_TOOLS: 'com.pico.developerTools',
   SWAN_SPATIAL_CONTAINER: 'com.pico.swan.spatialContainer',
   SWAN_RUNTIME_VERSION: 'com.pico.swan.runtimeVersion',
+  /**
+   * Supported display refresh rates in Hz, comma-separated. Read by
+   * the PICO OS compositor at boot to decide which refresh-rate target
+   * to offer the app. EXTENSION SEAM — the exact meta-data key is not
+   * confirmed in open PICO docs. Best-known key; emitted only when the
+   * consumer explicitly populates `refreshRates`.
+   */
+  REFRESH_RATES: 'com.pico.refreshRates',
+  /**
+   * Foveated rendering opt-in. Value is `"true"` when enabled.
+   * EXTENSION SEAM — key name unconfirmed. Emitted only when the
+   * consumer explicitly enables `foveatedRendering`.
+   */
+  FOVEATION_ENABLED: 'com.pico.foveation.enabled',
 } as const;
 
 /**
@@ -105,6 +119,61 @@ export const PICO_FEATURES = {
   SCENE_UNDERSTANDING: 'pico.software.scene',
   VR_HEADTRACKING: 'android.hardware.vr.headtracking',
   SPATIAL_ANCHOR: 'pico.software.spatialanchor',
+  /**
+   * PICO 4 Pro / 4 Ultra / Enterprise eye-tracking hardware feature.
+   * Follows the `pico.hardware.*` naming pattern used by the
+   * hand-tracking and passthrough declarations confirmed in the PICO
+   * sample manifests.
+   */
+  EYE_TRACKING: 'pico.hardware.eyetracking',
+  /**
+   * PICO 4 Pro / Enterprise face-tracking hardware feature (upper +
+   * lower face). Confirmed in PICO Unity face-tracking docs; Android
+   * feature key follows the `pico.hardware.*` pattern.
+   */
+  FACE_TRACKING: 'pico.hardware.facetracking',
+  /**
+   * PICO Motion Tracker body-tracking feature. EXTENSION SEAM — the
+   * feature key is not confirmed in open PICO docs as of this writing.
+   * When PICO publishes the canonical name, update this constant.
+   */
+  BODY_TRACKING: 'pico.hardware.bodytracking',
+  /**
+   * PICO spatial audio hardware feature. EXTENSION SEAM — referenced in
+   * the PICO developer nav but the feature key is gated behind a JS-
+   * rendered doc page. Best-known name pending confirmation.
+   */
+  SPATIAL_AUDIO: 'pico.hardware.spatialaudio',
+  /**
+   * PICO foveated rendering hardware feature. EXTENSION SEAM — key name
+   * unconfirmed. Follows the `pico.hardware.*` pattern.
+   */
+  FOVEATION: 'pico.hardware.foveation',
+} as const;
+
+/**
+ * PICO / Android permission strings relevant to hardware capabilities.
+ * Split from `PICO_PROHIBITED_PERMISSIONS` (which lists permissions this
+ * plugin *removes*) because these are permissions this plugin *adds*
+ * when the corresponding capability option is enabled.
+ */
+export const PICO_PERMISSIONS = {
+  /** Confirmed in PICO Unity Eye Tracking docs and the crx PICO wiki. */
+  EYE_TRACKING: 'com.picovr.permission.EYE_TRACKING',
+  /** Confirmed via the same sources as EYE_TRACKING. */
+  FACE_TRACKING: 'com.picovr.permission.FACE_TRACKING',
+  /**
+   * EXTENSION SEAM — key name unconfirmed in open docs. Best-known
+   * naming pattern. Usable today because permissions declared but not
+   * recognized by PICO OS are silently ignored.
+   */
+  BODY_TRACKING: 'com.picovr.permission.BODY_TRACKING',
+  /**
+   * Standard AOSP permission. Required for any app that needs IMU /
+   * accelerometer / gyroscope sampling above 200 Hz — typical for
+   * immersive head-tracked VR.
+   */
+  HIGH_SAMPLING_RATE_SENSORS: 'android.permission.HIGH_SAMPLING_RATE_SENSORS',
 } as const;
 
 export const DEVICE_TARGET_MAP: Record<string, string> = {

@@ -111,6 +111,67 @@ export interface PicoPluginOptions {
   sceneUnderstanding?: boolean;
   entitlementCheck?: boolean;
   /**
+   * Declare eye-tracking hardware support. Emits
+   * `uses-feature pico.hardware.eyetracking` and the matching
+   * `com.picovr.permission.EYE_TRACKING` permission. Devices without
+   * eye-tracking hardware continue to install because the feature is
+   * declared `android:required="false"`.
+   * @default false
+   */
+  eyeTracking?: boolean;
+  /**
+   * Declare face-tracking hardware support (upper + lower face).
+   * Emits `uses-feature pico.hardware.facetracking` and the matching
+   * `com.picovr.permission.FACE_TRACKING` permission.
+   * @default false
+   */
+  faceTracking?: boolean;
+  /**
+   * Declare PICO Motion Tracker body-tracking support.
+   * EXTENSION SEAM — both the feature key
+   * (`pico.hardware.bodytracking`) and the permission
+   * (`com.picovr.permission.BODY_TRACKING`) are best-known names that
+   * are not yet confirmed in open PICO docs. Turning this on emits
+   * both, which is a conservative no-op on PICO OS versions that do
+   * not recognize them.
+   * @default false
+   */
+  bodyTracking?: boolean;
+  /**
+   * Declare PICO spatial audio support.
+   * EXTENSION SEAM — feature key (`pico.hardware.spatialaudio`) is
+   * inferred from PICO developer nav; exact name pending
+   * confirmation.
+   * @default false
+   */
+  spatialAudio?: boolean;
+  /**
+   * Opt into PICO foveated rendering. Emits
+   * `<meta-data android:name="com.pico.foveation.enabled" android:value="true"/>`
+   * plus the `pico.hardware.foveation` uses-feature.
+   * EXTENSION SEAM — both keys are best-known names pending doc
+   * confirmation.
+   * @default false
+   */
+  foveatedRendering?: boolean;
+  /**
+   * Request `android.permission.HIGH_SAMPLING_RATE_SENSORS`. Required
+   * for any app that needs IMU / accelerometer / gyroscope sampling
+   * above 200 Hz. Typical for head-tracked VR. Standard AOSP
+   * permission — confirmed.
+   * @default false
+   */
+  highSamplingRateSensors?: boolean;
+  /**
+   * Declare the display refresh rates (Hz) the app supports. Emits a
+   * comma-separated `<meta-data android:name="com.pico.refreshRates"
+   * android:value="72,90,120"/>` when non-empty.
+   * EXTENSION SEAM — the meta-data key name is not confirmed in open
+   * PICO docs. Empty array = no declaration emitted.
+   * @default []
+   */
+  refreshRates?: number[];
+  /**
    * Enable PICO developer tools overlay (OS 6 dev builds only).
    * @default false
    */
@@ -290,6 +351,13 @@ export interface ResolvedPicoOptions {
   passthrough: boolean;
   sceneUnderstanding: boolean;
   entitlementCheck: boolean;
+  eyeTracking: boolean;
+  faceTracking: boolean;
+  bodyTracking: boolean;
+  spatialAudio: boolean;
+  foveatedRendering: boolean;
+  highSamplingRateSensors: boolean;
+  refreshRates: number[];
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
@@ -342,6 +410,13 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   passthrough: false,
   sceneUnderstanding: false,
   entitlementCheck: false,
+  eyeTracking: false,
+  faceTracking: false,
+  bodyTracking: false,
+  spatialAudio: false,
+  foveatedRendering: false,
+  highSamplingRateSensors: false,
+  refreshRates: [],
   developerTools: false,
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,
@@ -394,6 +469,12 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     platformService,
     minSdkVersion,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
+    // Copy refreshRates to avoid mutating user input, and filter out
+    // non-positive / non-finite entries that would produce invalid
+    // meta-data values.
+    refreshRates: (options.refreshRates ?? PICO_OPTION_DEFAULTS.refreshRates)
+      .filter((hz) => Number.isFinite(hz) && hz > 0)
+      .map((hz) => Math.round(hz)),
   };
 }
 

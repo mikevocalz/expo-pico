@@ -60,6 +60,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         handTracking: true,
         passthrough: true,
         sceneUnderstanding: false,
+        // Phase C — hardware capabilities. Each toggle emits a
+        // uses-feature (required=false so non-capable devices still
+        // install) plus the matching permission where applicable.
+        // Leave these off unless the app actually uses the hardware —
+        // PICO reviewers may flag over-declared features.
+        eyeTracking: false,
+        faceTracking: false,
+        bodyTracking: false,
+        spatialAudio: false,
+        foveatedRendering: false,
+        highSamplingRateSensors: true, // Head-tracked VR typically needs 500+Hz IMU sampling.
+        refreshRates: [72, 90], // Declare the rates the renderer supports.
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
