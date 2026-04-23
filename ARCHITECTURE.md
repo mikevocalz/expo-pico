@@ -1002,3 +1002,169 @@ Phase B and the Section 15 Swan runtime stubs will fill in.
 | `<queries>` does not clobber unrelated existing queries                    | Jest                       |
 | Merged AndroidManifest contains the expected `pvr.app.type` and categories | Requires `npx expo prebuild --clean` + `aapt dump badging` on the assembled APK (deferred — needs Android toolchain). |
 | PICO launcher actually enumerates the APK as immersive                     | Requires a PICO OS 6 device or the Project Swan emulator (deferred). |
+
+---
+
+## 17. Platform SDK identity (Phase B)
+
+### 17.1 Why this is separate from §15 and §16
+
+Section 15 added the native runtime registration (`xrMode` →
+`PicoCorePackage`). Section 16 added the launcher enumeration contract
+(`appType` → `pvr.app.type` + immersive categories + `<queries>`).
+Neither provides what the PICO Platform SDK (`CoreService.Initialize` /
+`PlatformInitializer`) needs to authenticate the user, launch in-app
+purchases, query leaderboards, or bind to PICO identity.
+
+That set of resources — string IDs, keys, and two auxiliary activities —
+is Phase B. Splitting it from §16 keeps the launcher contract review
+lean (reviewers should not have to think about IAP merchant IDs to
+approve immersive enumeration) and lets Phase B land after a consumer
+has obtained real PICO developer console credentials.
+
+### 17.2 New plugin API surface
+
+```ts
+interface PicoPluginOptions {
+  // ... §15 / §16 fields ...
+  platformService?: PicoPlatformServicePluginOptions;
+}
+
+interface PicoPlatformServicePluginOptions {
+  picoAppId?: string;
+  picoAppKey?: string;
+  picoMerchantId?: string;   // IAP
+  picoPayKey?: string;       // IAP
+  foreign?: {
+    picoAppId?: string;
+    picoAppKey?: string;
+    picoMerchantId?: string;
+    picoPayKey?: string;
+  };
+  declareActivities?: boolean;   // default: true when any identity is set
+}
+```
+
+All fields are optional. Behavior by population:
+
+| Provided                                                  | Effect                                                                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Nothing                                                   | Phase B is a total no-op. Legacy `picoAppId` (top-level field) continues to work unchanged.                 |
+| `picoAppId` + `picoAppKey`                                | Core identity. Writes `pico_app_id` / `pico_app_key` strings; declares the two login/browser activities.    |
+| `picoMerchantId` + `picoPayKey`                           | Adds IAP identity. Writes `pico_merchant_id` / `pico_pay_key`. `hasIapIdentity` flips true.                 |
+| `foreign.*`                                               | Writes the `_foreign` sibling resources. The CN and Global SDK variants read whichever set matches them.    |
+| `declareActivities: false`                                | Suppresses the activity declarations even when identity is present. Use when the consumer ships their own.  |
+
+Legacy compatibility: the top-level `picoAppId` option remains supported
+and is now just sugar for `platformService.picoAppId`. When both are
+provided, `platformService.picoAppId` wins — this matches the common
+refactor pattern of moving scattered config into a dedicated sub-object.
+
+Trimming: whitespace-only values are normalized to `null`, so
+`picoAppId: '   '` does not flip `hasIdentity` to true.
+
+### 17.3 Resource mutation plan
+
+`withPicoStrings` (existing file, extended):
+
+| Resource                    | Emitted when                                                 |
+| --------------------------- | ------------------------------------------------------------ |
+| `pico_app_id`               | Always (falls back to `''` when unset).                      |
+| `pico_spatial_mode`         | Always (unchanged from §15).                                 |
+| `pico_app_key`              | `platformService.picoAppKey` set.                            |
+| `pico_app_id_foreign`       | `platformService.foreign.picoAppId` set.                     |
+| `pico_app_key_foreign`      | `platformService.foreign.picoAppKey` set.                    |
+| `pico_merchant_id`          | `platformService.picoMerchantId` set.                        |
+| `pico_pay_key`              | `platformService.picoPayKey` set.                            |
+| `pico_merchant_id_foreign`  | `platformService.foreign.picoMerchantId` set.                |
+| `pico_pay_key_foreign`      | `platformService.foreign.picoPayKey` set.                    |
+
+Upsert semantics: entries are updated in place across re-prebuilds.
+Entries that had a value and are subsequently unset are **removed**, so a
+refactor that drops a field doesn't leave a stale resource behind.
+
+`applyPlatformServiceContract` (new file,
+`plugin/src/withPicoPlatformService.ts`), invoked immediately after
+`applyLauncherContract` in the flavor manifest writer:
+
+| `<activity>`                                      | Attributes written                                                                                                                                 |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `com.pico.loginpaysdk.UnityAuthInterface`         | `android:exported="false"`, `tools:node="merge"` — the PICO Platform SDK launches this activity internally for OAuth / identity-token exchange.  |
+| `com.pico.loginpaysdk.component.PicoSDKBrowser`   | `android:exported="false"`, `tools:node="merge"` — in-app browser used by the auth and payment flows.                                              |
+
+Both are upserted by `android:name` so re-applying doesn't duplicate.
+Both are removed when `hasIdentity` goes from true to false between
+prebuilds — this makes toggling the identity off a clean operation.
+
+### 17.4 BuildConfig and gradle.properties
+
+BuildConfig fields (added in this phase):
+
+- `PICO_APP_KEY` (String) — mirrors `pico_app_key` at compile time; used
+  by native code that wants to short-circuit on empty key without
+  round-tripping through `R.string`.
+- `PICO_APP_TYPE` (String) — mirrors the `appType` option so native code
+  can branch on `vr` / `mr` / `2d` without parsing the manifest.
+- `PICO_HAS_PLATFORM_IDENTITY` (boolean) — derived flag; true iff at
+  least one identity field is populated.
+- `PICO_HAS_IAP_IDENTITY` (boolean) — derived; true iff both merchant ID
+  and pay key are populated (in either region).
+
+Gradle properties (mirrors of the BuildConfig flags):
+`picoAppKey`, `picoAppType`, `picoPlatformIdentityEnabled`,
+`picoIapIdentityEnabled`. Sibling config plugins gate their own
+identity-dependent mutations on these.
+
+### 17.5 Runtime JS surface
+
+```ts
+export function getAppType(): 'vr' | 'mr' | '2d';
+export function hasPlatformIdentity(): boolean;
+export function hasIapIdentity(): boolean;
+
+interface PicoRuntimeInfo {
+  // ... existing ...
+  appType: PicoAppType;
+  picoAppKey: string | null;
+  hasPlatformIdentity: boolean;
+  hasIapIdentity: boolean;
+}
+```
+
+`expo-pico-account` and `expo-pico-iap` are expected to short-circuit on
+`hasPlatformIdentity()` / `hasIapIdentity()` before any native init, so
+an app in dev with no credentials degrades cleanly instead of crashing.
+
+### 17.6 What Phase B intentionally does NOT cover
+
+- **Real `CoreService.Initialize` native bindings.** `PicoOs6Runtime`
+  remains a documented seam. When PICO ships stable Kotlin bindings for
+  the Platform SDK, the seam's body is replaced with a real call that
+  reads `R.string.pico_app_id` and `R.string.pico_app_key`. No plugin
+  change is required at that point.
+- **Hardware capability options** (eye / face / body tracking, spatial
+  audio, foveation, refresh rates). That is Phase C.
+- **Sibling package API surfaces** (expo-pico-account / -iap / -rtc /
+  etc.). Those remain stubs, but the gating flags they need
+  (`hasPlatformIdentity`, `hasIapIdentity`) are now available.
+
+### 17.7 Risks and mitigations
+
+| Risk                                                                                         | Mitigation                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Consumer checks `picoAppId` / `picoAppKey` into version control.                             | Example app.config reads from env vars. Docs call this out as the expected pattern. The plugin does not emit warnings — the consumer owns that policy.                                                             |
+| Consumer provides only one half of an identity pair (e.g. `picoAppId` but no `picoAppKey`). | `hasIdentity` still flips true (because *any* field is set) so the activities land and the consumer sees a clear "auth failed" error at runtime rather than a silent no-op. `hasIapIdentity` correctly stays false until both halves are present. |
+| `com.pico.loginpaysdk.UnityAuthInterface` class name may change in a future SDK revision.    | The names are exposed as constants (`PLATFORM_SERVICE_ACTIVITIES.AUTH`, `.BROWSER`). A minor plugin bump can rename them without touching consumer config.                                                         |
+| PICO SDK region-selection mechanism is not fully documented.                                 | The `foreign` sub-object is an additive seam. Consumers who only ship one region simply omit it. When the region-selection rule is documented, the resolver can be updated to honor it without a breaking change. |
+
+### 17.8 Validation matrix
+
+| Validation                                                                              | When                                                                 |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `resolveOptions` platform-service derivations (`hasIdentity`, `hasIapIdentity`, trimming) | Jest (`__tests__/withPicoPlatformService.test.ts` + resolveOptions suite) |
+| `applyPlatformServiceContract` activity shape + attributes                               | Jest                                                                 |
+| Activities removed on identity toggle-off                                                | Jest                                                                 |
+| `withPicoStrings` emits + cleans up CN/Global + IAP resources                            | Jest (`__tests__/withPicoStrings.test.ts`, 14 cases)                |
+| Unrelated string / activity entries preserved                                            | Jest                                                                 |
+| Merged manifest actually carries the two activities                                      | Requires `npx expo prebuild --clean` + `aapt dump xmltree` on the APK (deferred). |
+| Platform SDK actually authenticates / transacts                                          | Requires real PICO developer-console credentials + device (deferred).|

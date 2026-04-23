@@ -8,10 +8,14 @@ expoModule {
 }
 
 def picoAppIdConfigField = "\"${project.findProperty('picoAppId') ?: ''}\""
+def picoAppKeyConfigField = "\"${project.findProperty('picoAppKey') ?: ''}\""
 def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
 def picoTargetProfileConfigField = "\"${project.findProperty('picoTargetProfile') ?: ''}\""
 def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
 def picoXrModeConfigField = "\"${project.findProperty('picoXrMode') ?: 'mobile'}\""
+def picoAppTypeConfigField = "\"${project.findProperty('picoAppType') ?: '2d'}\""
+def picoHasPlatformIdentityConfigField = "${project.findProperty('picoPlatformIdentityEnabled') ?: 'false'}"
+def picoHasIapIdentityConfigField = "${project.findProperty('picoIapIdentityEnabled') ?: 'false'}"
 def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
 
 android {
@@ -20,10 +24,14 @@ android {
         versionCode 1
         versionName "0.1.0"
         buildConfigField "String", "PICO_APP_ID", picoAppIdConfigField
+        buildConfigField "String", "PICO_APP_KEY", picoAppKeyConfigField
         buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
         buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileConfigField
         buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
         buildConfigField "String", "PICO_XR_MODE", picoXrModeConfigField
+        buildConfigField "String", "PICO_APP_TYPE", picoAppTypeConfigField
+        buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityConfigField
+        buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityConfigField
         buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", picoEmulatorOptimizationsConfigField
     }
     lint {

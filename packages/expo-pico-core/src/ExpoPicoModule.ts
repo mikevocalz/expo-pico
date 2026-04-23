@@ -7,7 +7,11 @@ declare class ExpoPicoModule extends NativeModule {
   targetProfile: string;
   containerMode: string;
   xrMode: string;
+  appType: string;
   picoAppId: string | null;
+  picoAppKey: string | null;
+  hasPlatformIdentity: boolean;
+  hasIapIdentity: boolean;
   picoOsVersion: string | null;
   deviceModel: string | null;
   emulatorOptimizations: boolean;

@@ -53,6 +53,31 @@ export interface PicoPluginOptions {
    */
   appType?: PicoAppType;
   /**
+   * PICO Platform Service SDK identity. Written to `strings.xml` (for
+   * `CoreService.Initialize` / `PlatformInitializer`), mirrored into
+   * BuildConfig, and — when at least `picoAppId` is present — two
+   * login/payment activities are declared in the PICO-flavor manifest
+   * (`com.pico.loginpaysdk.UnityAuthInterface`,
+   * `…component.PicoSDKBrowser`) so the Platform SDK auth and payment
+   * flows bind correctly.
+   *
+   * All fields are optional. Provide only what your app uses:
+   *   - `account`, `leaderboards`, `achievements`, `rooms`, `rtc`,
+   *     `storage`, `social`: require `picoAppId` + `picoAppKey`.
+   *   - `iap`: additionally requires `picoMerchantId` + `picoPayKey`.
+   *
+   * Regions. PICO ships two SDK variants: CN and Global. Consumers
+   * targeting both regions publish two APKs but share the same source
+   * tree; the `_foreign` string resources carry the Global-variant IDs
+   * while the un-suffixed resources carry the CN-variant IDs (or
+   * vice-versa — the SDK reads whichever set matches its bundled region).
+   * Leave `platformService.foreign` undefined for single-region apps.
+   *
+   * Source: PICO Platform Service SDK integration docs (legacy Native SDK
+   * Ch. 7 for IAP; Unity `CoreService` reference for account surface).
+   */
+  platformService?: PicoPlatformServicePluginOptions;
+  /**
    * Target hardware profile.
    * - 'auto': Detect from targetDevices (default)
    * - 'legacy': PICO Neo3 / pre-OS6 devices
@@ -105,6 +130,44 @@ export interface PicoPluginOptions {
  * field is an extension seam for the public PICO Swan / Spatial SDK once
  * its surface stabilizes.
  */
+/**
+ * PICO Platform Service identity. All fields optional; each controls a
+ * specific subset of the resources written by the plugin.
+ */
+export interface PicoPlatformServicePluginOptions {
+  /** PICO Platform app ID (modern key; `pico_app_id` string resource). */
+  picoAppId?: string;
+  /** PICO Platform app key (paired with {@link picoAppId}). */
+  picoAppKey?: string;
+  /** IAP merchant ID (legacy payment SDK; `pico_merchant_id`). */
+  picoMerchantId?: string;
+  /** IAP payment key (`pico_pay_key`). */
+  picoPayKey?: string;
+  /**
+   * Optional second region's identity. When set, the plugin also writes
+   * `pico_app_id_foreign`, `pico_app_key_foreign`,
+   * `pico_merchant_id_foreign`, `pico_pay_key_foreign` resources. PICO
+   * SDK variants read the right set based on which region binary they
+   * ship with.
+   */
+  foreign?: {
+    picoAppId?: string;
+    picoAppKey?: string;
+    picoMerchantId?: string;
+    picoPayKey?: string;
+  };
+  /**
+   * Whether to declare `com.pico.loginpaysdk.UnityAuthInterface` and
+   * `com.pico.loginpaysdk.component.PicoSDKBrowser` activities in the
+   * PICO-flavor manifest. Required for the Platform SDK auth and
+   * payment flows to launch their in-app browsers. No-op when neither
+   * `picoAppId` nor `picoAppKey` is set — nothing to authenticate
+   * against.
+   * @default true when any platformService field is provided
+   */
+  declareActivities?: boolean;
+}
+
 export interface PicoSwanPluginOptions {
   /**
    * Optional Swan runtime Gradle subproject path, relative to the consuming
@@ -185,6 +248,24 @@ export type PicoSpatialMode =
 
 export type PicoTargetProfile = 'auto' | 'legacy' | 'pico4' | 'pico4ultra' | 'swan';
 
+export interface ResolvedPicoPlatformServiceOptions {
+  picoAppId: string | null;
+  picoAppKey: string | null;
+  picoMerchantId: string | null;
+  picoPayKey: string | null;
+  foreign: {
+    picoAppId: string | null;
+    picoAppKey: string | null;
+    picoMerchantId: string | null;
+    picoPayKey: string | null;
+  };
+  declareActivities: boolean;
+  /** Derived: true iff at least one identity field is non-null. */
+  hasIdentity: boolean;
+  /** Derived: true iff both `picoMerchantId` and `picoPayKey` are non-null. */
+  hasIapIdentity: boolean;
+}
+
 export interface ResolvedPicoSwanOptions {
   swanRuntimeProject: { name: string; path: string } | null;
   swanSdkArtifact: string | null;
@@ -200,6 +281,7 @@ export interface ResolvedPicoOptions {
   xrMode: PicoXRMode;
   picoSwan: ResolvedPicoSwanOptions;
   appType: PicoAppType;
+  platformService: ResolvedPicoPlatformServiceOptions;
   targetProfile: PicoTargetProfile;
   targetDevices: PicoDeviceTarget[];
   spatialMode: PicoSpatialMode;
@@ -213,6 +295,28 @@ export interface ResolvedPicoOptions {
   minSdkVersion: number;
   targetSdkVersion: number;
 }
+
+/**
+ * Default resolved platform-service state for an app with no identity
+ * wired. `declareActivities` is `false` here because the resolver
+ * activates it only when `hasIdentity` is true (no point declaring
+ * login/browser activities for an app that cannot authenticate).
+ */
+export const PICO_PLATFORM_SERVICE_DEFAULTS: ResolvedPicoPlatformServiceOptions = {
+  picoAppId: null,
+  picoAppKey: null,
+  picoMerchantId: null,
+  picoPayKey: null,
+  foreign: {
+    picoAppId: null,
+    picoAppKey: null,
+    picoMerchantId: null,
+    picoPayKey: null,
+  },
+  declareActivities: false,
+  hasIdentity: false,
+  hasIapIdentity: false,
+};
 
 export const PICO_SWAN_DEFAULTS: ResolvedPicoSwanOptions = {
   swanRuntimeProject: null,
@@ -229,6 +333,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   xrMode: 'pico-os6',
   picoSwan: PICO_SWAN_DEFAULTS,
   appType: 'vr',
+  platformService: PICO_PLATFORM_SERVICE_DEFAULTS,
   targetProfile: 'auto',
   targetDevices: [],
   spatialMode: '2d',
@@ -268,6 +373,11 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   const appType: PicoAppType =
     options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
 
+  const platformService = resolvePlatformServiceOptions(
+    options.platformService,
+    /* legacyPicoAppId */ options.picoAppId
+  );
+
   // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
   // documented requirement unless the user explicitly overrides it.
   const minSdkVersion =
@@ -281,9 +391,69 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     xrMode,
     picoSwan: swan,
     appType,
+    platformService,
     minSdkVersion,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
   };
+}
+
+/**
+ * Resolve platform-service identity. Falls back to top-level `picoAppId`
+ * (the legacy field already in `PicoPluginOptions`) when
+ * `platformService.picoAppId` is not provided, so apps that only use the
+ * legacy surface keep working without changes.
+ */
+function resolvePlatformServiceOptions(
+  options: PicoPlatformServicePluginOptions | undefined,
+  legacyPicoAppId: string | undefined
+): ResolvedPicoPlatformServiceOptions {
+  const raw = options ?? {};
+  const foreignRaw = raw.foreign ?? {};
+
+  const picoAppId = nonEmpty(raw.picoAppId) ?? nonEmpty(legacyPicoAppId);
+  const picoAppKey = nonEmpty(raw.picoAppKey);
+  const picoMerchantId = nonEmpty(raw.picoMerchantId);
+  const picoPayKey = nonEmpty(raw.picoPayKey);
+
+  const foreign = {
+    picoAppId: nonEmpty(foreignRaw.picoAppId),
+    picoAppKey: nonEmpty(foreignRaw.picoAppKey),
+    picoMerchantId: nonEmpty(foreignRaw.picoMerchantId),
+    picoPayKey: nonEmpty(foreignRaw.picoPayKey),
+  };
+
+  const hasIdentity = Boolean(
+    picoAppId ||
+      picoAppKey ||
+      foreign.picoAppId ||
+      foreign.picoAppKey ||
+      picoMerchantId ||
+      picoPayKey ||
+      foreign.picoMerchantId ||
+      foreign.picoPayKey
+  );
+
+  const hasIapIdentity = Boolean(
+    (picoMerchantId && picoPayKey) ||
+      (foreign.picoMerchantId && foreign.picoPayKey)
+  );
+
+  return {
+    picoAppId,
+    picoAppKey,
+    picoMerchantId,
+    picoPayKey,
+    foreign,
+    declareActivities: raw.declareActivities ?? hasIdentity,
+    hasIdentity,
+    hasIapIdentity,
+  };
+}
+
+function nonEmpty(value: string | null | undefined): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 /**

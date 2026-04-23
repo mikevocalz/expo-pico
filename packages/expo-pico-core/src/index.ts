@@ -1,5 +1,6 @@
 import ExpoPicoModule from './ExpoPicoModule';
 import type {
+  PicoAppType,
   PicoRuntimeInfo,
   PicoSpatialMode,
   PicoTargetProfileRuntime,
@@ -7,6 +8,7 @@ import type {
 } from './types';
 
 export type {
+  PicoAppType,
   PicoRuntimeInfo,
   PicoSpatialMode,
   PicoTargetProfileRuntime,
@@ -51,6 +53,31 @@ export function isSwanRuntime(): boolean {
   return getXrMode() === 'pico-swan';
 }
 
+/** Returns the launcher contract app type (`vr` | `mr` | `2d`). */
+export function getAppType(): PicoAppType {
+  const t = ExpoPicoModule.appType;
+  if (t === 'vr' || t === 'mr') return t;
+  return '2d';
+}
+
+/**
+ * True when the Platform SDK has enough identity resources to attempt
+ * `CoreService.Initialize`. Sibling packages (expo-pico-account, etc.)
+ * use this to short-circuit early before calling native init.
+ */
+export function hasPlatformIdentity(): boolean {
+  return ExpoPicoModule.hasPlatformIdentity ?? false;
+}
+
+/**
+ * True when both an IAP merchant ID and pay key are present (in either
+ * region). `expo-pico-iap` uses this to gate the `getProducts` /
+ * `purchase` surface.
+ */
+export function hasIapIdentity(): boolean {
+  return ExpoPicoModule.hasIapIdentity ?? false;
+}
+
 export function getPicoRuntimeInfo(): PicoRuntimeInfo {
   return {
     isPicoBuild: isPicoBuild(),
@@ -63,7 +90,11 @@ export function getPicoRuntimeInfo(): PicoRuntimeInfo {
       return 'none';
     })(),
     xrMode: getXrMode(),
+    appType: getAppType(),
     picoAppId: ExpoPicoModule.picoAppId ?? null,
+    picoAppKey: ExpoPicoModule.picoAppKey ?? null,
+    hasPlatformIdentity: hasPlatformIdentity(),
+    hasIapIdentity: hasIapIdentity(),
     picoOsVersion: ExpoPicoModule.picoOsVersion ?? null,
     deviceModel: ExpoPicoModule.deviceModel ?? null,
     emulatorOptimizations: ExpoPicoModule.emulatorOptimizations ?? false,

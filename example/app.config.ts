@@ -30,6 +30,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // for passthrough-first MR apps, or '2d' to opt out of immersive
         // enumeration entirely.
         appType: 'vr',
+        // Phase B — Platform SDK identity. Populate from env so secrets
+        // don't land in source. Leave fields undefined to skip writing
+        // their string resources; the flavor manifest writer will then
+        // also skip declaring the login/browser activities.
+        platformService: {
+          picoAppId: process.env.PICO_PLATFORM_APP_ID,
+          picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
+          picoMerchantId: process.env.PICO_MERCHANT_ID,
+          picoPayKey: process.env.PICO_PAY_KEY,
+          foreign: {
+            picoAppId: process.env.PICO_PLATFORM_APP_ID_FOREIGN,
+            picoAppKey: process.env.PICO_PLATFORM_APP_KEY_FOREIGN,
+          },
+        },
         picoSwan: {
           // swanRuntimeProject: {
           //   name: 'pico_swan_runtime',

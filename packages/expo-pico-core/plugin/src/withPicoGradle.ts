@@ -98,18 +98,26 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
       const emulatorFlag = options.enableEmulatorOptimizations ? 'true' : 'false';
       const buildConfigBlock = `
 ${PICO_SDK_MARKER}
-def picoAppIdValue = "\\"${options.picoAppId ?? ''}\\""
+def picoAppIdValue = "\\"${options.platformService.picoAppId ?? options.picoAppId ?? ''}\\""
+def picoAppKeyValue = "\\"${options.platformService.picoAppKey ?? ''}\\""
 def picoSpatialModeValue = "\\"${options.spatialMode}\\""
 def picoTargetProfileValue = "\\"${effectiveProfile}\\""
 def picoContainerModeValue = "\\"${options.defaultContainerMode}\\""
 def picoXrModeValue = "\\"${options.xrMode}\\""
+def picoAppTypeValue = "\\"${options.appType}\\""
+def picoHasPlatformIdentityValue = "${options.platformService.hasIdentity}"
+def picoHasIapIdentityValue = "${options.platformService.hasIapIdentity}"
 
 android.defaultConfig {
     buildConfigField "String", "PICO_APP_ID", picoAppIdValue
+    buildConfigField "String", "PICO_APP_KEY", picoAppKeyValue
     buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeValue
     buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileValue
     buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeValue
     buildConfigField "String", "PICO_XR_MODE", picoXrModeValue
+    buildConfigField "String", "PICO_APP_TYPE", picoAppTypeValue
+    buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityValue
+    buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityValue
     buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", "${emulatorFlag}"
 }
 `;

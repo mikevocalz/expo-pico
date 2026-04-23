@@ -17,6 +17,7 @@ import {
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
 import { applyLauncherContract } from './withPicoLauncherActivity';
+import { applyPlatformServiceContract } from './withPicoPlatformService';
 
 export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   config = withDangerousMod(config, [
@@ -35,6 +36,9 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // categories on .MainActivity + <queries> for PICO system packages.
       // Mutates the manifest object in place; gated on resolved appType.
       applyLauncherContract(manifest, options);
+      // Phase B Platform SDK contract: UnityAuthInterface + PicoSDKBrowser
+      // activities. Gated on platformService.hasIdentity && declareActivities.
+      applyPlatformServiceContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
 
       // If dual variant, also write a dual/ source set manifest

@@ -22,15 +22,33 @@ export const withPicoGradleProperties: ConfigPlugin<ResolvedPicoOptions> = (conf
     const props = config.modResults;
     const effectiveProfile = resolveTargetProfile(options);
 
-    upsertProperty(props, 'picoAppId', options.picoAppId);
+    upsertProperty(
+      props,
+      'picoAppId',
+      options.platformService.picoAppId ?? options.picoAppId
+    );
+    upsertProperty(props, 'picoAppKey', options.platformService.picoAppKey ?? '');
     upsertProperty(props, 'picoSpatialMode', options.spatialMode);
     upsertProperty(props, 'picoTargetProfile', effectiveProfile);
     upsertProperty(props, 'picoContainerMode', options.defaultContainerMode);
     upsertProperty(props, 'picoXrMode', options.xrMode);
+    upsertProperty(props, 'picoAppType', options.appType);
     upsertProperty(props, 'picoEmulatorOptimizations', String(options.enableEmulatorOptimizations));
     upsertProperty(props, 'picoBuildEnabled', 'true');
     // Sibling plugins gate Swan-specific mutations on this flag.
     upsertProperty(props, 'picoSwanEnabled', String(options.xrMode === 'pico-swan'));
+    // Sibling plugins (expo-pico-account, expo-pico-iap) gate their own
+    // runtime init on these flags without having to parse plugin options.
+    upsertProperty(
+      props,
+      'picoPlatformIdentityEnabled',
+      String(options.platformService.hasIdentity)
+    );
+    upsertProperty(
+      props,
+      'picoIapIdentityEnabled',
+      String(options.platformService.hasIapIdentity)
+    );
 
     return config;
   });
