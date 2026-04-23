@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
+
+# Native build output from `expo prebuild`
+android/
+ios/
+
+# Environment files
+.env
+.env.local
+.env.*.local

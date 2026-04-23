@@ -1,0 +1,63 @@
+{
+  "name": "expo-pico-template",
+  "version": "0.1.0",
+  "description": "Expo app starter template preconfigured for PICO OS 6 / Project Swan. Consume via `npx create-expo-app --template expo-pico-template`.",
+  "main": "index.js",
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-template"
+  },
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-template",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "keywords": [
+    "expo",
+    "expo-template",
+    "pico",
+    "pico-os",
+    "pico-swan",
+    "xr",
+    "vr",
+    "template"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "android:pico": "expo run:android --variant picoDebug",
+    "android:mobile": "expo run:android --variant mobileDebug",
+    "prebuild": "expo prebuild --clean",
+    "doctor": "expo-pico-doctor --fail-on-warning"
+  },
+  "dependencies": {
+    "expo": "~55.0.9",
+    "expo-pico-core": "^1.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "19.2.0",
+    "react-native": "0.83.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@types/react": "~19.2.0",
+    "typescript": "~5.3.3"
+  },
+  "expo": {
+    "name": "PICO OS 6 / Swan",
+    "description": "Starter template preconfigured for PICO headsets via expo-pico-core. Ships with xrMode/appType/buildVariant wired, a runtime HUD, and a prebuild doctor script."
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "App.tsx",
+    "app.config.ts",
+    "babel.config.js",
+    "tsconfig.json",
+    "index.js",
+    ".gitignore"
+  ]
+}

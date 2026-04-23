@@ -36,6 +36,21 @@ Config plugins + Expo Modules that teach an Expo Android project how to build, i
 
 ## Quick start
 
+### Option 1 — scaffold from the template (fastest)
+
+Ships with `expo-pico-core` already wired, a runtime diagnostics HUD, and a pre-flight doctor script.
+
+```bash
+npx create-expo-app --template expo-pico-template my-pico-app
+cd my-pico-app
+yarn install
+npx expo-pico-doctor       # lint the config
+npx expo prebuild --clean  # generate android/
+npx expo run:android --variant picoDebug
+```
+
+### Option 2 — add to an existing Expo app
+
 ```bash
 yarn add expo-pico-core
 # (add siblings as needed)

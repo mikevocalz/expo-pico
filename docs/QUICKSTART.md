@@ -24,6 +24,18 @@ Deeper references once you're up and running:
 
 ## 1. Scaffold a new Expo app (30 seconds)
 
+Two paths — pick one.
+
+**Shortcut: use the PICO template.** Skips steps 2–3 entirely; `expo-pico-core` is already wired, `app.config.ts` is preconfigured, and `App.tsx` includes a live diagnostics HUD. Jump to step 4.
+
+```bash
+npx create-expo-app@latest --template expo-pico-template my-pico-app
+cd my-pico-app
+yarn install
+```
+
+**Or start from the default template** and install the plugin yourself (more flexibility if you're retrofitting an existing app):
+
 ```bash
 npx create-expo-app@latest my-pico-app --template default
 cd my-pico-app
