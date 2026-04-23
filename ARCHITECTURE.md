@@ -821,3 +821,184 @@ extensible without overbuilding today:
   `aapt dump badging` on the assembled APK.
 - Anything that depends on a real PICO Swan SDK binary (currently an
   extension seam, so it is correct that we cannot prove its behavior).
+
+---
+
+## 16. Launcher contract correctness (Phase A)
+
+### 16.1 Why this is separate from Section 15
+
+Section 15 added `xrMode` (which native runtime to register) and a set of
+PICO-flavored manifest meta-data (`com.pico.xrMode`,
+`com.pico.spatial.mode`, `com.pico.spatial.containerMode`,
+`com.pico.swan.spatialContainer`). Those keys are **runtime hints** —
+the PICO native runtime reads them once the app is launched.
+
+None of them are what the **PICO OS 6 launcher** reads to decide whether
+the APK should be enumerated as an immersive app. That decision is
+governed by a separate, narrower contract documented in the PICO OpenXR
+Mobile SDK (Ch. 4) and the Khronos OpenXR loader spec:
+
+1. `<meta-data android:name="pvr.app.type" android:value="vr|mr|2d"/>`
+   under `<application>`.
+2. The launcher activity must declare an intent-filter that contains
+   `android.intent.action.MAIN`, `android.intent.category.LAUNCHER`, plus
+   `org.khronos.openxr.intent.category.IMMERSIVE_HMD` and the PICO
+   launcher categories (`com.pico.intent.category.VR`, plus the legacy
+   `com.picovr.intent.category.VR`).
+3. A `<queries>` block listing the PICO system packages the immersive
+   app needs to bind to once `targetSdkVersion >= 30`
+   (`com.pico.os.systemui`, `com.pico.platform`).
+
+Without these, an APK with `xrMode: 'pico-swan'` would still build and
+boot, but the PICO launcher would either list it under "2D apps" or not
+list it at all. Phase A closes that gap.
+
+### 16.2 New plugin option
+
+```ts
+interface PicoPluginOptions {
+  // ... §15 fields ...
+  appType?: 'vr' | 'mr' | '2d';
+}
+```
+
+| `appType` | `pvr.app.type` value | Immersive launcher categories | `<queries>` block |
+| --------- | -------------------- | ----------------------------- | ----------------- |
+| `'vr'`    | `vr`                 | yes                           | yes               |
+| `'mr'`    | `mr`                 | yes                           | yes               |
+| `'2d'`    | (not emitted)        | no                            | no                |
+
+Default behavior:
+
+- `xrMode: 'mobile'` → `appType: '2d'`
+- `xrMode: 'pico-os6'` → `appType: 'vr'`
+- `xrMode: 'pico-swan'` → `appType: 'vr'` (set explicitly to `'mr'` for
+  passthrough-first MR experiences)
+
+Precedence and edge cases:
+
+- `appType` only takes effect when `buildVariant` produces a `pico` (or
+  `dual`) flavor — `withPicoAndroidManifest` is the plugin that owns the
+  flavor manifest, and the launcher contract rides on its writer. A
+  `buildVariant: 'mobile'` build with `appType: 'vr'` is a silent no-op:
+  no flavor manifest is written, so no immersive enumeration is offered.
+  This is intentional. It keeps mobile-only builds clean and avoids
+  hiding a mobile build behind an immersive launcher entry that has no
+  PICO native runtime backing it.
+- `appType: '2d'` with `xrMode: 'pico-os6'` is allowed and produces a
+  PICO-flavored APK that is *not* immersive-enumerated. Use it when you
+  want runtime hints to ship with the APK (so PICO OS knows the app was
+  built with PICO awareness) without the launcher exposing it as an XR
+  experience.
+- The `xrMode` precedence is unchanged from §15 — `appType` is purely
+  about launcher enumeration and never selects a native runtime.
+
+### 16.3 Manifest mutation plan
+
+Implemented in `packages/expo-pico-core/plugin/src/withPicoLauncherActivity.ts`
+as the pure function `applyLauncherContract(manifest, options)`. Called
+from `withPicoAndroidManifest` immediately before the flavor manifest is
+written, so both single-flavor (`pico`) and `dual` source-set manifests
+get the same contract.
+
+| Mutation                                                              | Idempotency strategy                                                                                                  |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `<meta-data android:name="pvr.app.type" .../>` (application scope)    | Upsert by `android:name`; updates value in place when `appType` toggles between `vr` and `mr`.                        |
+| `<activity android:name=".MainActivity" tools:node="merge">` injection | Created if absent; reused if a `.MainActivity` entry already exists (e.g. seeded by another plugin).                  |
+| `<intent-filter>` with MAIN + LAUNCHER + immersive categories          | Identified by the marker category `OPENXR_IMMERSIVE_HMD` (unique to this plugin); replaced wholesale on each apply.   |
+| `<queries><package .../></queries>` for `com.pico.os.systemui`, `com.pico.platform` | Append-by-name; existing query packages are preserved.                                                                |
+
+Why a separate intent-filter on `.MainActivity` rather than mutating the
+existing one: the Android manifest merger has no clean way to add a
+category to a *specific existing* intent-filter from a flavor manifest.
+The standard pattern (used by Meta's Quest manifests, Google ARCore, and
+PICO's own samples) is to declare a second intent-filter on the same
+activity that *also* carries MAIN+LAUNCHER plus the additional
+categories. Both intent-filters end up on the merged activity; the
+PICO/OpenXR launcher matches the one with its category, and the standard
+2D launcher matches the original. There is no observable downside.
+
+### 16.4 Treatment of provisional metadata (§15 keys)
+
+The provisional `com.pico.spatial.mode` and `com.pico.swan.spatialContainer`
+meta-data emitted in §15 are **runtime hints, not the launcher
+contract**. They remain emitted as-is for now because:
+
+- They are read by the PICO Spatial SDK at runtime, not by the launcher.
+- Removing them would break the §15 spatial mode plumbing without
+  delivering any launcher-contract benefit.
+- The constants file now carries an explicit comment on
+  `MANIFEST_META.SPATIAL_MODE` clarifying that it is **not** the launcher
+  contract, and pointing readers at this section.
+
+The two surfaces are orthogonal: a Phase B branch can later rename or
+remove the provisional spatial keys without touching the launcher
+contract Phase A established here.
+
+### 16.5 What Phase A intentionally does NOT cover
+
+Out of scope for this branch (deferred to later phases):
+
+- Platform SDK identity wiring: `pico_app_id` / `pico_app_key`
+  string resources, `pico_merchant_id` / `pico_pay_key` for IAP, the
+  `com.pico.loginpaysdk.UnityAuthInterface` and `…PicoSDKBrowser`
+  activity declarations. (Phase B.)
+- Hardware capability options: eye/face/body tracking permissions,
+  spatial audio feature, foveated rendering, refresh-rate selection.
+  (Phase C.)
+- Real native bindings for the PICO Spatial / Platform SDKs — those
+  remain extension seams (`PicoSwanRuntime`, `PicoOs6Runtime`).
+- Per-activity intent-filter rewrites in the **main** AndroidManifest.
+  Phase A only writes the flavor manifest, leaving the user's MainActivity
+  declaration in their main manifest untouched.
+
+### 16.6 OpenXR immersive enumeration (high-level)
+
+When PICO OS 6 boots, its launcher and the OpenXR loader walk the
+installed APK list and inspect each app's merged manifest:
+
+1. The launcher checks `<application>` for
+   `pvr.app.type=vr|mr` to decide whether the app belongs in the VR /
+   Spatial section of the launcher UI.
+2. The OpenXR loader (Khronos-compliant) scans every activity for an
+   intent-filter that contains both `android.intent.action.MAIN` and
+   `org.khronos.openxr.intent.category.IMMERSIVE_HMD`. Any match is
+   eligible to be launched as an OpenXR immersive session.
+3. The PICO launcher additionally requires
+   `com.pico.intent.category.VR` (or the legacy `com.picovr.…` form on
+   older OS releases) to surface the activity in the PICO Store /
+   Library. We declare both for compatibility across PICO OS releases.
+4. Once the user launches the app, PICO OS attempts to bind to system
+   services for entitlement, spatial container negotiation, and runtime
+   feature negotiation. The `<queries>` block declares the system
+   packages the binder will look up under Android 11+ package
+   visibility rules. Without those queries, the binders silently
+   succeed-with-null-result and the app falls back to a non-spatial
+   shell.
+
+Phase A provides the manifest contract for steps 1–3 and the
+`<queries>` block for step 4. Steps requiring app-side service binding
+(Platform SDK init, Swan runtime providers) are extension seams that
+Phase B and the Section 15 Swan runtime stubs will fill in.
+
+### 16.7 Risks and mitigations
+
+| Risk                                                                                                  | Mitigation                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User declares their own immersive intent-filter in their main manifest, leading to two filters with the same categories. | Manifest merger deduplicates categories by name within a single intent-filter, but cannot dedupe across filters. Two near-identical filters are harmless — both match the launcher query. Documented above. |
+| User's main MainActivity has a different `android:name` than `.MainActivity`.                          | Manifest merger matches activities by fully-qualified class name. Our `tools:node="merge"` on `.MainActivity` resolves via the `package` attribute on `<manifest>` root. If the user has renamed MainActivity, our addition becomes an orphan activity declaration that the launcher will not touch. Documented as a known limitation; no warnings emitted because detection requires reading the user's own AndroidManifest, which the flavor manifest writer does not have access to. |
+| Legacy `com.picovr.intent.category.VR` may be removed by a future PICO OS release.                     | Adding it costs nothing today and is harmless on newer releases. If/when PICO removes it, this constant can be deleted in a minor bump.                                                                     |
+| `<queries>` block may eventually need more packages as sibling SDKs come online.                       | The current list is intentionally minimal (system UI + platform service). Sibling config plugins (`expo-pico-iap`, `expo-pico-account`, …) can extend `<queries>` from their own plugins — they do not have to round-trip through core. |
+
+### 16.8 Validation matrix
+
+| Validation                                                                 | When                       |
+| -------------------------------------------------------------------------- | -------------------------- |
+| `applyLauncherContract` produces correct meta/intent-filter/queries shapes | Jest (`__tests__/withPicoLauncherActivity.test.ts`, 18 cases) |
+| Idempotency on repeat application                                          | Jest                       |
+| Toggling `appType` between `vr` and `mr` updates rather than duplicates    | Jest                       |
+| Pre-existing MainActivity intent-filters preserved                         | Jest                       |
+| `<queries>` does not clobber unrelated existing queries                    | Jest                       |
+| Merged AndroidManifest contains the expected `pvr.app.type` and categories | Requires `npx expo prebuild --clean` + `aapt dump badging` on the assembled APK (deferred — needs Android toolchain). |
+| PICO launcher actually enumerates the APK as immersive                     | Requires a PICO OS 6 device or the Project Swan emulator (deferred). |

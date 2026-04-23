@@ -24,6 +24,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           | 'mobile'
           | 'pico-os6'
           | 'pico-swan',
+        // Launcher contract app type. Drives `pvr.app.type` meta-data and
+        // immersive launcher activity categories (OpenXR IMMERSIVE_HMD +
+        // PICO VR). Defaults to 'vr' under any pico xrMode; set to 'mr'
+        // for passthrough-first MR apps, or '2d' to opt out of immersive
+        // enumeration entirely.
+        appType: 'vr',
         picoSwan: {
           // swanRuntimeProject: {
           //   name: 'pico_swan_runtime',

@@ -6,7 +6,24 @@ export const PICO_SPATIAL_SDK_VERSION = '1.0.0';
 
 export const MANIFEST_META = {
   PICO_APP_ID: 'pvr.app.id',
+  /**
+   * Launcher contract meta-data. Read by the PICO OS 6 launcher to decide
+   * how to enumerate the APK (immersive VR, mixed reality, or 2D fallback).
+   * Source: PICO OpenXR Mobile SDK, Chapter 4.
+   *   sdk.picovr.com/docs/OpenXRMobileSDKv2/en/chapter_four.html
+   * Lives at <application> scope.
+   */
+  PVR_APP_TYPE: 'pvr.app.type',
   SUPPORTED_DEVICES: 'com.pico.supportedDevices',
+  /**
+   * NOTE: Provisional / spatial-runtime metadata, NOT the launcher contract.
+   * The launcher contract for immersive enumeration is the combination of
+   * `pvr.app.type` (above) plus the OpenXR + PICO launcher-activity
+   * categories declared by withPicoLauncherActivity. Do not conflate the
+   * two: removing `com.pico.spatial.mode` would not affect immersive
+   * enumeration; removing `pvr.app.type` or the launcher categories
+   * would.
+   */
   SPATIAL_MODE: 'com.pico.spatial.mode',
   CONTAINER_MODE: 'com.pico.spatial.containerMode',
   TARGET_PROFILE: 'com.pico.targetProfile',
@@ -16,6 +33,50 @@ export const MANIFEST_META = {
   SWAN_SPATIAL_CONTAINER: 'com.pico.swan.spatialContainer',
   SWAN_RUNTIME_VERSION: 'com.pico.swan.runtimeVersion',
 } as const;
+
+/**
+ * Plugin-facing `appType` value → manifest meta-data value rendered into
+ * `pvr.app.type`. Confirmed values from PICO OpenXR Mobile SDK Ch. 4.
+ */
+export const APP_TYPE_MANIFEST_VALUE: Record<string, string> = {
+  vr: 'vr',
+  mr: 'mr',
+  '2d': '2d',
+} as const;
+
+/**
+ * Launcher activity intent-filter categories that flag an APK as an
+ * immersive HMD app to OpenXR loaders and the PICO OS launcher.
+ *
+ *   - IMMERSIVE_HMD is the Khronos-mandated category any OpenXR runtime
+ *     (PICO included) uses to enumerate immersive apps. Source:
+ *     khronos.org/openxr (loader spec).
+ *   - com.pico.intent.category.VR is the modern PICO launcher category.
+ *   - com.picovr.intent.category.VR is the legacy category retained for
+ *     PICO OS releases that pre-date the `com.pico` namespace migration.
+ *     Adding both is additive and harmless under manifest merging — the
+ *     launcher only needs to find one.
+ */
+export const LAUNCHER_CATEGORIES = {
+  OPENXR_IMMERSIVE_HMD: 'org.khronos.openxr.intent.category.IMMERSIVE_HMD',
+  PICO_VR: 'com.pico.intent.category.VR',
+  PICOVR_VR_LEGACY: 'com.picovr.intent.category.VR',
+} as const;
+
+/**
+ * PICO system packages an immersive app needs to query at runtime once
+ * `targetSdkVersion >= 30` (Android 11 package visibility). Listed in the
+ * `<queries>` block of the PICO-flavor manifest so binders to PICO OS
+ * services do not silently fail.
+ *
+ * Conservative list — only the packages an immersive app talks to at boot.
+ * Sibling packages (account, IAP, RTC) may add more queries via their own
+ * config plugins as their native SDKs are wired.
+ */
+export const PICO_QUERY_PACKAGES = [
+  'com.pico.os.systemui',
+  'com.pico.platform',
+] as const;
 
 /**
  * Plugin-facing xrMode string → manifest meta-data value rendered into

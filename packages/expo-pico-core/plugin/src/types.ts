@@ -35,6 +35,24 @@ export interface PicoPluginOptions {
    */
   picoSwan?: PicoSwanPluginOptions;
   /**
+   * Launcher contract app type. Drives the `pvr.app.type` meta-data and the
+   * set of launcher activity intent-filter categories injected for the PICO
+   * flavor. Orthogonal to `xrMode`: `xrMode` selects the native runtime,
+   * `appType` selects how the PICO launcher enumerates the APK.
+   *
+   * Default behavior:
+   *   - `xrMode: 'mobile'`        → `appType: '2d'`
+   *   - `xrMode: 'pico-os6'`      → `appType: 'vr'`
+   *   - `xrMode: 'pico-swan'`     → `appType: 'vr'` (set explicitly to
+   *                                 `'mr'` if your Swan app is a passthrough-
+   *                                 first MR experience)
+   *
+   * Precedence: when `xrMode === 'mobile'`, an explicit `appType: 'vr'` /
+   * `'mr'` is honored but a warning is emitted because no PICO native
+   * package is registered to back the immersive contract.
+   */
+  appType?: PicoAppType;
+  /**
    * Target hardware profile.
    * - 'auto': Detect from targetDevices (default)
    * - 'legacy': PICO Neo3 / pre-OS6 devices
@@ -141,6 +159,21 @@ export interface PicoSwanPluginOptions {
 
 export type PicoXRMode = 'mobile' | 'pico-os6' | 'pico-swan';
 
+/**
+ * Launcher contract app type. Drives the `pvr.app.type` meta-data PICO OS 6
+ * reads to decide how to enumerate the APK on the launcher.
+ *
+ *   - 'vr':  Immersive VR app. Adds OpenXR `IMMERSIVE_HMD` and PICO
+ *            launcher categories to the launcher activity intent-filter.
+ *   - 'mr':  Mixed-reality app. Same launcher categories as 'vr'; the
+ *            difference is the meta-data value, which affects how PICO OS
+ *            primes passthrough at boot.
+ *   - '2d':  Standard 2D Android app. No immersive launcher categories
+ *            are added. Use for `xrMode: 'mobile'` builds; also valid for
+ *            companion 2D apps shipped alongside an immersive flavor.
+ */
+export type PicoAppType = 'vr' | 'mr' | '2d';
+
 export type PicoDeviceTarget = 'pico-4' | 'pico-4-ultra' | 'neo3' | 'swan';
 
 export type PicoSpatialMode =
@@ -166,6 +199,7 @@ export interface ResolvedPicoOptions {
   buildVariant: 'mobile' | 'pico' | 'dual';
   xrMode: PicoXRMode;
   picoSwan: ResolvedPicoSwanOptions;
+  appType: PicoAppType;
   targetProfile: PicoTargetProfile;
   targetDevices: PicoDeviceTarget[];
   spatialMode: PicoSpatialMode;
@@ -194,6 +228,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   buildVariant: 'pico',
   xrMode: 'pico-os6',
   picoSwan: PICO_SWAN_DEFAULTS,
+  appType: 'vr',
   targetProfile: 'auto',
   targetDevices: [],
   spatialMode: '2d',
@@ -227,6 +262,12 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
 
   const xrMode = options.xrMode ?? defaultXrMode;
 
+  // appType default tracks xrMode. Mobile builds default to 2d (no immersive
+  // launcher categories injected); PICO modes default to vr. The user can
+  // override with 'mr' for passthrough-first apps.
+  const appType: PicoAppType =
+    options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
+
   // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
   // documented requirement unless the user explicitly overrides it.
   const minSdkVersion =
@@ -239,6 +280,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     buildVariant,
     xrMode,
     picoSwan: swan,
+    appType,
     minSdkVersion,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
   };

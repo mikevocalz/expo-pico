@@ -16,6 +16,7 @@ import {
 } from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
+import { applyLauncherContract } from './withPicoLauncherActivity';
 
 export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   config = withDangerousMod(config, [
@@ -30,6 +31,10 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       }
 
       const manifest = buildPicoManifest(options);
+      // Phase A launcher contract: pvr.app.type meta + immersive launcher
+      // categories on .MainActivity + <queries> for PICO system packages.
+      // Mutates the manifest object in place; gated on resolved appType.
+      applyLauncherContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
 
       // If dual variant, also write a dual/ source set manifest
