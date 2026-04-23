@@ -3,8 +3,12 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import {
   formatDiagnostics,
   getPicoDiagnostics,
+  getPlatformSdkProbe,
+  getPlatformSdkVersion,
+  isPlatformSdkPresent,
   type DiagnosticSeverity,
   type PicoDiagnosticsReport,
+  type PicoPlatformSdkProbe,
 } from 'expo-pico-core';
 
 /**
@@ -19,6 +23,7 @@ import {
  */
 export function DiagnosticsPanel(): JSX.Element {
   const [report, setReport] = useState<PicoDiagnosticsReport | null>(null);
+  const [probe, setProbe] = useState<PicoPlatformSdkProbe | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -26,8 +31,12 @@ export function DiagnosticsPanel(): JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      const next = await getPicoDiagnostics();
+      const [next, probeResult] = await Promise.all([
+        getPicoDiagnostics(),
+        getPlatformSdkProbe(),
+      ]);
       setReport(next);
+      setProbe(probeResult);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -56,13 +65,21 @@ export function DiagnosticsPanel(): JSX.Element {
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : report ? (
-        <DiagnosticsBody report={report} />
+        <DiagnosticsBody report={report} probe={probe} />
       ) : null}
     </View>
   );
 }
 
-function DiagnosticsBody({ report }: { report: PicoDiagnosticsReport }): JSX.Element {
+function DiagnosticsBody({
+  report,
+  probe,
+}: {
+  report: PicoDiagnosticsReport;
+  probe: PicoPlatformSdkProbe | null;
+}): JSX.Element {
+  const sdkVersion = getPlatformSdkVersion();
+  const sdkPresent = isPlatformSdkPresent();
   return (
     <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
       <Text style={styles.summary}>
@@ -75,6 +92,16 @@ function DiagnosticsBody({ report }: { report: PicoDiagnosticsReport }): JSX.Ele
         <Text style={styles.summaryKey}>permissions:</Text> {report.summary.declaredPermissionCount}
         {'   '}
         <Text style={styles.summaryKey}>missing:</Text> {report.summary.missingSystemFeatureCount}
+        {'\n'}
+        <Text style={styles.summaryKey}>platform sdk:</Text>{' '}
+        {sdkPresent ? (sdkVersion ?? 'present') : 'absent'}
+        {probe
+          ? '   ' +
+            Object.entries(probe)
+              .filter(([, v]) => v)
+              .map(([k]) => k)
+              .join(',')
+          : ''}
       </Text>
 
       {report.findings.length === 0 ? (

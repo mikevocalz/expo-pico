@@ -1661,3 +1661,91 @@ The `DiagnosticCheckFinding` shape intentionally mirrors Phase F's runtime `Diag
 | Pretty vs JSON output finding content matches                          | Jest spawn test (same `id`s in both)                           |
 | `--fail-on-warning` flips exit codes                                   | Jest spawn test                                                |
 | TypeScript config handling via `npx expo config` pipe                  | Documented workaround (RELEASING.md); requires full Expo SDK in the project — deferred |
+
+---
+
+## 22. Reflection-based PICO Platform SDK detection (Phase J)
+
+### 22.1 The problem
+
+Through Phase I, sibling packages (`expo-pico-account`, `expo-pico-iap`, and eight others) each hard-coded `isPlatformSdkAvailable(): false`. Even a consumer who dropped a real PICO Platform SDK AAR into their `android/app/libs/` directory saw the same behavior: every sibling module reported `SDK unavailable` and every public API threw `notImplementedError`. The SDK AAR was effectively unreachable from app code.
+
+There was also no app-wide answer to "is any PICO Platform SDK live in this process?" A consumer had to probe each sibling individually to find out.
+
+### 22.2 What Phase J adds
+
+A shared reflection-based detector in `expo-pico-core` that:
+
+- Probes a curated list of PICO Platform SDK entry classes (`com.pvr.platform.sdk.PlatformSDK`, `com.pvr.platform.sdk.account.AccountAPI`, `com.pvr.iap.sdk.IAPClient`, `com.pvr.push.sdk.PushSDK`, `com.pvr.rtc.sdk.RtcEngine`, and the Platform SDK's per-service APIs) via `Class.forName(name, false, classloader)`.
+- Reads the SDK version string from `com.pvr.platform.sdk.BuildConfig.VERSION_NAME` (with fallback candidates) via static field reflection.
+- Exposes both a coarse `platformSdkPresent` boolean and a fine-grained per-surface probe report as Expo Module constants + async functions.
+- Uses `initialize = false` on `Class.forName` so the probe itself doesn't trigger native `.so` loads the probed class might lazy-load on first use (important for running a PICO-flavor APK on a mobile emulator that has the AAR but not its native libraries).
+- Swallows `Throwable` — not just `ClassNotFoundException` — so partially-linked SDKs (AAR present, native libs missing, verifier errors) degrade to `false` rather than crashing the host process.
+
+### 22.3 Native API
+
+```kotlin
+object PicoPlatformSdkDetector {
+    fun probeAny(vararg candidates: String): Boolean
+    fun findAvailable(vararg candidates: String): String?
+    fun readStringField(className: String, fieldName: String): String?
+    fun readVersion(): String?
+    fun isAnyPlatformSdkPresent(): Boolean
+    fun buildProbeReport(): Map<String, Boolean>
+}
+```
+
+Used by `ExpoPicoModule`:
+
+- Constant `platformSdkPresent` — aggregate broad probe evaluated once at module init.
+- Constant `platformSdkVersion` — best-effort version string, evaluated once at module init.
+- Async function `getPlatformSdkProbe()` — fine-grained per-surface map (account / iap / achievements / leaderboards / rooms / social / storage / subscription / notifications / rtc).
+
+### 22.4 JS API
+
+```ts
+import {
+  isPlatformSdkPresent,
+  getPlatformSdkVersion,
+  getPlatformSdkProbe,
+  type PicoPlatformSdkProbe,
+} from 'expo-pico-core';
+
+if (isPlatformSdkPresent()) {
+  console.log(`PICO Platform SDK ${getPlatformSdkVersion() ?? '(version unknown)'} is live`);
+  const probe = await getPlatformSdkProbe();
+  // probe.account, probe.iap, probe.notifications, ...
+}
+```
+
+`PicoRuntimeInfo` (the return value of `getPicoRuntimeInfo()`) now includes `platformSdkPresent: boolean` and `platformSdkVersion: string | null`.
+
+Typing note: `getPlatformSdkProbe` normalizes the raw native map to a strict `PicoPlatformSdkProbe` shape — every documented surface has an explicit `false` when absent rather than `undefined`, so downstream code can destructure without optional-chaining every field. Unknown keys the native module returns (future SDK surfaces not yet in the typed shape) are dropped from the typed result; consumers who want the raw map can call `ExpoPicoModule.getPlatformSdkProbe()` directly.
+
+### 22.5 Sibling packages are unchanged in this phase
+
+Siblings already carry their own per-service `Class.forName` probes (each sibling's `*Utils.kt`). Phase J does **not** migrate them to depend on `PicoPlatformSdkDetector` because:
+
+1. Siblings don't share a Gradle compile classpath with `expo-pico-core` — Expo Modules autolinking composes them at the consuming app's build time, not at library build time. A hard `implementation project(':expo-pico-core')` dep in each sibling's `android/build.gradle` would only work under specific autolinking paths and is fragile across Expo SDK minor versions.
+2. Sibling probes already work correctly at runtime. The bug Phase J closes is different: consumers had no way to ask "is any PICO SDK live?" without probing each sibling individually.
+
+The layering is now:
+
+- `expo-pico-core`'s detector answers the app-wide presence question and aggregates per-surface probes for UI / diagnostics.
+- Each sibling's probe answers "is **my** specific SDK surface wired?" for use inside that sibling's bridge methods.
+
+When a future phase ships a common Gradle integration path (e.g. publishing `expo-pico-core` as a regular AAR through Maven Local during dev), siblings can migrate to the shared detector. That migration is mechanical (each sibling's Utils collapses to ~8 lines) and can land one sibling per PR without breaking anything.
+
+### 22.6 DiagnosticsPanel integration
+
+The example's Phase F `DiagnosticsPanel` now renders the probe report on its summary line. Running on a device without the PICO SDK AAR shows `platform sdk: absent` and an empty live-surface list; running on a device or build with the AAR flips to `platform sdk: 3.2.0  account,iap,notifications`.
+
+### 22.7 Validation matrix
+
+| Validation                                                         | When                                                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `isPlatformSdkPresent` / `getPlatformSdkVersion` coercions          | Jest (`src/__tests__/platform-sdk-probe.test.ts`, 6 cases)                   |
+| `getPlatformSdkProbe` normalizer: empty / partial / extra / null   | Jest (4 cases)                                                               |
+| `getPicoRuntimeInfo` Phase J fields present/absent                  | Jest (2 cases)                                                               |
+| `Class.forName` actually resolves PICO SDK classes                  | Requires a device / emulator with the real SDK AAR in place (deferred)        |
+| DiagnosticsPanel UI renders probe summary correctly                 | Requires example app on a device (deferred)                                   |

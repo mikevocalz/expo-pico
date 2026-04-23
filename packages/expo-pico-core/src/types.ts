@@ -43,7 +43,30 @@ export interface PicoRuntimeInfo {
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
   os6RuntimeInitialized: boolean;
+  /** True when any PICO Platform SDK class resolves on the runtime classpath. */
+  platformSdkPresent: boolean;
+  /** SDK version read from `com.pvr.platform.sdk.BuildConfig.VERSION_NAME`, or null. */
+  platformSdkVersion: string | null;
 }
+
+/**
+ * Fine-grained per-surface PICO Platform SDK probe report. Each key is
+ * a sibling-package domain (`account`, `iap`, ...); values are `true`
+ * when the corresponding SDK class resolves on the classpath.
+ */
+export type PicoPlatformSdkProbe = Record<
+  | 'account'
+  | 'iap'
+  | 'achievements'
+  | 'leaderboards'
+  | 'rooms'
+  | 'social'
+  | 'storage'
+  | 'subscription'
+  | 'notifications'
+  | 'rtc',
+  boolean
+>;
 
 export interface ExpoPicoModuleInterface {
   isPicoBuild: boolean;
@@ -62,9 +85,12 @@ export interface ExpoPicoModuleInterface {
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
   os6RuntimeInitialized: boolean;
+  platformSdkPresent: boolean;
+  platformSdkVersion: string | null;
   hasSystemFeature(name: string): Promise<boolean>;
   getDeclaredFeatures(): Promise<DeclaredFeature[]>;
   getDeclaredPermissions(): Promise<DeclaredPermission[]>;
+  getPlatformSdkProbe(): Promise<PicoPlatformSdkProbe>;
 }
 
 export interface DeclaredFeature {

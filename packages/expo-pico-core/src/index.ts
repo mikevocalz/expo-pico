@@ -13,6 +13,7 @@ export type {
   PicoSpatialMode,
   PicoTargetProfileRuntime,
   PicoXRMode,
+  PicoPlatformSdkProbe,
   ExpoPicoModuleInterface,
 } from './types';
 
@@ -78,6 +79,59 @@ export function hasIapIdentity(): boolean {
   return ExpoPicoModule.hasIapIdentity ?? false;
 }
 
+/**
+ * True when any PICO Platform SDK class resolves on the classpath at
+ * runtime. Phase J reflection probe — safer than checking for a
+ * specific class name because the broad probe covers every known
+ * entry point (account, IAP, notifications, RTC, achievements,
+ * leaderboards, rooms, social, storage, subscription).
+ *
+ * Sibling packages can short-circuit here before attempting their own
+ * per-surface probe — if this is `false`, the real PICO Platform SDK
+ * AAR is definitely not on the classpath and every sibling will
+ * degrade to its SDK-unavailable path.
+ */
+export function isPlatformSdkPresent(): boolean {
+  return ExpoPicoModule.platformSdkPresent ?? false;
+}
+
+/**
+ * PICO Platform SDK version string read from
+ * `com.pvr.platform.sdk.BuildConfig.VERSION_NAME` (and a few fallback
+ * candidates). Returns `null` when the SDK is absent or the version
+ * constant can't be read.
+ */
+export function getPlatformSdkVersion(): string | null {
+  return ExpoPicoModule.platformSdkVersion ?? null;
+}
+
+/**
+ * Fine-grained per-surface SDK probe report. Each entry names a
+ * sibling-package domain (`account`, `iap`, `notifications`, ...) and
+ * whether its specific SDK entry class resolves on the classpath.
+ * Useful for diagnostics panels that want to show which siblings are
+ * live vs stubbed.
+ */
+export async function getPlatformSdkProbe(): Promise<import('./types').PicoPlatformSdkProbe> {
+  const native = (await ExpoPicoModule.getPlatformSdkProbe()) ?? {};
+  // Native returns a plain map. Normalize to the typed shape with
+  // explicit false fallbacks so consumers can destructure without
+  // worrying about missing keys across SDK minor versions.
+  const probe = native as Record<string, boolean>;
+  return {
+    account: probe.account ?? false,
+    iap: probe.iap ?? false,
+    achievements: probe.achievements ?? false,
+    leaderboards: probe.leaderboards ?? false,
+    rooms: probe.rooms ?? false,
+    social: probe.social ?? false,
+    storage: probe.storage ?? false,
+    subscription: probe.subscription ?? false,
+    notifications: probe.notifications ?? false,
+    rtc: probe.rtc ?? false,
+  };
+}
+
 export function getPicoRuntimeInfo(): PicoRuntimeInfo {
   return {
     isPicoBuild: isPicoBuild(),
@@ -100,6 +154,8 @@ export function getPicoRuntimeInfo(): PicoRuntimeInfo {
     emulatorOptimizations: ExpoPicoModule.emulatorOptimizations ?? false,
     swanRuntimeInitialized: ExpoPicoModule.swanRuntimeInitialized ?? false,
     os6RuntimeInitialized: ExpoPicoModule.os6RuntimeInitialized ?? false,
+    platformSdkPresent: isPlatformSdkPresent(),
+    platformSdkVersion: getPlatformSdkVersion(),
   };
 }
 

@@ -25,12 +25,18 @@ class ExpoPicoModule : Module() {
             "deviceModel" to PicoDeviceUtils.getDeviceModel(),
             "emulatorOptimizations" to BuildConfig.PICO_EMULATOR_OPTIMIZATIONS,
             "swanRuntimeInitialized" to PicoSwanRuntime.isInitialized(),
-            "os6RuntimeInitialized" to PicoOs6Runtime.isInitialized()
+            "os6RuntimeInitialized" to PicoOs6Runtime.isInitialized(),
+            // Phase J — reflection-based Platform SDK detection. Both
+            // values are evaluated once at module-init time (cheap — each
+            // Class.forName with initialize=false only touches the
+            // classloader) and cached by Expo Modules.
+            "platformSdkPresent" to PicoPlatformSdkDetector.isAnyPlatformSdkPresent(),
+            "platformSdkVersion" to PicoPlatformSdkDetector.readVersion()
         )
 
-        // Phase F — runtime capability introspection. Async because each
-        // call hits PackageManager; a sync bridge would block the JS
-        // thread on cold-start readers.
+        // Phase F runtime introspection + Phase J SDK probes. Async so
+        // they don't block module init if the caller has many of them;
+        // each hits PackageManager or the classloader.
         AsyncFunction("hasSystemFeature") { name: String ->
             val ctx = appContext.reactContext ?: return@AsyncFunction false
             PicoRuntimeCapabilities.hasSystemFeature(ctx, name)
@@ -44,6 +50,10 @@ class ExpoPicoModule : Module() {
         AsyncFunction("getDeclaredPermissions") {
             val ctx = appContext.reactContext ?: return@AsyncFunction emptyList<Map<String, Any?>>()
             PicoRuntimeCapabilities.getDeclaredPermissions(ctx)
+        }
+
+        AsyncFunction("getPlatformSdkProbe") {
+            PicoPlatformSdkDetector.buildProbeReport()
         }
     }
 }
