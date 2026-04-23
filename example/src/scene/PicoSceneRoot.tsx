@@ -1,7 +1,7 @@
-import React, { Suspense, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useMemo, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
-import type { Mesh, Group } from 'three';
+import type { Mesh } from 'three';
 
 import { GltfModel } from './GltfModel';
 import { getPicoRuntimeInfo } from 'expo-pico-core';
@@ -51,28 +51,90 @@ export function PicoSceneRoot(): JSX.Element {
 
       <View style={styles.overlay} pointerEvents="none">
         <Text style={styles.overlayTitle}>PICO runtime</Text>
-        <OverlayRow label="xrMode" value={info.xrMode} />
+
+        <OverlayRow label="xrMode" value={info.xrMode} accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os6' ? 'info' : undefined} />
         <OverlayRow label="appType" value={info.appType} />
-        <OverlayRow
-          label="isPicoDevice"
-          value={info.isPicoDevice ? 'true' : 'false'}
-        />
-        <OverlayRow
-          label="hasPlatformIdentity"
-          value={info.hasPlatformIdentity ? 'true' : 'false'}
-        />
         <OverlayRow label="spatialMode" value={info.spatialMode} />
+        <OverlayRow label="targetProfile" value={info.targetProfile} />
+
+        <OverlaySeparator />
+
+        <OverlayRow
+          label="device"
+          value={info.isPicoDevice ? 'pico' : 'non-pico'}
+          accent={info.isPicoDevice ? 'good' : 'info'}
+        />
+        <OverlayRow
+          label="build"
+          value={info.isPicoBuild ? 'pico flavor' : 'mobile flavor'}
+          accent={info.isPicoBuild ? 'good' : 'info'}
+        />
+        {info.deviceModel ? (
+          <OverlayRow label="model" value={info.deviceModel} />
+        ) : null}
+        {info.picoOsVersion ? (
+          <OverlayRow label="os" value={info.picoOsVersion} />
+        ) : null}
+
+        <OverlaySeparator />
+
+        <OverlayRow
+          label="identity"
+          value={info.hasPlatformIdentity ? 'wired' : 'missing'}
+          accent={info.hasPlatformIdentity ? 'good' : 'warn'}
+        />
+        <OverlayRow
+          label="iap identity"
+          value={info.hasIapIdentity ? 'wired' : 'missing'}
+          accent={info.hasIapIdentity ? 'good' : 'info'}
+        />
+        <OverlayRow
+          label="platform sdk"
+          value={
+            info.platformSdkPresent
+              ? info.platformSdkVersion ?? 'present'
+              : 'seam'
+          }
+          accent={info.platformSdkPresent ? 'good' : 'info'}
+        />
+
+        {info.swanRuntimeInitialized || info.os6RuntimeInitialized ? (
+          <>
+            <OverlaySeparator />
+            {info.swanRuntimeInitialized ? (
+              <OverlayRow label="swan runtime" value="initialized" accent="good" />
+            ) : null}
+            {info.os6RuntimeInitialized ? (
+              <OverlayRow label="os6 runtime" value="initialized" accent="good" />
+            ) : null}
+          </>
+        ) : null}
       </View>
     </View>
   );
 }
 
-function OverlayRow({ label, value }: { label: string; value: string | number }): JSX.Element {
+type AccentStyle = 'good' | 'warn' | 'bad' | 'info';
+
+function OverlayRow({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  accent?: AccentStyle;
+}): JSX.Element {
   return (
     <Text style={styles.overlayRow}>
-      <Text style={styles.overlayLabel}>{label}:</Text> {String(value)}
+      <Text style={styles.overlayLabel}>{label}:</Text>{' '}
+      <Text style={accent ? accentStyles[accent] : undefined}>{String(value)}</Text>
     </Text>
   );
+}
+
+function OverlaySeparator(): JSX.Element {
+  return <View style={styles.separator} />;
 }
 
 /**
@@ -96,7 +158,11 @@ function FallbackSpinner(): JSX.Element {
 
 const styles = StyleSheet.create({
   wrapper: {
-    height: 320,
+    // When mounted inside a tab the parent provides the full remaining
+    // height — flex: 1 makes the scene fill the tab body. When mounted
+    // without a flex parent, the minHeight keeps the canvas visible.
+    flex: 1,
+    minHeight: 320,
     backgroundColor: '#0b0d1a',
   },
   canvas: {
@@ -108,13 +174,15 @@ const styles = StyleSheet.create({
     left: 12,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(10, 12, 25, 0.72)',
+    backgroundColor: 'rgba(10, 12, 25, 0.78)',
+    maxWidth: 240,
   },
   overlayTitle: {
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 12,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
   overlayRow: {
     color: '#d0d4f0',
@@ -125,6 +193,18 @@ const styles = StyleSheet.create({
   overlayLabel: {
     color: '#8a91c0',
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#2a2d45',
+    marginVertical: 5,
+  },
 });
+
+const accentStyles: Record<AccentStyle, { color: string; fontWeight: '700' }> = {
+  good: { color: '#76b989', fontWeight: '700' },
+  warn: { color: '#ffb15a', fontWeight: '700' },
+  bad: { color: '#ff6b7a', fontWeight: '700' },
+  info: { color: '#6d7cff', fontWeight: '700' },
+};
 
 export default PicoSceneRoot;
