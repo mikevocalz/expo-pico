@@ -50,11 +50,14 @@ export function applyCapabilityContract(
   upsertFeature(features, PICO_FEATURES.BODY_TRACKING, options.bodyTracking);
   upsertFeature(features, PICO_FEATURES.SPATIAL_AUDIO, options.spatialAudio);
   upsertFeature(features, PICO_FEATURES.FOVEATION, options.foveatedRendering);
+  upsertFeature(features, PICO_FEATURES.BOUNDARY, options.boundary);
+  upsertFeature(features, PICO_FEATURES.SCENE_MESH, options.sceneMesh);
 
   // ── Permissions ─────────────────────────────────────────────────
   upsertPermission(permissions, PICO_PERMISSIONS.EYE_TRACKING, options.eyeTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.FACE_TRACKING, options.faceTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.BODY_TRACKING, options.bodyTracking);
+  upsertPermission(permissions, PICO_PERMISSIONS.BOUNDARY, options.boundary);
   upsertPermission(
     permissions,
     PICO_PERMISSIONS.HIGH_SAMPLING_RATE_SENSORS,

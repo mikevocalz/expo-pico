@@ -7,6 +7,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: '1.0.0',
   orientation: 'landscape',
   newArchEnabled: true,
+  // Bundle any GLB / glTF assets so the scene renderer can require() them.
+  // See `assets/models/README.md` for which file the scene looks for.
+  assetBundlePatterns: ['assets/**/*'],
   android: {
     package: 'com.example.expopico',
     adaptiveIcon: {
@@ -72,6 +75,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         foveatedRendering: false,
         highSamplingRateSensors: true, // Head-tracked VR typically needs 500+Hz IMU sampling.
         refreshRates: [72, 90], // Declare the rates the renderer supports.
+        // Phase D — late-audit additions. Same default-off pattern as
+        // the Phase C toggles.
+        boundary: false, // Guardian / boundary system; opt in for room-scale apps.
+        sceneMesh: false, // Scene mesh capture; distinct from plane-only sceneUnderstanding.
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,

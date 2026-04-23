@@ -234,6 +234,41 @@ describe('applyCapabilityContract — idempotency and toggle-off cleanup', () =>
   });
 });
 
+describe('applyCapabilityContract — boundary + scene mesh (Phase D)', () => {
+  it('emits boundary feature + permission', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ boundary: true }));
+    expect(featureNames(m)).toContain(PICO_FEATURES.BOUNDARY);
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.BOUNDARY);
+  });
+
+  it('emits scene mesh feature without a permission', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ sceneMesh: true }));
+    expect(featureNames(m)).toContain(PICO_FEATURES.SCENE_MESH);
+    expect(permissionNames(m)).not.toContain('com.picovr.permission.SCENE_MESH');
+  });
+
+  it('scene mesh is independent of sceneUnderstanding', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(
+      m,
+      resolveOptions({ sceneMesh: true, sceneUnderstanding: false })
+    );
+    expect(featureNames(m)).toContain(PICO_FEATURES.SCENE_MESH);
+    // sceneUnderstanding is handled by buildPicoManifest, not
+    // applyCapabilityContract, so we don't assert on its feature here.
+  });
+
+  it('removes boundary feature + permission on toggle-off', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ boundary: true }));
+    applyCapabilityContract(m, resolveOptions({ boundary: false }));
+    expect(featureNames(m)).not.toContain(PICO_FEATURES.BOUNDARY);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.BOUNDARY);
+  });
+});
+
 describe('applyCapabilityContract — combined capability fan-out', () => {
   it('emits every enabled capability simultaneously without cross-interference', () => {
     const options = resolveOptions({

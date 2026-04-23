@@ -149,6 +149,19 @@ export const PICO_FEATURES = {
    * unconfirmed. Follows the `pico.hardware.*` pattern.
    */
   FOVEATION: 'pico.hardware.foveation',
+  /**
+   * PICO boundary / guardian system hardware feature. Corresponds to the
+   * `XR_PICO_boundary_ext` OpenXR extension.
+   * EXTENSION SEAM — Android feature key pending doc confirmation.
+   */
+  BOUNDARY: 'pico.hardware.boundary',
+  /**
+   * PICO scene mesh capability — distinct from `SCENE_UNDERSTANDING`
+   * (planes-only). Emitted separately so consumers can declare mesh
+   * support without the plane-only scene API. EXTENSION SEAM — key name
+   * pending doc confirmation.
+   */
+  SCENE_MESH: 'pico.software.scenemesh',
 } as const;
 
 /**
@@ -174,6 +187,11 @@ export const PICO_PERMISSIONS = {
    * immersive head-tracked VR.
    */
   HIGH_SAMPLING_RATE_SENSORS: 'android.permission.HIGH_SAMPLING_RATE_SENSORS',
+  /**
+   * PICO boundary / guardian permission. EXTENSION SEAM — name pending
+   * doc confirmation; follows the `com.picovr.permission.*` pattern.
+   */
+  BOUNDARY: 'com.picovr.permission.BOUNDARY',
 } as const;
 
 export const DEVICE_TARGET_MAP: Record<string, string> = {

@@ -26,7 +26,7 @@ export function isPicoDevice(): boolean {
 
 export function getSpatialMode(): PicoSpatialMode {
   const mode = ExpoPicoModule.spatialMode;
-  const valid: PicoSpatialMode[] = ['2d', 'windowed', 'shared-space', 'full-space', 'immersive'];
+  const valid: PicoSpatialMode[] = ['2d', 'windowed', 'shared-space', 'full-space', 'immersive', 'volume'];
   return valid.includes(mode as PicoSpatialMode) ? (mode as PicoSpatialMode) : '2d';
 }
 

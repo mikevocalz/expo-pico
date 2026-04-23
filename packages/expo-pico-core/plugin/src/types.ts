@@ -172,6 +172,23 @@ export interface PicoPluginOptions {
    */
   refreshRates?: number[];
   /**
+   * Declare PICO boundary / guardian support (corresponds to the
+   * `XR_PICO_boundary_ext` OpenXR extension). Emits
+   * `uses-feature pico.hardware.boundary` plus
+   * `com.picovr.permission.BOUNDARY`. EXTENSION SEAM — names pending
+   * doc confirmation.
+   * @default false
+   */
+  boundary?: boolean;
+  /**
+   * Declare PICO scene mesh support — distinct from the plane-only
+   * `sceneUnderstanding` option. Emits
+   * `uses-feature pico.software.scenemesh`. EXTENSION SEAM — key name
+   * pending doc confirmation.
+   * @default false
+   */
+  sceneMesh?: boolean;
+  /**
    * Enable PICO developer tools overlay (OS 6 dev builds only).
    * @default false
    */
@@ -300,12 +317,25 @@ export type PicoAppType = 'vr' | 'mr' | '2d';
 
 export type PicoDeviceTarget = 'pico-4' | 'pico-4-ultra' | 'neo3' | 'swan';
 
+/**
+ * Spatial rendering mode. Drives the `com.pico.spatial.mode` meta-data.
+ *
+ *   - `2d`:           Standard flat Android rendering.
+ *   - `windowed`:     WindowContainer in Shared Space.
+ *   - `shared-space`: App runs in PICO OS Shared Space (multi-app layer).
+ *   - `full-space`:   App takes over the full spatial environment.
+ *   - `immersive`:    Legacy full-immersive mode (pre-OS6).
+ *   - `volume`:       PICO OS 6 3D Volume container (analogous to
+ *                     visionOS Volume) — EXTENSION SEAM, name pending
+ *                     PICO doc confirmation.
+ */
 export type PicoSpatialMode =
   | '2d'
   | 'windowed'
   | 'shared-space'
   | 'full-space'
-  | 'immersive';
+  | 'immersive'
+  | 'volume';
 
 export type PicoTargetProfile = 'auto' | 'legacy' | 'pico4' | 'pico4ultra' | 'swan';
 
@@ -358,6 +388,8 @@ export interface ResolvedPicoOptions {
   foveatedRendering: boolean;
   highSamplingRateSensors: boolean;
   refreshRates: number[];
+  boundary: boolean;
+  sceneMesh: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
@@ -417,6 +449,8 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   foveatedRendering: false,
   highSamplingRateSensors: false,
   refreshRates: [],
+  boundary: false,
+  sceneMesh: false,
   developerTools: false,
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,

@@ -3,7 +3,8 @@ export type PicoSpatialMode =
   | 'windowed'
   | 'shared-space'
   | 'full-space'
-  | 'immersive';
+  | 'immersive'
+  | 'volume';
 
 export type PicoTargetProfileRuntime =
   | 'legacy'

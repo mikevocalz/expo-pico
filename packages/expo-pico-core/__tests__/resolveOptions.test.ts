@@ -96,6 +96,27 @@ describe('xrMode resolution', () => {
   });
 });
 
+describe('spatialMode volume (Phase D)', () => {
+  it('accepts and preserves the volume spatial mode', () => {
+    const result = resolveOptions({ spatialMode: 'volume' });
+    expect(result.spatialMode).toBe('volume');
+  });
+
+  it('accepts every documented spatial mode', () => {
+    const modes: Array<'2d' | 'windowed' | 'shared-space' | 'full-space' | 'immersive' | 'volume'> = [
+      '2d',
+      'windowed',
+      'shared-space',
+      'full-space',
+      'immersive',
+      'volume',
+    ];
+    for (const m of modes) {
+      expect(resolveOptions({ spatialMode: m }).spatialMode).toBe(m);
+    }
+  });
+});
+
 describe('picoSwan resolution', () => {
   it('applies defaults when picoSwan is omitted', () => {
     const result = resolveOptions({ xrMode: 'pico-swan' });
