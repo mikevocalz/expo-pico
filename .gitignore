@@ -7,6 +7,7 @@ dist/
 .DS_Store
 *.local
 plugin/build/
+.turbo/
 
 # CNG-generated native projects (example app only)
 # Do NOT ignore packages/*/android/ — those contain library source code
