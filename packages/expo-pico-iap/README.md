@@ -2,31 +2,121 @@
 
 PICO store in-app purchase APIs for Expo apps.
 
-# API documentation
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See the repository [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for cross-package design rationale.
 
-- [Documentation for the latest stable release](https://docs.expo.dev/versions/latest/sdk/pico-iap/)
-- [Documentation for the main branch](https://docs.expo.dev/versions/unversioned/sdk/pico-iap/)
+## Status
 
-# Installation in managed Expo projects
+- **Maturity:** alpha
+- **PICO Platform SDK linkage:** extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO IAP SDK AAR is on the classpath.
+- **Platform:** Android only.
+- **Runtime target:** PICO OS 6 + signed-in PICO Store account.
 
-For [managed](https://docs.expo.dev/archive/managed-vs-bare/) Expo projects, please follow the installation instructions in the [API documentation for the latest stable release](#api-documentation). If you follow the link and there is no documentation available then this library is not yet usable within managed projects &mdash; it is likely to be included in an upcoming Expo SDK release.
+## Install
 
-# Installation in bare React Native projects
-
-For bare React Native projects, you must ensure that you have [installed and configured the `expo` package](https://docs.expo.dev/bare/installing-expo-modules/) before continuing.
-
-### Add the package to your npm dependencies
-
-```
-npm install expo-pico-iap
+```bash
+yarn add expo-pico-core expo-pico-iap
 ```
 
-### Configure for Android
+## Configure
 
+IAP requires the full Platform SDK identity quartet: `picoAppId`, `picoAppKey`, `picoMerchantId`, `picoPayKey`. The `expo-pico-doctor` will warn at prebuild time if any half is missing.
 
+```ts
+// app.config.ts
+export default {
+  plugins: [
+    [
+      'expo-pico-core',
+      {
+        platformService: {
+          picoAppId: process.env.PICO_PLATFORM_APP_ID,
+          picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
+          // Both required for IAP. Doctor warns on partial identity.
+          picoMerchantId: process.env.PICO_MERCHANT_ID,
+          picoPayKey: process.env.PICO_PAY_KEY,
+          // Optional: Global-region pair. Ships `_foreign` string resources.
+          foreign: {
+            picoMerchantId: process.env.PICO_MERCHANT_ID_FOREIGN,
+            picoPayKey: process.env.PICO_PAY_KEY_FOREIGN,
+          },
+        },
+        buildVariant: 'pico',
+        xrMode: 'pico-os6',
+      },
+    ],
+    'expo-pico-iap',
+  ],
+};
+```
 
+Then: `npx expo prebuild --clean`.
 
+## Usage
 
-# Contributing
+```ts
+import {
+  isIapAvailable,
+  getProducts,
+  getPurchaseHistory,
+  consumePurchase,
+  purchase,
+} from 'expo-pico-iap';
+import { hasIapIdentity } from 'expo-pico-core';
 
-Contributions are very welcome! Please refer to guidelines described in the [contributing guide]( https://github.com/expo/expo#contributing).
+async function buyCurrency() {
+  if (!hasIapIdentity() || !isIapAvailable()) {
+    throw new Error('IAP not wired. Check platformService.picoMerchantId / picoPayKey in app.config.');
+  }
+
+  const products = await getProducts(['gold_1000', 'gold_5000']);
+  console.log('Available:', products);
+
+  // `purchase()` launches the PICO store UI and resolves with the receipt.
+  const receipt = await purchase('gold_1000');
+  if (receipt.state === 'purchased') {
+    // Server-verify receipt.purchaseToken before granting entitlements!
+    await consumePurchase(receipt.purchaseToken);
+  }
+}
+```
+
+## API
+
+| Function                            | Description                                                                 |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `isIapAvailable()`                  | `true` when the IAP SDK is linked at runtime.                               |
+| `getIapSdkVersion()`                | SDK version string or `'unavailable'`.                                      |
+| `getProducts(skus)`                 | Queries the PICO store for product details.                                 |
+| `purchase(sku)` *(seam)*            | Launches the store UI; returns a receipt. Throws `notImplementedError` until wired — PICO IAP has no headless purchase path. |
+| `consumePurchase(purchaseToken)`    | Marks a consumable purchase as consumed so the user can buy again.          |
+| `getPurchaseHistory()`              | Returns the user's prior purchases from the PICO store.                     |
+
+Types: `IapProduct`, `IapPurchase`, `PurchaseResult`, `ConsumeResult`.
+
+## Runtime diagnostics
+
+```ts
+import { getPlatformSdkProbe, hasIapIdentity } from 'expo-pico-core';
+
+const probe = await getPlatformSdkProbe();
+console.log({
+  iapLive: probe.iap,
+  identityWired: hasIapIdentity(),
+});
+```
+
+## Limitations
+
+- `purchase()` is a documented seam because PICO IAP requires the store's UI flow — there is no headless purchase path. The bridge method will wrap the PICO IAP SDK call when the AAR is linked.
+- Server-side receipt verification is the app's responsibility; this package does not implement it.
+- Subscription products are handled by [`expo-pico-subscription`](../expo-pico-subscription), not here.
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+- [ARCHITECTURE §17 — Platform SDK identity](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
+- Sibling: [`expo-pico-subscription`](../expo-pico-subscription)
+
+## License
+
+MIT

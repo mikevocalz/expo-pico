@@ -2,31 +2,117 @@
 
 PICO push notification registration and token APIs for Expo apps.
 
-# API documentation
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See the repository [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for cross-package design rationale.
 
-- [Documentation for the latest stable release](https://docs.expo.dev/versions/latest/sdk/pico-notifications/)
-- [Documentation for the main branch](https://docs.expo.dev/versions/unversioned/sdk/pico-notifications/)
+## Status
 
-# Installation in managed Expo projects
+- **Maturity:** alpha
+- **PICO Platform SDK linkage:** extension seam. Registration / token bridge methods return `SERVICE_UNAVAILABLE` until the PICO Push SDK is on the classpath.
+- **Platform:** Android only.
+- **Runtime target:** PICO OS 6. Requires the user to have PICO Platform Services available (default on PICO hardware).
 
-For [managed](https://docs.expo.dev/archive/managed-vs-bare/) Expo projects, please follow the installation instructions in the [API documentation for the latest stable release](#api-documentation). If you follow the link and there is no documentation available then this library is not yet usable within managed projects &mdash; it is likely to be included in an upcoming Expo SDK release.
+## Install
 
-# Installation in bare React Native projects
-
-For bare React Native projects, you must ensure that you have [installed and configured the `expo` package](https://docs.expo.dev/bare/installing-expo-modules/) before continuing.
-
-### Add the package to your npm dependencies
-
-```
-npm install expo-pico-notifications
+```bash
+yarn add expo-pico-core expo-pico-notifications
 ```
 
-### Configure for Android
+## Configure
 
+```ts
+// app.config.ts
+export default {
+  plugins: [
+    [
+      'expo-pico-core',
+      {
+        platformService: {
+          picoAppId: process.env.PICO_PLATFORM_APP_ID,
+          picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
+        },
+        buildVariant: 'pico',
+        xrMode: 'pico-os6',
+      },
+    ],
+    [
+      'expo-pico-notifications',
+      {
+        // Android 13+ requires runtime POST_NOTIFICATIONS consent.
+        // Default: true. Set to false to skip the manifest entry.
+        requestPostNotificationsPermission: true,
+      },
+    ],
+  ],
+};
+```
 
+Then: `npx expo prebuild --clean`.
 
+## Usage
 
+```ts
+import {
+  isNotificationsAvailable,
+  getNotificationPermissionStatus,
+  requestPermissions,
+  registerForPushNotifications,
+} from 'expo-pico-notifications';
 
-# Contributing
+async function setupPush() {
+  if (!isNotificationsAvailable()) return null;
 
-Contributions are very welcome! Please refer to guidelines described in the [contributing guide]( https://github.com/expo/expo#contributing).
+  // Request runtime permission on Android 13+.
+  const status = getNotificationPermissionStatus();
+  if (status !== 'granted') {
+    const result = await requestPermissions();
+    if (result.status !== 'granted') return null;
+  }
+
+  // Register with the PICO push service; returns a PICO-specific token.
+  const token = await registerForPushNotifications();
+  console.log('PICO push token:', token.value);
+
+  // Send `token.value` to your backend. Your server delivers through
+  // the PICO Platform push endpoint using the same picoAppId/picoAppKey
+  // the app was built with.
+  return token;
+}
+```
+
+## API
+
+| Function                              | Description                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `isNotificationsAvailable()`          | `true` when the PICO Push SDK is linked.                                |
+| `getNotificationsSdkVersion()`        | SDK version string or `'unavailable'`.                                  |
+| `getNotificationPermissionStatus()`   | Sync snapshot of the current runtime permission grant state.            |
+| `requestPermissions()`                | Prompts the user for `POST_NOTIFICATIONS` (Android 13+ / API 33+).      |
+| `registerForPushNotifications()`      | Returns a PICO push token to forward to your backend.                   |
+
+Types: `NotificationToken`, `NotificationPermissionStatus`, `NotificationPermissionResult`.
+
+## Runtime diagnostics
+
+```ts
+import { getPlatformSdkProbe } from 'expo-pico-core';
+
+const probe = await getPlatformSdkProbe();
+console.log('Push SDK live:', probe.notifications);
+```
+
+The Phase F `DiagnosticsPanel` shows the `permission.ungranted:android.permission.POST_NOTIFICATIONS` info when the user hasn't accepted the runtime prompt yet.
+
+## Limitations
+
+- Delivery is the backend's responsibility; this package only handles **registration + token retrieval** on the client.
+- Android 13+ requires runtime `POST_NOTIFICATIONS` consent. The plugin option `requestPostNotificationsPermission: true` (default) declares the permission; the app must call `requestPermissions()` at the feature-use site.
+- Foreground notification event listeners (e.g. `addNotificationReceivedListener`) are a future-phase addition; today the package exposes only registration + permission flow.
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+- [ARCHITECTURE §17 — Platform SDK identity](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
+
+## License
+
+MIT

@@ -75,3 +75,13 @@ All async APIs are extension seams pending PICO Platform SDK AAR integration.
 - Expo SDK 55+
 - New Architecture
 - Android only
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
+- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
+
+## License
+
+MIT

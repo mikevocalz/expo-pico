@@ -2,6 +2,30 @@
 
 PICO platform subscription billing and entitlement for Expo apps.
 
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for design rationale.
+
+## Status
+
+- **Maturity:** alpha
+- **PICO Platform SDK linkage:** extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- **Platform:** Android only.
+- **Runtime target:** PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
+
+## Runtime diagnostics
+
+To check whether the `subscription` SDK surface is live at runtime:
+
+```ts
+import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+
+if (isPlatformSdkPresent()) {
+  const probe = await getPlatformSdkProbe();
+  console.log('subscription SDK live:', probe.subscription);
+}
+```
+
+Or run `npx expo-pico-doctor --fail-on-warning` before prebuild to catch misconfigs early.
+
 Handles subscription product queries, subscription flows, entitlement verification,
 and cancellation. Kept separate from `expo-pico-iap` because subscriptions have
 a distinct lifecycle (renewal, grace periods, entitlement windows) that does not
@@ -73,3 +97,13 @@ All async APIs are extension seams pending PICO IAP SDK AAR integration.
 - Expo SDK 55+
 - New Architecture
 - Android only
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
+- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
+
+## License
+
+MIT
