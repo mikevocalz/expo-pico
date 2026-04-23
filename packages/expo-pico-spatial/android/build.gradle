@@ -25,6 +25,15 @@ android {
 }
 
 dependencies {
+    // Phase L — cross-module Kotlin import of
+    // `PicoPlatformSdkDetector` from expo-pico-core. Resolved via
+    // Expo Modules autolinking, which generates an
+    // `include :expo-pico-core` line in the consuming app's
+    // settings.gradle at prebuild time. If your autolinking path
+    // uses a different project name, remove this line — sibling
+    // Utils.kt still works via its own inline Class.forName probe.
+    // See docs/DEVICE-TESTING-REQUIRED.md.
+    implementation project(':expo-pico-core')
     // expo-pico-core is a peer dep — declared by the app, not us
     // PICO Spatial SDK — extension seam, commented out until stable AAR
     // implementation "com.pvr:pvr-spatial-sdk:1.0.0"
