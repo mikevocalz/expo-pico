@@ -82,6 +82,11 @@ npx expo-pico-doctor --fail-on-warning  # CI gate
 
 Ships with `expo-pico-core`. See [ARCHITECTURE §21](./ARCHITECTURE.md#21-expo-pico-doctor-cli-phase-g) for the full check list.
 
+## Shipping
+
+- [docs/EAS.md](./docs/EAS.md) — EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
+- [docs/PRODUCTION-READINESS.md](./docs/PRODUCTION-READINESS.md) — single-page pre-ship checklist covering plugin config, identity, manifest contract, toolchain, diagnostics, and submission.
+
 ## Architecture
 
 [ARCHITECTURE.md](./ARCHITECTURE.md) is the single source of truth for the design. 22 sections covering:

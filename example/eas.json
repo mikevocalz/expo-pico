@@ -1,0 +1,57 @@
+{
+  "cli": {
+    "version": ">= 5.0.0"
+  },
+  "build": {
+    "base": {
+      "distribution": "internal",
+      "android": {
+        "autoIncrement": true,
+        "image": "latest"
+      }
+    },
+    "dev-mobile": {
+      "extends": "base",
+      "developmentClient": true,
+      "android": {
+        "gradleCommand": ":app:assembleMobileDebug"
+      }
+    },
+    "dev-pico": {
+      "extends": "base",
+      "developmentClient": true,
+      "android": {
+        "gradleCommand": ":app:assemblePicoDebug"
+      }
+    },
+    "preview-pico": {
+      "extends": "base",
+      "android": {
+        "gradleCommand": ":app:assemblePicoRelease"
+      }
+    },
+    "production-mobile": {
+      "extends": "base",
+      "distribution": "store",
+      "android": {
+        "gradleCommand": ":app:bundleMobileRelease",
+        "buildType": "app-bundle"
+      }
+    },
+    "production-pico": {
+      "extends": "base",
+      "distribution": "store",
+      "android": {
+        "gradleCommand": ":app:bundlePicoRelease",
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production-mobile": {
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
+}

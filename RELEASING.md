@@ -109,6 +109,13 @@ npx expo-pico-doctor
 - **Pre-commit hook.** Add to `.git/hooks/pre-commit` or your Husky config: `npx expo-pico-doctor --fail-on-warning`. Exits 1 on warnings, so a clean commit requires a clean config.
 - **CI gate.** The repo's own `.github/workflows/ci.yml` runs a self-smoke of the doctor against a minimal fixture on every PR. A broken CLI can't ship from green CI.
 
+## Shipping an app (not a package)
+
+This doc covers releasing the `expo-pico-*` **packages** themselves. If you are shipping an **app** that consumes these packages to the PICO Store, see:
+
+- [docs/EAS.md](./docs/EAS.md) — EAS Build + PICO submission flow.
+- [docs/PRODUCTION-READINESS.md](./docs/PRODUCTION-READINESS.md) — pre-ship checklist.
+
 ## Questions
 
 Open an issue at https://github.com/mikevocalz/expo-pico/issues.
