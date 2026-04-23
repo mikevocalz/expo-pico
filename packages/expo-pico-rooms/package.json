@@ -76,6 +76,7 @@
     }
   },
   "files": [
+    "LICENSE",
     "build",
     "android",
     "plugin/build",

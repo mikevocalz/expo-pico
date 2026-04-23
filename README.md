@@ -1,5 +1,14 @@
 # expo-pico
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-55-000020.svg?logo=expo)](https://docs.expo.dev/)
+[![Node >=18](https://img.shields.io/badge/node-%E2%89%A518-43853D.svg?logo=node.js&logoColor=white)](.nvmrc)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](./tsconfig.base.json)
+[![New Architecture](https://img.shields.io/badge/React%20Native-New%20Architecture-20232A.svg?logo=react)](https://reactnative.dev/architecture/landing-page)
+[![Android only](https://img.shields.io/badge/platform-Android-3DDC84.svg?logo=android&logoColor=white)]()
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](./CONTRIBUTING.md)
+[![Tests](https://img.shields.io/badge/tests-223%20passing-76b989.svg)](./packages/expo-pico-core/__tests__)
+
 Expo-native package family for **PICO OS 6** and **Project Swan** XR devices.
 
 Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@react-three/fiber/native`, `@babylonjs/react-native`, Unity-as-a-Library, and anything else that uses the system OpenXR loader.

@@ -75,6 +75,7 @@
     }
   },
   "files": [
+    "LICENSE",
     "build",
     "android",
     "cli/build",

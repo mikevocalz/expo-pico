@@ -68,6 +68,7 @@
     }
   },
   "files": [
+    "LICENSE",
     "build",
     "android",
     "expo-module.config.json"
