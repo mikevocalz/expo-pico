@@ -1,7 +1,25 @@
 name: Stable Release
 
+# Publishes the current workspace versions to the npm stable channel.
+#
+# Typical usage: merge the "Version Packages" PR opened by
+# .github/workflows/version-pr.yml, which consumes all pending
+# changesets. That PR merge triggers a push to main; you then
+# dispatch this workflow from the Actions tab (or wire it to auto-
+# trigger on push to main — see the commented trigger below).
+#
+# Preconditions:
+#   - NPM_TOKEN secret with publish scope.
+#   - Repository has `id-token: write` permission for npm provenance
+#     attestation (configured below).
+
 on:
   workflow_dispatch:
+  # Uncomment once the workspace is stable and you want every push to
+  # main that lands a version bump to auto-publish.
+  # push:
+  #   branches:
+  #     - main
 
 permissions:
   contents: write
@@ -32,8 +50,31 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn test:pack
-      - run: yarn example:prebuild:android
-      - run: yarn example:assemble:mobile
-      - run: yarn example:assemble:pico
+
+      # Uncomment to gate publish on example APK build:
+      # - run: yarn example:prebuild:android
+      # - run: yarn example:assemble:mobile
+      # - run: yarn example:assemble:pico
+
+      # If there are still unconsumed changesets when this job runs
+      # (meaning someone dispatched a stable release before merging the
+      # Version Packages PR), consume them now so versions get bumped.
+      # `yarn version-packages` is a no-op when there are no changesets.
+      - name: Consume any remaining changesets
+        run: yarn version-packages
+
       - name: Publish stable
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
         run: yarn release:stable
+
+      - name: Commit version bump
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(release): stable version bump"
+            git push
+          fi

@@ -37,7 +37,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/example/expo-pico.git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
     "directory": "packages/expo-pico-rooms"
   },
   "license": "MIT",
@@ -74,5 +74,14 @@
     "expo-pico-core": {
       "optional": false
     }
-  }
+  },
+  "files": [
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js",
+    "expo-module.config.json"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rooms",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues"
 }

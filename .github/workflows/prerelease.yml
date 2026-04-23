@@ -1,5 +1,21 @@
 name: Prerelease Publish
 
+# Publish the current workspace to the npm prerelease channel of choice.
+# Runs only on manual dispatch.
+#
+# Preconditions the caller is responsible for:
+#   1. `changeset pre enter <channel>` has been run at least once on the
+#      branch (creates .changeset/pre.json). Changesets publish will
+#      refuse to bump pre-release versions otherwise.
+#   2. At least one .changeset/*.md file exists describing the changes.
+#   3. Repo has NPM_TOKEN secret configured (classic or automation token
+#      with publish scope, OR the workflow uses the built-in OIDC
+#      provenance flow — see id-token: write below).
+#
+# This workflow does the safe thing: lint → typecheck → test → build →
+# pack dry-run → consume changesets via `changeset version` → publish.
+# If any step fails, no tarballs are published.
+
 on:
   workflow_dispatch:
     inputs:
@@ -42,15 +58,44 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn test:pack
-      - run: yarn example:prebuild:android
-      - run: yarn example:assemble:mobile
-      - run: yarn example:assemble:pico
+
+      # Optional: only run the example assemble jobs if an Android SDK is
+      # already set up. The verify/android job in ci.yml covers this on
+      # every PR, so repeating it here just slows the prerelease path.
+      # Uncomment if you want the publish gate to block on a successful
+      # example build too.
+      # - run: yarn example:prebuild:android
+      # - run: yarn example:assemble:mobile
+      # - run: yarn example:assemble:pico
+
+      # Consume pending .changeset/*.md files → bump versions.
+      # `changeset version` refuses to run outside pre mode if
+      # .changeset/pre.json exists but isn't active; under a proper
+      # `changeset pre enter <channel>` state it bumps -alpha.N / -beta.N
+      # / -rc.N suffixes correctly.
+      - name: Consume changesets
+        run: yarn version-packages
+
       - name: Publish prerelease
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
         run: |
-          if [ "${{ github.event.inputs.channel }}" = "alpha" ]; then
-            yarn release:alpha
-          elif [ "${{ github.event.inputs.channel }}" = "beta" ]; then
-            yarn release:beta
-          else
-            yarn release:rc
+          case "${{ github.event.inputs.channel }}" in
+            alpha) yarn release:alpha ;;
+            beta)  yarn release:beta ;;
+            rc)    yarn release:rc ;;
+          esac
+
+      # Commit the version bump so subsequent prerelease runs start from
+      # the right baseline. Skips cleanly if changeset version was a
+      # no-op (no pending changesets).
+      - name: Commit version bump
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(release): ${{ github.event.inputs.channel }} version bump"
+            git push
           fi

@@ -35,7 +35,11 @@
     "scores",
     "rankings"
   ],
-  "repository": "https://github.com/your-org/expo-pico",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-leaderboards"
+  },
   "bugs": "https://github.com/your-org/expo-pico/issues",
   "license": "MIT",
   "homepage": "https://github.com/your-org/expo-pico/packages/expo-pico-leaderboards",
@@ -70,5 +74,12 @@
         "expo-pico-leaderboards"
       ]
     }
-  }
+  },
+  "files": [
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js",
+    "expo-module.config.json"
+  ]
 }

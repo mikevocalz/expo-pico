@@ -20,10 +20,16 @@
     "prepublishOnly": "expo-module prepublishOnly",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["expo", "pico", "pico-account", "pico-platform", "social"],
+  "keywords": [
+    "expo",
+    "pico",
+    "pico-account",
+    "pico-platform",
+    "social"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/example/expo-pico.git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
     "directory": "packages/expo-pico-account"
   },
   "license": "MIT",
@@ -54,7 +60,18 @@
     "react-native": "*"
   },
   "peerDependenciesMeta": {
-    "expo": { "optional": false },
-    "expo-pico-core": { "optional": false }
-  }
+    "expo": {
+      "optional": false
+    },
+    "expo-pico-core": {
+      "optional": false
+    }
+  },
+  "files": [
+    "build",
+    "android",
+    "expo-module.config.json"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-account",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues"
 }

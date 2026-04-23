@@ -54,5 +54,12 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@1.22.22",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git"
+  },
+  "license": "MIT",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "homepage": "https://github.com/mikevocalz/expo-pico#readme"
 }

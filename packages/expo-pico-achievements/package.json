@@ -34,7 +34,11 @@
     "achievements",
     "gamification"
   ],
-  "repository": "https://github.com/your-org/expo-pico",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-achievements"
+  },
   "bugs": "https://github.com/your-org/expo-pico/issues",
   "license": "MIT",
   "homepage": "https://github.com/your-org/expo-pico/packages/expo-pico-achievements",
@@ -69,5 +73,12 @@
         "expo-pico-achievements"
       ]
     }
-  }
+  },
+  "files": [
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js",
+    "expo-module.config.json"
+  ]
 }

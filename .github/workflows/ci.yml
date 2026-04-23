@@ -24,6 +24,15 @@ jobs:
       - run: yarn build
       - run: yarn test:pack
 
+      # Advisory: report whether any changesets are pending so PR
+      # authors see the impact on the next release before merge.
+      # `--output` writes a machine-readable summary; `--since` limits
+      # the check to changes on this branch only. Not a gate — never
+      # fails the build. Run after build so a broken build fails fast.
+      - name: Changeset status
+        if: github.event_name == 'pull_request'
+        run: yarn changeset status --since=origin/${{ github.base_ref }} || true
+
   example-android:
     runs-on: ubuntu-latest
     env:

@@ -1,0 +1,54 @@
+name: Version Packages
+
+# Opens (or updates) a "Version Packages" PR whenever a commit lands on
+# `main` that contains pending .changeset/*.md files. The PR consumes
+# those changesets via `yarn version-packages`, bumps each affected
+# package's version per its changeset (patch / minor / major), rolls
+# CHANGELOGs, and deletes the consumed changesets.
+#
+# Merge the PR → the stable release workflow (release.yml) runs and
+# publishes the bumped versions.
+#
+# This workflow intentionally does NOT publish. Publishing is gated on
+# a human merging the Version Packages PR to avoid surprise npm
+# releases from rogue commits.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: version-pr
+  cancel-in-progress: true
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    # Skip when the triggering commit is the bot-authored version bump
+    # itself — otherwise we loop.
+    if: ${{ !contains(github.event.head_commit.message, 'chore(release):') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+
+      - name: Create Version Packages PR
+        uses: changesets/action@v1
+        with:
+          # Runs `yarn version-packages` inside the action to bump the
+          # package versions and update CHANGELOGs. Does not publish.
+          version: yarn version-packages
+          commit: "chore(release): version packages"
+          title: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
