@@ -17,9 +17,13 @@
       "types": "./plugin/build/withPico.d.ts"
     }
   },
+  "bin": {
+    "expo-pico-doctor": "./cli/build/doctor.js"
+  },
   "scripts": {
     "build": "expo-module build",
     "build:plugin": "tsc --project plugin/tsconfig.json",
+    "build:cli": "tsc --project cli/tsconfig.json && chmod +x cli/build/doctor.js",
     "clean": "expo-module clean",
     "lint": "expo-module lint",
     "test": "jest --config jest.config.js",
@@ -73,6 +77,7 @@
   "files": [
     "build",
     "android",
+    "cli/build",
     "plugin/build",
     "app.plugin.js",
     "expo-module.config.json"

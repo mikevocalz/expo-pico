@@ -9,6 +9,10 @@
       "dependsOn": ["^build"],
       "outputs": ["plugin/build/**"]
     },
+    "build:cli": {
+      "dependsOn": ["^build", "build:plugin"],
+      "outputs": ["cli/build/**"]
+    },
     "test": {
       "dependsOn": ["^build"],
       "outputs": []

@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "postinstall": "patch-package",
-    "build": "turbo run build build:plugin",
+    "build": "turbo run build build:plugin build:cli",
     "prepare": "yarn workspaces run prepare",
     "clean": "turbo run clean",
     "lint": "turbo run lint",

@@ -1565,3 +1565,99 @@ runtime permission or after the Swan runtime finishes initializing.
 | `formatDiagnostics` output                                         | Jest                                                           |
 | Native PackageManager probes actually fire                         | Requires the example app on a device (deferred)                |
 | DiagnosticsPanel UI layout on PICO vs. mobile                      | Requires the example app on each target (deferred)             |
+
+---
+
+## 21. `expo-pico-doctor` CLI (Phase G)
+
+### 21.1 Rationale
+
+Phase E added prebuild diagnostics — warnings that fire during `npx expo prebuild`. That catches misconfigs, but only at the point where the developer is already spending 30+ seconds on the prebuild pipeline.
+
+Phase G extracts the same checks into a standalone CLI, `expo-pico-doctor`, so the diagnostic can run:
+
+- Sub-second as a pre-commit hook.
+- In a GitHub Actions PR gate without running the full Android toolchain.
+- In a VS Code task / tasks.json integration before the developer kicks off a real build.
+
+The checks are identical — both entry points share the same pure `runDiagnosticChecks(options)` reducer in `plugin/src/withPicoDiagnostics.ts`. This phase explicitly refactors that file so the same check list powers both the config plugin and the CLI.
+
+### 21.2 Usage
+
+```bash
+# Run against the current project (defaults to cwd)
+npx expo-pico-doctor
+
+# Run against an explicit project root
+npx expo-pico-doctor --project ./apps/my-pico-app
+
+# Machine-readable output (for editor / CI consumption)
+npx expo-pico-doctor --json
+
+# Treat warnings as gating (exit code 1). Useful in CI.
+npx expo-pico-doctor --fail-on-warning
+```
+
+Exit codes:
+
+| Code | Meaning                                                                 |
+| ---- | ----------------------------------------------------------------------- |
+| 0    | No errors. Warnings may still have printed.                             |
+| 1    | At least one error, OR `--fail-on-warning` and >= 1 warning.            |
+| 2    | Could not locate or parse the Expo config / plugin entry.               |
+
+### 21.3 Config loading
+
+Doctor tries two loaders in order:
+
+1. **`@expo/config.getConfig(projectRoot, { skipPlugins: true })`** — the canonical Expo loader. Handles `app.config.ts`, `app.config.js`, and `app.json` merging. `skipPlugins: true` skips plugin *resolution* to avoid requiring every plugin's compiled JS just to read the plugin list — but empirically, this also strips the raw plugins array on some Expo versions, so:
+2. **Filesystem fallback** — reads `app.config.json` or `app.json` directly and parses the `plugins` array out.
+
+Consequence: for projects using `app.config.ts`, doctor may or may not see the plugins array depending on how `@expo/config` handles it. Workaround: pipe the resolved config through `npx expo config --type prebuild --json` once, drop the output at `/tmp/app.config.json`, and point doctor at `/tmp`. Documented in `RELEASING.md` and in the CLI help text.
+
+We do not ship an embedded TypeScript transpilation pipeline (would add a ~10 MB `esbuild` dep) — the workaround above is cheap and more robust than an in-process TS loader.
+
+### 21.4 Output shape
+
+**Pretty (default):**
+
+```
+expo-pico-doctor
+  project: /repo/apps/my-pico-app
+  xrMode: pico-swan   appType: vr   buildVariant: pico
+
+WARN    identity.missing
+        xrMode 'pico-swan' is an immersive build but no picoAppId / platformService.picoAppId is set. …
+
+1 warning
+```
+
+**JSON (`--json`):**
+
+```json
+{
+  "projectRoot": "...",
+  "resolvedOptions": { "xrMode": "pico-swan", "appType": "vr", ... },
+  "findings": [ { "id": "identity.missing", "severity": "warning", "message": "..." } ],
+  "summary": { "errorCount": 0, "warnCount": 1, "infoCount": 0 }
+}
+```
+
+Colors are `NO_COLOR`- / `FORCE_COLOR`-aware. TTY autodetects; piped output stays plain.
+
+### 21.5 Refactor note
+
+`withPicoDiagnostics` is now a ~10-line wrapper that calls the shared `runDiagnosticChecks(options)` reducer and forwards each finding to `WarningAggregator.addWarningAndroid`. The plugin prebuild behavior is unchanged — the existing 16 `withPicoDiagnostics.test.ts` cases continue to pass against the wrapper.
+
+The `DiagnosticCheckFinding` shape intentionally mirrors Phase F's runtime `DiagnosticFinding` shape (`id`, `severity`, `message`) so the runtime `DiagnosticsPanel` and the CLI can render from the same structure. Downstream tooling that wants to aggregate build-time + runtime findings into a single view can do so without a translation layer.
+
+### 21.6 Validation matrix
+
+| Validation                                                             | When                                                           |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `runDiagnosticChecks` pure reducer correctness                         | Jest (`__tests__/runDiagnosticChecks.test.ts`, 11 cases)       |
+| CLI arg parsing + exit codes + output shape                            | Jest spawn tests (`__tests__/doctor-cli.test.ts`, 8 cases)     |
+| Built binary runs green against a clean fixture                        | CI `Doctor self-smoke` step                                    |
+| Pretty vs JSON output finding content matches                          | Jest spawn test (same `id`s in both)                           |
+| `--fail-on-warning` flips exit codes                                   | Jest spawn test                                                |
+| TypeScript config handling via `npx expo config` pipe                  | Documented workaround (RELEASING.md); requires full Expo SDK in the project — deferred |

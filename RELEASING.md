@@ -89,6 +89,26 @@ If a published version is broken:
 4. Let the Version Packages PR produce the next patch release.
 5. Once published, move the `latest` dist-tag if needed: `npm dist-tag add expo-pico-core@<good-version> latest`.
 
+## Running `expo-pico-doctor` locally
+
+`expo-pico-core` ships a CLI (`expo-pico-doctor`, bin entry in its `package.json`) that lints your Expo project's plugin config against the same seven diagnostic checks the prebuild pass emits. Useful before pushing to avoid surprise CI failures.
+
+```bash
+# From your Expo project root
+npx expo-pico-doctor
+```
+
+- **TypeScript configs.** Doctor does not ship an in-process TS transpiler. If your project uses `app.config.ts` and `@expo/config`'s default loader doesn't surface the plugins array on your Expo version, pre-resolve it once:
+  ```bash
+  # In your project root
+  npx expo config --type prebuild --json > /tmp/resolved.json
+  # Wrap in { "expo": ... } if doctor reports "plugin not found"
+  node -e 'const c=require("/tmp/resolved.json");require("fs").writeFileSync("/tmp/app.config.json",JSON.stringify({expo:c}))'
+  npx expo-pico-doctor --project /tmp
+  ```
+- **Pre-commit hook.** Add to `.git/hooks/pre-commit` or your Husky config: `npx expo-pico-doctor --fail-on-warning`. Exits 1 on warnings, so a clean commit requires a clean config.
+- **CI gate.** The repo's own `.github/workflows/ci.yml` runs a self-smoke of the doctor against a minimal fixture on every PR. A broken CLI can't ship from green CI.
+
 ## Questions
 
 Open an issue at https://github.com/mikevocalz/expo-pico/issues.

@@ -24,11 +24,33 @@ jobs:
       - run: yarn build
       - run: yarn test:pack
 
+      # Phase G doctor self-smoke — verifies the built CLI binary runs
+      # against a minimal fixture so a broken CLI can't ship from green
+      # CI. The full example-app lint happens locally (see RELEASING.md)
+      # since the example uses app.config.ts and doctor does not ship
+      # with its own TypeScript transpilation pipeline.
+      - name: Doctor self-smoke
+        run: |
+          mkdir -p /tmp/doctor-smoke
+          cat > /tmp/doctor-smoke/app.config.json <<'JSON'
+          {
+            "expo": {
+              "name": "smoke",
+              "slug": "smoke",
+              "plugins": [[
+                "expo-pico-core",
+                { "xrMode": "pico-os6", "appType": "vr",
+                  "platformService": { "picoAppId": "APP", "picoAppKey": "KEY" } }
+              ]]
+            }
+          }
+          JSON
+          node packages/expo-pico-core/cli/build/doctor.js \
+            --project /tmp/doctor-smoke --fail-on-warning
+
       # Advisory: report whether any changesets are pending so PR
       # authors see the impact on the next release before merge.
-      # `--output` writes a machine-readable summary; `--since` limits
-      # the check to changes on this branch only. Not a gate — never
-      # fails the build. Run after build so a broken build fails fast.
+      # Not a gate — never fails the build.
       - name: Changeset status
         if: github.event_name == 'pull_request'
         run: yarn changeset status --since=origin/${{ github.base_ref }} || true

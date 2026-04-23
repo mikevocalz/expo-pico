@@ -7,7 +7,18 @@ dist/
 .DS_Store
 *.local
 plugin/build/
+cli/build/
 .turbo/
+
+# Stray tsc emit — if a tsconfig ever misroots its outDir, catch it
+# before it gets committed alongside .ts sources.
+packages/*/plugin/src/**/*.js
+packages/*/plugin/src/**/*.d.ts
+packages/*/cli/src/**/*.js
+packages/*/cli/src/**/*.d.ts
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+!packages/__jest_stubs__/**/*.js
 
 # CNG-generated native projects (example app only)
 # Do NOT ignore packages/*/android/ — those contain library source code

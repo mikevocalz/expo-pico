@@ -40,9 +40,21 @@ npx expo run:android --variant picoDebug
 - **Android / PICO OS 6**
 - Forward-compatible with Expo SDK 56+ / RN 0.84.1+
 
+## Doctor
+
+Lint your project's PICO plugin config before prebuild:
+
+```bash
+npx expo-pico-doctor              # pretty output
+npx expo-pico-doctor --json       # machine-readable
+npx expo-pico-doctor --fail-on-warning  # CI gate
+```
+
+Ships with `expo-pico-core`. See §21 of ARCHITECTURE.md for the full check list.
+
 ## Architecture
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full design document covering all 14 specification sections.
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full design document covering all 21 specification sections — Swan platform support, launcher contract, Platform SDK identity, hardware capabilities, diagnostics, and release infrastructure.
 
 ## Development
 
