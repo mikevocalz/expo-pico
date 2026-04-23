@@ -1,5 +1,24 @@
 # Device testing required
 
+## Automated runner: `yarn validate:device`
+
+Most items in this doc are covered by `scripts/validate-device.sh`. From the repo root, with `adb` and `aapt` on PATH and a PICO (or Android emulator) connected via USB:
+
+```bash
+yarn validate:device            # full run
+yarn validate:device:no-adb     # manifest-only (no device required)
+# or pass individual flags:
+bash scripts/validate-device.sh --skip-build --skip-adb
+```
+
+The script runs six steps — workspace build + tests, `expo prebuild`, `assemblePicoDebug`, merged-manifest contract checks via `aapt dump xmltree`, `adb install` + `dumpsys package`, and a logcat scrape for the Phase Swan `PicoCorePackage` registration line. Each step prints pass / fail / skip independently; the summary at the end aggregates. Exit code 0 iff every non-skipped step passed.
+
+Log files for any failed step land under `/tmp/expo-pico-*.log` so you can re-inspect without re-running.
+
+The rows below are the full manual inventory — steps covered by the runner are marked **[automated]**.
+
+
+
 Running inventory of changes that landed in the `expo-pico` repo without real-hardware validation. Every item here is install-safe (mis-named manifest keys are silently ignored by the Android installer; mis-wired Gradle deps fail cleanly at `yarn install` time), but consumers building against these surfaces should run the specific test listed below on a real PICO device before relying on the behavior in production.
 
 This doc is the running "we shipped it; someone still has to prove it works" list. When a row gets a device pass, strike it through (or delete the row outright) and add a note to the affected package's README.
@@ -35,19 +54,19 @@ Each row has:
 
 | Item | Test procedure |
 | --- | --- |
-| `pvr.app.type=vr` meta-data appears in the merged manifest | `aapt dump xmltree <apk> AndroidManifest.xml \| grep pvr.app.type` |
-| OpenXR `IMMERSIVE_HMD` category on `.MainActivity` launcher intent-filter | Same aapt dump; grep for `IMMERSIVE_HMD` |
-| `com.pico.intent.category.VR` (and legacy `com.picovr.intent.category.VR`) categories land | Same aapt dump |
-| `<queries>` block with `com.pico.os.systemui` + `com.pico.platform` | Same aapt dump; confirm under the `<manifest>` root |
-| APK enumerates as immersive in PICO launcher | Install on PICO 4 / 4 Ultra / Swan; confirm the app appears in the VR / immersive section, not 2D apps |
+| `pvr.app.type=vr` meta-data appears in the merged manifest | **[automated]** `yarn validate:device` — step 4 |
+| OpenXR `IMMERSIVE_HMD` category on `.MainActivity` launcher intent-filter | **[automated]** step 4 |
+| `com.pico.intent.category.VR` (and legacy `com.picovr.intent.category.VR`) categories land | **[automated]** step 4 |
+| `<queries>` block with `com.pico.os.systemui` + `com.pico.platform` | **[automated]** step 4 |
+| APK enumerates as immersive in PICO launcher | Manual — install on PICO 4 / 4 Ultra / Swan; confirm the app appears in the VR / immersive section, not 2D apps |
 
 ### Phase B — Platform SDK identity
 
 | Item | Test procedure |
 | --- | --- |
-| `com.pico.loginpaysdk.UnityAuthInterface` + `…PicoSDKBrowser` activities land in merged manifest | `aapt dump xmltree <apk> \| grep loginpaysdk` |
+| `com.pico.loginpaysdk.UnityAuthInterface` + `…PicoSDKBrowser` activities land in merged manifest | **[automated]** step 4 (only checked when `PICO_PLATFORM_APP_ID` / `_KEY` env vars are set before running) |
 | `pico_app_id` / `pico_app_key` string resources land | Decompile APK or inspect `android/app/build/intermediates/merged_res/` after Gradle build |
-| `PICO_HAS_PLATFORM_IDENTITY` BuildConfig field reflects identity presence | `getPicoRuntimeInfo().hasPlatformIdentity` on a real device |
+| `PICO_HAS_PLATFORM_IDENTITY` BuildConfig field reflects identity presence | Manual — `getPicoRuntimeInfo().hasPlatformIdentity` shown in the example app's Runtime tab |
 
 ### Phase C / D — hardware capabilities
 
@@ -62,10 +81,10 @@ Each row has:
 
 | Item | Test procedure |
 | --- | --- |
-| `<uses-native-library android:name="libopenxr_loader.so"/>` reaches merged manifest | `aapt dump xmltree <apk> \| grep libopenxr_loader` |
-| `ndk { abiFilters 'arm64-v8a' }` applied to the pico flavor | `aapt dump badging <apk> \| grep native-code` — should show `arm64-v8a` only |
-| OpenXR loader actually loads at app boot | `System.loadLibrary("openxr_loader")` succeeds without `UnsatisfiedLinkError` |
-| Babylon React Native composes cleanly with `expo-pico-core` | Install both, run a Babylon scene on PICO hardware, confirm the immersive session initializes |
+| `<uses-native-library android:name="libopenxr_loader.so"/>` reaches merged manifest | **[automated]** step 4 |
+| `ndk { abiFilters 'arm64-v8a' }` applied to the pico flavor | **[automated]** step 4 |
+| OpenXR loader actually loads at app boot | Manual — `System.loadLibrary("openxr_loader")` succeeds without `UnsatisfiedLinkError` on a real device |
+| Babylon React Native composes cleanly with `expo-pico-core` | Manual — install both, run a Babylon scene on PICO hardware, confirm the immersive session initializes |
 
 ### Phase F — runtime diagnostics
 

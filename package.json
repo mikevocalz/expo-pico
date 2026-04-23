@@ -38,6 +38,8 @@
     "example:prebuild:android": "cd example && npx expo prebuild --platform android --no-install",
     "example:assemble:mobile": "cd example/android && ./gradlew assembleMobileDebug",
     "example:assemble:pico": "cd example/android && ./gradlew assemblePicoDebug",
+    "validate:device": "bash scripts/validate-device.sh",
+    "validate:device:no-adb": "bash scripts/validate-device.sh --skip-adb",
     "studio": "open -a 'Android Studio' example/android"
   },
   "devDependencies": {
