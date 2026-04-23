@@ -8,16 +8,20 @@ import {
   Color4,
   DirectionalLight,
   HemisphericLight,
-  Mesh,
-  MeshBuilder,
   Scene,
-  StandardMaterial,
   Vector3,
 } from '@babylonjs/core';
+
+// Side-effect import: registers Babylon's WebXR default experience +
+// its OpenXR runtime binding on the active scene. Without this the
+// SessionManager can't negotiate an immersive session on PICO hardware.
+import '@babylonjs/core/XR/webXRDefaultExperience';
 
 import { getPicoRuntimeInfo } from 'expo-pico-core';
 
 import { attachDemoModel } from './GltfModel';
+
+type XrSessionStatus = 'idle' | 'requesting' | 'active' | 'unsupported' | 'failed';
 
 /**
  * Root 3D scene for the example app, rendered via Babylon React Native.
@@ -50,6 +54,8 @@ export function PicoSceneRoot(): JSX.Element {
   const sceneRef = useRef<Scene | null>(null);
   const info = useMemo(() => getPicoRuntimeInfo(), []);
   const [sceneStatus, setSceneStatus] = useState<'booting' | 'glb' | 'fallback'>('booting');
+  const [xrStatus, setXrStatus] = useState<XrSessionStatus>('idle');
+  const [xrDetail, setXrDetail] = useState<string | null>(null);
 
   const disposeScene = useCallback(() => {
     const s = sceneRef.current;
@@ -95,8 +101,55 @@ export function PicoSceneRoot(): JSX.Element {
       if (sceneRef.current === scene) setSceneStatus(status);
     });
 
+    // Phase E + example compose path: attempt to negotiate an OpenXR
+    // session via Babylon's default XR experience. This exercises the
+    // path `expo-pico-core`'s `<uses-native-library libopenxr_loader.so/>`
+    // declaration ultimately feeds — System.loadLibrary("openxr_loader")
+    // runs inside Babylon's native xr binding the first time
+    // createDefaultXRExperienceAsync is called.
+    //
+    // The call is gated to pico devices because Babylon's WebXR path
+    // fails reliably on non-XR devices and clutters logs. On a real
+    // PICO 4 / 4 Ultra / Swan with OpenXR support, status transitions
+    // through 'requesting' → 'active' within ~1 s. On a non-PICO
+    // device it stays at 'unsupported' and the rest of the scene is
+    // unaffected.
+    if (info.isPicoDevice) {
+      setXrStatus('requesting');
+      scene
+        .createDefaultXRExperienceAsync({ disableDefaultUI: true })
+        .then((xr) => {
+          if (sceneRef.current !== scene) {
+            xr.dispose();
+            return;
+          }
+          if (!xr.baseExperience) {
+            setXrStatus('unsupported');
+            setXrDetail('Babylon reported no XR base experience');
+            return;
+          }
+          setXrStatus('active');
+          setXrDetail(null);
+          xr.baseExperience.onStateChangedObservable.add((state) => {
+            if (sceneRef.current !== scene) return;
+            // State enum is numeric (0 ENTERING_XR, 1 EXITING_XR,
+            // 2 IN_XR, 3 NOT_IN_XR). Map the important ones.
+            if (state === 2) setXrStatus('active');
+            else if (state === 3) setXrStatus('idle');
+          });
+        })
+        .catch((err) => {
+          if (sceneRef.current !== scene) return;
+          setXrStatus('failed');
+          setXrDetail(err instanceof Error ? err.message : String(err));
+        });
+    } else {
+      setXrStatus('unsupported');
+      setXrDetail('non-PICO device — skipping XR session init');
+    }
+
     return disposeScene;
-  }, [engine, disposeScene]);
+  }, [engine, disposeScene, info.isPicoDevice]);
 
   return (
     <View style={styles.wrapper}>
@@ -166,6 +219,34 @@ export function PicoSceneRoot(): JSX.Element {
           }
           accent={sceneStatus === 'glb' ? 'good' : sceneStatus === 'fallback' ? 'warn' : 'info'}
         />
+        <Row
+          label="xr session"
+          value={
+            xrStatus === 'idle'
+              ? 'idle'
+              : xrStatus === 'requesting'
+                ? 'requesting…'
+                : xrStatus === 'active'
+                  ? 'active'
+                  : xrStatus === 'unsupported'
+                    ? 'unsupported'
+                    : 'failed'
+          }
+          accent={
+            xrStatus === 'active'
+              ? 'good'
+              : xrStatus === 'failed'
+                ? 'bad'
+                : xrStatus === 'requesting'
+                  ? 'info'
+                  : undefined
+          }
+        />
+        {xrDetail ? (
+          <Text style={[styles.overlayRow, styles.xrDetail]} numberOfLines={2}>
+            {xrDetail}
+          </Text>
+        ) : null}
 
         {info.swanRuntimeInitialized || info.os6RuntimeInitialized ? (
           <>
@@ -251,6 +332,13 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#2a2d45',
     marginVertical: 5,
+  },
+  xrDetail: {
+    color: '#8a91c0',
+    fontStyle: 'italic',
+    fontSize: 10,
+    marginTop: 2,
+    maxWidth: 240,
   },
 });
 

@@ -5,5 +5,12 @@
     "rootDir": "."
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "build", "plugin", "android", "__tests__"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "plugin",
+    "android",
+    "__tests__",
+    "src/__tests__"
+  ]
 }

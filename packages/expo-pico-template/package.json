@@ -35,16 +35,16 @@
     "doctor": "expo-pico-doctor --fail-on-warning"
   },
   "dependencies": {
-    "expo": "~55.0.9",
-    "expo-pico-core": "^1.0.0",
+    "expo": "~55.0.17",
+    "expo-pico-core": "*",
     "expo-status-bar": "~2.0.0",
     "react": "19.2.0",
     "react-native": "0.84.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
-    "@types/react": "~19.2.0",
-    "typescript": "~5.3.3"
+    "@babel/core": "^7.29.0",
+    "@types/react": "~19.2.14",
+    "typescript": "~6.0.3"
   },
   "expo": {
     "name": "PICO OS 6 / Swan",

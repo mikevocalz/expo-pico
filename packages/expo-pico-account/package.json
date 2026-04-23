@@ -41,17 +41,17 @@
     "@expo-pico/platform-service-common": "*"
   },
   "devDependencies": {
-    "@expo/config-plugins": "~9.0.0",
-    "@types/jest": "^29.5.12",
-    "@types/react": "~19.2.0",
-    "expo": "~55.0.0",
+    "@expo/config-plugins": "~55.0.8",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.14",
+    "expo": "~55.0.17",
     "expo-modules-core": "~2.3.0",
-    "expo-module-scripts": "~4.0.0",
+    "expo-module-scripts": "~55.0.2",
     "expo-pico-core": "*",
-    "jest": "^29.7.0",
+    "jest": "^30.3.0",
     "react-native": "0.84.1",
-    "ts-jest": "^29.1.0",
-    "typescript": "~5.3.3"
+    "ts-jest": "^29.4.9",
+    "typescript": "~6.0.3"
   },
   "peerDependencies": {
     "expo": ">=55.0.0",

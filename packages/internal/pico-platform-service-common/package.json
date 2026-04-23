@@ -19,7 +19,9 @@
   },
   "typesVersions": {
     "*": {
-      "testing": ["./build/testing/contractFactory.d.ts"]
+      "testing": [
+        "./build/testing/contractFactory.d.ts"
+      ]
     }
   },
   "scripts": {
@@ -34,15 +36,17 @@
     "expo-modules-core": ">=1.12.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^30.0.0",
     "expo-modules-core": "^1.12.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.4",
-    "typescript": "~5.3.3"
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
+    "typescript": "~6.0.3"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.ts"]
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
   }
 }
