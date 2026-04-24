@@ -176,11 +176,15 @@ if yarn --silent example:prebuild:android >/tmp/expo-pico-prebuild.log 2>&1; the
   record_pass 'npx expo prebuild --clean' 'settings.gradle + app/build.gradle regenerated'
 
   # Confirm autolinking picked up expo-pico-core as an includable project.
-  if grep -q "include ':expo-pico-core'" example/android/settings.gradle 2>/dev/null; then
-    record_pass 'settings.gradle: include :expo-pico-core' 'autolinking resolved the core project as expected'
+  # Expo SDK 55 resolves modules at settings.gradle eval time via
+  # `expoAutolinking.useExpoModules()` rather than emitting literal `include`
+  # lines, so we query the autolinker directly instead of grepping.
+  if (cd example && npx --no expo-modules-autolinking resolve --platform android --json 2>/dev/null \
+        | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));process.exit(d.modules.some(m=>m.packageName==='expo-pico-core')?0:1)"); then
+    record_pass 'autolinker resolves :expo-pico-core' 'expo-modules-autolinking discovered the core project as expected'
   else
-    record_fail 'settings.gradle: include :expo-pico-core' \
-      "the autolinker did not emit the expected project include — Phase L's cross-module import will fail at compile time. Revert the 'implementation project(:expo-pico-core)' lines in packages/expo-pico-{account,iap,notifications,rooms,rtc,spatial,subscription}/android/build.gradle"
+    record_fail 'autolinker resolves :expo-pico-core' \
+      "expo-modules-autolinking did not discover expo-pico-core — Phase L's cross-module import will fail at compile time. Revert the 'implementation project(:expo-pico-core)' lines in packages/expo-pico-{account,iap,notifications,rooms,rtc,spatial,subscription}/android/build.gradle"
   fi
 else
   record_fail 'npx expo prebuild --clean' "see /tmp/expo-pico-prebuild.log"
