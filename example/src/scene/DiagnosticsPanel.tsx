@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import {
   formatDiagnostics,
+  getCapabilitySnapshot,
   getPicoDiagnostics,
   getPlatformSdkProbe,
   getPlatformSdkVersion,
   isPlatformSdkPresent,
   type DiagnosticSeverity,
+  type PicoCapabilitySnapshotEntry,
   type PicoDiagnosticsReport,
   type PicoPlatformSdkProbe,
 } from 'expo-pico-core';
@@ -37,6 +39,7 @@ import {
 export function DiagnosticsPanel(): JSX.Element {
   const [report, setReport] = useState<PicoDiagnosticsReport | null>(null);
   const [probe, setProbe] = useState<PicoPlatformSdkProbe | null>(null);
+  const [capabilities, setCapabilities] = useState<PicoCapabilitySnapshotEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [hideInfo, setHideInfo] = useState<boolean>(false);
@@ -45,12 +48,14 @@ export function DiagnosticsPanel(): JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      const [next, probeResult] = await Promise.all([
+      const [next, probeResult, capSnapshot] = await Promise.all([
         getPicoDiagnostics(),
         getPlatformSdkProbe(),
+        getCapabilitySnapshot(),
       ]);
       setReport(next);
       setProbe(probeResult);
+      setCapabilities(capSnapshot);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -113,7 +118,12 @@ export function DiagnosticsPanel(): JSX.Element {
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : report ? (
-        <DiagnosticsBody report={report} probe={probe} hideInfo={hideInfo} />
+        <DiagnosticsBody
+          report={report}
+          probe={probe}
+          capabilities={capabilities}
+          hideInfo={hideInfo}
+        />
       ) : null}
     </View>
   );
@@ -122,10 +132,12 @@ export function DiagnosticsPanel(): JSX.Element {
 function DiagnosticsBody({
   report,
   probe,
+  capabilities,
   hideInfo,
 }: {
   report: PicoDiagnosticsReport;
   probe: PicoPlatformSdkProbe | null;
+  capabilities: PicoCapabilitySnapshotEntry[] | null;
   hideInfo: boolean;
 }): JSX.Element {
   const sdkVersion = getPlatformSdkVersion();
@@ -184,6 +196,46 @@ function DiagnosticsBody({
             </View>
           ))}
         </View>
+      ) : null}
+
+      {capabilities && capabilities.length > 0 ? (
+        <>
+          <Text style={styles.sectionHeader}>CAPABILITIES (Phase K)</Text>
+          <View style={styles.capTable}>
+            {capabilities.map((entry) => (
+              <View key={entry.name} style={styles.capRow}>
+                <Text style={styles.capName}>{entry.name}</Text>
+                <Text style={[styles.capCell, entry.declared ? styles.good : styles.info]}>
+                  {entry.declared ? 'decl' : '—'}
+                </Text>
+                <Text
+                  style={[
+                    styles.capCell,
+                    entry.systemFeatureAvailable == null
+                      ? styles.info
+                      : entry.systemFeatureAvailable
+                        ? styles.good
+                        : styles.warn,
+                  ]}
+                >
+                  {entry.systemFeatureAvailable == null
+                    ? 'n/a'
+                    : entry.systemFeatureAvailable
+                      ? 'feat'
+                      : 'feat✗'}
+                </Text>
+                <Text style={[styles.capCell, entry.sdkAvailable ? styles.good : styles.info]}>
+                  {entry.sdkAvailable ? 'sdk' : '—'}
+                </Text>
+                <Text
+                  style={[styles.capCell, entry.fullyAvailable ? styles.good : styles.info]}
+                >
+                  {entry.fullyAvailable ? '✓' : '·'}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
       ) : null}
 
       <Text style={styles.sectionHeader}>
@@ -346,6 +398,32 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 4,
     paddingHorizontal: 4,
+  },
+  capTable: {
+    marginTop: 4,
+    marginBottom: 4,
+    paddingHorizontal: 4,
+  },
+  capRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 2,
+    gap: 6,
+  },
+  capName: {
+    flex: 1,
+    color: '#d0d4f0',
+    fontSize: 11,
+    fontFamily: 'monospace',
+  },
+  capCell: {
+    width: 52,
+    fontSize: 10,
+    fontFamily: 'monospace',
+    textAlign: 'center',
+  },
+  warn: {
+    color: '#ffb15a',
   },
   probeRow: {
     flexDirection: 'row',

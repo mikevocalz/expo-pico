@@ -176,4 +176,41 @@ export type {
   PicoDiagnosticsReport,
 } from './types';
 
+// Phase K — capability runtime surface (declared flags + per-capability
+// async APIs covering display, tracking, spatial, controllers, sensors,
+// and spatial audio).
+export {
+  capabilities,
+  getDeclaredCapabilities,
+  getDeclaredRefreshRates,
+  getDeclaredTargetDevices,
+  getCapabilitySnapshot,
+  isCapabilityAvailable,
+  display,
+  eye,
+  face,
+  body,
+  hand,
+  boundary,
+  scene,
+  controllers,
+  motionTracker,
+  sensors,
+  spatialAudio,
+} from './capabilities';
+export type {
+  PicoBodyJoint,
+  PicoCapabilityName,
+  PicoCapabilitySnapshotEntry,
+  PicoController,
+  PicoDeclaredCapabilities,
+  PicoDetectedPlane,
+  PicoEyePose,
+  PicoFoveationLevel,
+  PicoHandPose,
+  PicoHandPoseSide,
+  PicoHighRateSensor,
+  PicoMotionTracker,
+} from './types';
+
 export default ExpoPicoModule;

@@ -125,6 +125,8 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
 
     if (!gradleContains(contents, PICO_SDK_MARKER)) {
       const emulatorFlag = options.enableEmulatorOptimizations ? 'true' : 'false';
+      const refreshRatesValue = options.refreshRates.join(',');
+      const targetDevicesValue = options.targetDevices.join(',');
       const buildConfigBlock = `
 ${PICO_SDK_MARKER}
 def picoAppIdValue = "\\"${options.platformService.picoAppId ?? options.picoAppId ?? ''}\\""
@@ -136,6 +138,8 @@ def picoXrModeValue = "\\"${options.xrMode}\\""
 def picoAppTypeValue = "\\"${options.appType}\\""
 def picoHasPlatformIdentityValue = "${options.platformService.hasIdentity}"
 def picoHasIapIdentityValue = "${options.platformService.hasIapIdentity}"
+def picoRefreshRatesValue = "\\"${refreshRatesValue}\\""
+def picoTargetDevicesValue = "\\"${targetDevicesValue}\\""
 
 android.defaultConfig {
     buildConfigField "String", "PICO_APP_ID", picoAppIdValue
@@ -148,6 +152,28 @@ android.defaultConfig {
     buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityValue
     buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityValue
     buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", "${emulatorFlag}"
+    // Phase K — capability declarations exposed at runtime so JS code can
+    // ask "did the prebuild flag X?" without re-reading the manifest.
+    buildConfigField "boolean", "PICO_HAND_TRACKING", "${options.handTracking}"
+    buildConfigField "boolean", "PICO_PASSTHROUGH", "${options.passthrough}"
+    buildConfigField "boolean", "PICO_SCENE_UNDERSTANDING", "${options.sceneUnderstanding}"
+    buildConfigField "boolean", "PICO_EYE_TRACKING", "${options.eyeTracking}"
+    buildConfigField "boolean", "PICO_FACE_TRACKING", "${options.faceTracking}"
+    buildConfigField "boolean", "PICO_BODY_TRACKING", "${options.bodyTracking}"
+    buildConfigField "boolean", "PICO_SPATIAL_AUDIO", "${options.spatialAudio}"
+    buildConfigField "boolean", "PICO_FOVEATED_RENDERING", "${options.foveatedRendering}"
+    buildConfigField "boolean", "PICO_HIGH_SAMPLING_RATE_SENSORS", "${options.highSamplingRateSensors}"
+    buildConfigField "boolean", "PICO_BOUNDARY", "${options.boundary}"
+    buildConfigField "boolean", "PICO_SCENE_MESH", "${options.sceneMesh}"
+    buildConfigField "boolean", "PICO_SENSE_CONTROLLER", "${options.picoSenseController}"
+    buildConfigField "boolean", "PICO_MOTION_TRACKER", "${options.motionTracker}"
+    buildConfigField "boolean", "PICO_CONTROLLER_HAPTICS", "${options.controllerHaptics}"
+    buildConfigField "boolean", "PICO_OPENXR_LOADER", "${options.openXrLoaderDeclaration}"
+    buildConfigField "boolean", "PICO_NDK_ABI_FILTERS", "${options.ndkAbiFilters}"
+    buildConfigField "boolean", "PICO_DEVELOPER_TOOLS", "${options.developerTools}"
+    buildConfigField "boolean", "PICO_ENTITLEMENT_CHECK", "${options.entitlementCheck}"
+    buildConfigField "String", "PICO_REFRESH_RATES", picoRefreshRatesValue
+    buildConfigField "String", "PICO_TARGET_DEVICES", picoTargetDevicesValue
 }
 `;
       contents = contents + '\n' + buildConfigBlock;

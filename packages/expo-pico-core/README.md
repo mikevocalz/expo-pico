@@ -204,6 +204,50 @@ if (report.summary.hasError) {
 
 All device / identity / SDK getters are synchronous — they read compile-time constants + BuildConfig fields resolved at module init.
 
+## Capability runtime (Phase K)
+
+Every prebuild capability flag (eye tracking, passthrough, foveated rendering, boundary, scene mesh, controller haptics, …) has a matching runtime API. Flags that aren't enabled at prebuild time or that the device doesn't support return `null` / `false` / empty lists — callers destructure safely without branching.
+
+```ts
+import { capabilities } from 'expo-pico-core';
+
+// Synchronous: what did the prebuild plugin declare?
+const decl = capabilities.getDeclared();
+// { handTracking: true, passthrough: true, eyeTracking: false, ... }
+
+// Three-layer snapshot: declared × systemFeature × sdk × fullyAvailable.
+const snapshot = await capabilities.getSnapshot();
+
+// Display surfaces (OpenXR-backed, no PICO SDK required):
+await capabilities.display.setRefreshRate(90);
+const rates = await capabilities.display.getSupportedRefreshRates();
+await capabilities.display.setFoveationLevel('high');
+await capabilities.display.setPassthroughEnabled(true);
+
+// Tracking surfaces (PICO SDK gated; null when SDK absent):
+if (await capabilities.isAvailable('eyeTracking')) {
+  await capabilities.eye.enable();
+  const pose = await capabilities.eye.getPose();
+}
+const hand = await capabilities.hand.getPose();
+const joints = await capabilities.body.getJoints();
+const weights = await capabilities.face.getWeights();
+
+// Boundary + scene:
+const geom = await capabilities.boundary.getGeometry();
+const planes = await capabilities.scene.getPlanes();
+
+// Controllers + Motion Tracker:
+const ctrls = await capabilities.controllers.list();
+await capabilities.controllers.triggerHaptic('left', 0.8, 40);
+const trackers = await capabilities.motionTracker.list();
+
+// IMU sensor rate report (pure AOSP, no SDK gating):
+const sensors = await capabilities.sensors.getHighRate();
+```
+
+Phase K is reflection-gated on the Kotlin side — no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
+
 ## CLI: `expo-pico-doctor`
 
 Ships as a binary alongside the JS API. Lints your `app.config` against the same seven checks the prebuild pass emits, without running `npx expo prebuild`.

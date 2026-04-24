@@ -69,19 +69,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // Phase C — hardware capabilities. Each toggle emits a
         // uses-feature (required=false so non-capable devices still
         // install) plus the matching permission where applicable.
-        // Leave these off unless the app actually uses the hardware —
-        // PICO reviewers may flag over-declared features.
-        eyeTracking: false,
-        faceTracking: false,
-        bodyTracking: false,
-        spatialAudio: false,
-        foveatedRendering: false,
+        // The example app declares every capability on so the Diagnostics
+        // tab can exercise the Phase K runtime probes end-to-end on a
+        // real PICO Swan device. Downstream apps should turn these off
+        // unless they actually use the hardware — PICO reviewers flag
+        // over-declared features.
+        eyeTracking: true,
+        faceTracking: true,
+        bodyTracking: true,
+        spatialAudio: true,
+        foveatedRendering: true,
         highSamplingRateSensors: true, // Head-tracked VR typically needs 500+Hz IMU sampling.
-        refreshRates: [72, 90], // Declare the rates the renderer supports.
-        // Phase D — late-audit additions. Same default-off pattern as
-        // the Phase C toggles.
-        boundary: false, // Guardian / boundary system; opt in for room-scale apps.
-        sceneMesh: false, // Scene mesh capture; distinct from plane-only sceneUnderstanding.
+        refreshRates: [72, 90, 120], // Declare the rates the renderer supports.
+        // Phase D — late-audit additions.
+        boundary: true, // Guardian / boundary system; opt in for room-scale apps.
+        sceneMesh: true, // Scene mesh capture; distinct from plane-only sceneUnderstanding.
+        // Phase I — controller input + Motion Tracker + haptics.
+        picoSenseController: true,
+        motionTracker: true,
+        controllerHaptics: true,
         // Phase E — toolchain. Both default to true when xrMode !== 'mobile',
         // so these lines are only here for documentation / override. Set
         // ndkAbiFilters: false to keep the 32-bit slice; set

@@ -1749,3 +1749,94 @@ The example's Phase F `DiagnosticsPanel` now renders the probe report on its sum
 | `getPicoRuntimeInfo` Phase J fields present/absent                  | Jest (2 cases)                                                               |
 | `Class.forName` actually resolves PICO SDK classes                  | Requires a device / emulator with the real SDK AAR in place (deferred)        |
 | DiagnosticsPanel UI renders probe summary correctly                 | Requires example app on a device (deferred)                                   |
+
+## 23. Capability runtime — every prebuild flag gets a runtime API (Phase K)
+
+### 23.1 The gap Phase K closes
+
+Phases A–C declared manifest-level capability flags (`eyeTracking`, `passthrough`, `foveatedRendering`, …). Phase J added the cross-cutting PICO Platform SDK detector. But every capability flag was **declaration only**: flipping `eyeTracking: true` in `app.config.ts` wrote `<uses-feature pico.hardware.eyetracking>` and `<uses-permission com.picovr.permission.EYE_TRACKING>` to the manifest, but no JS code could actually read a gaze pose at runtime.
+
+Phase K closes that gap. Every capability the prebuild plugin declares now has:
+
+1. **A BuildConfig mirror** — JS code can ask "did the prebuild flag this on?" synchronously via `getDeclaredCapabilities()`.
+2. **A three-layer snapshot** — `getCapabilitySnapshot()` reports per-capability `declared` × `systemFeatureAvailable` (PackageManager) × `sdkAvailable` (reflection probe) × derived `fullyAvailable`.
+3. **A reflection-gated runtime API** — `capabilities.eye.getPose()`, `capabilities.display.setRefreshRate(90)`, `capabilities.controllers.triggerHaptic('left', 0.8, 40)`, etc. Each method returns the real value on a PICO device with the SDK present, and `null` / `false` / `[]` on a mobile emulator or SDK-less PICO build.
+
+### 23.2 Native layout
+
+Kotlin runtime split into one registry + six domain files, each reflection-gated to `PXR_Plugin` / PICO SDK classes via `PicoPlatformSdkDetector`:
+
+```
+PicoCapabilityRuntime.kt  — 3-layer snapshot + declared-flag accessors
+PicoXrRuntime.kt          — refresh rate, foveation, passthrough
+PicoTrackingRuntime.kt    — eye, face, body, hand tracking
+PicoSpatialRuntime.kt     — boundary, scene mesh, detected planes
+PicoControllerRuntime.kt  — controllers, haptics, Motion Tracker
+PicoSensorRuntime.kt      — high-rate IMU sensors (pure AOSP)
+PicoSpatialAudioRuntime.kt — HRTF engine
+```
+
+All reflection paths swallow `Throwable` defensively (not just `ClassNotFoundException`) to survive `NoClassDefFoundError` / `VerifyError` / missing native `.so` when a partial SDK AAR is on the classpath.
+
+### 23.3 TypeScript surface
+
+A single `capabilities` umbrella export groups every domain:
+
+```ts
+import { capabilities } from 'expo-pico-core';
+
+const decl = capabilities.getDeclared();
+if (decl.handTracking) {
+  const enabled = await capabilities.hand.enable();
+  const pose = await capabilities.hand.getPose();
+}
+
+const snapshot = await capabilities.getSnapshot();
+// [{ name: 'eyeTracking', declared: true, systemFeatureAvailable: false, sdkAvailable: false, fullyAvailable: false }, …]
+
+const rates = await capabilities.display.getSupportedRefreshRates();
+await capabilities.display.setRefreshRate(90);
+await capabilities.controllers.triggerHaptic('right', 0.8, 50);
+```
+
+Per-domain namespaces: `display`, `eye`, `face`, `body`, `hand`, `boundary`, `scene`, `controllers`, `motionTracker`, `sensors`, `spatialAudio`.
+
+### 23.4 BuildConfig fields added
+
+`withPicoGradle.ts` now writes 18 additional fields covering every Phase C/D/I option plus `refreshRates` and `targetDevices` as delimited strings. Fields:
+
+- `PICO_HAND_TRACKING`, `PICO_PASSTHROUGH`, `PICO_SCENE_UNDERSTANDING`
+- `PICO_EYE_TRACKING`, `PICO_FACE_TRACKING`, `PICO_BODY_TRACKING`
+- `PICO_SPATIAL_AUDIO`, `PICO_FOVEATED_RENDERING`
+- `PICO_HIGH_SAMPLING_RATE_SENSORS`, `PICO_BOUNDARY`, `PICO_SCENE_MESH`
+- `PICO_SENSE_CONTROLLER`, `PICO_MOTION_TRACKER`, `PICO_CONTROLLER_HAPTICS`
+- `PICO_OPENXR_LOADER`, `PICO_NDK_ABI_FILTERS`
+- `PICO_DEVELOPER_TOOLS`, `PICO_ENTITLEMENT_CHECK`
+- `PICO_REFRESH_RATES` (comma-separated), `PICO_TARGET_DEVICES` (comma-separated)
+
+### 23.5 DiagnosticsPanel integration
+
+The example's Phase F / J DiagnosticsPanel gains a third inline table: **CAPABILITIES (Phase K)**. Each row shows `decl / feat / sdk / ✓` with color-coded cells so a developer can see at a glance which of the three layers is missing for any unavailable capability. Running on a PICO 4 Ultra with the Platform SDK AAR dropped in shows mostly-green rows; running on a mobile emulator shows only the `decl` column lit.
+
+### 23.6 What Phase K does NOT cover
+
+- **Vendor-specific SDK class names.** PICO renames classes across SDK minor versions (`com.picovr.cvinterface.PXR_EyeTracking` → `com.pvr.eyetracking.EyeTrackingApi` in some builds). Every Phase K probe takes a candidate list; when new names ship, add them to the existing list. No caller needs to change.
+- **Async event streams.** Eye / face / body tracking poses stream at 60–120 Hz. Phase K exposes synchronous "get the latest pose" APIs; high-frequency subscribers should use the renderer-layer event path (OpenXR action sets + render loop) rather than polling through the JNI bridge.
+- **Platform SDK integration for tracking.** Eye / face / body tracking require PICO's NDA-gated enterprise Platform SDK AAR (not redistributable). When the consumer drops the AAR in, Phase K's reflection path picks it up automatically — no code changes needed.
+
+### 23.7 Validation matrix
+
+| Validation                                                         | When                                                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Declared-capability mirror (empty / filled / missing-field)        | Jest (`src/__tests__/capabilities.test.ts`, 4 cases)                          |
+| Snapshot forwards native list + handles null                        | Jest (2 cases)                                                               |
+| `isCapabilityAvailable` forwards boolean + null                    | Jest (2 cases)                                                               |
+| `capabilities.display.*` forwards refresh rate + foveation + passthrough | Jest (7 cases)                                                           |
+| `capabilities.eye/face/body/hand` null-on-SDK-absent                | Jest (5 cases)                                                               |
+| `capabilities.boundary/scene` null-on-SDK-absent                   | Jest (4 cases)                                                               |
+| `capabilities.controllers` list + haptic + motion tracker          | Jest (3 cases)                                                               |
+| `capabilities.sensors` null/empty coercion                          | Jest (2 cases)                                                               |
+| `capabilities.spatialAudio` null-on-SDK-absent                      | Jest (3 cases)                                                               |
+| `capabilities` umbrella exposes every domain                        | Jest (1 case)                                                                |
+| Plugin BuildConfig fields wire for every resolved option            | Jest (`__tests__/withPicoGradle.test.ts`, 4 Phase K cases)                    |
+| Reflection actually resolves PICO SDK methods on device             | Requires PICO device with Platform / PXR_Plugin AAR (deferred)                |
