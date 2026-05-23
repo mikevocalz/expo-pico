@@ -16,7 +16,7 @@ PICO platform leaderboard APIs for Expo apps — query rankings, write scores, a
 To check whether the `leaderboards` SDK surface is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();
@@ -33,8 +33,8 @@ Add `expo-pico-core` and `expo-pico-leaderboards` to your `app.config.ts` plugin
 ```ts
 export default {
   plugins: [
-    ['expo-pico-core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
-    'expo-pico-leaderboards',
+    ['@expo-pico/core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
+    '@expo-pico/leaderboards',
   ],
 };
 ```
@@ -54,7 +54,7 @@ import {
   writeScore,
   getEntries,
   getUserEntry,
-} from 'expo-pico-leaderboards';
+} from '@expo-pico/leaderboards';
 
 if (isLeaderboardsAvailable()) {
   // Write a score

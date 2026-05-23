@@ -26,7 +26,7 @@ import {
   clearLocalCache,
 } from '../src/index';
 
-describe('expo-pico-storage', () => {
+describe('@expo-pico/storage', () => {
   it('isStorageAvailable returns false when SDK not present', () => {
     expect(isStorageAvailable()).toBe(false);
   });

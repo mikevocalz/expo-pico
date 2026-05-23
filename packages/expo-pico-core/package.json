@@ -1,6 +1,6 @@
 {
-  "name": "expo-pico-core",
-  "version": "0.1.0",
+  "name": "@expo-pico/core",
+  "version": "0.2.0",
   "description": "Expo config plugin and runtime module for PICO OS 6 XR devices.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -15,6 +15,11 @@
       "import": "./plugin/build/withPico.js",
       "require": "./plugin/build/withPico.js",
       "types": "./plugin/build/withPico.d.ts"
+    },
+    "./plugin/viro": {
+      "import": "./plugin/build/viro/index.js",
+      "require": "./plugin/build/viro/index.js",
+      "types": "./plugin/build/viro/index.d.ts"
     }
   },
   "bin": {
@@ -53,19 +58,19 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@expo/config-plugins": "~55.0.8",
+    "@expo/config-plugins": "~56.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.0",
     "@types/react": "~19.2.14",
-    "expo": "~55.0.17",
-    "expo-module-scripts": "~55.0.2",
+    "expo": "~56.0.3",
+    "expo-module-scripts": "~56.0.2",
     "jest": "^30.3.0",
-    "react-native": "0.84.1",
+    "react-native": "^0.85.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=55.0.0",
+    "expo": ">=56.0.0",
     "react": "*",
     "react-native": "*"
   },

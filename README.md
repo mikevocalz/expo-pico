@@ -34,6 +34,20 @@ Config plugins + Expo Modules that teach an Expo Android project how to build, i
 
 "alpha (seams)" means the full JS + native module shape is in place and `expo-pico-core` correctly mutates the manifest / Gradle / strings surface each sibling needs. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath. [Phase J reflection detection](./ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j) activates them automatically when the AAR is present — no code change required.
 
+### Activating the platform-service bridges (AAR drop-in)
+
+The reflection bridges activate the moment the **PICO Platform SDK AAR** is on the gradle classpath. The AAR isn't on Pico's public maven repo — it's gated behind your developer-console login.
+
+1. PPS Development Platform → your app → **App Information → SDK Download** → grab the **Platform SDK** AAR (and the **Spatial SDK** AAR for room mesh / scene anchors).
+2. Drop it in your app's `android/app/libs/` (create the folder if needed).
+3. Add to `android/app/build.gradle` inside the `pico` flavor (or top-level `dependencies` block):
+   ```groovy
+   picoImplementation fileTree(dir: 'libs', include: ['*.aar'])
+   ```
+4. Rebuild. `expo-pico-core`'s `PicoPlatformSdkDetector` picks up the SDK class on next launch; every `is{Name}Available()` in the sibling packages flips to `true` for services you've also activated in PPS.
+
+This is intentionally a manual step — Pico hasn't published the AAR to a public maven coord, and we don't ship it bundled to keep the packages license-clean.
+
 ## Quick start
 
 ### Option 1 — scaffold from the template (fastest)
@@ -65,7 +79,7 @@ export default {
     orientation: 'landscape',
     plugins: [
       [
-        'expo-pico-core',
+        '@expo-pico/core',
         {
           xrMode: 'pico-swan',
           appType: 'vr',

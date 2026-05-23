@@ -7,7 +7,7 @@ jest.mock('expo-modules-core', () => ({
   })),
 }));
 
-describe('expo-pico-rooms', () => {
+describe('@expo-pico/rooms', () => {
   describe('isRoomsAvailable', () => {
     it('returns false when SDK is not present', () => {
       expect(isRoomsAvailable()).toBe(false);

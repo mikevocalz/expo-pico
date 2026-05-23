@@ -14,8 +14,8 @@ Add to `app.config.ts` **after** `expo-pico-core`:
 
 ```ts
 plugins: [
-  ['expo-pico-core', { ... }],
-  ['expo-pico-rtc', { microphonePermission: true }],
+  ['@expo-pico/core', { ... }],
+  ['@expo-pico/rtc', { microphonePermission: true }],
 ]
 ```
 
@@ -32,7 +32,7 @@ import {
   addUserJoinedListener,
   addUserLeftListener,
   addRtcStateChangeListener,
-} from 'expo-pico-rtc';
+} from '@expo-pico/rtc';
 ```
 
 ### `getRtcServiceStatus(): RtcServiceStatus`

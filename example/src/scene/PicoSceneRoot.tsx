@@ -17,7 +17,7 @@ import {
 // SessionManager can't negotiate an immersive session on PICO hardware.
 import '@babylonjs/core/XR/webXRDefaultExperience';
 
-import { getPicoRuntimeInfo } from 'expo-pico-core';
+import { getPicoRuntimeInfo } from '@expo-pico/core';
 
 import { attachDemoModel } from './GltfModel';
 

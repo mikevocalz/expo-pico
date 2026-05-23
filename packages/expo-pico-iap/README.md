@@ -26,7 +26,7 @@ IAP requires the full Platform SDK identity quartet: `picoAppId`, `picoAppKey`, 
 export default {
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         platformService: {
           picoAppId: process.env.PICO_PLATFORM_APP_ID,
@@ -44,7 +44,7 @@ export default {
         xrMode: 'pico-os6',
       },
     ],
-    'expo-pico-iap',
+    '@expo-pico/iap',
   ],
 };
 ```
@@ -60,8 +60,8 @@ import {
   getPurchaseHistory,
   consumePurchase,
   purchase,
-} from 'expo-pico-iap';
-import { hasIapIdentity } from 'expo-pico-core';
+} from '@expo-pico/iap';
+import { hasIapIdentity } from '@expo-pico/core';
 
 async function buyCurrency() {
   if (!hasIapIdentity() || !isIapAvailable()) {
@@ -96,7 +96,7 @@ Types: `IapProduct`, `IapPurchase`, `PurchaseResult`, `ConsumeResult`.
 ## Runtime diagnostics
 
 ```ts
-import { getPlatformSdkProbe, hasIapIdentity } from 'expo-pico-core';
+import { getPlatformSdkProbe, hasIapIdentity } from '@expo-pico/core';
 
 const probe = await getPlatformSdkProbe();
 console.log({

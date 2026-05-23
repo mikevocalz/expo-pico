@@ -43,7 +43,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         // Flip to 'pico-swan' when targeting Project Swan hardware.
         xrMode: 'pico-os6',
@@ -89,9 +89,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     // Add sibling packages here as you install them:
-    // ['expo-pico-account', {}],
-    // ['expo-pico-iap', {}],
-    // ['expo-pico-notifications', { requestPostNotificationsPermission: true }],
-    // ['expo-pico-rtc', { microphonePermission: true }],
+    // ['@expo-pico/account', {}],
+    // ['@expo-pico/iap', {}],
+    // ['@expo-pico/notifications', { requestPostNotificationsPermission: true }],
+    // ['@expo-pico/rtc', { microphonePermission: true }],
   ],
 });

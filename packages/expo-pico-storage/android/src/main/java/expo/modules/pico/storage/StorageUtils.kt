@@ -1,13 +1,13 @@
 package expo.modules.pico.storage
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 internal object StorageUtils {
   private val SDK_AVAILABLE: Boolean by lazy {
-    try {
-      Class.forName("com.pvr.platform.sdk.storage.CloudStorageAPI")
-      true
-    } catch (_: ClassNotFoundException) {
-      false
-    }
+    PicoPlatformSdkDetector.probeAny(
+      "com.pvr.platform.sdk.storage.CloudStorageAPI",
+      "com.pico.pps.sdk.storage.PicoStorageClient",
+    )
   }
 
   fun isStorageSdkAvailable(): Boolean = SDK_AVAILABLE

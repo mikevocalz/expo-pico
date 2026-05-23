@@ -39,7 +39,7 @@ export default {
     orientation: 'landscape',
     plugins: [
       [
-        'expo-pico-core',
+        '@expo-pico/core',
         {
           xrMode: 'pico-swan',
           appType: 'vr',
@@ -177,7 +177,7 @@ import {
   // Diagnostics (Phase F)
   getPicoDiagnostics,
   formatDiagnostics,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 console.log(getPicoRuntimeInfo());
 // {

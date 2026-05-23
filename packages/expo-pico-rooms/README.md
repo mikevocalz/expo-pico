@@ -15,8 +15,8 @@ Add to `app.config.ts` **after** `expo-pico-core`:
 
 ```ts
 plugins: [
-  ['expo-pico-core', { ... }],
-  'expo-pico-rooms',
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/rooms',
 ]
 ```
 
@@ -37,7 +37,7 @@ import {
   addRoomUserJoinedListener,
   addRoomUserLeftListener,
   addMatchmakingFoundListener,
-} from 'expo-pico-rooms';
+} from '@expo-pico/rooms';
 ```
 
 ### Room lifecycle

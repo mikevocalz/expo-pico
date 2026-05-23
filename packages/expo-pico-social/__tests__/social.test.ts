@@ -24,7 +24,7 @@ import {
   setPresence,
 } from '../src/index';
 
-describe('expo-pico-social', () => {
+describe('@expo-pico/social', () => {
   it('isSocialAvailable returns false when SDK not present', () => {
     expect(isSocialAvailable()).toBe(false);
   });

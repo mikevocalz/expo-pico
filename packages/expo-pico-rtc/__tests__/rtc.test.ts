@@ -11,7 +11,7 @@ jest.mock('expo-modules-core', () => ({
   })),
 }));
 
-describe('expo-pico-rtc', () => {
+describe('@expo-pico/rtc', () => {
   describe('getRtcServiceStatus', () => {
     it('returns unavailable when SDK is not present', () => {
       expect(getRtcServiceStatus()).toBe('unavailable');

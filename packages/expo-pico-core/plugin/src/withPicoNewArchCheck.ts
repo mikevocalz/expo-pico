@@ -2,7 +2,7 @@ import { ConfigPlugin, WarningAggregator } from '@expo/config-plugins';
 
 import type { ResolvedPicoOptions } from './types';
 
-const TAG = 'expo-pico-core';
+const TAG = '@expo-pico/core';
 
 /**
  * Soft-checks that the consuming app has the New Architecture enabled.

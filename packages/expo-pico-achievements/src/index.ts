@@ -17,7 +17,7 @@ import type {
 export * from './types';
 export type { Subscription };
 
-const PKG = 'expo-pico-achievements';
+const PKG = '@expo-pico/achievements';
 
 const emitter = createNativeEventEmitter(NativeAchievements);
 

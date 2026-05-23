@@ -44,7 +44,7 @@ Use when you want consumers to `npm install expo-pico-core@alpha` without pollut
 
 `.changeset/config.json` configures every `expo-pico-*` package as `linked`. When one bumps, they all bump to the same version. Rationale:
 
-- Siblings declare `peerDependencies: { "expo-pico-core": ">=1.0.0" }`. Changesets cascades a peer-dep version change as a major bump on the consumer regardless of declared range width (hardcoded in `@changesets/assemble-release-plan`). Linked versioning makes that cascade visible and predictable rather than producing staggered major bumps across siblings.
+- Siblings declare `peerDependencies: { "@expo-pico/core": ">=1.0.0" }`. Changesets cascades a peer-dep version change as a major bump on the consumer regardless of declared range width (hardcoded in `@changesets/assemble-release-plan`). Linked versioning makes that cascade visible and predictable rather than producing staggered major bumps across siblings.
 - Consumers composing several sibling packages in one app always see matching versions, which avoids confusing error paths where a sibling's native module contract mismatches core's.
 
 If you need to publish only one sibling without bumping the rest, remove it from `linked[0]` in `.changeset/config.json` on a feature branch. Revert before merge unless the break is permanent.

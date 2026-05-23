@@ -9,7 +9,7 @@ import * as api from '../index';
 import { runPackageContractTests } from '@expo-pico/platform-service-common/testing';
 
 runPackageContractTests({
-  packageName: 'expo-pico-notifications',
+  packageName: '@expo-pico/notifications',
   api: api as unknown as Record<string, unknown>,
   availabilityMethod: 'isNotificationsAvailable',
   versionMethod: 'getNotificationsSdkVersion',

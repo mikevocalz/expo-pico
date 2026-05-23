@@ -10,15 +10,13 @@ expoModule {
 android {
     namespace "expo.modules.pico.spatial"
     defaultConfig {
+        missingDimensionStrategy "device", "pico", "mobile"
         versionCode 1
         versionName "0.1.0"
     }
     lint {
         abortOnError false
     }
-    // Inherit device flavor dimension from expo-pico-core
-    // The consuming app project declares this dimension; the library
-    // uses missingDimensionStrategy to select 'mobile' as fallback.
     buildFeatures {
         buildConfig true
     }
@@ -34,7 +32,10 @@ dependencies {
     // Utils.kt still works via its own inline Class.forName probe.
     // See docs/DEVICE-TESTING-REQUIRED.md.
     implementation project(':expo-pico-core')
-    // expo-pico-core is a peer dep — declared by the app, not us
-    // PICO Spatial SDK — extension seam, commented out until stable AAR
-    // implementation "com.pvr:pvr-spatial-sdk:1.0.0"
+
+    // PICO SDK AARs — compile-only so they are never bundled into the
+    // published npm package. Consumers must place the AARs under
+    // vendor/pico-sdk/ (monorepo) or android/app/libs/ (consumer app).
+    // See vendor/pico-sdk/README.md for download instructions.
+    compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
 }

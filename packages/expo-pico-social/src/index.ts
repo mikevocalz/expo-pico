@@ -12,7 +12,7 @@ import type {
   FriendshipStatus,
   InviteOptions,
   PresenceOptions,
-  PicoUser,
+  SocialUser,
   SentInvite,
   FriendPresenceChangedEvent,
   FriendRequestReceivedEvent,
@@ -22,7 +22,7 @@ import type {
 export * from './types';
 export type { Subscription };
 
-const PKG = 'expo-pico-social';
+const PKG = '@expo-pico/social';
 const emitter = createNativeEventEmitter(NativeSocial);
 
 // ─── Availability ─────────────────────────────────────────────────────────────
@@ -37,10 +37,10 @@ export function getSocialSdkVersion(): string {
 
 // ─── Current user ─────────────────────────────────────────────────────────────
 
-export async function getCurrentUser(): Promise<PicoUser> {
+export async function getCurrentUser(): Promise<SocialUser> {
   guardService(isSocialAvailable(), PKG, 'getCurrentUser');
   const raw = await wrapNativeCall(PKG, 'getCurrentUser', NativeSocial!.getCurrentUser());
-  return raw as unknown as PicoUser;
+  return raw as unknown as SocialUser;
 }
 
 // ─── Friends ──────────────────────────────────────────────────────────────────

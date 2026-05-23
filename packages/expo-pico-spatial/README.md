@@ -26,7 +26,7 @@ Spatial features are selected via `expo-pico-core` plugin options — this packa
 export default {
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         buildVariant: 'pico',
         xrMode: 'pico-swan', // use 'pico-os6' for PICO 4 / 4 Ultra
@@ -40,7 +40,7 @@ export default {
         sceneMesh: true, // Phase D: distinct from sceneUnderstanding
       },
     ],
-    'expo-pico-spatial',
+    '@expo-pico/spatial',
   ],
 };
 ```
@@ -57,7 +57,7 @@ import {
   getSpatialSdkVersion,
   createSpatialAnchor, // seam
   requestFullSpace, // seam
-} from 'expo-pico-spatial';
+} from '@expo-pico/spatial';
 
 function logSpatialStatus() {
   console.log({
@@ -93,8 +93,8 @@ Types: `PicoSpaceState`, `PicoContainerType`, `SpatialCapabilities`, `SpatialAnc
 ## Runtime diagnostics
 
 ```ts
-import { getSpatialCapabilities } from 'expo-pico-spatial';
-import { getPicoRuntimeInfo } from 'expo-pico-core';
+import { getSpatialCapabilities } from '@expo-pico/spatial';
+import { getPicoRuntimeInfo } from '@expo-pico/core';
 
 const info = getPicoRuntimeInfo();
 const caps = getSpatialCapabilities();

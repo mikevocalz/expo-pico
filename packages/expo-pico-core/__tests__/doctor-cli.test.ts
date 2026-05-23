@@ -54,7 +54,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
         slug: 't',
         plugins: [
           [
-            'expo-pico-core',
+            '@expo-pico/core',
             {
               xrMode: 'pico-os6',
               appType: 'vr',
@@ -74,7 +74,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: {
         name: 't',
         slug: 't',
-        plugins: [['expo-pico-core', { xrMode: 'pico-swan', appType: 'vr' }]],
+        plugins: [['@expo-pico/core', { xrMode: 'pico-swan', appType: 'vr' }]],
       },
     });
     const out = runDoctor(dir);
@@ -88,7 +88,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: {
         name: 't',
         slug: 't',
-        plugins: [['expo-pico-core', { xrMode: 'pico-swan', appType: 'vr' }]],
+        plugins: [['@expo-pico/core', { xrMode: 'pico-swan', appType: 'vr' }]],
       },
     });
     const out = runDoctor(dir, ['--fail-on-warning']);
@@ -100,7 +100,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: {
         name: 't',
         slug: 't',
-        plugins: [['expo-pico-core', { xrMode: 'pico-swan', appType: 'vr' }]],
+        plugins: [['@expo-pico/core', { xrMode: 'pico-swan', appType: 'vr' }]],
       },
     });
     const out = runDoctor(dir, ['--json']);
@@ -123,9 +123,9 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     expect(out.status).toBe(2);
   });
 
-  it('accepts a plain "expo-pico-core" string entry (no options)', () => {
+  it('accepts a plain "@expo-pico/core" string entry (no options)', () => {
     const dir = writeFixture({
-      expo: { name: 't', slug: 't', plugins: ['expo-pico-core'] },
+      expo: { name: 't', slug: 't', plugins: ['@expo-pico/core'] },
     });
     const out = runDoctor(dir);
     // Default xrMode is pico-os6, appType vr, no identity → expect
@@ -145,7 +145,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
         slug: 't',
         plugins: [
           [
-            'expo-pico-core',
+            '@expo-pico/core',
             {
               xrMode: 'mobile',
               buildVariant: 'mobile',

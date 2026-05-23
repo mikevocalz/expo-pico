@@ -7,7 +7,7 @@ jest.mock('expo-modules-core', () => ({
   }),
 }));
 
-describe('expo-pico-subscription', () => {
+describe('@expo-pico/subscription', () => {
   describe('isSubscriptionAvailable', () => {
     it('returns false when SDK is not present', () => {
       expect(isSubscriptionAvailable()).toBe(false);

@@ -1,5 +1,7 @@
 package expo.modules.pico.rtc
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 object RtcUtils {
     /**
      * Checks whether the PICO RTC SDK class is on the classpath.
@@ -7,12 +9,10 @@ object RtcUtils {
      * once the AAR is integrated and the class name is publicly documented.
      */
     fun isRtcSdkAvailable(): Boolean {
-        return try {
-            Class.forName("com.pvr.rtc.sdk.RtcEngine")
-            true
-        } catch (_: ClassNotFoundException) {
-            false
-        }
+        return PicoPlatformSdkDetector.probeAny(
+            "com.pvr.rtc.sdk.RtcEngine",
+            "com.pico.pps.sdk.rtc.PicoRtcClient",
+        )
     }
 
     fun getRtcSdkVersion(): String? {

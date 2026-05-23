@@ -26,7 +26,7 @@ yarn add expo-pico-core expo-pico-account
 export default {
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         // Account APIs need platform identity to initialize; populate
         // from a PICO developer console app, not checked-in secrets.
@@ -39,7 +39,7 @@ export default {
         appType: 'vr',
       },
     ],
-    'expo-pico-account',
+    '@expo-pico/account',
   ],
 };
 ```
@@ -54,8 +54,8 @@ import {
   getAccountSdkVersion,
   getUserProfile,
   getAccountLinkStatus,
-} from 'expo-pico-account';
-import { hasPlatformIdentity } from 'expo-pico-core';
+} from '@expo-pico/account';
+import { hasPlatformIdentity } from '@expo-pico/core';
 
 async function loadUser() {
   // Guard against non-PICO builds and missing identity.
@@ -90,7 +90,7 @@ Types: `PicoUserProfile`, `PicoLoginResult`, `PicoAccountLinkStatus`.
 Use [`expo-pico-core`](../expo-pico-core)'s Phase J probe to check whether the Account SDK is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();

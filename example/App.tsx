@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
-import { getPicoRuntimeInfo } from 'expo-pico-core';
+import { getPicoRuntimeInfo } from '@expo-pico/core';
 
 import { DiagnosticsPanel } from './src/scene/DiagnosticsPanel';
 import { PicoSceneRoot } from './src/scene/PicoSceneRoot';

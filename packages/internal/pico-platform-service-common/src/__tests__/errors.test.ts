@@ -68,8 +68,8 @@ describe('error factories', () => {
       expect(serviceUnavailableError('pkg', 'method').code).toBe('SERVICE_UNAVAILABLE');
     });
     it('includes package and method in message', () => {
-      const e = serviceUnavailableError('expo-pico-rooms', 'createRoom');
-      expect(e.message).toContain('expo-pico-rooms');
+      const e = serviceUnavailableError('@expo-pico/rooms', 'createRoom');
+      expect(e.message).toContain('@expo-pico/rooms');
       expect(e.message).toContain('createRoom');
     });
   });
@@ -125,7 +125,7 @@ describe('error factories', () => {
 
 describe('guardService', () => {
   it('throws PicoServiceError when isAvailable is false', () => {
-    expect(() => guardService(false, 'expo-pico-rooms', 'createRoom')).toThrow(PicoServiceError);
+    expect(() => guardService(false, '@expo-pico/rooms', 'createRoom')).toThrow(PicoServiceError);
   });
 
   it('throws with SERVICE_UNAVAILABLE code', () => {

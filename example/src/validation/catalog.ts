@@ -32,7 +32,7 @@ export const validationEnvironmentLabels: Record<ValidationEnvironment, string> 
 export const packageCatalog: PackageCatalogEntry[] = [
   {
     id: 'core',
-    packageName: 'expo-pico-core',
+    packageName: '@expo-pico/core',
     maturity: 'stable candidate',
     validationEnvironments: ['non-pico', 'emulator', 'device'],
     prereleaseReady: 'ready for next',
@@ -40,7 +40,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'spatial',
-    packageName: 'expo-pico-spatial',
+    packageName: '@expo-pico/spatial',
     maturity: 'beta',
     validationEnvironments: ['non-pico', 'emulator', 'device', 'provisioning'],
     prereleaseReady: 'ready with caveats',
@@ -48,7 +48,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'account',
-    packageName: 'expo-pico-account',
+    packageName: '@expo-pico/account',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -56,7 +56,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'iap',
-    packageName: 'expo-pico-iap',
+    packageName: '@expo-pico/iap',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -64,7 +64,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'notifications',
-    packageName: 'expo-pico-notifications',
+    packageName: '@expo-pico/notifications',
     maturity: 'alpha',
     validationEnvironments: ['non-pico', 'emulator', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -72,7 +72,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'subscription',
-    packageName: 'expo-pico-subscription',
+    packageName: '@expo-pico/subscription',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -80,7 +80,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'rtc',
-    packageName: 'expo-pico-rtc',
+    packageName: '@expo-pico/rtc',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -88,7 +88,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'rooms',
-    packageName: 'expo-pico-rooms',
+    packageName: '@expo-pico/rooms',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -96,7 +96,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'storage',
-    packageName: 'expo-pico-storage',
+    packageName: '@expo-pico/storage',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -104,7 +104,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'social',
-    packageName: 'expo-pico-social',
+    packageName: '@expo-pico/social',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -112,7 +112,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'achievements',
-    packageName: 'expo-pico-achievements',
+    packageName: '@expo-pico/achievements',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
@@ -120,7 +120,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
   },
   {
     id: 'leaderboards',
-    packageName: 'expo-pico-leaderboards',
+    packageName: '@expo-pico/leaderboards',
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',

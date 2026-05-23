@@ -15,7 +15,7 @@ import {
   getSpatialMode,
   isPicoBuild,
   isPicoDevice,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 import {
   createSpatialAnchor,
   getContainerType,
@@ -24,7 +24,7 @@ import {
   getSpatialSdkVersion,
   requestFullSpace,
   setWindowContainerProperties,
-} from 'expo-pico-spatial';
+} from '@expo-pico/spatial';
 import {
   getAccountLinkStatus,
   getAccountSdkVersion,
@@ -33,7 +33,7 @@ import {
   isAccountAvailable,
   login,
   logout,
-} from 'expo-pico-account';
+} from '@expo-pico/account';
 import {
   consumePurchase,
   getIapSdkVersion,
@@ -41,14 +41,14 @@ import {
   getPurchaseHistory,
   isIapAvailable,
   purchase,
-} from 'expo-pico-iap';
+} from '@expo-pico/iap';
 import {
   getNotificationPermissionStatus,
   getNotificationsSdkVersion,
   isNotificationsAvailable,
   registerForPushNotifications,
   requestPermissions,
-} from 'expo-pico-notifications';
+} from '@expo-pico/notifications';
 import {
   cancelSubscription,
   getActiveSubscriptions,
@@ -57,7 +57,7 @@ import {
   getSubscriptionSdkVersion,
   isSubscriptionAvailable,
   subscribe,
-} from 'expo-pico-subscription';
+} from '@expo-pico/subscription';
 import {
   addRtcStateChangeListener,
   addUserJoinedListener,
@@ -69,7 +69,7 @@ import {
   leaveChannel,
   muteLocalAudio,
   setAudioOutputVolume,
-} from 'expo-pico-rtc';
+} from '@expo-pico/rtc';
 import {
   addMatchmakingFoundListener,
   addRoomUpdatedListener,
@@ -86,7 +86,7 @@ import {
   leaveRoom,
   requestMatchmaking,
   updateRoomData,
-} from 'expo-pico-rooms';
+} from '@expo-pico/rooms';
 import {
   addStorageConflictListener,
   addStorageSyncCompleteListener,
@@ -101,7 +101,7 @@ import {
   loadEntry,
   saveEntry,
   syncStorage,
-} from 'expo-pico-storage';
+} from '@expo-pico/storage';
 import {
   acceptFriendRequest,
   addFriendPresenceChangedListener,
@@ -121,7 +121,7 @@ import {
   sendInvites,
   setPresence,
   unblockUser,
-} from 'expo-pico-social';
+} from '@expo-pico/social';
 import {
   addAchievementBitfield,
   addAchievementCount,
@@ -132,7 +132,7 @@ import {
   getUnlockedAchievements,
   isAchievementsAvailable,
   unlockAchievement,
-} from 'expo-pico-achievements';
+} from '@expo-pico/achievements';
 import {
   getAllLeaderboards,
   getEntries,
@@ -141,7 +141,7 @@ import {
   getUserEntry,
   isLeaderboardsAvailable,
   writeScore,
-} from 'expo-pico-leaderboards';
+} from '@expo-pico/leaderboards';
 
 import {
   packageCatalog,

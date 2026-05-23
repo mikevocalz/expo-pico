@@ -1,14 +1,14 @@
 package expo.modules.pico.subscription
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 internal object SubscriptionUtils {
 
   private val SDK_AVAILABLE: Boolean by lazy {
-    try {
-      Class.forName("com.pvr.platform.sdk.subscription.SubscriptionService")
-      true
-    } catch (_: ClassNotFoundException) {
-      false
-    }
+    PicoPlatformSdkDetector.probeAny(
+      "com.pvr.platform.sdk.subscription.SubscriptionService",
+      "com.pico.pps.sdk.subscription.PicoSubscriptionClient",
+    )
   }
 
   fun isSubscriptionSdkAvailable(): Boolean = SDK_AVAILABLE

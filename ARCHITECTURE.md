@@ -1467,7 +1467,7 @@ import {
   type PicoDiagnosticsReport,
   type DiagnosticFinding,
   type DiagnosticSeverity,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 const report = await getPicoDiagnostics();
 if (report.summary.hasError) {
@@ -1709,7 +1709,7 @@ import {
   getPlatformSdkVersion,
   getPlatformSdkProbe,
   type PicoPlatformSdkProbe,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   console.log(`PICO Platform SDK ${getPlatformSdkVersion() ?? '(version unknown)'} is live`);

@@ -1,14 +1,13 @@
 package expo.modules.pico.iap
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 object IapUtils {
     fun isIapSdkAvailable(): Boolean {
-        return try {
-            // Extension seam — replace with actual PICO IAP SDK class name
-            Class.forName("com.pvr.iap.sdk.IAPClient")
-            true
-        } catch (_: ClassNotFoundException) {
-            false
-        }
+        return PicoPlatformSdkDetector.probeAny(
+            "com.pvr.iap.sdk.IAPClient",
+            "com.pico.pps.sdk.iap.PicoIapClient",
+        )
     }
 
     fun getIapSdkVersion(): String? = null

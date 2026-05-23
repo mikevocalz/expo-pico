@@ -1,5 +1,5 @@
 {
-  "name": "expo-pico-template",
+  "name": "@expo-pico/template",
   "version": "0.1.0",
   "description": "Expo app starter template preconfigured for PICO OS 6 / Project Swan. Consume via `npx create-expo-app --template expo-pico-template`.",
   "main": "index.js",
@@ -32,14 +32,15 @@
     "android:pico": "expo run:android --variant picoDebug",
     "android:mobile": "expo run:android --variant mobileDebug",
     "prebuild": "expo prebuild --clean",
-    "doctor": "expo-pico-doctor --fail-on-warning"
+    "doctor": "expo-pico-doctor --fail-on-warning",
+    "prepare": "echo 'No prepare needed for expo-pico-template'"
   },
   "dependencies": {
-    "expo": "~55.0.17",
-    "expo-pico-core": "*",
+    "expo": "~56.0.3",
+    "@expo-pico/core": "*",
     "expo-status-bar": "~2.0.0",
-    "react": "19.2.0",
-    "react-native": "0.84.1"
+    "react": "19.2.3",
+    "react-native": "^0.85.3"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

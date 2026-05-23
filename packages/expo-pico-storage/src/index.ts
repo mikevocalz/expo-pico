@@ -20,7 +20,7 @@ import type {
 export * from './types';
 export type { Subscription };
 
-const PKG = 'expo-pico-storage';
+const PKG = '@expo-pico/storage';
 const emitter = createNativeEventEmitter(NativeStorage);
 
 // ─── Availability ─────────────────────────────────────────────────────────────

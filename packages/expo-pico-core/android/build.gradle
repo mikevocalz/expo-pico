@@ -48,3 +48,11 @@ android {
         buildConfig true
     }
 }
+
+dependencies {
+    compileOnly "com.facebook.react:react-android"
+    // PICO Platform SDK AAR — compile-only for controller haptics.
+    // Consumers must place the AAR under vendor/pico-sdk/.
+    // See vendor/pico-sdk/README.md for download instructions.
+    compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
+}

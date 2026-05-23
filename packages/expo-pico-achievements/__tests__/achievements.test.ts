@@ -24,7 +24,7 @@ import {
   getUnlockedAchievements,
 } from '../src/index';
 
-describe('expo-pico-achievements', () => {
+describe('@expo-pico/achievements', () => {
   it('isAchievementsAvailable returns false when SDK not present', () => {
     expect(isAchievementsAvailable()).toBe(false);
   });

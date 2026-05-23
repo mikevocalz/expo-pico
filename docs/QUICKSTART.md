@@ -76,7 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         // Choose 'pico-os6' for PICO 4 / 4 Ultra, 'pico-swan' for Swan.
         // 'mobile' turns the plugin into a mostly-no-op for phone builds.
@@ -161,7 +161,7 @@ import {
   formatDiagnostics,
   type PicoDiagnosticsReport,
   type PicoPlatformSdkProbe,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 export default function App() {
   const info = getPicoRuntimeInfo();

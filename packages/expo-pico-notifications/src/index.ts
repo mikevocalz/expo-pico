@@ -12,7 +12,7 @@ import type {
 
 export * from './types';
 
-const PKG = 'expo-pico-notifications';
+const PKG = '@expo-pico/notifications';
 const DOCS = 'https://developer.picoxr.com/document/unity/push-notification/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────

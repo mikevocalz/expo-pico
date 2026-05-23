@@ -8,7 +8,7 @@ import type { IapProduct, IapPurchase, PurchaseResult, ConsumeResult } from './t
 
 export * from './types';
 
-const PKG = 'expo-pico-iap';
+const PKG = '@expo-pico/iap';
 const DOCS = 'https://developer.picoxr.com/document/unity/in-app-purchase/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────

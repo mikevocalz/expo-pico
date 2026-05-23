@@ -24,7 +24,7 @@ yarn add expo-pico-core expo-pico-notifications
 export default {
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         platformService: {
           picoAppId: process.env.PICO_PLATFORM_APP_ID,
@@ -35,7 +35,7 @@ export default {
       },
     ],
     [
-      'expo-pico-notifications',
+      '@expo-pico/notifications',
       {
         // Android 13+ requires runtime POST_NOTIFICATIONS consent.
         // Default: true. Set to false to skip the manifest entry.
@@ -56,7 +56,7 @@ import {
   getNotificationPermissionStatus,
   requestPermissions,
   registerForPushNotifications,
-} from 'expo-pico-notifications';
+} from '@expo-pico/notifications';
 
 async function setupPush() {
   if (!isNotificationsAvailable()) return null;
@@ -94,7 +94,7 @@ Types: `NotificationToken`, `NotificationPermissionStatus`, `NotificationPermiss
 ## Runtime diagnostics
 
 ```ts
-import { getPlatformSdkProbe } from 'expo-pico-core';
+import { getPlatformSdkProbe } from '@expo-pico/core';
 
 const probe = await getPlatformSdkProbe();
 console.log('Push SDK live:', probe.notifications);

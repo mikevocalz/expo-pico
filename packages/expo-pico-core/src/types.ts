@@ -1,3 +1,34 @@
+/**
+ * Phase K — Passthrough / mixed-reality types.
+ *
+ * The physical dial on PICO 4 / 4 Ultra emits a level in [0, 1]:
+ *   0.0 = fully virtual (opaque VR background)
+ *   1.0 = fully real-world (see-through / passthrough)
+ */
+export interface PassthroughLevelEvent {
+  /** Transparency level 0.0 (virtual) → 1.0 (real-world). */
+  level: number;
+  /** Convenience: true when level > 0 (any passthrough visible). */
+  enabled: boolean;
+}
+
+export interface ExpoPicoPassthroughModuleInterface {
+  passthroughAvailable: boolean;
+  setPassthrough(enabled: boolean, level: number): Promise<void>;
+  isPassthroughAvailable(): boolean;
+}
+
+/**
+ * Phase K — Controller haptics types.
+ */
+export type HapticHand = 'left' | 'right' | 'both';
+
+export interface ExpoPicoHapticsModuleInterface {
+  hapticsAvailable: boolean;
+  pulseHaptic(hand: HapticHand, amplitude: number, durationMs: number): Promise<void>;
+  isHapticsAvailable(): boolean;
+}
+
 export type PicoSpatialMode =
   | '2d'
   | 'windowed'
@@ -6,12 +37,7 @@ export type PicoSpatialMode =
   | 'immersive'
   | 'volume';
 
-export type PicoTargetProfileRuntime =
-  | 'legacy'
-  | 'pico4'
-  | 'pico4ultra'
-  | 'swan'
-  | 'unknown';
+export type PicoTargetProfileRuntime = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'unknown';
 
 /**
  * Active PICO XR platform mode (runtime view of the plugin-time `xrMode`

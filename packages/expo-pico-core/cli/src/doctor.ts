@@ -102,10 +102,10 @@ function loadPluginOptions(projectRoot: string): PicoPluginOptions | null {
       : [];
 
   for (const entry of plugins) {
-    if (typeof entry === 'string' && entry === 'expo-pico-core') {
+    if (typeof entry === 'string' && entry === '@expo-pico/core') {
       return {};
     }
-    if (Array.isArray(entry) && entry[0] === 'expo-pico-core') {
+    if (Array.isArray(entry) && entry[0] === '@expo-pico/core') {
       return (entry[1] ?? {}) as PicoPluginOptions;
     }
   }
@@ -192,7 +192,7 @@ function main(): void {
       error: 'expo-pico-core plugin not found in app.config plugins array',
       projectRoot: args.projectRoot,
       hint:
-        'Doctor looks for an entry "expo-pico-core" (or ["expo-pico-core", {...}]) ' +
+        'Doctor looks for an entry "@expo-pico/core" (or ["@expo-pico/core", {...}]) ' +
         'inside the top-level `plugins` array of app.config.ts / app.config.js / ' +
         'app.config.json / app.json. Add the plugin there and re-run.',
     };

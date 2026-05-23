@@ -13,7 +13,7 @@ import type {
 
 export * from './types';
 
-const PKG = 'expo-pico-subscription';
+const PKG = '@expo-pico/subscription';
 const DOCS = 'https://developer.picoxr.com/document/unity/subscription/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────

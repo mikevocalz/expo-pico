@@ -16,7 +16,7 @@ PICO platform subscription billing and entitlement for Expo apps.
 To check whether the `subscription` SDK surface is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();
@@ -41,8 +41,8 @@ Add to `app.config.ts` **after** `expo-pico-core`:
 
 ```ts
 plugins: [
-  ['expo-pico-core', { ... }],
-  'expo-pico-subscription',
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/subscription',
 ]
 ```
 
@@ -59,7 +59,7 @@ import {
   getSubscriptionEntitlement,
   getActiveSubscriptions,
   cancelSubscription,
-} from 'expo-pico-subscription';
+} from '@expo-pico/subscription';
 ```
 
 ### Check entitlement

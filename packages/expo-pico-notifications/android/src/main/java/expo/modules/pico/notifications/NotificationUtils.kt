@@ -1,5 +1,7 @@
 package expo.modules.pico.notifications
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -19,12 +21,15 @@ object NotificationUtils {
     }
 
     fun isNotificationSdkAvailable(): Boolean {
-        return try {
-            Class.forName("com.pvr.push.sdk.PushSDK")
-            true
-        } catch (_: ClassNotFoundException) {
-            false
-        }
+        // PPS 1.0.1-alpha.13 ships push as
+        // `com.bytedance.pico.matrix.action.PPSPushAction` rather than a
+        // dedicated client class. Probe all three (legacy, future Client
+        // shape, current Action shape) so detection is forward-compatible.
+        return PicoPlatformSdkDetector.probeAny(
+            "com.pvr.push.sdk.PushSDK",
+            "com.pico.pps.sdk.push.PPSPushClient",
+            "com.bytedance.pico.matrix.action.PPSPushAction",
+        )
     }
 
     fun getPermissionStatus(context: Context?): String {

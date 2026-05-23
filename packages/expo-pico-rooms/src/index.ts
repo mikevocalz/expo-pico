@@ -22,7 +22,7 @@ import type {
 export * from './types';
 export type { Subscription };
 
-const PKG = 'expo-pico-rooms';
+const PKG = '@expo-pico/rooms';
 const DOCS = 'https://developer.picoxr.com/document/unity/room-matchmaking/';
 
 const emitter = createNativeEventEmitter(NativeRooms);

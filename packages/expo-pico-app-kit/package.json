@@ -1,0 +1,63 @@
+{
+  "name": "@expo-pico/app-kit",
+  "version": "0.1.0",
+  "description": "App-side orchestration layer for the expo-pico-* family \u2014 boot probe, capability cache, no-op-safe wrappers for haptics, eye gaze, scene mesh, face/body tracking, window container, and Pico Platform Service SDK (account, IAP, social, achievements, leaderboards, push, friend).",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./plugins/withPicoPostpatch": "./plugins/withPicoPostpatch.js",
+    "./plugins/withPicoCompat": "./plugins/withPicoCompat.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf build",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "build",
+    "src",
+    "plugins",
+    "README.md"
+  ],
+  "keywords": [
+    "expo",
+    "pico",
+    "pps",
+    "xr",
+    "vr",
+    "spatial"
+  ],
+  "license": "MIT",
+  "private": true,
+  "peerDependencies": {
+    "expo": ">=56.0.0",
+    "@expo-pico/core": ">=0.1.0",
+    "@expo-pico/spatial": ">=0.1.0",
+    "react-native": "*",
+    "react-native-mmkv": ">=4.0.0",
+    "@fishjam-cloud/react-native-client": ">=0.27.0",
+    "@fishjam-cloud/ts-client": ">=0.27.0",
+    "@fishjam-cloud/react-native-webrtc": ">=0.27.0"
+  },
+  "optionalPeerDependencies": {
+    "@expo-pico/account": ">=0.1.0",
+    "@expo-pico/iap": ">=0.1.0",
+    "@expo-pico/achievements": ">=0.1.0",
+    "@expo-pico/leaderboards": ">=0.1.0",
+    "@expo-pico/rooms": ">=0.1.0",
+    "@expo-pico/notifications": ">=0.1.0",
+    "@expo-pico/social": ">=0.1.0",
+    "@expo-pico/rtc": ">=0.1.0",
+    "@expo-pico/storage": ">=0.1.0",
+    "@expo-pico/subscription": ">=0.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.14",
+    "typescript": "~6.0.3"
+  }
+}

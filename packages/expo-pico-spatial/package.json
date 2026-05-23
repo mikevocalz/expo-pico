@@ -1,6 +1,6 @@
 {
-  "name": "expo-pico-spatial",
-  "version": "0.1.0",
+  "name": "@expo-pico/spatial",
+  "version": "0.2.0",
   "description": "Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -50,22 +50,22 @@
     "@expo-pico/platform-service-common": "*"
   },
   "devDependencies": {
-    "@expo/config-plugins": "~55.0.8",
+    "@expo/config-plugins": "~56.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.0",
     "@types/react": "~19.2.14",
-    "expo": "~55.0.17",
-    "expo-modules-core": "~2.3.0",
-    "expo-module-scripts": "~55.0.2",
-    "expo-pico-core": "*",
+    "expo": "~56.0.3",
+    "expo-modules-core": "~56.0.12",
+    "expo-module-scripts": "~56.0.2",
+    "@expo-pico/core": "*",
     "jest": "^30.3.0",
-    "react-native": "0.84.1",
+    "react-native": "^0.85.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=55.0.0",
-    "expo-pico-core": ">=0.1.0",
+    "expo": ">=56.0.0",
+    "@expo-pico/core": ">=0.2.0",
     "react": "*",
     "react-native": "*"
   },

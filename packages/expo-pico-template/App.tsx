@@ -17,7 +17,7 @@ import {
   type PicoDiagnosticsReport,
   type PicoPlatformSdkProbe,
   type PicoRuntimeInfo,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 /**
  * Starter app shell for a PICO OS 6 / Project Swan project.

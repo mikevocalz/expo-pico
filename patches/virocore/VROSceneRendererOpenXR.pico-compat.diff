@@ -1,0 +1,78 @@
+--- /dev/fd/12	2026-05-21 19:30:52
++++ /tmp/virocore-patched.cpp	2026-05-21 19:30:52
+@@ -222,24 +222,41 @@
+     xrEnumerateInstanceExtensionProperties(nullptr, extCount, &extCount,
+                                             availableExts.data());
+ 
+-    // Verify required extensions are present
+-    for (uint32_t i = 0; i < kRequiredExtensionCount; ++i) {
++    // Verify hard-required extension is present. The OpenGL ES extension
++    // is universal — every conformant Android OpenXR runtime exposes it.
++    {
+         bool found = false;
+         for (auto &ext : availableExts) {
+-            if (strcmp(ext.extensionName, kRequiredExtensions[i]) == 0) {
++            if (strcmp(ext.extensionName, XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME) == 0) {
+                 found = true; break;
+             }
+         }
+         if (!found) {
+             ALOGE("Required OpenXR extension not available: %s",
+-                  kRequiredExtensions[i]);
++                  XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
+             return false;
+         }
+     }
+ 
+-    // Build the extension list: required + available optionals
+-    std::vector<const char *> enabledExts(kRequiredExtensions,
+-                                           kRequiredExtensions + kRequiredExtensionCount);
++    // PICO-compat: XR_KHR_android_create_instance is treated as soft-required.
++    // Meta Quest exposes it; some PICO firmware revisions don't enumerate it
++    // as a loader/runtime extension and PICO Swan's runtime rejects
++    // xrCreateInstance entirely when an unrecognised extension is enabled.
++    bool androidCreateInstanceAvailable = false;
++    for (auto &ext : availableExts) {
++        if (strcmp(ext.extensionName, XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME) == 0) {
++            androidCreateInstanceAvailable = true; break;
++        }
++    }
++    ALOGV("XR_KHR_android_create_instance available: %d",
++          (int)androidCreateInstanceAvailable);
++
++    // Build the extension list: hard-required + soft-required-if-present + optionals-if-present
++    std::vector<const char *> enabledExts;
++    enabledExts.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
++    if (androidCreateInstanceAvailable) {
++        enabledExts.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
++    }
+     for (auto *optExt : kOptionalExtensions) {
+         for (auto &ext : availableExts) {
+             if (strcmp(ext.extensionName, optExt) == 0) {
+@@ -269,12 +286,24 @@
+     appInfo.apiVersion         = XR_CURRENT_API_VERSION;
+ 
+     XrInstanceCreateInfo createInfo = { XR_TYPE_INSTANCE_CREATE_INFO };
+-    createInfo.next                    = &androidInfo;
++    // Restore conditional chain — the A/B with next=nullptr proved the
++    // androidInfo struct itself isn't what trips validation, so re-enable it
++    // when available.
++    createInfo.next                    = androidCreateInstanceAvailable
++                                            ? (const void *)&androidInfo
++                                            : nullptr;
+     createInfo.applicationInfo         = appInfo;
+     createInfo.enabledExtensionCount   = (uint32_t)enabledExts.size();
+     createInfo.enabledExtensionNames   = enabledExts.data();
+ 
+-    XR_RETURN_FALSE(xrCreateInstance(&createInfo, &_instance));
++    XrResult createResult = xrCreateInstance(&createInfo, &_instance);
++    if (XR_FAILED(createResult)) {
++        ALOGE("xrCreateInstance failed: XrResult=%d (androidCreateInstanceAvailable=%d, "
++              "enabledExtensionCount=%u)",
++              (int)createResult, (int)androidCreateInstanceAvailable,
++              createInfo.enabledExtensionCount);
++        return false;
++    }
+     ALOGV("xrCreateInstance OK");
+ 
+     // ── Get system (HMD) ──────────────────────────────────────────────────────

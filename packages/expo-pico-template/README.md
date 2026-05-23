@@ -65,11 +65,11 @@ Each sibling needs a plugin entry in `app.config.ts`:
 
 ```ts
 plugins: [
-  ['expo-pico-core', { /* ... */ }],
-  'expo-pico-account',
-  'expo-pico-iap',
-  ['expo-pico-notifications', { requestPostNotificationsPermission: true }],
-  ['expo-pico-rtc', { microphonePermission: true }],
+  ['@expo-pico/core', { /* ... */ }],
+  '@expo-pico/account',
+  '@expo-pico/iap',
+  ['@expo-pico/notifications', { requestPostNotificationsPermission: true }],
+  ['@expo-pico/rtc', { microphonePermission: true }],
 ],
 ```
 

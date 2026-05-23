@@ -11,7 +11,7 @@ import * as api from '../index';
 import { runPackageContractTests } from '@expo-pico/platform-service-common/testing';
 
 runPackageContractTests({
-  packageName: 'expo-pico-storage',
+  packageName: '@expo-pico/storage',
   api: api as unknown as Record<string, unknown>,
   availabilityMethod: 'isStorageAvailable',
   versionMethod: 'getStorageSdkVersion',

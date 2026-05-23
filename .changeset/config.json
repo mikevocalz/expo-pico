@@ -5,18 +5,18 @@
   "fixed": [],
   "linked": [
     [
-      "expo-pico-core",
-      "expo-pico-spatial",
-      "expo-pico-account",
-      "expo-pico-iap",
-      "expo-pico-notifications",
-      "expo-pico-rtc",
-      "expo-pico-rooms",
-      "expo-pico-subscription",
-      "expo-pico-storage",
-      "expo-pico-social",
-      "expo-pico-achievements",
-      "expo-pico-leaderboards"
+      "@expo-pico/core",
+      "@expo-pico/spatial",
+      "@expo-pico/account",
+      "@expo-pico/iap",
+      "@expo-pico/notifications",
+      "@expo-pico/rtc",
+      "@expo-pico/rooms",
+      "@expo-pico/subscription",
+      "@expo-pico/storage",
+      "@expo-pico/social",
+      "@expo-pico/achievements",
+      "@expo-pico/leaderboards"
     ]
   ],
   "access": "public",

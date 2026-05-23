@@ -1,14 +1,14 @@
 package expo.modules.pico.leaderboards
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 internal object LeaderboardsUtils {
 
   private val SDK_AVAILABLE: Boolean by lazy {
-    try {
-      Class.forName("com.pvr.platform.sdk.leaderboard.LeaderboardAPI")
-      true
-    } catch (_: ClassNotFoundException) {
-      false
-    }
+    PicoPlatformSdkDetector.probeAny(
+      "com.pvr.platform.sdk.leaderboard.LeaderboardAPI",
+      "com.pico.pps.sdk.leaderboard.LeaderboardClient",
+    )
   }
 
   fun isLeaderboardsSdkAvailable(): Boolean = SDK_AVAILABLE

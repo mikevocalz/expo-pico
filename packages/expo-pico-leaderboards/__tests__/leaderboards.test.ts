@@ -23,7 +23,7 @@ import {
   getUserEntry,
 } from '../src/index';
 
-describe('expo-pico-leaderboards', () => {
+describe('@expo-pico/leaderboards', () => {
   it('isLeaderboardsAvailable returns false when SDK not present', () => {
     expect(isLeaderboardsAvailable()).toBe(false);
   });

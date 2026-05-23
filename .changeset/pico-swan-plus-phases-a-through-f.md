@@ -1,12 +1,12 @@
 ---
-"expo-pico-core": major
+"@expo-pico/core": major
 ---
 
 Adds PICO Swan OS native runtime support plus a stack of platform hardening phases.
 
 All packages in the `expo-pico-*` family bump to 1.0.0 together — they are configured as `linked` in `.changeset/config.json`. The major bump reflects two realities:
 
-1. Strict peer-semver: siblings declare `peerDependencies: { "expo-pico-core": ">=0.1.0" }`, and changesets cascades every peer-dep version change as a major bump on the consumer. Going from 0.1.x → 0.2.0 on core forces siblings to 1.0.0 regardless of declared range width.
+1. Strict peer-semver: siblings declare `peerDependencies: { "@expo-pico/core": ">=0.1.0" }`, and changesets cascades every peer-dep version change as a major bump on the consumer. Going from 0.1.x → 0.2.0 on core forces siblings to 1.0.0 regardless of declared range width.
 2. Install-visible manifest changes: the Phase A launcher contract (`pvr.app.type`, `IMMERSIVE_HMD`, queries) and the Phase E `<uses-native-library>` + ABI filter change what APKs look like on disk. Consumers reviewing merged manifests on upgrade will see real diffs.
 
 The plugin option API itself is strictly additive — every new option defaults off (or tracks an existing option like `xrMode`), so config written for 0.1.x keeps working unchanged.

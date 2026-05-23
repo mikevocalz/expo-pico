@@ -1,14 +1,14 @@
 package expo.modules.pico.achievements
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 internal object AchievementsUtils {
 
   private val SDK_AVAILABLE: Boolean by lazy {
-    try {
-      Class.forName("com.pvr.platform.sdk.achievements.AchievementsAPI")
-      true
-    } catch (_: ClassNotFoundException) {
-      false
-    }
+    PicoPlatformSdkDetector.probeAny(
+      "com.pvr.platform.sdk.achievements.AchievementsAPI",
+      "com.pico.pps.sdk.achievement.AchievementClient",
+    )
   }
 
   fun isAchievementsSdkAvailable(): Boolean = SDK_AVAILABLE

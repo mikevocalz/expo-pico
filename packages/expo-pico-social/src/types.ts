@@ -7,7 +7,7 @@ export type FriendshipStatus =
 
 export type PresenceStatus = 'online' | 'away' | 'busy' | 'offline';
 
-export interface PicoUser {
+export interface SocialUser {
   userId: string;
   displayName: string;
   avatarUrl: string | null;
@@ -19,13 +19,13 @@ export interface PicoUser {
 
 export interface FriendRequest {
   requestId: string;
-  fromUser: PicoUser;
+  fromUser: SocialUser;
   toUserId: string;
   sentAt: number;
 }
 
 export interface FriendListResult {
-  friends: PicoUser[];
+  friends: SocialUser[];
   nextPageToken: string | null;
   totalCount: number;
 }
@@ -67,7 +67,7 @@ export interface FriendRequestReceivedEvent {
 
 export interface InviteReceivedEvent {
   inviteId: string;
-  fromUser: PicoUser;
+  fromUser: SocialUser;
   destinationApiName: string;
   data: Record<string, string>;
 }

@@ -1,11 +1,6 @@
 import type { AndroidConfig } from '@expo/config-plugins';
 
-import {
-  MANIFEST_META,
-  PICO_FEATURES,
-  PICO_NATIVE_LIBRARIES,
-  PICO_PERMISSIONS,
-} from './constants';
+import { MANIFEST_META, PICO_FEATURES, PICO_NATIVE_LIBRARIES, PICO_PERMISSIONS } from './constants';
 import type { ResolvedPicoOptions } from './types';
 
 /**
@@ -16,11 +11,11 @@ import type { ResolvedPicoOptions } from './types';
  *
  *   - Eye tracking:        `pico.hardware.eyetracking`  + `com.picovr.permission.EYE_TRACKING`
  *   - Face tracking:       `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`
- *   - Body tracking:       `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING`   (seam)
- *   - Spatial audio:       `pico.hardware.spatialaudio`                                            (seam)
- *   - Foveated rendering:  `pico.hardware.foveation` + `com.pico.foveation.enabled` meta-data     (seam)
+ *   - Body tracking:       `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING`
+ *   - Spatial audio:       `pico.hardware.spatialaudio`
+ *   - Foveated rendering:  `pico.hardware.foveation` + `com.pico.foveation.enabled` meta-data
  *   - High sampling rate:  `android.permission.HIGH_SAMPLING_RATE_SENSORS`
- *   - Refresh rates:       `com.pico.refreshRates` meta-data with comma-separated Hz values        (seam)
+ *   - Refresh rates:       `com.pico.refreshRates` meta-data with comma-separated Hz values
  *
  * All `uses-feature` entries are emitted with `android:required="false"`
  * so a device that lacks the capability still installs the APK — the
@@ -31,10 +26,10 @@ import type { ResolvedPicoOptions } from './types';
  * in place rather than duplicating. Capabilities that are toggled off
  * between prebuilds are removed from the manifest.
  *
- * Note: this helper is the capability *declaration* layer. Native
+ * Note: this helper is the capability *declaration* layer. Runtime
  * bindings to the corresponding PICO SDK surfaces (eye-gaze provider,
- * face-tracker callbacks, refresh-rate setter) remain extension seams
- * in `PicoOs6Runtime` / sibling packages.
+ * face-tracker callbacks, scene mesh, body/face tracking, haptics)
+ * are implemented in `expo-pico-spatial` and `expo-pico-core` native modules.
  */
 export function applyCapabilityContract(
   manifest: AndroidConfig.Manifest.AndroidManifest,
@@ -53,8 +48,6 @@ export function applyCapabilityContract(
   upsertFeature(features, PICO_FEATURES.FOVEATION, options.foveatedRendering);
   upsertFeature(features, PICO_FEATURES.BOUNDARY, options.boundary);
   upsertFeature(features, PICO_FEATURES.SCENE_MESH, options.sceneMesh);
-  // Phase I — controller input. All three are seams; required="false"
-  // keeps mis-named features install-safe on current PICO OS builds.
   upsertFeature(features, PICO_FEATURES.CONTROLLER, options.picoSenseController);
   upsertFeature(features, PICO_FEATURES.CONTROLLER_MOTION_TRACKER, options.motionTracker);
   upsertFeature(features, PICO_FEATURES.CONTROLLER_HAPTIC, options.controllerHaptics);
@@ -73,11 +66,7 @@ export function applyCapabilityContract(
   );
 
   // ── Meta-data ───────────────────────────────────────────────────
-  upsertMeta(
-    metaData,
-    MANIFEST_META.FOVEATION_ENABLED,
-    options.foveatedRendering ? 'true' : null
-  );
+  upsertMeta(metaData, MANIFEST_META.FOVEATION_ENABLED, options.foveatedRendering ? 'true' : null);
   upsertMeta(
     metaData,
     MANIFEST_META.REFRESH_RATES,
@@ -98,9 +87,7 @@ export function applyCapabilityContract(
 function upsertNativeLibraries(application: any, declare: boolean): void {
   const list = ensureArray(application, 'uses-native-library');
   for (const lib of PICO_NATIVE_LIBRARIES) {
-    const idx = list.findIndex(
-      (entry: any) => entry.$?.['android:name'] === lib.name
-    );
+    const idx = list.findIndex((entry: any) => entry.$?.['android:name'] === lib.name);
     if (!declare) {
       if (idx !== -1) list.splice(idx, 1);
       continue;
@@ -163,9 +150,7 @@ function ensureArray(node: Record<string, any>, key: string): any[] {
   return node[key];
 }
 
-function ensureApplication(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): any {
+function ensureApplication(manifest: AndroidConfig.Manifest.AndroidManifest): any {
   manifest.manifest.application = manifest.manifest.application ?? [];
   if (manifest.manifest.application.length === 0) {
     manifest.manifest.application.push({ $: {} } as any);

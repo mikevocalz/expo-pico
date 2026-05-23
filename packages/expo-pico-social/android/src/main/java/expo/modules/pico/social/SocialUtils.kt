@@ -1,13 +1,13 @@
 package expo.modules.pico.social
 
+import expo.modules.pico.PicoPlatformSdkDetector
+
 internal object SocialUtils {
   private val SDK_AVAILABLE: Boolean by lazy {
-    try {
-      Class.forName("com.pvr.platform.sdk.social.FriendsAPI")
-      true
-    } catch (_: ClassNotFoundException) {
-      false
-    }
+    PicoPlatformSdkDetector.probeAny(
+      "com.pvr.platform.sdk.social.FriendsAPI",
+      "com.pico.pps.sdk.social.PicoSocialClient",
+    )
   }
 
   fun isSocialSdkAvailable(): Boolean = SDK_AVAILABLE

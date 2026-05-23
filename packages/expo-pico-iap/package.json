@@ -1,5 +1,5 @@
 {
-  "name": "expo-pico-iap",
+  "name": "@expo-pico/iap",
   "version": "0.1.0",
   "description": "PICO store in-app purchase APIs for Expo apps.",
   "main": "build/src/index.js",
@@ -51,18 +51,18 @@
     "@expo/config-plugins": "~55.0.8",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.2.14",
-    "expo": "~55.0.17",
-    "expo-modules-core": "~2.3.0",
-    "expo-module-scripts": "~55.0.2",
-    "expo-pico-core": "*",
+    "expo": "~56.0.3",
+    "expo-modules-core": "~56.0.12",
+    "expo-module-scripts": "~56.0.2",
+    "@expo-pico/core": "*",
     "jest": "^30.3.0",
-    "react-native": "0.84.1",
+    "react-native": "^0.85.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=55.0.0",
-    "expo-pico-core": ">=0.1.0",
+    "expo": ">=56.0.0",
+    "@expo-pico/core": ">=0.1.0",
     "react": "*",
     "react-native": "*"
   },

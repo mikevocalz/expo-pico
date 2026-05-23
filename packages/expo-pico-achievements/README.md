@@ -16,7 +16,7 @@ PICO platform achievements APIs for Expo apps — unlock, track progress, and li
 To check whether the `achievements` SDK surface is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();
@@ -33,8 +33,8 @@ Add `expo-pico-core` and `expo-pico-achievements` to your `app.config.ts` plugin
 ```ts
 export default {
   plugins: [
-    ['expo-pico-core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
-    'expo-pico-achievements',
+    ['@expo-pico/core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
+    '@expo-pico/achievements',
   ],
 };
 ```
@@ -54,7 +54,7 @@ import {
   unlockAchievement,
   addAchievementCount,
   addAchievementUnlockedListener,
-} from 'expo-pico-achievements';
+} from '@expo-pico/achievements';
 
 // Guard against non-PICO builds
 if (isAchievementsAvailable()) {

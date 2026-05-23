@@ -29,3 +29,19 @@ example/ios/
 # via `example/scripts/download-demo-model.js`. Skippable via
 # EXPO_PICO_SKIP_DEMO_MODEL=1.
 example/assets/models/pico-demo.glb
+
+# PICO SDK AARs — proprietary, must be downloaded manually.
+# See vendor/pico-sdk/README.md for instructions.
+vendor/pico-sdk/*.aar
+
+# Local tooling / agent state (not source, do not commit)
+.claude/
+.vscode/
+
+# Per-package gradle daemon caches that occasionally leak into the
+# package tree when running `./gradlew assemble*` from a consuming app.
+packages/*/android/.gradle/
+
+# patch-package error dumps (auto-generated on failed npm install)
+patch-package-error.json
+patch-package-error.json.gz

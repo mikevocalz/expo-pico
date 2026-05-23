@@ -4,7 +4,7 @@
     "strict": true,
     "outDir": "build",
     "types": [],
-    "rootDir": "./src"
+    "rootDir": "src"
   },
   "include": [
     "src"

@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     [
-      'expo-pico-core',
+      '@expo-pico/core',
       {
         picoAppId: process.env.PICO_APP_ID ?? '',
         buildVariant: 'pico',
@@ -102,25 +102,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
-      'expo-pico-spatial',
+      '@expo-pico/spatial',
       {
         anchorPersistence: false,
         sceneMeshEnabled: false,
       },
     ],
-    'expo-pico-iap',
+    '@expo-pico/iap',
     [
-      'expo-pico-notifications',
+      '@expo-pico/notifications',
       {
         requestPostNotificationsPermission: true,
       },
     ],
-    'expo-pico-rtc',
-    'expo-pico-rooms',
-    'expo-pico-subscription',
-    'expo-pico-storage',
-    'expo-pico-social',
-    'expo-pico-achievements',
-    'expo-pico-leaderboards',
+    '@expo-pico/rtc',
+    '@expo-pico/rooms',
+    '@expo-pico/subscription',
+    '@expo-pico/storage',
+    '@expo-pico/social',
+    '@expo-pico/achievements',
+    '@expo-pico/leaderboards',
   ],
 });

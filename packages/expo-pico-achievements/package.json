@@ -1,5 +1,5 @@
 {
-  "name": "expo-pico-achievements",
+  "name": "@expo-pico/achievements",
   "version": "0.1.0",
   "description": "PICO OS achievements for Expo",
   "main": "build/index.js",
@@ -50,12 +50,12 @@
     "@expo-pico/platform-service-common": "*"
   },
   "devDependencies": {
-    "expo-module-scripts": "~55.0.2",
+    "expo-module-scripts": "~56.0.2",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=55.0.0",
-    "expo-pico-core": ">=0.1.0",
+    "expo": ">=56.0.0",
+    "@expo-pico/core": ">=0.1.0",
     "react": "*",
     "react-native": "*"
   },

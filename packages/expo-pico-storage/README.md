@@ -16,7 +16,7 @@ PICO platform cloud storage APIs for Expo apps — save, load, sync, and manage 
 To check whether the `storage` SDK surface is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();
@@ -33,8 +33,8 @@ Add `expo-pico-core` and `expo-pico-storage` to your `app.config.ts` plugins arr
 ```ts
 export default {
   plugins: [
-    ['expo-pico-core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
-    'expo-pico-storage',
+    ['@expo-pico/core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
+    '@expo-pico/storage',
   ],
 };
 ```
@@ -58,7 +58,7 @@ import {
   getStorageQuota,
   addStorageConflictListener,
   addStorageSyncCompleteListener,
-} from 'expo-pico-storage';
+} from '@expo-pico/storage';
 
 if (isStorageAvailable()) {
   // Save a value (server-wins conflict policy by default)

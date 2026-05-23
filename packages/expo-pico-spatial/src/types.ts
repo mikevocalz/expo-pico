@@ -36,7 +36,7 @@ export interface SpatialAnchorHandle {
 /**
  * 3D pose — position + orientation.
  */
-export interface Pose3D {
+export interface SpatialPose {
   position: { x: number; y: number; z: number };
   orientation: { x: number; y: number; z: number; w: number };
 }
@@ -92,4 +92,76 @@ export interface ExpoPicoSpatialModuleInterface {
     handTracking: boolean;
     spatialSdkAvailable: boolean;
   };
+  getSpatialSdkProbe(): Promise<Record<string, boolean>>;
+  createSpatialAnchor(pose: SpatialPose): Promise<{
+    id: string;
+    anchorId: string;
+    persisted: boolean;
+    position: { x: number; y: number; z: number };
+    rotation: { x: number; y: number; z: number; w: number };
+  }>;
+  setWindowContainerProperties(props: WindowContainerProperties): Promise<void>;
+  requestFullSpace(): Promise<void>;
+}
+
+/**
+ * Phase K — Eye gaze types.
+ */
+export interface GazePose {
+  position: { x: number; y: number; z: number };
+  direction: { x: number; y: number; z: number };
+  valid: boolean;
+}
+
+export interface ExpoPicoEyeGazeModuleInterface {
+  eyeGazeAvailable: boolean;
+  getGazeSnapshot(): Promise<GazePose | null>;
+  isEyeGazeAvailable(): boolean;
+}
+
+/**
+ * Phase K — Scene mesh types.
+ *
+ * Native returns plain number arrays; JS normalizes to TypedArrays.
+ */
+export interface SceneMesh {
+  vertices: Float32Array;
+  indices: Uint32Array;
+  normals?: Float32Array;
+}
+
+export interface SceneMeshRaw {
+  vertices: number[];
+  indices: number[];
+  normals?: number[];
+}
+
+export interface ExpoPicoSceneMeshModuleInterface {
+  sceneMeshAvailable: boolean;
+  getSceneMesh(): Promise<SceneMeshRaw>;
+  isSceneMeshAvailable(): boolean;
+}
+
+/**
+ * Phase K — Face tracking types.
+ */
+export type FaceBlendShapes = Record<string, number>;
+
+export interface ExpoPicoFaceTrackingModuleInterface {
+  faceTrackingAvailable: boolean;
+  isFaceTrackingAvailable(): boolean;
+}
+
+/**
+ * Phase K — Body tracking types.
+ */
+export interface BodyJoint {
+  name: string;
+  position: [number, number, number];
+  rotation: [number, number, number, number];
+}
+
+export interface ExpoPicoBodyTrackingModuleInterface {
+  bodyTrackingAvailable: boolean;
+  isBodyTrackingAvailable(): boolean;
 }

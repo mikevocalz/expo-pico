@@ -8,7 +8,7 @@ import type { PicoUserProfile, PicoLoginResult, PicoAccountLinkStatus } from './
 
 export * from './types';
 
-const PKG = 'expo-pico-account';
+const PKG = '@expo-pico/account';
 const DOCS = 'https://developer.picoxr.com/document/unity/account/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────

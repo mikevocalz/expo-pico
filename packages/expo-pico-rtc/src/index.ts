@@ -30,7 +30,7 @@ export type {
 
 export type { Subscription };
 
-const PKG = 'expo-pico-rtc';
+const PKG = '@expo-pico/rtc';
 const emitter = createNativeEventEmitter(NativeRtc);
 
 // ─── Availability ─────────────────────────────────────────────────────────────

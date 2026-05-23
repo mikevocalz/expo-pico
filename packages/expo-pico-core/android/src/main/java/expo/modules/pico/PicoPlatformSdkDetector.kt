@@ -43,8 +43,21 @@ object PicoPlatformSdkDetector {
      * SDK layout changes.
      */
     private val VERSION_BUILDCONFIG_CANDIDATES = arrayOf(
+        // Legacy PICO Platform SDK (com.pvr.platform.sdk.*)
         "com.pvr.platform.sdk.BuildConfig",
         "com.pvr.platform.BuildConfig",
+        // New PICO Platform Service SDK (com.pico.pps.sdk.*) — 1.0.0+
+        // published at https://artifact.bytedance.com/repository/Volcengine/
+        // as com.pico.pps:platform-service-{auth,iap,achievement,...}.
+        // Each module ships its own BuildConfig; any one of them being
+        // present means PPS is on the classpath.
+        "com.pico.pps.sdk.auth.BuildConfig",
+        "com.pico.pps.sdk.iap.BuildConfig",
+        "com.pico.pps.sdk.achievement.BuildConfig",
+        "com.pico.pps.sdk.leaderboard.BuildConfig",
+        "com.pico.pps.sdk.friend.BuildConfig",
+        "com.pico.pps.sdk.push.BuildConfig",
+        "com.pico.pps.sdk.social.BuildConfig",
     )
 
     private val VERSION_FIELD_CANDIDATES = arrayOf(
@@ -59,6 +72,7 @@ object PicoPlatformSdkDetector {
      * `ExpoPicoModule` uses this for the `platformSdkPresent` constant.
      */
     private val BROAD_PRESENCE_CANDIDATES = arrayOf(
+        // Legacy PICO Platform SDK (com.pvr.platform.sdk.*) — older devices.
         "com.pvr.platform.sdk.PlatformSDK",
         "com.pvr.platform.sdk.account.AccountAPI",
         "com.pvr.platform.sdk.achievements.AchievementsAPI",
@@ -70,6 +84,33 @@ object PicoPlatformSdkDetector {
         "com.pvr.iap.sdk.IAPClient",
         "com.pvr.push.sdk.PushSDK",
         "com.pvr.rtc.sdk.RtcEngine",
+        // New PICO Platform Service SDK (com.pico.pps.sdk.*) published at
+        // https://artifact.bytedance.com/repository/Volcengine/. Class
+        // names confirmed against the 1.0.1-alpha.13 AAR contents.
+        //
+        // Modern client classes — present in iap, achievement, leaderboard,
+        // social AARs.
+        "com.pico.pps.sdk.iap.PicoIapClient",
+        "com.pico.pps.sdk.iap.IapClient",
+        "com.pico.pps.sdk.achievement.AchievementClient",
+        "com.pico.pps.sdk.leaderboard.LeaderboardClient",
+        "com.pico.pps.sdk.social.PicoSocialClient",
+        // Matrix Action classes — auth, friend, push ship this shape
+        // instead of a dedicated client class in 1.0.1-alpha.13.
+        "com.bytedance.pico.matrix.action.AuthAction",
+        "com.bytedance.pico.matrix.action.FriendAction",
+        "com.bytedance.pico.matrix.action.PPSPushAction",
+        "com.bytedance.pico.matrix.action.SocialAction",
+        "com.bytedance.pico.matrix.action.IapAction",
+        // BuildConfig fallback — every PPS service AAR includes one and
+        // it never conflicts with app code (BuildConfig is internal).
+        "com.pico.pps.sdk.auth.BuildConfig",
+        "com.pico.pps.sdk.iap.BuildConfig",
+        "com.pico.pps.sdk.achievement.BuildConfig",
+        "com.pico.pps.sdk.leaderboard.BuildConfig",
+        "com.pico.pps.sdk.friend.BuildConfig",
+        "com.pico.pps.sdk.push.BuildConfig",
+        "com.pico.pps.sdk.social.BuildConfig",
     )
 
     /**

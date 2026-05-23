@@ -32,12 +32,21 @@ object AccountUtils {
      * canonical entry point when it's confirmed.
      */
     fun isPlatformSdkAvailable(): Boolean {
-        return try {
-            Class.forName("com.pvr.platform.sdk.PlatformSDK")
-            true
-        } catch (_: ClassNotFoundException) {
-            false
-        }
+        // Probe both the legacy `com.pvr.platform.sdk.*` namespace AND
+        // the new `com.pico.pps.sdk.auth.*` namespace published on the
+        // Bytedance Volcengine maven (com.pico.pps:platform-service-auth).
+        //
+        // The current PPS auth AAR (1.0.1-alpha.13) ships the auth flow as
+        // `com.bytedance.pico.matrix.action.AuthAction` rather than as a
+        // dedicated `PicoSignInClient` — verified by aapt-dumping the
+        // resolved AAR's classes.jar. We probe all three so the detector
+        // flips green on either the legacy `com.pvr.*` API or the modern
+        // matrix Action.
+        return PicoPlatformSdkDetector.probeAny(
+            "com.pvr.platform.sdk.PlatformSDK",
+            "com.pico.pps.sdk.auth.PicoSignInClient",
+            "com.bytedance.pico.matrix.action.AuthAction",
+        )
     }
 
     /**

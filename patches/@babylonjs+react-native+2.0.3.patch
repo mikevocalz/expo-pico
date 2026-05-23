@@ -1,0 +1,13 @@
+diff --git a/node_modules/@babylonjs/react-native/android/build.gradle b/node_modules/@babylonjs/react-native/android/build.gradle
+--- a/node_modules/@babylonjs/react-native/android/build.gradle
++++ b/node_modules/@babylonjs/react-native/android/build.gradle
+@@ -172,7 +172,8 @@
+                         "-DGRAPHICS_API=${graphics_api}",
+                         "-DREACT_NATIVE_VERSION=${REACT_NATIVE_VERSION}",
+                         "-DARCORE_LIBPATH=${extractedLibDir}/core-1.22.0.aar/jni",
+-                        "-DREACTNATIVE_DIR=${rootDir}/../node_modules/react-native/",
++                        "-DREACTNATIVE_DIR=${nodeModules}/react-native/",
++                        "-DREACT_NATIVE_DIR=${nodeModules}/react-native/",
+                         "-DBABYLON_NATIVE_PLUGIN_NATIVECAMERA=${BABYLON_NATIVE_PLUGIN_NATIVECAMERA ? '1' : '0'}",
+                         "-DBABYLON_NATIVE_PLUGIN_NATIVEXR=${BABYLON_NATIVE_PLUGIN_NATIVEXR ? '1' : '0'}",
+                         "-DFETCHCONTENT_FULLY_DISCONNECTED=ON"

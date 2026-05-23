@@ -1,6 +1,10 @@
 {
   "platforms": ["android"],
   "android": {
-    "modules": ["expo.modules.pico.ExpoPicoModule"]
+    "modules": [
+      "expo.modules.pico.ExpoPicoModule",
+      "expo.modules.pico.ExpoPicoHapticsModule",
+      "expo.modules.pico.ExpoPicoPassthroughModule"
+    ]
   }
 }

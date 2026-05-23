@@ -52,7 +52,7 @@ export default {
     plugins: [
       // NEW — add before viro
       [
-        'expo-pico-core',
+        '@expo-pico/core',
         {
           xrMode: 'pico-os6',
           appType: 'vr',

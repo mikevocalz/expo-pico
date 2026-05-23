@@ -19,7 +19,7 @@ import {
   type PicoCapabilitySnapshotEntry,
   type PicoDiagnosticsReport,
   type PicoPlatformSdkProbe,
-} from 'expo-pico-core';
+} from '@expo-pico/core';
 
 /**
  * Live runtime diagnostics panel.

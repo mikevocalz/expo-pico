@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+    "rootDir": "src",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "CommonJS",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "jsx": "react-native",
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

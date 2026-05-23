@@ -16,7 +16,7 @@ PICO platform social APIs for Expo apps — friends, presence, invites, and real
 To check whether the `social` SDK surface is live at runtime:
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 if (isPlatformSdkPresent()) {
   const probe = await getPlatformSdkProbe();
@@ -33,8 +33,8 @@ Add `expo-pico-core` and `expo-pico-social` to your `app.config.ts` plugins arra
 ```ts
 export default {
   plugins: [
-    ['expo-pico-core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
-    'expo-pico-social',
+    ['@expo-pico/core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
+    '@expo-pico/social',
   ],
 };
 ```
@@ -57,7 +57,7 @@ import {
   sendInvites,
   addFriendPresenceChangedListener,
   addInviteReceivedListener,
-} from 'expo-pico-social';
+} from '@expo-pico/social';
 
 if (isSocialAvailable()) {
   // Get current user profile

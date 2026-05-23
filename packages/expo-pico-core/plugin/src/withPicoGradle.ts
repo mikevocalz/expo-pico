@@ -34,6 +34,16 @@ const PICO_REPO_BLOCK = `
                 includeGroup "${PICO_PLATFORM_SDK_GROUP}"
             }
         }
+        // PICO Platform Service SDK (com.pico.pps:*) — public maven hosted
+        // by Bytedance, referenced from the PPS integration doc at
+        // https://developer.picoxr.com/document/platform_service/integrate-the-pico-platform-service-sdk/
+        maven {
+            url "https://artifact.bytedance.com/repository/Volcengine/"
+            content {
+                includeGroup "com.pico.pps"
+                includeGroup "com.pico"
+            }
+        }
 `;
 
 /**

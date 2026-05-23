@@ -17,7 +17,7 @@ import type {
 export * from './types';
 export type { PicoPage };
 
-const PKG = 'expo-pico-leaderboards';
+const PKG = '@expo-pico/leaderboards';
 
 // ─── Availability ─────────────────────────────────────────────────────────────
 

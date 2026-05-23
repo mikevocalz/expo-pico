@@ -50,7 +50,7 @@ See [ARCHITECTURE §19.6](../ARCHITECTURE.md#196-renderer-compatibility-matrix) 
 
 ## 6. Why is `expo-pico-core`'s version 0.1.x but the first release goes to 1.0.0?
 
-Changesets cascades peer-dep changes as major bumps per strict semver (hardcoded in `@changesets/assemble-release-plan`). The `expo-pico-*` siblings declare `peerDependencies: { "expo-pico-core": ">=0.1.0" }`, so when core bumps minor, every sibling is forced to bump major. With the `linked` policy pulling everyone to the same version, the first release lands at 1.0.0 across all 12 packages.
+Changesets cascades peer-dep changes as major bumps per strict semver (hardcoded in `@changesets/assemble-release-plan`). The `expo-pico-*` siblings declare `peerDependencies: { "@expo-pico/core": ">=0.1.0" }`, so when core bumps minor, every sibling is forced to bump major. With the `linked` policy pulling everyone to the same version, the first release lands at 1.0.0 across all 12 packages.
 
 The **plugin option API itself is strictly additive**. Every Phase A–T option defaults off or tracks an existing option — configs written for `0.1.x` keep working unchanged on `1.0.0`. The major version reflects install-visible manifest / Gradle changes (Phase A launcher contract, Phase E ABI filter, Phase E `<uses-native-library>`), not a breaking API.
 
@@ -75,7 +75,7 @@ It runs the seven Phase E checks against your `app.config` without touching the 
 ## 9. How do I see which SDK surfaces are live at runtime?
 
 ```ts
-import { getPlatformSdkProbe, isPlatformSdkPresent } from 'expo-pico-core';
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
 
 const probe = await getPlatformSdkProbe();
 // { account: true, iap: false, notifications: true, ... }
@@ -118,7 +118,7 @@ Your app's `package.json` should declare:
 ```json
 {
   "dependencies": {
-    "expo-pico-core": "^1.0.0"
+    "@expo-pico/core": "^1.0.0"
   }
 }
 ```
