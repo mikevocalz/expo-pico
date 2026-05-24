@@ -40,6 +40,8 @@ def picoOpenxrLoaderConfigField = "${project.findProperty('picoOpenxrLoader') ?:
 def picoNdkAbiFiltersConfigField = "\"${project.findProperty('picoNdkAbiFilters') ?: ''}\""
 def picoDeveloperToolsConfigField = "${project.findProperty('picoDeveloperTools') ?: 'false'}"
 def picoEntitlementCheckConfigField = "${project.findProperty('picoEntitlementCheck') ?: 'false'}"
+def picoRefreshRatesConfigField = "\"${project.findProperty('picoRefreshRates') ?: ''}\""
+def picoTargetDevicesConfigField = "\"${project.findProperty('picoTargetDevices') ?: ''}\""
 
 android {
     namespace "expo.modules.pico"
@@ -77,6 +79,8 @@ android {
         buildConfigField "String", "PICO_NDK_ABI_FILTERS", picoNdkAbiFiltersConfigField
         buildConfigField "boolean", "PICO_DEVELOPER_TOOLS", picoDeveloperToolsConfigField
         buildConfigField "boolean", "PICO_ENTITLEMENT_CHECK", picoEntitlementCheckConfigField
+        buildConfigField "String", "PICO_REFRESH_RATES", picoRefreshRatesConfigField
+        buildConfigField "String", "PICO_TARGET_DEVICES", picoTargetDevicesConfigField
     }
     lint {
         abortOnError false
