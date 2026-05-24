@@ -18,6 +18,29 @@ def picoHasPlatformIdentityConfigField = "${project.findProperty('picoPlatformId
 def picoHasIapIdentityConfigField = "${project.findProperty('picoIapIdentityEnabled') ?: 'false'}"
 def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
 
+// Phase K — declared capability flags. Driven by the consumer app's
+// gradle.properties (written by withPicoCapabilities config plugin).
+// Default to false / empty when the property isn't set so the Kotlin
+// references resolve in both pico AND mobile flavors.
+def picoHandTrackingConfigField = "${project.findProperty('picoHandTracking') ?: 'false'}"
+def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: 'false'}"
+def picoSceneUnderstandingConfigField = "${project.findProperty('picoSceneUnderstanding') ?: 'false'}"
+def picoEyeTrackingConfigField = "${project.findProperty('picoEyeTracking') ?: 'false'}"
+def picoFaceTrackingConfigField = "${project.findProperty('picoFaceTracking') ?: 'false'}"
+def picoBodyTrackingConfigField = "${project.findProperty('picoBodyTracking') ?: 'false'}"
+def picoSpatialAudioConfigField = "${project.findProperty('picoSpatialAudio') ?: 'false'}"
+def picoFoveatedRenderingConfigField = "${project.findProperty('picoFoveatedRendering') ?: 'false'}"
+def picoHighSamplingRateSensorsConfigField = "${project.findProperty('picoHighSamplingRateSensors') ?: 'false'}"
+def picoBoundaryConfigField = "${project.findProperty('picoBoundary') ?: 'false'}"
+def picoSceneMeshConfigField = "${project.findProperty('picoSceneMesh') ?: 'false'}"
+def picoSenseControllerConfigField = "${project.findProperty('picoSenseController') ?: 'false'}"
+def picoMotionTrackerConfigField = "${project.findProperty('picoMotionTracker') ?: 'false'}"
+def picoControllerHapticsConfigField = "${project.findProperty('picoControllerHaptics') ?: 'false'}"
+def picoOpenxrLoaderConfigField = "${project.findProperty('picoOpenxrLoader') ?: 'false'}"
+def picoNdkAbiFiltersConfigField = "\"${project.findProperty('picoNdkAbiFilters') ?: ''}\""
+def picoDeveloperToolsConfigField = "${project.findProperty('picoDeveloperTools') ?: 'false'}"
+def picoEntitlementCheckConfigField = "${project.findProperty('picoEntitlementCheck') ?: 'false'}"
+
 android {
     namespace "expo.modules.pico"
     defaultConfig {
@@ -33,6 +56,27 @@ android {
         buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityConfigField
         buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityConfigField
         buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", picoEmulatorOptimizationsConfigField
+        // Phase K capability flags — both flavors get the same defaults
+        // so Kotlin compiles cleanly even when the consumer app's
+        // prebuild plugin hasn't supplied per-flag values.
+        buildConfigField "boolean", "PICO_HAND_TRACKING", picoHandTrackingConfigField
+        buildConfigField "boolean", "PICO_PASSTHROUGH", picoPassthroughConfigField
+        buildConfigField "boolean", "PICO_SCENE_UNDERSTANDING", picoSceneUnderstandingConfigField
+        buildConfigField "boolean", "PICO_EYE_TRACKING", picoEyeTrackingConfigField
+        buildConfigField "boolean", "PICO_FACE_TRACKING", picoFaceTrackingConfigField
+        buildConfigField "boolean", "PICO_BODY_TRACKING", picoBodyTrackingConfigField
+        buildConfigField "boolean", "PICO_SPATIAL_AUDIO", picoSpatialAudioConfigField
+        buildConfigField "boolean", "PICO_FOVEATED_RENDERING", picoFoveatedRenderingConfigField
+        buildConfigField "boolean", "PICO_HIGH_SAMPLING_RATE_SENSORS", picoHighSamplingRateSensorsConfigField
+        buildConfigField "boolean", "PICO_BOUNDARY", picoBoundaryConfigField
+        buildConfigField "boolean", "PICO_SCENE_MESH", picoSceneMeshConfigField
+        buildConfigField "boolean", "PICO_SENSE_CONTROLLER", picoSenseControllerConfigField
+        buildConfigField "boolean", "PICO_MOTION_TRACKER", picoMotionTrackerConfigField
+        buildConfigField "boolean", "PICO_CONTROLLER_HAPTICS", picoControllerHapticsConfigField
+        buildConfigField "boolean", "PICO_OPENXR_LOADER", picoOpenxrLoaderConfigField
+        buildConfigField "String", "PICO_NDK_ABI_FILTERS", picoNdkAbiFiltersConfigField
+        buildConfigField "boolean", "PICO_DEVELOPER_TOOLS", picoDeveloperToolsConfigField
+        buildConfigField "boolean", "PICO_ENTITLEMENT_CHECK", picoEntitlementCheckConfigField
     }
     lint {
         abortOnError false

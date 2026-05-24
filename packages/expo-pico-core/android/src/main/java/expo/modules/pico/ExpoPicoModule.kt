@@ -35,7 +35,12 @@ class ExpoPicoModule : Module() {
             // Phase K — capability declarations from the prebuild plugin
             // exposed at runtime so JS code can ask "did the prebuild
             // declare X?" without re-reading the manifest.
-            "declaredCapabilities" to mapOf(
+            // mapOf is explicitly typed Map<String, Any> because the
+            // BuildConfig values are heterogeneous (Boolean for most
+            // flags, String for PICO_NDK_ABI_FILTERS, etc.). Without the
+            // annotation Kotlin can't unify the value types of the
+            // Pair vararg and the whole block fails inference.
+            "declaredCapabilities" to mapOf<String, Any>(
                 "handTracking" to BuildConfig.PICO_HAND_TRACKING,
                 "passthrough" to BuildConfig.PICO_PASSTHROUGH,
                 "sceneUnderstanding" to BuildConfig.PICO_SCENE_UNDERSTANDING,
