@@ -244,8 +244,65 @@ Without that signal, the trail is cold from the app side. The closed forwardload
 - **Fabric / New Architecture prop setters.** Viro 2.55.0 logs `ViewManagerPropertyUpdater: Could not find generated setter for class com.viromedia.bridge.component.VRT*Manager` for every Viro view. JS props (`position`, `materials`, `passthroughEnabled`, etc.) do not propagate to the native scene in some configurations. This is an upstream Viro Fabric codegen gap and not addressable from `expo-pico-core`. Track at the `@reactvision/react-viro` repo.
 - **The non-immersive `<ViroSceneNavigator>` works on Pico without any of this.** If you only need 3D content as a 2D panel (no OpenXR session, no passthrough), just use `<ViroSceneNavigator>` and the standard Pico launcher categories. The OpenXR + Quest path is only needed for true immersive rendering.
 
+## `VROExternalSurfaceTexture` — Tier 2 live canvas hook
+
+`patches/virocore/virocore-v2.55.0-nitro-canvas.patch` adds — on top of the
+PICO compat patches above — the renderer-side bridge for
+[`nitro-canvas-in-Vision`](../../nitro-canvas-in-Vision), a Nitro module that
+lets a Skia / WebGPU / Rive canvas appear as a live texture on any 3D mesh
+inside a Viro scene.
+
+The bridge follows the existing shader-modifier external-texture pattern
+already used for the AR camera feed (`requiresCameraTexture` /
+`samplerExternalOES camera_texture`). A sibling sampler name
+`surface_texture` plus a `requiresExternalSurfaceTexture()` flag drive the
+same Android OES injection logic. The actual texture is wrapped by a new
+`VROExternalSurfaceTexture` (a `VROTexture` subclass) whose substrate is
+imported per platform:
+
+| Platform | Producer-side handle | Consumer-side import | Substrate |
+|---|---|---|---|
+| iOS      | `IOSurface`          | `CVOpenGLESTextureCache` → `GL_TEXTURE_2D`         | `VROTextureSubstrateOpenGL` (`ownTexture=false`, CV ref held) |
+| visionOS | `IOSurface`          | `CVMetalTextureCache` → `MTLTexture`               | `VROTextureSubstrateMetal` |
+| Android (Route B) | `AHardwareBuffer` | `eglCreateImageKHR` + `glEGLImageTargetTexture2DOES` → `GL_TEXTURE_EXTERNAL_OES` | `VROTextureSubstrateOpenGL` (`ownTexture=true`) |
+| Android (Route A) | SurfaceTexture GL id | (already an external-OES texture, just sample) | `VROTextureSubstrateOpenGL` (`ownTexture=false`) |
+
+Files added / changed (line offsets against pinned v2.55.0):
+
+| File | Change |
+|---|---|
+| `ViroRenderer/VROExternalSurfaceTexture.h` | new — public API + `VROSharedTextureHandle` struct |
+| `ViroRenderer/VROExternalSurfaceTexture.cpp` | new — cross-platform shell; delegates to per-platform `..._Impl_importHandle` |
+| `ViroRenderer/VROShaderModifier.h` | +18 — `setRequiresExternalSurfaceTexture` / member |
+| `ViroRenderer/VROShaderProgram.cpp` | ~29 — Android OES injection rewrites `surface_texture` too |
+| `ios/ViroKit/VRODriverOpenGLiOS.h` | +6 — `getEAGLContext()` accessor |
+| `ios/ViroKit/VROExternalSurfaceTextureImpl.mm` | new — iOS+visionOS impl (`#if TARGET_OS_VISION` branch) |
+| `android/sharedCode/src/main/cpp/VROExternalSurfaceTextureImpl.cpp` | new — Android Route A + B impl |
+| `android/sharedCode/CMakeLists.txt` | +2 — new sources |
+
+**Binding plumbing — *zero* changes to `VROMaterial` or `VROMaterialShaderBinding`.**
+The existing per-material `getShaderUniformTextures()` path
+(`VROMaterialShaderBinding.cpp:242`) already routes unknown modifier sampler
+names through `material->setShaderUniform(name, texture)`. So the developer
+just calls `material->setShaderUniform("surface_texture",
+externalSurfaceTexture)` and the Android OES swap is driven by the modifier
+flag.
+
+**The seam with ViroReact's prop bridge** (the `canvasSource` prop) lives in
+a separate small patch to `@reactvision/react-viro` — described in
+[`nitro-canvas-in-Vision/docs/CANVAS-SOURCE-PROP.md`](../../nitro-canvas-in-Vision/docs/CANVAS-SOURCE-PROP.md).
+Not part of the virocore patch.
+
+**Build:** rebuild the AAR (`./gradlew :sharedCode:assembleRelease`) and
+drop the resulting `sharedCode-release.aar` into the consumer's
+`node_modules/@reactvision/react-viro/android/viro_renderer/`. iOS / visionOS
+require rebuilding `ViroKit.framework` from the Xcode project after adding
+the new `.mm` file via Xcode (the pbxproj does not use synchronized folders,
+so file membership is manual).
+
 ## See also
 
 - [`packages/expo-pico-core/plugin/src/viro/withPicoOpenXrLoader.ts`](../packages/expo-pico-core/plugin/src/viro/withPicoOpenXrLoader.ts) — config plugin source.
-- [`patches/virocore/VROSceneRendererOpenXR.pico-compat.patch`](../patches/virocore/VROSceneRendererOpenXR.pico-compat.patch) — virocore C++ patch.
+- [`patches/virocore/VROSceneRendererOpenXR.pico-compat.patch`](../patches/virocore/VROSceneRendererOpenXR.pico-compat.patch) — original PICO compat C++ patch.
+- [`patches/virocore/virocore-v2.55.0-nitro-canvas.patch`](../patches/virocore/virocore-v2.55.0-nitro-canvas.patch) — consolidated patch including PICO compat + VROExternalSurfaceTexture.
 - [`docs/MIGRATING-FROM-VIRO.md`](MIGRATING-FROM-VIRO.md) — overall renderer-keep-or-swap decision tree.
