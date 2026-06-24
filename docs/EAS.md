@@ -1,6 +1,6 @@
-# EAS Build + Submit — PICO integration
+# EAS Build and Submit: PICO integration
 
-This guide covers building and submitting PICO-targeted Expo apps through [EAS Build](https://docs.expo.dev/build/introduction/) and the PICO Developer Platform. It is opinionated toward the `expo-pico-*` plugin family, but the EAS setup itself is standard — nothing here overrides Expo's own recommendations.
+This guide covers building and submitting PICO-targeted Expo apps through [EAS Build](https://docs.expo.dev/build/introduction/) and the PICO Developer Platform. It is opinionated toward the `expo-pico-*` plugin family, but the EAS setup itself is standard. Nothing here overrides Expo's own recommendations.
 
 Every item below is testable locally with `eas build --local` before running it on the hosted build service.
 
@@ -12,7 +12,7 @@ Every item below is testable locally with `eas build --local` before running it 
 
 ## 1. `eas.json` profiles
 
-PICO apps want at least two build variants per environment: a `mobile` variant for development-on-phone and a `pico` variant for headset. Most consumers end up with four profiles: dev-mobile, dev-pico, prod-mobile, prod-pico. An example config (also shipped at [`example/eas.json`](../example/eas.json)) looks like:
+PICO apps want at least two build variants per environment: a `mobile` variant for development-on-phone and a `pico` variant for headset. Most consumers end up with four profiles: dev-mobile, dev-pico, prod-mobile, prod-pico. An example config (also shipped at [`example/eas.json`](../example/eas.json)):
 
 ```json
 {
@@ -64,15 +64,15 @@ PICO apps want at least two build variants per environment: a `mobile` variant f
 
 Key points:
 
-- The `gradleCommand` entries pin EAS to the exact flavor-qualified task. `:app:assembleDebug` would build both `mobileDebug` and `picoDebug` in the same job — wasteful and confusing in logs.
+- The `gradleCommand` entries pin EAS to the exact flavor-qualified task. `:app:assembleDebug` would build both `mobileDebug` and `picoDebug` in the same job, which is wasteful and confusing in logs.
 - `bundlePicoRelease` produces an AAB. PICO accepts both APK and AAB; AAB is preferred for size.
-- `distribution: "store"` is correct even though the "store" is PICO's, not Google's — it just tells EAS this build is intended for production distribution.
+- `distribution: "store"` is correct even though the "store" is PICO's, not Google's. It tells EAS this build is intended for production distribution.
 
 ## 2. Secrets
 
 Plugin options that come from env vars (`PICO_PLATFORM_APP_ID`, `PICO_PLATFORM_APP_KEY`, IAP merchant/pay keys, their `_FOREIGN` siblings) need to be available at prebuild + Gradle time. Two ways:
 
-**EAS Secrets (recommended).**
+EAS Secrets (recommended).
 
 ```bash
 eas secret:create --name PICO_PLATFORM_APP_ID --value xxxxxx --type string
@@ -83,9 +83,9 @@ eas secret:create --name PICO_PAY_KEY --value xxxxxx --type string
 
 EAS injects these as env vars into the build pipeline. Your `app.config.ts` reads them via `process.env.PICO_PLATFORM_APP_ID` etc. (see the example app's `app.config.ts` for the exact pattern).
 
-**`.env` files (local / bare-EAS).**
+`.env` files (local / bare-EAS).
 
-Keep a `.env.production` that the build reads. Never commit this file. Use EAS Secrets for hosted builds — `.env` files are only practical for `eas build --local`.
+Keep a `.env.production` that the build reads. Never commit this file. Use EAS Secrets for hosted builds. `.env` files are only practical for `eas build --local`.
 
 If a secret is missing at build time, `expo-pico-core`'s Phase E diagnostics emit `identity.missing` warnings; the build still succeeds but Platform SDK calls return `SERVICE_UNAVAILABLE` at runtime. Run the doctor first to verify:
 
@@ -102,8 +102,8 @@ eas credentials
 ```
 
 - Generate a new Android Keystore.
-- Choose different credentials per profile only if you need separate keystores for mobile vs pico (rare — typically one keystore is enough).
-- **Back up the keystore.** Losing it means you can't update already-published apps on the PICO Store.
+- Choose different credentials per profile only if you need separate keystores for mobile vs pico (rare; typically one keystore is enough).
+- Back up the keystore. Losing it means you can't update already-published apps on the PICO Store.
 
 For a production app shared across multiple developers, store the keystore + keystore password in a shared secret manager (1Password, AWS Secrets Manager) and import into EAS via `eas credentials --platform android`.
 
@@ -118,7 +118,7 @@ EAS builds the APK / AAB; PICO distributes it. You need separate PICO developer 
 
 ### Submission
 
-There is **no `eas submit` integration with the PICO Store today** (this may change — track the EAS docs). Submit manually:
+There is no `eas submit` integration with the PICO Store today (this may change; track the EAS docs). Submit manually:
 
 1. Build: `eas build --profile production-pico`.
 2. Download the resulting AAB from EAS.
@@ -149,7 +149,7 @@ If any of these are missing and you expected them, rerun `npx expo prebuild --cl
 
 ## 6. CI recipes
 
-### GitHub Actions — build on tag
+### GitHub Actions: build on tag
 
 ```yaml
 name: EAS Build
@@ -178,7 +178,7 @@ jobs:
       - run: eas build --profile production-pico --non-interactive --platform android
 ```
 
-### GitHub Actions — prerelease on `main`
+### GitHub Actions: prerelease on `main`
 
 Same as above with the trigger changed to `push: branches: [main]` and `--profile preview-pico`.
 
@@ -195,10 +195,7 @@ Same as above with the trigger changed to `push: branches: [main]` and `--profil
 
 ## Links
 
-- [QUICKSTART.md](./QUICKSTART.md) — zero-to-running guide for first-time setup
+- [QUICKSTART.md](./QUICKSTART.md): bootstrap guide for first-time setup
 - Top-level [README](../README.md)
-- [PRODUCTION-READINESS.md](./PRODUCTION-READINESS.md) — single-page pre-ship checklist
-- [RELEASING.md](../RELEASING.md) — how `expo-pico-*` packages themselves are released
-- [ARCHITECTURE.md](../ARCHITECTURE.md) — full plugin / module design reference
 - [EAS Build docs](https://docs.expo.dev/build/introduction/)
 - [PICO Developer Platform](https://developer.picoxr.com/)

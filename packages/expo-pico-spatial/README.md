@@ -2,14 +2,14 @@
 
 Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.
 
-> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See the repository [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for cross-package design rationale.
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
 ## Status
 
-- **Maturity:** alpha
-- **PICO Spatial SDK linkage:** extension seam. Spatial anchor / container runtime methods throw `notImplementedError` until the PICO Spatial SDK AAR ships and is linked. The detection surface (`getSpaceState`, `getContainerType`, `getSpatialCapabilities`) reads BuildConfig mirror fields set by `expo-pico-core` and works today.
-- **Platform:** Android only.
-- **Runtime target:** PICO OS 6 in shared-space, full-space, or volume modes.
+- Maturity: alpha
+- PICO Spatial SDK linkage: extension seam. Spatial anchor / container runtime methods throw `notImplementedError` until the PICO Spatial SDK AAR ships and is linked. The detection surface (`getSpaceState`, `getContainerType`, `getSpatialCapabilities`) reads BuildConfig mirror fields set by `expo-pico-core` and works today.
+- Platform: Android only.
+- Runtime target: PICO OS 6 in shared-space, full-space, or volume modes.
 
 ## Install
 
@@ -19,7 +19,7 @@ yarn add expo-pico-core expo-pico-spatial
 
 ## Configure
 
-Spatial features are selected via `expo-pico-core` plugin options — this package only scaffolds the native seams. Enable the spatial modes + capability toggles you need:
+Spatial features are selected via `expo-pico-core` plugin options. This package only scaffolds the native seams. Enable the spatial modes and capability toggles you need:
 
 ```ts
 // app.config.ts
@@ -68,7 +68,7 @@ function logSpatialStatus() {
   });
 }
 
-// Extension seams — throw notImplementedError until SDK is wired.
+// Extension seams. Throw notImplementedError until SDK is wired.
 try {
   await createSpatialAnchor({ position: [0, 0, -1], rotation: [0, 0, 0, 1] });
 } catch (e) {
@@ -110,13 +110,11 @@ console.log({
 ## Limitations
 
 - Anchor / container / space-transition runtime APIs are seams. The plugin correctly declares every relevant manifest feature (`pico.software.spatialanchor`, `pico.software.scene`, `pico.software.scenemesh`), but native runtime bindings require the PICO Spatial SDK AAR. Expect these to land in a future phase when the SDK surfaces stabilize publicly.
-- `spatialMode: 'volume'` (Phase D) is the PICO OS 6 3D Volume container — the meta-data key is emitted as a best-known seam; verify against the PICO launcher when the Spatial SDK ships.
+- `spatialMode: 'volume'` (Phase D) is the PICO OS 6 3D Volume container. The meta-data key is emitted as a best-known seam; verify against the PICO launcher when the Spatial SDK ships.
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §15 — PICO Swan OS support](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#15-pico-swan-os-support-path-xrmode)
-- [ARCHITECTURE §18 — Hardware capability declarations](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#18-hardware-capability-declarations-phase-c)
 - [PICO Spatial SDK docs](https://developer.picoxr.com/document/spatial-sdk/)
 
 ## License

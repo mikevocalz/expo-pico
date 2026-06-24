@@ -2,14 +2,14 @@
 
 PICO store in-app purchase APIs for Expo apps.
 
-> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See the repository [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for cross-package design rationale.
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
 ## Status
 
-- **Maturity:** alpha
-- **PICO Platform SDK linkage:** extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO IAP SDK AAR is on the classpath.
-- **Platform:** Android only.
-- **Runtime target:** PICO OS 6 + signed-in PICO Store account.
+- Maturity: alpha
+- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO IAP SDK AAR is on the classpath.
+- Platform: Android only.
+- Runtime target: PICO OS 6 plus a signed-in PICO Store account.
 
 ## Install
 
@@ -87,7 +87,7 @@ async function buyCurrency() {
 | `isIapAvailable()`                  | `true` when the IAP SDK is linked at runtime.                               |
 | `getIapSdkVersion()`                | SDK version string or `'unavailable'`.                                      |
 | `getProducts(skus)`                 | Queries the PICO store for product details.                                 |
-| `purchase(sku)` *(seam)*            | Launches the store UI; returns a receipt. Throws `notImplementedError` until wired — PICO IAP has no headless purchase path. |
+| `purchase(sku)` *(seam)*            | Launches the store UI; returns a receipt. Throws `notImplementedError` until wired. PICO IAP has no headless purchase path. |
 | `consumePurchase(purchaseToken)`    | Marks a consumable purchase as consumed so the user can buy again.          |
 | `getPurchaseHistory()`              | Returns the user's prior purchases from the PICO store.                     |
 
@@ -107,14 +107,13 @@ console.log({
 
 ## Limitations
 
-- `purchase()` is a documented seam because PICO IAP requires the store's UI flow — there is no headless purchase path. The bridge method will wrap the PICO IAP SDK call when the AAR is linked.
+- `purchase()` is a documented seam because PICO IAP requires the store's UI flow. There is no headless purchase path. The bridge method will wrap the PICO IAP SDK call when the AAR is linked.
 - Server-side receipt verification is the app's responsibility; this package does not implement it.
 - Subscription products are handled by [`expo-pico-subscription`](../expo-pico-subscription), not here.
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17 — Platform SDK identity](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
 - Sibling: [`expo-pico-subscription`](../expo-pico-subscription)
 
 ## License

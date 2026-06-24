@@ -11,7 +11,7 @@ on top of the PICO Platform SDK social interaction layer.
 yarn add expo-pico-rooms
 ```
 
-Add to `app.config.ts` **after** `expo-pico-core`:
+Add to `app.config.ts` after `expo-pico-core`:
 
 ```ts
 plugins: [
@@ -66,21 +66,19 @@ All async APIs are extension seams pending PICO Platform SDK AAR integration.
 
 ## Status
 
-- `isRoomsSdkAvailable()` — implemented (SDK presence check)
-- All async APIs — extension seams
+- `isRoomsSdkAvailable()`: implemented (SDK presence check)
+- All async APIs: extension seams
 
 ## Requirements
 
 - `expo-pico-core >= 0.1.0` (peer)
-- Expo SDK 55+
+- Expo SDK 56+
 - New Architecture
 - Android only
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
-- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
 
 ## License
 

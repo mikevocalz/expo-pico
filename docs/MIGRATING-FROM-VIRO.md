@@ -2,9 +2,9 @@
 
 Audience: developers with an Expo app currently using [`@reactvision/react-viro`](https://github.com/ReactVision/viro) on its Quest (`OVR_MOBILE`) path who want to ship the same app on PICO 4 / 4 Ultra / Swan.
 
-This guide is **not** a 1:1 port. Viro's native surface (`<ViroScene>`, `<ViroNode>`, `<ViroSphere>`, etc.) is a scene graph; `expo-pico` is platform plumbing. Your scene graph keeps working — the port is about which config plugin sets up the Android native project and which launcher contract the APK enumerates under. Rendering code is unchanged.
+This guide is not a 1:1 port. Viro's native surface (`<ViroScene>`, `<ViroNode>`, `<ViroSphere>`, etc.) is a scene graph; `expo-pico` is platform plumbing. Your scene graph keeps working. The port is about which config plugin sets up the Android native project and which launcher contract the APK enumerates under. Rendering code is unchanged.
 
-Viro is the renderer used by this repo's example app and is actively maintained by [ReactVision](https://github.com/ReactVision/viro) (community fork since 2023). `expo-pico-core` only touches config / manifest / Gradle, never rendering — keep your `<ViroScene>` / `<ViroNode>` JSX. See [Option A](#option-a-keep-viro-for-rendering-add-expo-pico-core-for-pico-plumbing) below.
+Viro is the renderer used by this repo's example app and is actively maintained by [ReactVision](https://github.com/ReactVision/viro) (community fork since 2023). `expo-pico-core` only touches config / manifest / Gradle, never rendering. Keep your `<ViroScene>` / `<ViroNode>` JSX. See [Option A](#option-a-keep-viro-for-rendering-add-expo-pico-core-for-pico-plumbing) below.
 
 ## Conceptual mapping
 
@@ -13,20 +13,18 @@ Viro is the renderer used by this repo's example app and is actively maintained 
 | Top-level plugin                      | `withViro`                                                               | `expo-pico-core` (plugin registered in `plugins` array of `app.config.ts`)                                          |
 | Native package registration target    | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`                             | `PicoCorePackage(PicoXRPlatform.PICO_OS5)` or `…PICO_SWAN`                                                         |
 | Platform-mode option                  | `android.xRMode: ['OVR_MOBILE']`                                        | `xrMode: 'pico-os5'` or `'pico-swan'`                                                                              |
-| New-Architecture check                | warning-only soft check                                                  | warning-only soft check (same pattern — `withPicoNewArchCheck`)                                                     |
+| New-Architecture check                | warning-only soft check                                                  | warning-only soft check (same pattern: `withPicoNewArchCheck`)                                                      |
 | Launcher contract                     | not emitted                                                              | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>` (Phase A)                    |
 | Platform SDK identity                 | not emitted                                                              | `pico_app_id` / `pico_app_key` string resources + login/browser activities (Phase B)                                |
-| Hardware capability features          | `handTracking`, `passthrough` booleans                                   | Same flags + eye / face / body / foveation / refresh rates / boundary / sceneMesh (Phase C + D)                     |
+| Hardware capability features          | `handTracking`, `passthrough` booleans                                   | Same flags plus eye / face / body / foveation / refresh rates / boundary / sceneMesh (Phase C + D)                  |
 | NDK ABI filter                        | none                                                                     | `ndk { abiFilters 'arm64-v8a' }` on pico flavor (Phase E, default on)                                               |
 | OpenXR loader declaration             | none (consumer responsibility)                                           | `<uses-native-library android:name="libopenxr_loader.so"/>` (Phase E, default on)                                   |
-| Runtime SDK detection                 | none                                                                     | `PicoPlatformSdkDetector` reflection probes (Phase J) — `getPlatformSdkProbe()` returns per-surface presence         |
-| Prebuild diagnostics                  | `WarningAggregator` soft new-arch check                                  | 7-check `withPicoDiagnostics` + standalone `expo-pico-doctor` CLI (Phase E + G)                                     |
-| Runtime diagnostics                   | none                                                                     | `getPicoDiagnostics()` returns structured findings + Platform SDK probe + `formatDiagnostics` (Phase F)             |
+| Runtime SDK detection                 | none                                                                     | `PicoPlatformSdkDetector` reflection probes (Phase J): `getPlatformSdkProbe()` returns per-surface presence         |
+| Prebuild diagnostics                  | `WarningAggregator` soft new-arch check                                  | 7-check `withPicoDiagnostics` plus standalone `expo-pico-doctor` CLI (Phase E + G)                                  |
+| Runtime diagnostics                   | none                                                                     | `getPicoDiagnostics()` returns structured findings plus Platform SDK probe and `formatDiagnostics` (Phase F)        |
 | Rendering                             | Viro's own native scene graph                                            | renderer-agnostic (plugin never touches rendering code)                                                             |
 
-See [ARCHITECTURE §15–§22](../ARCHITECTURE.md) for the design behind each row.
-
-## Option A — keep Viro for rendering, add `expo-pico-core` for PICO plumbing
+## Option A: keep Viro for rendering, add `expo-pico-core` for PICO plumbing
 
 Works when your scene graph is complex and you don't want to re-author it in another renderer. Viro's Quest runtime won't activate on PICO hardware (Oculus-specific), but Viro's AR/GVR paths will still run against PICO's underlying Android GL surface.
 
@@ -38,7 +36,7 @@ yarn add expo-pico-core
 
 ### 2. Update `app.config.ts`
 
-Keep Viro in the plugins array; add `expo-pico-core` **before** it so the PICO flavor manifest / launcher categories land first and Viro's additions merge on top:
+Keep Viro in the plugins array; add `expo-pico-core` before it so the PICO flavor manifest and launcher categories land first and Viro's additions merge on top:
 
 ```ts
 // app.config.ts
@@ -78,7 +76,7 @@ export default {
 };
 ```
 
-Plugin ordering rule: **flavor-manifest-writing plugins first**. `expo-pico-core` writes the PICO flavor manifest. Viro adds top-level manifest entries that merge onto it. Reversing the order means Viro's plugin runs before the flavor exists and emits its entries only into the main manifest — you lose the pico-only scoping.
+Plugin ordering rule: flavor-manifest-writing plugins first. `expo-pico-core` writes the PICO flavor manifest. Viro adds top-level manifest entries that merge onto it. Reversing the order means Viro's plugin runs before the flavor exists and emits its entries only into the main manifest, so you lose the pico-only scoping.
 
 ### 3. Drop `OVR_MOBILE` from `xRMode`
 
@@ -100,20 +98,18 @@ aapt dump xmltree android/app/build/outputs/apk/pico/debug/app-pico-debug.apk An
 
 ### 5. Gotchas
 
-- **`missingDimensionStrategy`**: `expo-pico-core` introduces a `device` flavor dimension. If Viro or any other plugin declares its own dimension, add `missingDimensionStrategy` entries in `android/app/build.gradle` for cross-dimension resolution. See [ARCHITECTURE §6](../ARCHITECTURE.md#6-build-flavor-strategy).
-- **Viro's `<queries>`**: if Viro adds its own `<queries>` entries, they'll merge with `expo-pico-core`'s (`com.pico.os.systemui` + `com.pico.platform`). Both sets coexist cleanly.
-- **Viro's sensor permissions**: Viro declares camera, accelerometer, gyroscope, sensor features. `expo-pico-core` doesn't touch these — they survive merge.
+- `missingDimensionStrategy`: `expo-pico-core` introduces a `device` flavor dimension. If Viro or any other plugin declares its own dimension, add `missingDimensionStrategy` entries in `android/app/build.gradle` for cross-dimension resolution.
+- Viro's `<queries>`: if Viro adds its own `<queries>` entries, they'll merge with `expo-pico-core`'s (`com.pico.os.systemui` plus `com.pico.platform`). Both sets coexist cleanly.
+- Viro's sensor permissions: Viro declares camera, accelerometer, gyroscope, sensor features. `expo-pico-core` doesn't touch these; they survive merge.
 
-## Explicit: what Viro's Quest plumbing does that `expo-pico-core` deliberately does not
+## What Viro's Quest plumbing does that `expo-pico-core` deliberately does not
 
-From the audit in [ARCHITECTURE §15.5](../ARCHITECTURE.md#155-what-is-intentionally-not-copied-from-quest-support):
-
-- **`OVR_MOBILE` enum reused for Swan.** A distinct `PICO_SWAN` value in a PICO-owned enum is correct; shoehorning Swan into `OVR_MOBILE` would carry over Oculus SDK assumptions that don't apply.
-- **`settings.gradle` unconditional subproject inclusion.** Viro's helper has no idempotency check; re-prebuilding duplicates `include` lines. `withPicoSettingsGradle` is marker-guarded + opt-in.
-- **Oculus-specific manifest categories.** `com.oculus.intent.category.VR`, `oculus.software.handtracking`, `com.oculus.supportedDevices`, `com.oculus.permission.USE_ANCHOR_API` — none of these are valid on PICO OS. Equivalent entries live under `com.pico.*` / `pico.hardware.*` / `pico.software.*`.
-- **Per-mode package accumulation.** Viro registers one `ReactViroPackage` per active `xRMode` entry. PICO Swan / PICO OS 6 are mutually exclusive at boot; exactly one `PicoCorePackage` is registered.
-- **Gradle classpath overrides.** Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 55 toolchain ships the right AGP; we never force it.
-- **Forcing `minSdkVersion` 24.** Viro's `withViroProjectBuildGradle` hardcodes min SDK 24. PICO's floor is higher (32 for OS 6, 33 for Swan). The plugin sets the floor per-flavor, not project-wide.
+- `OVR_MOBILE` enum reused for Swan. A distinct `PICO_SWAN` value in a PICO-owned enum is correct; shoehorning Swan into `OVR_MOBILE` would carry over Oculus SDK assumptions that don't apply.
+- `settings.gradle` unconditional subproject inclusion. Viro's helper has no idempotency check; re-prebuilding duplicates `include` lines. `withPicoSettingsGradle` is marker-guarded and opt-in.
+- Oculus-specific manifest categories. `com.oculus.intent.category.VR`, `oculus.software.handtracking`, `com.oculus.supportedDevices`, `com.oculus.permission.USE_ANCHOR_API`: none of these are valid on PICO OS. Equivalent entries live under `com.pico.*` / `pico.hardware.*` / `pico.software.*`.
+- Per-mode package accumulation. Viro registers one `ReactViroPackage` per active `xRMode` entry. PICO Swan / PICO OS 6 are mutually exclusive at boot; exactly one `PicoCorePackage` is registered.
+- Gradle classpath overrides. Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 56 toolchain ships the right AGP; we never force it.
+- Forcing `minSdkVersion` 24. Viro's `withViroProjectBuildGradle` hardcodes min SDK 24. PICO's floor is higher (32 for OS 6, 33 for Swan). The plugin sets the floor per-flavor, not project-wide.
 
 ## Diagnostic gates
 
@@ -127,8 +123,6 @@ npx expo-pico-doctor --fail-on-warning
 # (add to app boot for development builds; remove for production release)
 ```
 
-Walk [docs/PRODUCTION-READINESS.md](./PRODUCTION-READINESS.md) before the first PICO Store submission. §3 (manifest contract) is particularly important — it's where Viro-era leftovers tend to hide.
-
 ## Questions
 
-See [docs/FAQ.md](./FAQ.md) and the [issues tracker](https://github.com/mikevocalz/expo-pico/issues). The FAQ's Viro comparison row in question 4 is deliberately a pointer into this guide — start there and drill in.
+See [docs/FAQ.md](./FAQ.md) and the [issues tracker](https://github.com/mikevocalz/expo-pico/issues). The FAQ's Viro comparison row in question 4 is deliberately a pointer into this guide. Start there and drill in.

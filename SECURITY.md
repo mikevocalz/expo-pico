@@ -32,19 +32,19 @@ Within three business days of receiving a report we will:
 
 - Plugin mutations that emit insecure manifest entries, leak secrets to disk, or bypass consumer-configured restrictions (`disabled`, `xrMode: 'mobile'`, etc.).
 - Runtime bridge methods that round-trip credentials to / from the PICO Platform SDK in an unsafe way.
-- `expo-pico-doctor` CLI vulnerabilities — path traversal, config-loading RCE, etc.
+- `expo-pico-doctor` CLI vulnerabilities (path traversal, config-loading RCE, etc.).
 - Build-time scripts (`download-demo-model.js`, `test:pack`, any postinstall hook) that could be exploited to run arbitrary code during install.
 
 ### What's out of scope
 
 - Issues in upstream Expo / React Native / Three.js / PICO SDK code. Please report those to their respective maintainers.
-- Issues in the PICO Platform Service SDK binary — that SDK is not distributed from this repo.
+- Issues in the PICO Platform Service SDK binary. That SDK is not distributed from this repo.
 - Lint warnings, style issues, best-practice concerns, and feature requests. Use regular GitHub issues for those.
 - Social-engineering risks (phishing, typosquat packages). Those are platform-level concerns; the npm registry team handles typosquats.
 
 ## Supply-chain hygiene
 
-- The published packages use [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) (see [RELEASING.md](./RELEASING.md)).
+- The published packages use [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements).
 - The `example/scripts/download-demo-model.js` postinstall script is the only build-time network fetch we ship. It:
   - Hits a pinned Khronos commit SHA (not a mutable branch head).
   - Validates the `glTF` magic bytes before writing to disk.

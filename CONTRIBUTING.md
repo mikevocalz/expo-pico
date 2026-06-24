@@ -30,7 +30,6 @@ yarn example:assemble:pico
 
 If your change affects native behavior, the example app is the proving harness.
 
-- update the relevant checklist in `docs/validation/package-checklists.md`
 - record pass, block, or defer status
 - include device model, OS version, and build variant in the PR description
 

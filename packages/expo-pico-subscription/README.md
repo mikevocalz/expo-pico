@@ -2,14 +2,14 @@
 
 PICO platform subscription billing and entitlement for Expo apps.
 
-> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for design rationale.
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
 ## Status
 
-- **Maturity:** alpha
-- **PICO Platform SDK linkage:** extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
-- **Platform:** Android only.
-- **Runtime target:** PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
+- Maturity: alpha
+- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- Platform: Android only.
+- Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
 ## Runtime diagnostics
 
@@ -37,7 +37,7 @@ apply to one-time consumable/durable products.
 yarn add expo-pico-subscription
 ```
 
-Add to `app.config.ts` **after** `expo-pico-core`:
+Add to `app.config.ts` after `expo-pico-core`:
 
 ```ts
 plugins: [
@@ -46,8 +46,8 @@ plugins: [
 ]
 ```
 
-If you also use `expo-pico-iap`, both plugins are safe to use together —
-the PICO billing permission is injected idempotently.
+If you also use `expo-pico-iap`, both plugins are safe to use together.
+The PICO billing permission is injected idempotently.
 
 ## API
 
@@ -94,15 +94,13 @@ All async APIs are extension seams pending PICO IAP SDK AAR integration.
 ## Requirements
 
 - `expo-pico-core >= 0.1.0` (peer)
-- Expo SDK 55+
+- Expo SDK 56+
 - New Architecture
 - Android only
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
-- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
 
 ## License
 

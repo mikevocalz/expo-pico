@@ -1,6 +1,6 @@
 # @expo-pico/platform-service-common
 
-**Internal.** Shared utilities for the [`expo-pico`](https://github.com/mikevocalz/expo-pico) sibling packages. `"private": true` — this package is not published to npm.
+Internal. Shared utilities for the [`expo-pico`](https://github.com/mikevocalz/expo-pico) sibling packages. `"private": true`, not published to npm.
 
 ## What it provides
 
@@ -23,13 +23,13 @@ import {
 } from '@expo-pico/platform-service-common';
 ```
 
-Shared error codes — every sibling throws only from this taxonomy:
+Shared error codes. Every sibling throws only from this taxonomy:
 
-- `SERVICE_UNAVAILABLE` — SDK class not found in this build (AAR not linked).
-- `NOT_IMPLEMENTED` — method exists but native wiring is pending (documented seam).
-- `NOT_SUPPORTED` — feature unavailable on this OS version / target profile.
+- `SERVICE_UNAVAILABLE`: SDK class not found in this build (AAR not linked).
+- `NOT_IMPLEMENTED`: method exists but native wiring is pending (documented seam).
+- `NOT_SUPPORTED`: feature unavailable on this OS version / target profile.
 - `INITIALIZATION_FAILED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NETWORK_ERROR`, `TIMEOUT`, `UNKNOWN`.
-- `BILLING_UNAVAILABLE`, `PURCHASE_CANCELLED`, `PURCHASE_ALREADY_OWNED`, `PRODUCT_NOT_FOUND` — shared by `expo-pico-iap` + `expo-pico-subscription`.
+- `BILLING_UNAVAILABLE`, `PURCHASE_CANCELLED`, `PURCHASE_ALREADY_OWNED`, `PRODUCT_NOT_FOUND`: shared by `expo-pico-iap` and `expo-pico-subscription`.
 
 ### Native module resolution
 
@@ -63,15 +63,14 @@ Standard `{ items, nextCursor, hasMore }` shape used by paginated PICO Platform 
 ## Why it's internal
 
 1. The surface is shaped for our own siblings, not as a general-purpose utility library.
-2. Coupling it to `@expo-pico/...` organization naming signals that the public API is the individual sibling packages — consumers who want these error codes / subscription shapes get them transitively via their public imports.
+2. Coupling it to `@expo-pico/...` organization naming signals that the public API is the individual sibling packages. Consumers who want these error codes or subscription shapes get them transitively via their public imports.
 3. Keeping it `"private": true` prevents accidental npm publish churn whenever a sibling's internal contract widens.
 
-If you find yourself wanting to import directly from here in application code, open an issue — the missing public export probably belongs on `expo-pico-core`.
+If you want to import directly from here in application code, open an issue. The missing public export probably belongs on `expo-pico-core`.
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md)
 
 ## License
 

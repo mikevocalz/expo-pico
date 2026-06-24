@@ -1,15 +1,15 @@
 # expo-pico-social
 
-PICO platform social APIs for Expo apps — friends, presence, invites, and real-time social events on PICO OS 6 devices.
+PICO platform social APIs for Expo apps. Friends, presence, invites, and real-time social events on PICO OS 6 devices.
 
-> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for design rationale.
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
 ## Status
 
-- **Maturity:** alpha
-- **PICO Platform SDK linkage:** extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
-- **Platform:** Android only.
-- **Runtime target:** PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
+- Maturity: alpha
+- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- Platform: Android only.
+- Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
 ## Runtime diagnostics
 
@@ -120,8 +120,6 @@ if (isSocialAvailable()) {
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
-- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
 
 ## License
 

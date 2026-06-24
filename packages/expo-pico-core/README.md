@@ -1,25 +1,21 @@
 # expo-pico-core
 
-Expo config plugin + runtime module + diagnostics CLI for **PICO OS 6** / **Project Swan** XR devices.
+Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project Swan XR devices.
 
-`expo-pico-core` is the foundation of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. It configures your Expo Android project to build and run on PICO headsets (PICO 4, PICO 4 Ultra, Swan) via Continuous Native Generation — no manual Android project editing required.
-
-> See [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for the full design document (§15–§22) covering Swan platform mode, launcher contract, Platform SDK identity, hardware capabilities, OpenXR loader, runtime diagnostics, and Phase J reflection-based SDK detection.
+`expo-pico-core` is the foundation of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. It configures your Expo Android project to build and run on PICO headsets (PICO 4, PICO 4 Ultra, Swan) via Continuous Native Generation. No manual Android project editing required.
 
 ## Status
 
-- **Maturity:** stable candidate
-- **Platform:** Android only (PICO is Android-only)
-- **Runtime target:** PICO OS 6 (PICO 4 / 4 Ultra / Swan / Neo3), Android New Architecture
-- **Renderer:** renderer-agnostic — composes cleanly with [`@reactvision/react-viro`](https://github.com/ReactVision/viro) (the example app's renderer), Unity-as-a-Library, and any Android renderer that uses the system OpenXR loader
+- Maturity: stable candidate
+- Platform: Android only (PICO is Android-only)
+- Runtime target: PICO OS 6 (PICO 4 / 4 Ultra / Swan / Neo3), Android New Architecture
+- Renderer: renderer-agnostic. Works with [`@reactvision/react-viro`](https://github.com/ReactVision/viro) (the example app's renderer), Unity-as-a-Library, and any Android renderer that uses the system OpenXR loader
 
 ## Compatibility
 
-| `expo-pico-core` | Expo SDK | React Native | Architecture     |
-| ----------------- | -------- | ------------ | ---------------- |
-| 0.1.x → 1.0       | 55       | 0.84.1       | New Architecture |
-
-Forward-compatibility target: Expo SDK 56+ through Expo SDK's own support matrix.
+| `expo-pico-core` | Expo SDK | React Native | React | Architecture     |
+| ---------------- | -------- | ------------ | ----- | ---------------- |
+| 0.1.x → 1.0      | 56       | 0.86         | 19.2  | New Architecture only |
 
 ## Install
 
@@ -113,7 +109,7 @@ All default to `false` / empty. Each emits `uses-feature` (`android:required="fa
 | `highSamplingRateSensors` | `android.permission.HIGH_SAMPLING_RATE_SENSORS`                                         |
 | `refreshRates`            | `com.pico.refreshRates` meta with comma-separated Hz values *(seam)*                    |
 
-Values marked *(seam)* are best-known key names pending PICO doc confirmation; emitted with `required="false"` so misnames are install-safe.
+Values marked *(seam)* are best-known key names pending PICO doc confirmation. Emitted with `required="false"` so misnames are install-safe.
 
 ### Spatial / runtime
 
@@ -202,11 +198,11 @@ if (report.summary.hasError) {
 }
 ```
 
-All device / identity / SDK getters are synchronous — they read compile-time constants + BuildConfig fields resolved at module init.
+All device / identity / SDK getters are synchronous. They read compile-time constants and BuildConfig fields resolved at module init.
 
 ## Capability runtime (Phase K)
 
-Every prebuild capability flag (eye tracking, passthrough, foveated rendering, boundary, scene mesh, controller haptics, …) has a matching runtime API. Flags that aren't enabled at prebuild time or that the device doesn't support return `null` / `false` / empty lists — callers destructure safely without branching.
+Every prebuild capability flag (eye tracking, passthrough, foveated rendering, boundary, scene mesh, controller haptics, …) has a matching runtime API. Flags that aren't enabled at prebuild time or that the device doesn't support return `null`, `false`, or empty lists, so callers destructure safely without branching.
 
 ```ts
 import { capabilities } from 'expo-pico-core';
@@ -246,7 +242,7 @@ const trackers = await capabilities.motionTracker.list();
 const sensors = await capabilities.sensors.getHighRate();
 ```
 
-Phase K is reflection-gated on the Kotlin side — no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
+Phase K is reflection-gated on the Kotlin side. There's no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
 
 ## CLI: `expo-pico-doctor`
 
@@ -257,8 +253,6 @@ npx expo-pico-doctor                  # pretty output
 npx expo-pico-doctor --json           # machine-readable
 npx expo-pico-doctor --fail-on-warning # CI gate
 ```
-
-See [ARCHITECTURE §21](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#21-expo-pico-doctor-cli-phase-g) for details.
 
 ## Sibling packages
 
@@ -281,16 +275,14 @@ Each sibling adds a narrow native surface and a matching JS API. All are peer-de
 ## Limitations
 
 - Android / PICO OS 6 only. No iOS. No web.
-- New Architecture only — `newArchEnabled: true` is required.
+- New Architecture only. `newArchEnabled: true` is required.
 - Plugin emits a single `withDangerousMod` when writing the PICO-flavor source-set manifest. That is the only filesystem mutation; every other mutation uses safe structured mods.
-- Some hardware capability keys are best-known seams — clearly flagged in the options table and the ARCHITECTURE doc. Emitted with `android:required="false"` so misnames are install-safe.
-- PICO Platform SDK native bindings (account, IAP, RTC, etc.) are extension seams in the sibling packages until the PICO SDK AAR is a public Maven artifact. Core's [Phase J probe](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j) activates siblings automatically when a consumer drops the AAR into `android/app/libs/`.
+- Some hardware capability keys are best-known seams, flagged in the options table. Emitted with `android:required="false"` so misnames are install-safe.
+- PICO Platform SDK native bindings (account, IAP, RTC, etc.) are extension seams in the sibling packages until the PICO SDK AAR is a public Maven artifact. Core's Phase J probe activates siblings automatically when a consumer drops the AAR into `android/app/libs/`.
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) (§1–§22)
-- [RELEASING.md](https://github.com/mikevocalz/expo-pico/blob/main/RELEASING.md)
 - Issues: https://github.com/mikevocalz/expo-pico/issues
 
 ## License

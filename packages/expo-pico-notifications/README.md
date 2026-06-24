@@ -2,14 +2,14 @@
 
 PICO push notification registration and token APIs for Expo apps.
 
-> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. See the repository [ARCHITECTURE.md](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md) for cross-package design rationale.
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
 ## Status
 
-- **Maturity:** alpha
-- **PICO Platform SDK linkage:** extension seam. Registration / token bridge methods return `SERVICE_UNAVAILABLE` until the PICO Push SDK is on the classpath.
-- **Platform:** Android only.
-- **Runtime target:** PICO OS 6. Requires the user to have PICO Platform Services available (default on PICO hardware).
+- Maturity: alpha
+- PICO Platform SDK linkage: extension seam. Registration / token bridge methods return `SERVICE_UNAVAILABLE` until the PICO Push SDK is on the classpath.
+- Platform: Android only.
+- Runtime target: PICO OS 6. Requires the user to have PICO Platform Services available (default on PICO hardware).
 
 ## Install
 
@@ -104,14 +104,13 @@ The Phase F `DiagnosticsPanel` shows the `permission.ungranted:android.permissio
 
 ## Limitations
 
-- Delivery is the backend's responsibility; this package only handles **registration + token retrieval** on the client.
+- Delivery is the backend's responsibility; this package only handles registration and token retrieval on the client.
 - Android 13+ requires runtime `POST_NOTIFICATIONS` consent. The plugin option `requestPostNotificationsPermission: true` (default) declares the permission; the app must call `requestPermissions()` at the feature-use site.
-- Foreground notification event listeners (e.g. `addNotificationReceivedListener`) are a future-phase addition; today the package exposes only registration + permission flow.
+- Foreground notification event listeners (e.g. `addNotificationReceivedListener`) are a future-phase addition. Today the package exposes only registration and permission flow.
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17 — Platform SDK identity](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
 
 ## License
 

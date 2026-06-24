@@ -10,7 +10,7 @@ Wraps the PICO RTC SDK to provide channel-based voice comms.
 yarn add expo-pico-rtc
 ```
 
-Add to `app.config.ts` **after** `expo-pico-core`:
+Add to `app.config.ts` after `expo-pico-core`:
 
 ```ts
 plugins: [
@@ -74,21 +74,19 @@ They throw descriptive errors until the native SDK is linked.
 
 ## Status
 
-- `getRtcServiceStatus()` — implemented (SDK presence check)
-- All async APIs — extension seams (SDK not yet linked)
+- `getRtcServiceStatus()`: implemented (SDK presence check)
+- All async APIs: extension seams (SDK not yet linked)
 
 ## Requirements
 
 - `expo-pico-core >= 0.1.0` (peer)
-- Expo SDK 55+
+- Expo SDK 56+
 - New Architecture
 - Android only
 
 ## Links
 
 - Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
-- [ARCHITECTURE §17](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#17-platform-sdk-identity-phase-b)
-- [ARCHITECTURE §22 — Reflection-based SDK detection](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j)
 
 ## License
 

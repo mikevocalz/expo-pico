@@ -51,3 +51,14 @@ patch-package-error.json.gz
 .env
 .env.local
 .env.*.local
+
+# Internal/working docs — keep local, not published
+ARCHITECTURE.md
+RELEASING.md
+docs/DEVICE-TESTING-REQUIRED.md
+docs/PRODUCTION-READINESS.md
+docs/VIRO-ON-PICO.md
+docs/example/
+docs/release/
+docs/validation/
+.changeset/pico-swan-plus-phases-a-through-f.md
