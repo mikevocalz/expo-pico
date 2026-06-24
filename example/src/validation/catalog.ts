@@ -84,7 +84,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'multi-user audio proof and real RTC wiring',
+    stableBlocker: 'PPS 1.0.x removed RTC — use @fishjam-cloud/react-native-webrtc',
   },
   {
     id: 'rooms',
@@ -92,7 +92,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'on-device verification of room create/join + matchmaking',
+    stableBlocker: 'PPS 1.0.x removed dedicated rooms — use Fishjam/Colyseus or wait for next-gen PPS',
   },
   {
     id: 'storage',
@@ -100,7 +100,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'on-device verification of read/write + conflict resolution proof',
+    stableBlocker: 'PPS 1.0.x removed cloud storage — use own backend keyed off openUid, or expo-secure-store',
   },
   {
     id: 'social',

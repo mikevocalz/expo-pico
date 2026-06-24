@@ -1,22 +1,11 @@
 package expo.modules.pico.rtc
 
-import expo.modules.pico.PicoPlatformSdkDetector
-
 object RtcUtils {
-    /**
-     * Checks whether the PICO RTC SDK class is on the classpath.
-     * Extension seam: replace class name with the real PICO RTC SDK entry point
-     * once the AAR is integrated and the class name is publicly documented.
-     */
-    fun isRtcSdkAvailable(): Boolean {
-        return PicoPlatformSdkDetector.probeAny(
-            "com.pvr.rtc.sdk.RtcEngine",
-            "com.pico.pps.sdk.rtc.PicoRtcClient",
-        ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
-    }
+    // PPS 1.0.x has no RTC client. Only legacy PVR
+    // `com.pvr.rtc.sdk.RtcEngine` would make this available.
+    fun isRtcSdkAvailable(): Boolean = runCatching {
+        Class.forName("com.pvr.rtc.sdk.RtcEngine")
+    }.isSuccess
 
-    fun getRtcSdkVersion(): String? {
-        // Extension seam: return SDK version string from the SDK class once available.
-        return null
-    }
+    fun getRtcSdkVersion(): String? = null
 }
