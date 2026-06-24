@@ -1,7 +1,7 @@
 # expo-pico
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-55-000020.svg?logo=expo)](https://docs.expo.dev/)
+[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-56-000020.svg?logo=expo)](https://docs.expo.dev/)
 [![Node >=18](https://img.shields.io/badge/node-%E2%89%A518-43853D.svg?logo=node.js&logoColor=white)](.nvmrc)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](./tsconfig.base.json)
 [![New Architecture](https://img.shields.io/badge/React%20Native-New%20Architecture-20232A.svg?logo=react)](https://reactnative.dev/architecture/landing-page)
@@ -9,44 +9,38 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](./CONTRIBUTING.md)
 [![Tests](https://img.shields.io/badge/tests-223%20passing-76b989.svg)](./packages/expo-pico-core/__tests__)
 
-Expo-native package family for **PICO OS 6** and **Project Swan** XR devices.
+Expo-native package family for **PICO 4 / 4 Ultra (PICO OS 5)** and **Project Swan (PICO OS 6)** XR devices.
 
 Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
+
+> **OS note.** PICO 4 and PICO 4 Ultra ship on **PICO OS 5** (the legacy PVR / current XR runtime). The next-gen **Project Swan** hardware ships on **PICO OS 6**. The `xrMode: 'pico-os6'` config option is a misnomer kept for backwards-compat — it's the OS 5 / PVR code path. `xrMode: 'pico-swan'` is the actual OS 6 / Swan target.
 
 **New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes. Common questions live in [docs/FAQ.md](./docs/FAQ.md).
 
 ## Packages
 
-| Package                                                          | Status            | Description                                                    |
-| ---------------------------------------------------------------- | ----------------- | -------------------------------------------------------------- |
-| [`expo-pico-core`](./packages/expo-pico-core)                    | stable candidate  | Build config, flavors, launcher contract, runtime detection, `expo-pico-doctor` CLI |
-| [`expo-pico-spatial`](./packages/expo-pico-spatial)              | alpha (seams)     | Space states, containers, anchors, scene mesh                  |
-| [`expo-pico-account`](./packages/expo-pico-account)              | alpha (seams)     | PICO account identity                                          |
-| [`expo-pico-iap`](./packages/expo-pico-iap)                      | alpha (seams)     | PICO store in-app purchases                                    |
-| [`expo-pico-subscription`](./packages/expo-pico-subscription)    | alpha (seams)     | Subscription billing + entitlements                            |
-| [`expo-pico-notifications`](./packages/expo-pico-notifications)  | alpha (seams)     | Push registration + tokens                                     |
-| [`expo-pico-rtc`](./packages/expo-pico-rtc)                      | alpha (seams)     | Real-time voice channels                                       |
-| [`expo-pico-rooms`](./packages/expo-pico-rooms)                  | alpha (seams)     | Rooms + matchmaking                                            |
-| [`expo-pico-social`](./packages/expo-pico-social)                | alpha (seams)     | Friends, presence, invites                                     |
-| [`expo-pico-storage`](./packages/expo-pico-storage)              | alpha (seams)     | Cloud storage                                                  |
-| [`expo-pico-achievements`](./packages/expo-pico-achievements)    | alpha (seams)     | Achievements                                                   |
-| [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)    | alpha (seams)     | Leaderboards                                                   |
+| Package                                                          | Status      | PPS 1.0.x backing                                          |
+| ---------------------------------------------------------------- | ----------- | ---------------------------------------------------------- |
+| [`expo-pico-core`](./packages/expo-pico-core)                    | stable      | Build config, flavors, launcher contract, runtime, `expo-pico-doctor` CLI |
+| [`expo-pico-account`](./packages/expo-pico-account)              | live        | `PicoSignInClient.getSignInClient` → `getUserInfo / signIn / signOut / getAccessToken` |
+| [`expo-pico-iap`](./packages/expo-pico-iap)                      | live        | `PicoIapClient.getIapClient` → `getProductList / purchaseProduct / consumeProduct / getPurchasedProductList` |
+| [`expo-pico-subscription`](./packages/expo-pico-subscription)    | live        | routed through `IapClient` (PPS has no separate sub client); cancel returns `REQUIRES_OS_UI` |
+| [`expo-pico-achievements`](./packages/expo-pico-achievements)    | live        | `AchievementClient.getArchievementClient` (PICO typo intentional) — `unlock / addCount / addFields / getAllDefinitions / getProgressByName` |
+| [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)    | live        | `LeaderboardClient.getLeaderboardClient` — `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry` |
+| [`expo-pico-social`](./packages/expo-pico-social)                | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) + `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.0.x |
+| [`expo-pico-notifications`](./packages/expo-pico-notifications)  | live        | `PPSPushClient.getClientImpl` → `register(appId, fcmToken, IRegisterPPSPushCallback)` via reflection Proxy |
+| [`expo-pico-spatial`](./packages/expo-pico-spatial)              | live        | Native sensor SDK (eye, scene mesh, face, body) — independent of PPS; needs `pico-spatial-sdk.aar` for anchors/full-space |
+| [`expo-pico-rooms`](./packages/expo-pico-rooms)                  | unavailable | PPS 1.0.x removed dedicated rooms. Read-only friend rooms via `friend.getFriendsAndRooms`; for create/join run state on Fishjam / Colyseus |
+| [`expo-pico-rtc`](./packages/expo-pico-rtc)                      | unavailable | PPS 1.0.x removed RTC. Use `@fishjam-cloud/react-native-webrtc` |
+| [`expo-pico-storage`](./packages/expo-pico-storage)              | unavailable | PPS 1.0.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local |
 
-"alpha (seams)" means the full JS + native module shape is in place and `expo-pico-core` correctly mutates the manifest / Gradle / strings surface each sibling needs. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath. [Phase J reflection detection](./ARCHITECTURE.md#22-reflection-based-pico-platform-sdk-detection-phase-j) activates them automatically when the AAR is present — no code change required.
+**live** = bridge calls the real PPS 1.0.x SDK and returns real data. **partial** = some methods wired, others return `NOT_IN_PPS_1_0` with an actionable hint. **unavailable** = every method returns `NOT_IN_PPS_1_0` (kept as a typed seam so future PPS releases can wire without an API break).
 
-### Activating the platform-service bridges (AAR drop-in)
+### Activating the platform-service bridges (zero-config)
 
-The reflection bridges activate the moment the **PICO Platform SDK AAR** is on the gradle classpath. The AAR isn't on Pico's public maven repo — it's gated behind your developer-console login.
+PICO ships **PPS 1.0.x** on the **public Volcengine maven** (`https://artifact.bytedance.com/repository/Volcengine/`). `expo-pico-core`'s Gradle plugin adds the repo + the 11 `com.pico.pps:platform-service-{auth,iap,achievement,...}:1.0.0` coords automatically. No AAR drop-in, no developer-console login required — just install `@expo-pico/core`, prebuild, and the bridges are live on first launch.
 
-1. PPS Development Platform → your app → **App Information → SDK Download** → grab the **Platform SDK** AAR (and the **Spatial SDK** AAR for room mesh / scene anchors).
-2. Drop it in your app's `android/app/libs/` (create the folder if needed).
-3. Add to `android/app/build.gradle` inside the `pico` flavor (or top-level `dependencies` block):
-   ```groovy
-   picoImplementation fileTree(dir: 'libs', include: ['*.aar'])
-   ```
-4. Rebuild. `expo-pico-core`'s `PicoPlatformSdkDetector` picks up the SDK class on next launch; every `is{Name}Available()` in the sibling packages flips to `true` for services you've also activated in PPS.
-
-This is intentionally a manual step — Pico hasn't published the AAR to a public maven coord, and we don't ship it bundled to keep the packages license-clean.
+The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [docs/PLATFORM-SDK.md](./docs/PLATFORM-SDK.md).
 
 ## Quick start
 
@@ -81,9 +75,12 @@ export default {
       [
         '@expo-pico/core',
         {
-          xrMode: 'pico-swan',
+          // PICO 4 / 4 Ultra → 'pico-os6' (misnomer; targets OS 5 / PVR runtime).
+          // PICO Swan      → 'pico-swan' (the real OS 6 / next-gen runtime).
+          xrMode: 'pico-os6',
           appType: 'vr',
           buildVariant: 'pico',
+          picoAppId: process.env.PICO_APP_ID,
           platformService: {
             picoAppId: process.env.PICO_PLATFORM_APP_ID,
             picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
@@ -105,10 +102,14 @@ npx expo run:android --variant picoDebug
 
 ## Compatibility
 
-- **Expo SDK 55** (stable baseline)
-- **New Architecture only**
-- **Android / PICO OS 6** (PICO 4, PICO 4 Ultra, Swan, Neo3)
-- Tracks RN 0.84.1 today; forward-compatible with Expo SDK 56+ per Expo's own support matrix
+- **Expo SDK 56** (current baseline) · React Native 0.86 · React 19.2 · Hermes
+- **New Architecture only** (Fabric + TurboModules)
+- **Android-only**
+- Devices:
+  - **PICO 4** / **PICO 4 Ultra** — PICO OS 5 (legacy PVR XR runtime) — `xrMode: 'pico-os6'`
+  - **PICO Swan** — PICO OS 6 (next-gen runtime) — `xrMode: 'pico-swan'`
+  - **Meta Quest 3** / **Quest 3S** — via the `quest` build flavor; OpenXR loader composes with the `<uses-native-library>` declaration the plugin writes
+- 16KB ELF page-alignment (Android 14+) — `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.49 to satisfy the system loader on PICO OS 5
 
 ## Doctor
 
@@ -135,7 +136,7 @@ Ships with `expo-pico-core`. See [ARCHITECTURE §21](./ARCHITECTURE.md#21-expo-p
 [ARCHITECTURE.md](./ARCHITECTURE.md) is the single source of truth for the design. 22 sections covering:
 
 - §1–§14 — Foundational design: monorepo layout, config plugin strategy, versioning, failure modes, testing.
-- §15 — PICO Swan OS native runtime support (`xrMode`, `PicoCorePackage`, MainApplication wiring).
+- §15 — PICO XR native runtime support (`xrMode`, `PicoCorePackage`, MainApplication wiring; OS 5 / OS 6 split).
 - §16 — Launcher contract correctness (`pvr.app.type`, OpenXR `IMMERSIVE_HMD`, `<queries>`).
 - §17 — PICO Platform SDK identity (strings, activities, BuildConfig).
 - §18 — Hardware capability declarations (eye / face / body / audio / foveation / refresh rates).
