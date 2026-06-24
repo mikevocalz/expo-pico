@@ -54,15 +54,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         picoAppId: process.env.PICO_APP_ID ?? '',
         buildVariant: 'pico',
-        // PICO 4 / PICO 4 Ultra ship on PICO OS 5 (the current PVR/legacy
-        // XR runtime). 'pico-swan' targets PICO OS 6 — the next-gen Swan
-        // runtime on different hardware. The `pico-os6` enum name here is
-        // a misnomer kept for backwards-compat — it's the *PICO OS 5* code
-        // path (PVR runtime + platform service). Don't confuse it with
-        // PICO OS 6 = Swan.
-        xrMode: (process.env.PICO_XR_MODE ?? 'pico-os6') as
+        // PICO 4 / PICO 4 Ultra → 'pico-os5' (legacy PVR XR runtime).
+        // PICO Swan             → 'pico-swan' (next-gen, ships on PICO OS 6).
+        xrMode: (process.env.PICO_XR_MODE ?? 'pico-os5') as
           | 'mobile'
-          | 'pico-os6'
+          | 'pico-os5'
           | 'pico-swan',
         // Launcher contract app type. Drives `pvr.app.type` meta-data.
         //

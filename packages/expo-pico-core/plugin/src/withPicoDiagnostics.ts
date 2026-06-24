@@ -21,7 +21,7 @@ export interface DiagnosticCheckFinding {
  *
  * Covered checks (each has a stable id):
  *
- *   1. `identity.missing` — xrMode is 'pico-os6' or 'pico-swan' and
+ *   1. `identity.missing` — xrMode is 'pico-os5' or 'pico-swan' and
  *      `appType !== '2d'` but no `picoAppId` /
  *      `platformService.picoAppId` is set. Platform SDK calls will
  *      silently fail at runtime.
@@ -132,7 +132,7 @@ export function runDiagnosticChecks(
         severity: 'warning',
         message:
           `xrMode 'mobile' does not write a PICO flavor manifest, so the following toggles have no effect: ${enabled.join(', ')}. ` +
-          "Flip xrMode to 'pico-os6' or 'pico-swan' if you want these declared.",
+          "Flip xrMode to 'pico-os5' or 'pico-swan' if you want these declared.",
       });
     }
   }
@@ -160,7 +160,7 @@ export function runDiagnosticChecks(
         "xrMode 'mobile' does not emit com.pico.refreshRates meta-data. " +
         'The declared rates [' +
         options.refreshRates.join(', ') +
-        "] are ignored. Flip xrMode to 'pico-os6' or 'pico-swan' if you want the compositor to see them.",
+        "] are ignored. Flip xrMode to 'pico-os5' or 'pico-swan' if you want the compositor to see them.",
     });
   }
 

@@ -22,9 +22,9 @@ function runDiagnostics(input: Parameters<typeof resolveOptions>[0]): WarnCall[]
 }
 
 describe('withPicoDiagnostics — clean config', () => {
-  it('emits no warnings for a well-formed pico-os6 build with identity', () => {
+  it('emits no warnings for a well-formed pico-os5 build with identity', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       appType: 'vr',
       platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
     });
@@ -47,8 +47,8 @@ describe('withPicoDiagnostics — clean config', () => {
 });
 
 describe('withPicoDiagnostics — immersive without identity', () => {
-  it('warns when xrMode=pico-os6 and no picoAppId is set', () => {
-    const calls = runDiagnostics({ xrMode: 'pico-os6' });
+  it('warns when xrMode=pico-os5 and no picoAppId is set', () => {
+    const calls = runDiagnostics({ xrMode: 'pico-os5' });
     expect(calls.length).toBeGreaterThanOrEqual(1);
     expect(calls[0].message).toMatch(/no picoAppId/);
   });
@@ -59,7 +59,7 @@ describe('withPicoDiagnostics — immersive without identity', () => {
   });
 
   it('does not warn when legacy top-level picoAppId is set', () => {
-    const calls = runDiagnostics({ xrMode: 'pico-os6', picoAppId: 'LEGACY' });
+    const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
     expect(
       calls.some((c) => c.message.includes('no picoAppId'))
     ).toBe(false);
@@ -69,7 +69,7 @@ describe('withPicoDiagnostics — immersive without identity', () => {
 describe('withPicoDiagnostics — 2d appType with pico xrMode', () => {
   it('warns that the APK will not appear in the immersive launcher', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       appType: '2d',
       platformService: { picoAppId: 'APP' },
     });
@@ -118,9 +118,9 @@ describe('withPicoDiagnostics — XR capability toggles under mobile xrMode', ()
 });
 
 describe('withPicoDiagnostics — Swan subproject without Swan xrMode', () => {
-  it('warns when swanRuntimeProject is set but xrMode is pico-os6', () => {
+  it('warns when swanRuntimeProject is set but xrMode is pico-os5', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       platformService: { picoAppId: 'APP' },
       picoSwan: {
         swanRuntimeProject: { name: 'pico_swan_runtime', path: '../swan' },
@@ -161,7 +161,7 @@ describe('withPicoDiagnostics — refreshRates under mobile xrMode', () => {
 describe('withPicoDiagnostics — partial IAP identity', () => {
   it('warns when only picoMerchantId is set', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       platformService: { picoAppId: 'APP', picoMerchantId: 'M' },
     });
     expect(
@@ -171,7 +171,7 @@ describe('withPicoDiagnostics — partial IAP identity', () => {
 
   it('warns when only foreign.picoPayKey is set', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       platformService: {
         picoAppId: 'APP',
         foreign: { picoPayKey: 'FP' },
@@ -186,7 +186,7 @@ describe('withPicoDiagnostics — partial IAP identity', () => {
 
   it('does not warn when both merchant and pay key are present', () => {
     const calls = runDiagnostics({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       platformService: {
         picoAppId: 'APP',
         picoMerchantId: 'M',

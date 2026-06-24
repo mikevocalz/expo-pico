@@ -30,7 +30,7 @@ declare class ExpoPicoModule extends NativeModule {
   deviceModel: string | null;
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
-  os6RuntimeInitialized: boolean;
+  os5RuntimeInitialized: boolean;
 
   // Phase J — reflection-based PICO Platform SDK detection.
   platformSdkPresent: boolean;

@@ -9,7 +9,7 @@ android {
 
 describe('applySwanGradleTransform', () => {
   it('is a no-op when xrMode !== pico-swan', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     expect(applySwanGradleTransform(BASE_GRADLE, options)).toBe(BASE_GRADLE);
   });
 
@@ -80,7 +80,7 @@ describe('applySwanGradleTransform', () => {
 describe('xrModeToNativeEnum', () => {
   it('maps plugin strings to native enum symbols', () => {
     expect(xrModeToNativeEnum('mobile')).toBe('MOBILE');
-    expect(xrModeToNativeEnum('pico-os6')).toBe('PICO_OS6');
+    expect(xrModeToNativeEnum('pico-os5')).toBe('PICO_OS5');
     expect(xrModeToNativeEnum('pico-swan')).toBe('PICO_SWAN');
   });
 });

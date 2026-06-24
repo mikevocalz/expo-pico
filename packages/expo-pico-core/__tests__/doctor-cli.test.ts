@@ -56,7 +56,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
           [
             '@expo-pico/core',
             {
-              xrMode: 'pico-os6',
+              xrMode: 'pico-os5',
               appType: 'vr',
               platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
             },
@@ -128,7 +128,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: { name: 't', slug: 't', plugins: ['@expo-pico/core'] },
     });
     const out = runDoctor(dir);
-    // Default xrMode is pico-os6, appType vr, no identity → expect
+    // Default xrMode is pico-os5, appType vr, no identity → expect
     // identity.missing error (PPS would reject runtime calls with 100008).
     expect(out.stdout).toContain('identity.missing');
     expect(out.status).toBe(1);

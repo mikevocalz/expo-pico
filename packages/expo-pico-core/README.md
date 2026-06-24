@@ -74,7 +74,7 @@ Full plugin option reference. All options are optional; defaults shown below.
 | Option              | Type                                      | Default         | Description                                                                |
 | ------------------- | ----------------------------------------- | --------------- | -------------------------------------------------------------------------- |
 | `enabled`           | `boolean`                                 | `true`          | Master toggle for all PICO mutations                                       |
-| `xrMode`            | `'mobile' \| 'pico-os6' \| 'pico-swan'`   | tracks variant  | Which native runtime `PicoCorePackage` registers at boot                   |
+| `xrMode`            | `'mobile' \| 'pico-os5' \| 'pico-swan'`   | tracks variant  | Which native runtime `PicoCorePackage` registers at boot                   |
 | `appType`           | `'vr' \| 'mr' \| '2d'`                    | tracks `xrMode` | Launcher enumeration: drives `pvr.app.type` + immersive categories         |
 | `buildVariant`      | `'mobile' \| 'pico' \| 'dual'`            | `'pico'`        | Android product flavor strategy                                            |
 | `picoSwan`          | `PicoSwanPluginOptions`                   | `{}`            | Swan-mode-specific options (subproject path, Maven artifact, source set)   |

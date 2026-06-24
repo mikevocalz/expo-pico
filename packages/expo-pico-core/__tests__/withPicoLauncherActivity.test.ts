@@ -71,7 +71,7 @@ describe('applyLauncherContract — appType gating', () => {
   });
 
   it('is a no-op when appType explicitly set to 2d', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6', appType: '2d' });
+    const options = resolveOptions({ xrMode: 'pico-os5', appType: '2d' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
 
@@ -82,8 +82,8 @@ describe('applyLauncherContract — appType gating', () => {
 });
 
 describe('applyLauncherContract — pvr.app.type meta-data', () => {
-  it('emits pvr.app.type=vr for default xrMode=pico-os6', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+  it('emits pvr.app.type=vr for default xrMode=pico-os5', () => {
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
 
@@ -102,7 +102,7 @@ describe('applyLauncherContract — pvr.app.type meta-data', () => {
   });
 
   it('updates existing pvr.app.type in place rather than duplicating', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6', appType: 'vr' });
+    const options = resolveOptions({ xrMode: 'pico-os5', appType: 'vr' });
     const m = emptyManifest();
     // Pre-seed with an older value.
     getApplication(m)['meta-data'].push({
@@ -121,7 +121,7 @@ describe('applyLauncherContract — pvr.app.type meta-data', () => {
 
 describe('applyLauncherContract — launcher activity intent-filter', () => {
   it('adds an .MainActivity with MAIN+LAUNCHER + immersive categories', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
 
@@ -140,7 +140,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
   });
 
   it('targets only the .MainActivity (does not create other activities)', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
 
@@ -151,7 +151,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
   });
 
   it('does not duplicate the immersive intent-filter on repeat application', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
     applyLauncherContract(m, options);
@@ -168,8 +168,8 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
 
   it('replaces the filter when appType toggles between vr and mr', () => {
     const m = emptyManifest();
-    applyLauncherContract(m, resolveOptions({ xrMode: 'pico-os6', appType: 'vr' }));
-    applyLauncherContract(m, resolveOptions({ xrMode: 'pico-os6', appType: 'mr' }));
+    applyLauncherContract(m, resolveOptions({ xrMode: 'pico-os5', appType: 'vr' }));
+    applyLauncherContract(m, resolveOptions({ xrMode: 'pico-os5', appType: 'mr' }));
 
     expect(getImmersiveIntentFilters(m)).toHaveLength(1);
     const meta = getAppMeta(m, MANIFEST_META.PVR_APP_TYPE);
@@ -177,7 +177,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
   });
 
   it('preserves a pre-existing MainActivity and its non-immersive intent-filters', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     // Seed a pre-existing MainActivity with a MAIN+LAUNCHER filter, as the
     // user's own manifest would typically provide. Our addition should not
@@ -218,7 +218,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
 
 describe('applyLauncherContract — <queries> block', () => {
   it('adds PICO system packages to <queries>', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
 
@@ -229,7 +229,7 @@ describe('applyLauncherContract — <queries> block', () => {
   });
 
   it('does not duplicate queries on repeat application', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     applyLauncherContract(m, options);
     applyLauncherContract(m, options);
@@ -239,7 +239,7 @@ describe('applyLauncherContract — <queries> block', () => {
   });
 
   it('preserves unrelated queries already present', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const m = emptyManifest();
     (m.manifest as any).queries = [
       {
@@ -258,8 +258,8 @@ describe('applyLauncherContract — <queries> block', () => {
 });
 
 describe('applyLauncherContract — resolveOptions interaction', () => {
-  it('defaults appType to vr for xrMode=pico-os6', () => {
-    expect(resolveOptions({ xrMode: 'pico-os6' }).appType).toBe('vr');
+  it('defaults appType to vr for xrMode=pico-os5', () => {
+    expect(resolveOptions({ xrMode: 'pico-os5' }).appType).toBe('vr');
   });
 
   it('defaults appType to vr for xrMode=pico-swan', () => {
@@ -272,7 +272,7 @@ describe('applyLauncherContract — resolveOptions interaction', () => {
 
   it('honors explicit appType override', () => {
     expect(resolveOptions({ xrMode: 'pico-swan', appType: 'mr' }).appType).toBe('mr');
-    expect(resolveOptions({ xrMode: 'pico-os6', appType: '2d' }).appType).toBe('2d');
+    expect(resolveOptions({ xrMode: 'pico-os5', appType: '2d' }).appType).toBe('2d');
   });
 
   it('APP_TYPE_MANIFEST_VALUE maps every PicoAppType', () => {

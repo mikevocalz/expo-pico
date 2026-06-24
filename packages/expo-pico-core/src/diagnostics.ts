@@ -22,7 +22,7 @@ export interface BuildTimeFacts {
   hasPlatformIdentity: boolean;
   hasIapIdentity: boolean;
   swanRuntimeInitialized: boolean;
-  os6RuntimeInitialized: boolean;
+  os5RuntimeInitialized: boolean;
   picoAppId: string | null;
   picoAppKey: string | null;
   deviceModel: string | null;
@@ -80,7 +80,7 @@ export function readBuildTimeFacts(): BuildTimeFacts {
     hasPlatformIdentity: Boolean(ExpoPicoModule.hasPlatformIdentity),
     hasIapIdentity: Boolean(ExpoPicoModule.hasIapIdentity),
     swanRuntimeInitialized: Boolean(ExpoPicoModule.swanRuntimeInitialized),
-    os6RuntimeInitialized: Boolean(ExpoPicoModule.os6RuntimeInitialized),
+    os5RuntimeInitialized: Boolean(ExpoPicoModule.os5RuntimeInitialized),
     picoAppId: ExpoPicoModule.picoAppId ?? null,
     picoAppKey: ExpoPicoModule.picoAppKey ?? null,
     deviceModel: ExpoPicoModule.deviceModel ?? null,
@@ -151,11 +151,11 @@ export function buildDiagnosticsReport(
     });
   }
 
-  if (build.xrMode === 'pico-os6' && !build.os6RuntimeInitialized) {
+  if (build.xrMode === 'pico-os5' && !build.os5RuntimeInitialized) {
     findings.push({
       id: 'os6.uninitialized',
       severity: 'info',
-      message: 'xrMode=pico-os6 but PicoOs6Runtime.initialize has not run yet.',
+      message: 'xrMode=pico-os5 but PicoOs5Runtime.initialize has not run yet.',
     });
   }
 
@@ -290,7 +290,7 @@ export function formatDiagnostics(report: PicoDiagnosticsReport): string {
 }
 
 function normalizeXrMode(value: string | null | undefined): PicoXRMode {
-  if (value === 'pico-os6' || value === 'pico-swan') return value;
+  if (value === 'pico-os5' || value === 'pico-swan') return value;
   return 'mobile';
 }
 

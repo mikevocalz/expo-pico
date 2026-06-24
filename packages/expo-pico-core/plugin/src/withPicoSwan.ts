@@ -24,7 +24,7 @@ const SWAN_DEP_END = '// expo-pico-core: end swan dependencies';
  * No-op when `xrMode !== 'pico-swan'`. The Swan composite intentionally
  * does NOT touch:
  *   - MainApplication (handled by withPicoMainApplication for both
- *     'pico-os6' and 'pico-swan'),
+ *     'pico-os5' and 'pico-swan'),
  *   - settings.gradle (handled by withPicoSettingsGradle),
  *   - Manifest meta-data (handled by withPicoAndroidManifest, which reads
  *     options.xrMode and options.picoSwan to decide what to write).

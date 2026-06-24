@@ -10,27 +10,30 @@ package expo.modules.pico
  *
  *   - [MOBILE]:     No PICO runtime registration. PicoCorePackage is a no-op
  *                   except for surfacing the active platform via a getter.
- *   - [PICO_OS6]:   Standard PICO OS 6 runtime initialization (entitlement
- *                   check seam, platform-service registration seam).
- *   - [PICO_SWAN]:  Project Swan / next-gen spatial runtime. Triggers Swan-
- *                   only initialization in [PicoSwanRuntime].
+ *   - [PICO_OS5]:   PICO OS 5 / legacy PVR XR runtime. Used by PICO 4 /
+ *                   PICO 4 Ultra. Triggers entitlement check seam +
+ *                   platform-service registration via [PicoOs5Runtime].
+ *   - [PICO_SWAN]:  Project Swan / PICO OS 6 next-gen spatial runtime.
+ *                   Triggers Swan-only initialization in [PicoSwanRuntime].
  */
 enum class PicoXRPlatform {
     MOBILE,
-    PICO_OS6,
+    PICO_OS5,
     PICO_SWAN;
 
     companion object {
         /**
          * Convert the plugin-emitted xrMode string (one of `mobile`,
-         * `pico-os6`, `pico-swan`) into a [PicoXRPlatform]. Unknown or
+         * `pico-os5`, `pico-swan`) into a [PicoXRPlatform]. Unknown or
          * empty values resolve to [MOBILE] so that runtime detection
          * never throws on a malformed BuildConfig field.
          */
         @JvmStatic
         fun fromValue(value: String?): PicoXRPlatform = when (value?.lowercase()) {
             "pico-swan", "pico_swan" -> PICO_SWAN
-            "pico-os6", "pico_os6" -> PICO_OS6
+            // `pico-os6` accepted as a legacy alias — earlier releases used
+            // OS6 as the name for what is actually the OS5 / PVR code path.
+            "pico-os5", "pico_os5", "pico-os6", "pico_os6" -> PICO_OS5
             else -> MOBILE
         }
 

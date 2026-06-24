@@ -43,10 +43,10 @@ export type PicoTargetProfileRuntime = 'legacy' | 'pico4' | 'pico4ultra' | 'swan
  * Active PICO XR platform mode (runtime view of the plugin-time `xrMode`
  * option). Mirrors the native `PicoXRPlatform` enum.
  *   - `mobile`:    Standard Android; no PICO runtime registered.
- *   - `pico-os6`:  Standard PICO OS 6 runtime active.
+ *   - `pico-os5`:  Standard PICO OS 6 runtime active.
  *   - `pico-swan`: Project Swan / next-gen spatial runtime active.
  */
-export type PicoXRMode = 'mobile' | 'pico-os6' | 'pico-swan';
+export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan';
 
 export type PicoAppType = 'vr' | 'mr' | '2d';
 
@@ -68,7 +68,7 @@ export interface PicoRuntimeInfo {
   deviceModel: string | null;
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
-  os6RuntimeInitialized: boolean;
+  os5RuntimeInitialized: boolean;
   /** True when any PICO Platform SDK class resolves on the runtime classpath. */
   platformSdkPresent: boolean;
   /** SDK version read from `com.pvr.platform.sdk.BuildConfig.VERSION_NAME`, or null. */
@@ -110,7 +110,7 @@ export interface ExpoPicoModuleInterface {
   deviceModel: string | null;
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
-  os6RuntimeInitialized: boolean;
+  os5RuntimeInitialized: boolean;
   platformSdkPresent: boolean;
   platformSdkVersion: string | null;
   declaredCapabilities: PicoDeclaredCapabilities;

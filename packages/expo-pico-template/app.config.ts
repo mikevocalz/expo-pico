@@ -5,7 +5,7 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
  *
  * What's already wired:
  *   - New Architecture on (required by `expo-pico-core`).
- *   - `xrMode` set to `pico-os6` for PICO 4 / 4 Ultra. Flip to
+ *   - `xrMode` set to `pico-os5` for PICO 4 / 4 Ultra. Flip to
  *     `pico-swan` when targeting Swan headsets.
  *   - `appType: 'vr'` — emits `pvr.app.type=vr`, OpenXR
  *     `IMMERSIVE_HMD` + `com.pico.intent.category.VR` on the launcher
@@ -46,7 +46,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       '@expo-pico/core',
       {
         // Flip to 'pico-swan' when targeting Project Swan hardware.
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
 
         // 'vr' for immersive; 'mr' for passthrough-first; '2d' opts
         // out of the immersive launcher entirely.

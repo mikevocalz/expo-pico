@@ -166,7 +166,7 @@ export function getPicoTargetProfile(): PicoTargetProfileRuntime {
  */
 export function getXrMode(): PicoXRMode {
   const mode = ExpoPicoModule.xrMode;
-  if (mode === 'pico-os6' || mode === 'pico-swan') return mode;
+  if (mode === 'pico-os5' || mode === 'pico-swan') return mode;
   return 'mobile';
 }
 
@@ -274,7 +274,7 @@ export function getPicoRuntimeInfo(): PicoRuntimeInfo {
     deviceModel: ExpoPicoModule.deviceModel ?? null,
     emulatorOptimizations: ExpoPicoModule.emulatorOptimizations ?? false,
     swanRuntimeInitialized: ExpoPicoModule.swanRuntimeInitialized ?? false,
-    os6RuntimeInitialized: ExpoPicoModule.os6RuntimeInitialized ?? false,
+    os5RuntimeInitialized: ExpoPicoModule.os5RuntimeInitialized ?? false,
     platformSdkPresent: isPlatformSdkPresent(),
     platformSdkVersion: getPlatformSdkVersion(),
   };

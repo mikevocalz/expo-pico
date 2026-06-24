@@ -99,13 +99,13 @@ export function PicoSceneRoot(): React.JSX.Element {
         <Row
           label="xrMode"
           value={
-            info.xrMode === 'pico-os6'
-              ? 'pico-os5 (Ultra/4)'
+            info.xrMode === 'pico-os5'
+              ? 'pico-os5 (PICO 4 / Ultra)'
               : info.xrMode === 'pico-swan'
                 ? 'pico-os6 (Swan)'
                 : info.xrMode
           }
-          accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os6' ? 'info' : undefined}
+          accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os5' ? 'info' : undefined}
         />
         <Row label="appType" value={info.appType} />
         <Row label="spatialMode" value={info.spatialMode} />
@@ -186,13 +186,13 @@ export function PicoSceneRoot(): React.JSX.Element {
           </Text>
         ) : null}
 
-        {info.swanRuntimeInitialized || info.os6RuntimeInitialized ? (
+        {info.swanRuntimeInitialized || info.os5RuntimeInitialized ? (
           <>
             <Separator />
             {info.swanRuntimeInitialized ? (
               <Row label="swan runtime" value="initialized" accent="good" />
             ) : null}
-            {info.os6RuntimeInitialized ? (
+            {info.os5RuntimeInitialized ? (
               <Row label="os6 runtime" value="initialized" accent="good" />
             ) : null}
           </>

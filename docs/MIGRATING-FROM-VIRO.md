@@ -11,8 +11,8 @@ Viro is the renderer used by this repo's example app and is actively maintained 
 | Concern                               | Viro (Quest)                                                             | `expo-pico-core`                                                                                                    |
 | ------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Top-level plugin                      | `withViro`                                                               | `expo-pico-core` (plugin registered in `plugins` array of `app.config.ts`)                                          |
-| Native package registration target    | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`                             | `PicoCorePackage(PicoXRPlatform.PICO_OS6)` or `…PICO_SWAN`                                                         |
-| Platform-mode option                  | `android.xRMode: ['OVR_MOBILE']`                                        | `xrMode: 'pico-os6'` or `'pico-swan'`                                                                              |
+| Native package registration target    | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`                             | `PicoCorePackage(PicoXRPlatform.PICO_OS5)` or `…PICO_SWAN`                                                         |
+| Platform-mode option                  | `android.xRMode: ['OVR_MOBILE']`                                        | `xrMode: 'pico-os5'` or `'pico-swan'`                                                                              |
 | New-Architecture check                | warning-only soft check                                                  | warning-only soft check (same pattern — `withPicoNewArchCheck`)                                                     |
 | Launcher contract                     | not emitted                                                              | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>` (Phase A)                    |
 | Platform SDK identity                 | not emitted                                                              | `pico_app_id` / `pico_app_key` string resources + login/browser activities (Phase B)                                |
@@ -52,7 +52,7 @@ export default {
       [
         '@expo-pico/core',
         {
-          xrMode: 'pico-os6',
+          xrMode: 'pico-os5',
           appType: 'vr',
           buildVariant: 'pico',
           platformService: {

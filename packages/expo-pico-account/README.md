@@ -35,7 +35,7 @@ export default {
           picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
         },
         buildVariant: 'pico',
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         appType: 'vr',
       },
     ],

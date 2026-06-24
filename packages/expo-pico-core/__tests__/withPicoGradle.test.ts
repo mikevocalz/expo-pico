@@ -113,7 +113,7 @@ describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
 
   it('injects ndk abiFilters arm64-v8a on the pico flavor when enabled', () => {
     const out: string = renderFlavorBlock(
-      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: true })
+      resolveOptions({ xrMode: 'pico-os5', ndkAbiFilters: true })
     );
     expect(out).toMatch(
       /pico \{[\s\S]+?ndk \{ abiFilters 'arm64-v8a' \}[\s\S]+?\}/
@@ -122,13 +122,13 @@ describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
 
   it('omits ndk abiFilters when disabled', () => {
     const out: string = renderFlavorBlock(
-      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: false })
+      resolveOptions({ xrMode: 'pico-os5', ndkAbiFilters: false })
     );
     expect(out).not.toContain('ndk { abiFilters');
   });
 
-  it('defaults to abiFilters enabled under pico-os6', () => {
-    const out: string = renderFlavorBlock(resolveOptions({ xrMode: 'pico-os6' }));
+  it('defaults to abiFilters enabled under pico-os5', () => {
+    const out: string = renderFlavorBlock(resolveOptions({ xrMode: 'pico-os5' }));
     expect(out).toContain("ndk { abiFilters 'arm64-v8a' }");
   });
 
@@ -139,7 +139,7 @@ describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
 
   it('never applies abiFilters to the mobile flavor', () => {
     const out: string = renderFlavorBlock(
-      resolveOptions({ xrMode: 'pico-os6', ndkAbiFilters: true })
+      resolveOptions({ xrMode: 'pico-os5', ndkAbiFilters: true })
     );
     // The mobile flavor declaration should have nothing but `dimension`.
     expect(out).toMatch(/mobile \{ dimension "device" \}/);
@@ -215,7 +215,7 @@ describe('Phase K — capability BuildConfig fields', () => {
 
   it('explicit true values survive through resolveOptions', () => {
     const resolved = resolveOptions({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       eyeTracking: true,
       faceTracking: true,
       bodyTracking: true,
@@ -243,7 +243,7 @@ describe('Phase K — capability BuildConfig fields', () => {
 
   it('refreshRates filters invalid entries before rendering', () => {
     const resolved = resolveOptions({
-      xrMode: 'pico-os6',
+      xrMode: 'pico-os5',
       refreshRates: [72, 90, -1, 0, NaN, 120.4],
     });
     expect(resolved.refreshRates).toEqual([72, 90, 120]);

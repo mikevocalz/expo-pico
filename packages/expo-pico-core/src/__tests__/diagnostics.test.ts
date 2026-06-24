@@ -16,14 +16,14 @@ import {
 
 function build(overrides: Partial<BuildTimeFacts> = {}): BuildTimeFacts {
   return {
-    xrMode: 'pico-os6',
+    xrMode: 'pico-os5',
     appType: 'vr',
     isPicoDevice: true,
     isPicoBuild: true,
     hasPlatformIdentity: true,
     hasIapIdentity: false,
     swanRuntimeInitialized: false,
-    os6RuntimeInitialized: true,
+    os5RuntimeInitialized: true,
     picoAppId: 'APP',
     picoAppKey: 'KEY',
     deviceModel: 'PICO 4',
@@ -56,7 +56,7 @@ describe('buildDiagnosticsReport — clean baseline', () => {
         isPicoDevice: false,
         isPicoBuild: false,
         hasPlatformIdentity: false,
-        os6RuntimeInitialized: false,
+        os5RuntimeInitialized: false,
       }),
       runtime()
     );
@@ -111,7 +111,7 @@ describe('buildDiagnosticsReport — runtime initialization info', () => {
 
   it('emits info when OS6 xrMode but runtime uninitialized', () => {
     const report = buildDiagnosticsReport(
-      build({ xrMode: 'pico-os6', os6RuntimeInitialized: false }),
+      build({ xrMode: 'pico-os5', os5RuntimeInitialized: false }),
       runtime()
     );
     const f = report.findings.find((x) => x.id === 'os6.uninitialized');
@@ -146,7 +146,7 @@ describe('buildDiagnosticsReport — build/device mismatch', () => {
         isPicoBuild: false,
         isPicoDevice: true,
         hasPlatformIdentity: false,
-        os6RuntimeInitialized: false,
+        os5RuntimeInitialized: false,
       }),
       runtime()
     );

@@ -33,11 +33,11 @@ public class MainApplication extends Application {
 `;
 
 describe('injectIntoKotlinMainApplication', () => {
-  it('registers PicoCorePackage with PICO_OS6 for xrMode=pico-os6', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+  it('registers PicoCorePackage with PICO_OS5 for xrMode=pico-os5', () => {
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options);
     expect(out).not.toBeNull();
-    expect(out!).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_OS6))');
+    expect(out!).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_OS5))');
     expect(out!).toContain('import expo.modules.pico.PicoCorePackage');
     expect(out!).toContain('import expo.modules.pico.PicoXRPlatform');
   });
@@ -49,33 +49,33 @@ describe('injectIntoKotlinMainApplication', () => {
   });
 
   it('does not duplicate the registration on repeat runs with the same xrMode', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
     const twice = injectIntoKotlinMainApplication(once, options)!;
     const count = (
-      twice.match(/add\(PicoCorePackage\(PicoXRPlatform\.PICO_OS6\)\)/g) ?? []
+      twice.match(/add\(PicoCorePackage\(PicoXRPlatform\.PICO_OS5\)\)/g) ?? []
     ).length;
     expect(count).toBe(1);
   });
 
-  it('replaces registration when xrMode toggles from PICO_OS6 to PICO_SWAN', () => {
-    const optionsA = resolveOptions({ xrMode: 'pico-os6' });
+  it('replaces registration when xrMode toggles from PICO_OS5 to PICO_SWAN', () => {
+    const optionsA = resolveOptions({ xrMode: 'pico-os5' });
     const optionsB = resolveOptions({ xrMode: 'pico-swan' });
     const once = injectIntoKotlinMainApplication(KT_TEMPLATE, optionsA)!;
     const twice = injectIntoKotlinMainApplication(once, optionsB)!;
     expect(twice).toContain('PicoXRPlatform.PICO_SWAN');
-    expect(twice).not.toContain('PicoXRPlatform.PICO_OS6');
+    expect(twice).not.toContain('PicoXRPlatform.PICO_OS5');
   });
 
   it('returns null when no PackageList anchor is present', () => {
     const broken = `package com.example.app\n\nclass MainApplication\n`;
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const out = injectIntoKotlinMainApplication(broken, options);
     expect(out).toBeNull();
   });
 
   it('idempotent import: does not duplicate the import on repeat runs', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
     const twice = injectIntoKotlinMainApplication(once, options)!;
     const count = (
@@ -98,7 +98,7 @@ describe('injectIntoJavaMainApplication', () => {
 
   it('returns null when Java anchor is missing', () => {
     const broken = `package com.example.app;\npublic class MainApplication {}\n`;
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     expect(injectIntoJavaMainApplication(broken, options)).toBeNull();
   });
 });

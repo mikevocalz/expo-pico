@@ -41,7 +41,7 @@ export default {
           },
         },
         buildVariant: 'pico',
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
       },
     ],
     '@expo-pico/iap',

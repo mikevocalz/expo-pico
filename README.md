@@ -13,7 +13,7 @@ Expo-native package family for **PICO 4 / 4 Ultra (PICO OS 5)** and **Project Sw
 
 Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
 
-> **OS note.** PICO 4 and PICO 4 Ultra ship on **PICO OS 5** (the legacy PVR / current XR runtime). The next-gen **Project Swan** hardware ships on **PICO OS 6**. The `xrMode: 'pico-os6'` config option is a misnomer kept for backwards-compat — it's the OS 5 / PVR code path. `xrMode: 'pico-swan'` is the actual OS 6 / Swan target.
+> **OS note.** PICO 4 and PICO 4 Ultra ship on **PICO OS 5** (the legacy PVR / current XR runtime) → `xrMode: 'pico-os5'`. The next-gen **Project Swan** hardware ships on **PICO OS 6** → `xrMode: 'pico-swan'`.
 
 **New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes. Common questions live in [docs/FAQ.md](./docs/FAQ.md).
 
@@ -75,9 +75,9 @@ export default {
       [
         '@expo-pico/core',
         {
-          // PICO 4 / 4 Ultra → 'pico-os6' (misnomer; targets OS 5 / PVR runtime).
-          // PICO Swan      → 'pico-swan' (the real OS 6 / next-gen runtime).
-          xrMode: 'pico-os6',
+          // PICO 4 / 4 Ultra (PICO OS 5) → 'pico-os5'
+          // PICO Swan      (PICO OS 6) → 'pico-swan'
+          xrMode: 'pico-os5',
           appType: 'vr',
           buildVariant: 'pico',
           picoAppId: process.env.PICO_APP_ID,
@@ -106,7 +106,7 @@ npx expo run:android --variant picoDebug
 - **New Architecture only** (Fabric + TurboModules)
 - **Android-only**
 - Devices:
-  - **PICO 4** / **PICO 4 Ultra** — PICO OS 5 (legacy PVR XR runtime) — `xrMode: 'pico-os6'`
+  - **PICO 4** / **PICO 4 Ultra** — PICO OS 5 (legacy PVR XR runtime) — `xrMode: 'pico-os5'`
   - **PICO Swan** — PICO OS 6 (next-gen runtime) — `xrMode: 'pico-swan'`
   - **Meta Quest 3** / **Quest 3S** — via the `quest` build flavor; OpenXR loader composes with the `<uses-native-library>` declaration the plugin writes
 - 16KB ELF page-alignment (Android 14+) — `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.49 to satisfy the system loader on PICO OS 5

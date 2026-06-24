@@ -20,14 +20,14 @@ export interface PicoPluginOptions {
    *
    * - 'mobile': No PICO runtime registration. The PicoCorePackage is still
    *   registered but in a no-op MOBILE platform mode.
-   * - 'pico-os6': Standard PICO OS 6 runtime registration. Default for
+   * - 'pico-os5': Standard PICO OS 6 runtime registration. Default for
    *   `buildVariant: 'pico'` and `'dual'`.
    * - 'pico-swan': Project Swan / next-gen spatial runtime. Adds Swan-only
    *   manifest meta-data, an optional Swan SDK Maven dependency, an optional
    *   Swan runtime Gradle subproject inclusion via settings.gradle, and
    *   constructs PicoCorePackage with PicoXRPlatform.PICO_SWAN at boot.
    *
-   * @default 'pico-os6' when buildVariant is 'pico' or 'dual', otherwise 'mobile'
+   * @default 'pico-os5' when buildVariant is 'pico' or 'dual', otherwise 'mobile'
    */
   xrMode?: PicoXRMode;
   /**
@@ -42,7 +42,7 @@ export interface PicoPluginOptions {
    *
    * Default behavior:
    *   - `xrMode: 'mobile'`        → `appType: '2d'`
-   *   - `xrMode: 'pico-os6'`      → `appType: 'vr'`
+   *   - `xrMode: 'pico-os5'`      → `appType: 'vr'`
    *   - `xrMode: 'pico-swan'`     → `appType: 'vr'` (set explicitly to
    *                                 `'mr'` if your Swan app is a passthrough-
    *                                 first MR experience)
@@ -365,7 +365,7 @@ export interface PicoSwanPluginOptions {
   scaffoldSwanSourceSet?: boolean;
 }
 
-export type PicoXRMode = 'mobile' | 'pico-os6' | 'pico-swan';
+export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan';
 
 /**
  * Launcher contract app type. Drives the `pvr.app.type` meta-data PICO OS 6
@@ -502,7 +502,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   enabled: true,
   picoAppId: '',
   buildVariant: 'pico',
-  xrMode: 'pico-os6',
+  xrMode: 'pico-os5',
   picoSwan: PICO_SWAN_DEFAULTS,
   appType: 'vr',
   platformService: PICO_PLATFORM_SERVICE_DEFAULTS,
@@ -536,7 +536,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
 
 export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOptions {
   const buildVariant = options.buildVariant ?? PICO_OPTION_DEFAULTS.buildVariant;
-  const defaultXrMode: PicoXRMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os6';
+  const defaultXrMode: PicoXRMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os5';
 
   const swan: ResolvedPicoSwanOptions = {
     ...PICO_SWAN_DEFAULTS,
@@ -683,12 +683,12 @@ export function resolveTargetProfile(
  * Map the plugin-facing xrMode string to the native PicoXRPlatform enum
  * value rendered into MainApplication and BuildConfig.
  */
-export function xrModeToNativeEnum(mode: PicoXRMode): 'MOBILE' | 'PICO_OS6' | 'PICO_SWAN' {
+export function xrModeToNativeEnum(mode: PicoXRMode): 'MOBILE' | 'PICO_OS5' | 'PICO_SWAN' {
   switch (mode) {
     case 'mobile':
       return 'MOBILE';
-    case 'pico-os6':
-      return 'PICO_OS6';
+    case 'pico-os5':
+      return 'PICO_OS5';
     case 'pico-swan':
       return 'PICO_SWAN';
   }

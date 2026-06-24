@@ -30,7 +30,7 @@ import {
  * Activation:
  *   - `xrMode === 'mobile'` → no MainApplication injection (Expo Modules
  *      auto-registration covers the runtime detection module).
- *   - `xrMode === 'pico-os6'` or `'pico-swan'` → injects the package and
+ *   - `xrMode === 'pico-os5'` or `'pico-swan'` → injects the package and
  *      its import.
  *
  * Kotlin and Java MainApplication shapes are both supported, matching the
@@ -71,7 +71,7 @@ export function injectIntoKotlinMainApplication(
   let contents = source;
 
   // 1. Strip any prior registration block and re-emit. We re-emit because
-  //    the user may have toggled xrMode (PICO_OS6 ↔ PICO_SWAN) between runs;
+  //    the user may have toggled xrMode (PICO_OS5 ↔ PICO_SWAN) between runs;
   //    leaving the old line would result in two registrations.
   contents = stripLineWithMarker(contents, PICO_MAIN_APP_MARKER);
 

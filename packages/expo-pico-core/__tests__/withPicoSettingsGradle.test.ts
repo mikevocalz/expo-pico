@@ -7,7 +7,7 @@ include ':app'
 
 describe('applySettingsGradleTransform', () => {
   it('is a no-op when xrMode !== pico-swan', () => {
-    const options = resolveOptions({ xrMode: 'pico-os6' });
+    const options = resolveOptions({ xrMode: 'pico-os5' });
     expect(applySettingsGradleTransform(BASE_SETTINGS, options)).toBe(BASE_SETTINGS);
   });
 

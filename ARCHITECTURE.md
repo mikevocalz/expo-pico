@@ -700,10 +700,10 @@ registration and the set of native subprojects linked into the APK.
 | `xrMode`     | MainApplication registration                        | When to use                                                                 |
 | ------------ | --------------------------------------------------- | --------------------------------------------------------------------------- |
 | `mobile`     | none (Expo Module auto-registration only)           | Standard Android builds; `buildVariant='mobile'` default                    |
-| `pico-os6`   | `PicoCorePackage(PicoXRPlatform.PICO_OS6)`          | PICO 4 / 4 Ultra / Neo3 on PICO OS 6; `buildVariant='pico'` default         |
+| `pico-os5`   | `PicoCorePackage(PicoXRPlatform.PICO_OS5)`          | PICO 4 / 4 Ultra / Neo3 on PICO OS 6; `buildVariant='pico'` default         |
 | `pico-swan`  | `PicoCorePackage(PicoXRPlatform.PICO_SWAN)`         | Project Swan / next-gen spatial target; explicit opt-in                     |
 
-`xrMode` defaults to `pico-os6` when `buildVariant` is `pico` or `dual`, and
+`xrMode` defaults to `pico-os5` when `buildVariant` is `pico` or `dual`, and
 to `mobile` when `buildVariant` is `mobile`.
 
 Reusing Meta's `OVR_MOBILE` enum for Swan would be wrong: (a) the name
@@ -719,7 +719,7 @@ optional Swan Gradle-subproject inclusion.
 ```ts
 interface PicoPluginOptions {
   // ... existing fields ...
-  xrMode?: 'mobile' | 'pico-os6' | 'pico-swan';
+  xrMode?: 'mobile' | 'pico-os5' | 'pico-swan';
   picoSwan?: PicoSwanPluginOptions;
 }
 
@@ -749,10 +749,10 @@ interface PicoSwanPluginOptions {
 
 | Class / file                                                  | Role                                                                          |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `expo.modules.pico.PicoXRPlatform`                            | Enum (`MOBILE`, `PICO_OS6`, `PICO_SWAN`) + `fromValue` / `fromBuildConfig`.   |
+| `expo.modules.pico.PicoXRPlatform`                            | Enum (`MOBILE`, `PICO_OS5`, `PICO_SWAN`) + `fromValue` / `fromBuildConfig`.   |
 | `expo.modules.pico.PicoCorePackage`                           | `ReactPackage` that dispatches to platform-specific runtime init in its ctor. |
 | `expo.modules.pico.swan.PicoSwanRuntime`                      | **Extension seam.** Documented no-op until a public Swan SDK ships.           |
-| `expo.modules.pico.os6.PicoOs6Runtime`                        | **Extension seam.** Placeholder for boot-time PICO OS 6 service registration. |
+| `expo.modules.pico.os6.PicoOs5Runtime`                        | **Extension seam.** Placeholder for boot-time PICO OS 6 service registration. |
 
 ### 15.5 What is intentionally NOT copied from Viro Quest support
 
@@ -789,7 +789,7 @@ extensible without overbuilding today:
    null by default. Sibling plugins do not have to react to them.
 3. `PicoCorePackage.createViewManagers()` — currently empty. When a
    Swan-native view (e.g., `<PicoSpatialContainer>`) arrives, it is added
-   here for `PICO_SWAN` only, not for `PICO_OS6`.
+   here for `PICO_SWAN` only, not for `PICO_OS5`.
 4. `expo.modules.pico.swan` / `expo.modules.pico.os6` subpackages — keep
    platform-specific Kotlin in its own package so deletion or branching
    later is purely additive.
@@ -804,7 +804,7 @@ extensible without overbuilding today:
 - `resolveOptions` defaults, overrides, and the xrMode/minSdk interaction.
 - `insertLinesAfter`, `insertImportAfterPackage`, `removeBlock` helpers.
 - `withPicoMainApplication` Kotlin + Java injection, idempotency, and
-  toggling between PICO_OS6 and PICO_SWAN registration.
+  toggling between PICO_OS5 and PICO_SWAN registration.
 - `withPicoSettingsGradle` no-op cases, include/projectDir writing,
   idempotency, and path-update-in-place.
 - `withPicoSwan` dependency block writing and in-place artifact updates.
@@ -872,7 +872,7 @@ interface PicoPluginOptions {
 Default behavior:
 
 - `xrMode: 'mobile'` → `appType: '2d'`
-- `xrMode: 'pico-os6'` → `appType: 'vr'`
+- `xrMode: 'pico-os5'` → `appType: 'vr'`
 - `xrMode: 'pico-swan'` → `appType: 'vr'` (set explicitly to `'mr'` for
   passthrough-first MR experiences)
 
@@ -886,7 +886,7 @@ Precedence and edge cases:
   This is intentional. It keeps mobile-only builds clean and avoids
   hiding a mobile build behind an immersive launcher entry that has no
   PICO native runtime backing it.
-- `appType: '2d'` with `xrMode: 'pico-os6'` is allowed and produces a
+- `appType: '2d'` with `xrMode: 'pico-os5'` is allowed and produces a
   PICO-flavored APK that is *not* immersive-enumerated. Use it when you
   want runtime hints to ship with the APK (so PICO OS knows the app was
   built with PICO awareness) without the launcher exposing it as an XR
@@ -948,7 +948,7 @@ Out of scope for this branch (deferred to later phases):
   spatial audio feature, foveated rendering, refresh-rate selection.
   (Phase C.)
 - Real native bindings for the PICO Spatial / Platform SDKs — those
-  remain extension seams (`PicoSwanRuntime`, `PicoOs6Runtime`).
+  remain extension seams (`PicoSwanRuntime`, `PicoOs5Runtime`).
 - Per-activity intent-filter rewrites in the **main** AndroidManifest.
   Phase A only writes the flavor manifest, leaving the user's MainActivity
   declaration in their main manifest untouched.
@@ -1137,7 +1137,7 @@ an app in dev with no credentials degrades cleanly instead of crashing.
 
 ### 17.6 What Phase B intentionally does NOT cover
 
-- **Real `CoreService.Initialize` native bindings.** `PicoOs6Runtime`
+- **Real `CoreService.Initialize` native bindings.** `PicoOs5Runtime`
   remains a documented seam. When PICO ships stable Kotlin bindings for
   the Platform SDK, the seam's body is replaced with a real call that
   reads `R.string.pico_app_id` and `R.string.pico_app_key`. No plugin
@@ -1244,7 +1244,7 @@ The one exception is `<uses-permission>` entries that carry `tools:node="remove"
 
 ### 18.7 What Phase C does NOT cover
 
-- **Runtime native bindings.** The eye-tracking provider, face-tracker callbacks, refresh-rate setter, and spatial-audio mixer remain extension seams in `PicoOs6Runtime` / sibling packages. Phase C only declares that the app *may* use the capability; actually calling into the corresponding PICO SDK surface is a native-binding task.
+- **Runtime native bindings.** The eye-tracking provider, face-tracker callbacks, refresh-rate setter, and spatial-audio mixer remain extension seams in `PicoOs5Runtime` / sibling packages. Phase C only declares that the app *may* use the capability; actually calling into the corresponding PICO SDK surface is a native-binding task.
 - **Feature-grouped permission bundles.** For example, PICO Motion Tracker body-tracking likely requires one or more companion permissions (`BODY_TRACKING_ACCEL`, etc.). Phase C emits the single best-known permission; multi-permission feature bundles are a refinement for when the canonical list is published.
 - **Device-class gating.** If `eyeTracking: true` is set on a consumer config that also targets PICO Neo3 (a device without eye-tracking hardware), the plugin does not warn. The `android:required="false"` attribute already makes the APK installable on Neo3; runtime code is expected to branch on `hasSystemFeature`. Adding plugin-side validation is a larger scope project since it requires consulting `targetDevices` and maintaining a device-capability matrix.
 - **Runtime JS API for capability introspection.** The Android convention is `PackageManager.hasSystemFeature()`. Adding a `getDeclaredCapabilities()` JS helper would be a thin wrapper over that — deferred until a concrete consumer needs it. BuildConfig fields for these flags are also deliberately omitted to keep the compile-time surface minimal.
@@ -1410,7 +1410,7 @@ the same way any other app does.
    Android by default; the filter enforces that the final PICO APK
    doesn't accidentally include a non-functional 32-bit slice from
    another dep.
-5. `xrMode: 'pico-os6'` or `'pico-swan'` tells the plugin to emit PICO
+5. `xrMode: 'pico-os5'` or `'pico-swan'` tells the plugin to emit PICO
    launcher categories; Viro's OpenXR runtime is queried via the
    ByteDance interaction profiles + `XR_FB_foveation` extension our
    fork enables. The `uses-feature` declarations emitted by Phases A /

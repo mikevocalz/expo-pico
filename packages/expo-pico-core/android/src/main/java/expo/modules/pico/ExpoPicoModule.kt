@@ -2,7 +2,7 @@ package expo.modules.pico
 
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import expo.modules.pico.os6.PicoOs6Runtime
+import expo.modules.pico.os5.PicoOs5Runtime
 import expo.modules.pico.swan.PicoSwanRuntime
 
 class ExpoPicoModule : Module() {
@@ -25,7 +25,7 @@ class ExpoPicoModule : Module() {
             "deviceModel" to PicoDeviceUtils.getDeviceModel(),
             "emulatorOptimizations" to BuildConfig.PICO_EMULATOR_OPTIMIZATIONS,
             "swanRuntimeInitialized" to PicoSwanRuntime.isInitialized(),
-            "os6RuntimeInitialized" to PicoOs6Runtime.isInitialized(),
+            "os5RuntimeInitialized" to PicoOs5Runtime.isInitialized(),
             // Phase J — reflection-based Platform SDK detection. Both
             // values are evaluated once at module-init time (cheap — each
             // Class.forName with initialize=false only touches the

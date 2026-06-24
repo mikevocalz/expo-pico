@@ -15,9 +15,9 @@ The plugin option API itself is strictly additive — every new option defaults 
 
 **Platform mode (Swan)**
 
-- New `xrMode` plugin option (`'mobile' | 'pico-os6' | 'pico-swan'`). Drives MainApplication injection of `PicoCorePackage(PicoXRPlatform.<MODE>)` and the `PICO_XR_MODE` BuildConfig field.
+- New `xrMode` plugin option (`'mobile' | 'pico-os5' | 'pico-swan'`). Drives MainApplication injection of `PicoCorePackage(PicoXRPlatform.<MODE>)` and the `PICO_XR_MODE` BuildConfig field.
 - Opt-in `settings.gradle` Swan subproject inclusion via `picoSwan.swanRuntimeProject`; opt-in Swan Maven dep via `picoSwan.swanSdkArtifact`.
-- Native seams `PicoSwanRuntime` and `PicoOs6Runtime` for per-platform runtime init.
+- Native seams `PicoSwanRuntime` and `PicoOs5Runtime` for per-platform runtime init.
 - Runtime API: `getXrMode()`, `isSwanRuntime()`.
 
 **Launcher contract (Phase A)**

@@ -29,7 +29,7 @@ export default {
       '@expo-pico/core',
       {
         buildVariant: 'pico',
-        xrMode: 'pico-swan', // use 'pico-os6' for PICO 4 / 4 Ultra
+        xrMode: 'pico-swan', // use 'pico-os5' for PICO 4 / 4 Ultra
         appType: 'vr',
         spatialMode: 'shared-space', // or 'full-space', 'volume', 'windowed'
         defaultContainerMode: 'window-container', // or 'stage', 'none'

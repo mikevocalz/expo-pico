@@ -28,7 +28,7 @@ const PICO_BROWSER_ACTIVITY = 'com.pico.loginpaysdk.component.PicoSDKBrowser';
  * Note on scope: this is Phase B (Platform SDK identity). The activities
  * exist so the Platform SDK auth/payment flows bind correctly. The
  * actual `CoreService.Initialize` call remains an extension seam in
- * `PicoOs6Runtime` / sibling packages — this plugin only ensures the
+ * `PicoOs5Runtime` / sibling packages — this plugin only ensures the
  * manifest surface is correct when the consumer wires up identity.
  */
 export function applyPlatformServiceContract(

@@ -9,11 +9,11 @@ function ids(findings: DiagnosticCheckFinding[]): string[] {
 }
 
 describe('runDiagnosticChecks — reducer is pure', () => {
-  it('returns no findings for a well-formed pico-os6 config', () => {
+  it('returns no findings for a well-formed pico-os5 config', () => {
     expect(
       runDiagnosticChecks(
         resolveOptions({
-          xrMode: 'pico-os6',
+          xrMode: 'pico-os5',
           appType: 'vr',
           platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
         })
@@ -39,7 +39,7 @@ describe('runDiagnosticChecks — reducer is pure', () => {
 
 describe('runDiagnosticChecks — each finding has the expected stable id', () => {
   it('identity.missing fires on immersive without identity', () => {
-    const f = runDiagnosticChecks(resolveOptions({ xrMode: 'pico-os6' }));
+    const f = runDiagnosticChecks(resolveOptions({ xrMode: 'pico-os5' }));
     expect(ids(f)).toContain('identity.missing');
     const match = f.find((x) => x.id === 'identity.missing')!;
     expect(match.severity).toBe('warning');
@@ -48,7 +48,7 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
   it('appType.hidden-launcher fires on 2d with pico xrMode', () => {
     const f = runDiagnosticChecks(
       resolveOptions({
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         appType: '2d',
         platformService: { picoAppId: 'APP' },
       })
@@ -86,7 +86,7 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
   it('swan.subproject-without-mode fires on swanRuntimeProject + non-Swan xrMode', () => {
     const f = runDiagnosticChecks(
       resolveOptions({
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         platformService: { picoAppId: 'APP' },
         picoSwan: {
           swanRuntimeProject: { name: 'pico_swan_runtime', path: '../swan' },
@@ -107,7 +107,7 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
     // CN-only partial
     const cn = runDiagnosticChecks(
       resolveOptions({
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         platformService: { picoAppId: 'APP', picoMerchantId: 'M' },
       })
     );
@@ -119,7 +119,7 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
     // Foreign-only partial
     const fg = runDiagnosticChecks(
       resolveOptions({
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         platformService: {
           picoAppId: 'APP',
           foreign: { picoPayKey: 'FP' },
@@ -136,7 +136,7 @@ describe('runDiagnosticChecks — finding shape', () => {
   it('every finding has id + severity + non-empty message', () => {
     const all = runDiagnosticChecks(
       resolveOptions({
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
         buildVariant: 'mobile',
         appType: 'vr',
         platformService: { picoAppId: 'APP', picoMerchantId: 'M' },

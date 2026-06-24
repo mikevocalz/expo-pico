@@ -25,7 +25,7 @@ const mockModule: {
   deviceModel: string | null;
   emulatorOptimizations: boolean;
   swanRuntimeInitialized: boolean;
-  os6RuntimeInitialized: boolean;
+  os5RuntimeInitialized: boolean;
   platformSdkPresent: boolean;
   platformSdkVersion: string | null;
   getPlatformSdkProbe: jest.Mock;
@@ -38,7 +38,7 @@ const mockModule: {
   spatialMode: 'shared-space',
   targetProfile: 'pico4ultra',
   containerMode: 'window-container',
-  xrMode: 'pico-os6',
+  xrMode: 'pico-os5',
   appType: 'vr',
   picoAppId: 'test-app-id',
   picoAppKey: 'test-app-key',
@@ -48,7 +48,7 @@ const mockModule: {
   deviceModel: 'PICO 4 Ultra',
   emulatorOptimizations: false,
   swanRuntimeInitialized: false,
-  os6RuntimeInitialized: true,
+  os5RuntimeInitialized: true,
   platformSdkPresent: false,
   platformSdkVersion: null,
   getPlatformSdkProbe: jest.fn(async () => ({})),

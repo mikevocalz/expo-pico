@@ -24,7 +24,7 @@ Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that select
 
 | Concern                           | Viro (Quest)                                    | `expo-pico-core`                                                 |
 | --------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
-| Native package name               | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`     | `PicoCorePackage(PicoXRPlatform.PICO_OS6 \| PICO_SWAN)`          |
+| Native package name               | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`     | `PicoCorePackage(PicoXRPlatform.PICO_OS5 \| PICO_SWAN)`          |
 | Immersive launcher category       | not emitted                                     | `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + legacy PICO VR |
 | ABI filter                        | none                                            | `arm64-v8a` on pico flavor only                                  |
 | Platform SDK identity             | none                                            | `pico_app_id` / `pico_app_key` / IAP + foreign-region siblings   |

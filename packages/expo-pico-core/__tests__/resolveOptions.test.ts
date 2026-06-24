@@ -60,14 +60,14 @@ describe('resolveOptions', () => {
 });
 
 describe('xrMode resolution', () => {
-  it('defaults to pico-os6 when buildVariant is pico', () => {
+  it('defaults to pico-os5 when buildVariant is pico', () => {
     const result = resolveOptions({ buildVariant: 'pico' });
-    expect(result.xrMode).toBe('pico-os6');
+    expect(result.xrMode).toBe('pico-os5');
   });
 
-  it('defaults to pico-os6 when buildVariant is dual', () => {
+  it('defaults to pico-os5 when buildVariant is dual', () => {
     const result = resolveOptions({ buildVariant: 'dual' });
-    expect(result.xrMode).toBe('pico-os6');
+    expect(result.xrMode).toBe('pico-os5');
   });
 
   it('defaults to mobile when buildVariant is mobile', () => {
@@ -90,8 +90,8 @@ describe('xrMode resolution', () => {
     expect(result.minSdkVersion).toBe(34);
   });
 
-  it('keeps minSdkVersion at 32 for pico-os6', () => {
-    const result = resolveOptions({ xrMode: 'pico-os6' });
+  it('keeps minSdkVersion at 32 for pico-os5', () => {
+    const result = resolveOptions({ xrMode: 'pico-os5' });
     expect(result.minSdkVersion).toBe(32);
   });
 });

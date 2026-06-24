@@ -78,9 +78,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       '@expo-pico/core',
       {
-        // Choose 'pico-os6' for PICO 4 / 4 Ultra, 'pico-swan' for Swan.
+        // Choose 'pico-os5' for PICO 4 / 4 Ultra, 'pico-swan' for Swan.
         // 'mobile' turns the plugin into a mostly-no-op for phone builds.
-        xrMode: 'pico-os6',
+        xrMode: 'pico-os5',
 
         // 'vr' is the standard immersive launcher category. 'mr' for
         // passthrough-first apps. '2d' opts out of immersive entirely.
@@ -127,7 +127,7 @@ This creates `android/` with:
 - `pvr.app.type=vr` + OpenXR `IMMERSIVE_HMD` launcher categories in the PICO-flavor manifest
 - `<uses-native-library android:name="libopenxr_loader.so"/>`
 - `ndk { abiFilters 'arm64-v8a' }` on the pico flavor
-- A `PicoCorePackage(PicoXRPlatform.PICO_OS6)` line added to `MainApplication.kt`
+- A `PicoCorePackage(PicoXRPlatform.PICO_OS5)` line added to `MainApplication.kt`
 
 Inspect any of these if you want to verify — the plugin never writes anything it can't justify.
 
@@ -205,7 +205,7 @@ On a PICO device with developer mode enabled:
 
 - **`isPicoBuild`: true** — the pico flavor is active.
 - **`isPicoDevice`: true** — device detection matched `Build.MANUFACTURER`.
-- **`xrMode`: 'pico-os6'** (or `'pico-swan'` if you set that).
+- **`xrMode`: 'pico-os5'** (or `'pico-swan'` if you set that).
 - **`appType`: 'vr'**.
 - **`platformSdkPresent`: false** — expected until you link the PICO Platform SDK AAR. Phase J's probe flips this automatically when the AAR is present.
 - **Diagnostics**: one `identity.missing` info row until `platformService.picoAppId` is set. No errors.

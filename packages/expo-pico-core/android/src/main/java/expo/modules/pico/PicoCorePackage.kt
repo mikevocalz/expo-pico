@@ -5,7 +5,7 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
-import expo.modules.pico.os6.PicoOs6Runtime
+import expo.modules.pico.os5.PicoOs5Runtime
 import expo.modules.pico.swan.PicoSwanRuntime
 
 /**
@@ -41,7 +41,7 @@ class PicoCorePackage @JvmOverloads constructor(
         Log.i(TAG, "PicoCorePackage initialized with platform=$platform")
         when (platform) {
             PicoXRPlatform.PICO_SWAN -> PicoSwanRuntime.initialize(reactContext)
-            PicoXRPlatform.PICO_OS6 -> PicoOs6Runtime.initialize(reactContext)
+            PicoXRPlatform.PICO_OS5 -> PicoOs5Runtime.initialize(reactContext)
             PicoXRPlatform.MOBILE -> { /* no runtime init for mobile */ }
         }
         return emptyList()

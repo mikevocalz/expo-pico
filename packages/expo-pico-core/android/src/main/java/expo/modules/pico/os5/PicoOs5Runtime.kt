@@ -1,4 +1,4 @@
-package expo.modules.pico.os6
+package expo.modules.pico.os5
 
 import android.content.Context
 import android.os.Handler
@@ -6,11 +6,8 @@ import android.os.Looper
 import android.util.Log
 
 /**
- * PICO OS 5 / PVR runtime boot-time initialization.
- *
- * (The enum value is named `PICO_OS6` for backwards-compat; it's the
- * PICO OS 5 / PVR code path. PICO 4 / 4 Ultra ship on OS 5; OS 6 is
- * the next-gen Swan target — see [expo.modules.pico.PicoXRPlatform].)
+ * PICO OS 5 / PVR runtime boot-time initialization. Used by PICO 4
+ * and PICO 4 Ultra. (Swan / PICO OS 6 goes through [PicoSwanRuntime].)
  *
  * Currently does two jobs:
  *   1. Marks the runtime as initialized so JS can read
@@ -25,8 +22,8 @@ import android.util.Log
  *      benign (just a vsync timeline read), so swallowing it is safe.
  *      Remove when PICO OS ships the fixed Choreographer.
  */
-object PicoOs6Runtime {
-    private const val TAG = "PicoOs6Runtime"
+object PicoOs5Runtime {
+    private const val TAG = "PicoOs5Runtime"
 
     @Volatile private var initialized = false
 

@@ -100,7 +100,7 @@ export const PICO_QUERY_PACKAGES = [
  */
 export const XR_MODE_MANIFEST_VALUE: Record<string, string> = {
   mobile: 'mobile',
-  'pico-os6': 'pico-os6',
+  'pico-os5': 'pico-os5',
   'pico-swan': 'pico-swan',
 } as const;
 
