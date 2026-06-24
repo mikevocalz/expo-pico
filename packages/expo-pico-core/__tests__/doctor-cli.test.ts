@@ -69,7 +69,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     expect(out.stdout).toContain('No issues');
   });
 
-  it('reports identity.missing and exits 0 (warning, not error)', () => {
+  it('reports identity.missing as ERROR (exit 1) when picoAppId is empty on an immersive build', () => {
     const dir = writeFixture({
       expo: {
         name: 't',
@@ -79,8 +79,8 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     });
     const out = runDoctor(dir);
     expect(out.stdout).toContain('identity.missing');
-    expect(out.stdout).toContain('WARN');
-    expect(out.status).toBe(0);
+    expect(out.stdout).toContain('ERROR');
+    expect(out.status).toBe(1);
   });
 
   it('--fail-on-warning flips warning into exit code 1', () => {
@@ -106,7 +106,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     const out = runDoctor(dir, ['--json']);
     const parsed = JSON.parse(out.stdout);
     expect(parsed.findings.some((f: any) => f.id === 'identity.missing')).toBe(true);
-    expect(parsed.summary.warnCount).toBeGreaterThanOrEqual(1);
+    expect(parsed.summary.errorCount).toBeGreaterThanOrEqual(1);
     expect(parsed.resolvedOptions.xrMode).toBe('pico-swan');
   });
 
@@ -129,9 +129,9 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     });
     const out = runDoctor(dir);
     // Default xrMode is pico-os6, appType vr, no identity → expect
-    // identity.missing warning.
+    // identity.missing error (PPS would reject runtime calls with 100008).
     expect(out.stdout).toContain('identity.missing');
-    expect(out.status).toBe(0);
+    expect(out.status).toBe(1);
   });
 
   it('reports multiple findings with stable order', () => {

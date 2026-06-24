@@ -64,7 +64,9 @@ export function runDiagnosticChecks(
 ): DiagnosticCheckFinding[] {
   const findings: DiagnosticCheckFinding[] = [];
 
-  // 1. Immersive without identity
+  // 1. Immersive without identity — ERROR for PICO builds because the
+  // PPS SDK rejects every call with 100008 "appkey is empty" when the
+  // `pvr.app.id` meta-data is missing/blank.
   const hasAnyIdentity =
     options.platformService.hasIdentity ||
     (options.picoAppId?.trim().length ?? 0) > 0;
@@ -73,13 +75,16 @@ export function runDiagnosticChecks(
     options.appType !== '2d' &&
     !hasAnyIdentity
   ) {
+    const envHint = process.env.PICO_APP_ID
+      ? 'PICO_APP_ID env var is set but picoAppId resolved to empty — check that app.config reads it (e.g. `picoAppId: process.env.PICO_APP_ID`).'
+      : 'PICO_APP_ID env var is NOT set in this shell. Either: (a) export PICO_APP_ID=<your-app-id> from .env.local before prebuild, or (b) hardcode picoAppId in the plugin config (NOT recommended — secrets in source).';
     findings.push({
       id: 'identity.missing',
-      severity: 'warning',
+      severity: 'error',
       message:
-        `xrMode '${options.xrMode}' is an immersive build but no picoAppId / platformService.picoAppId is set. ` +
-        'Account / IAP / achievements / leaderboards will fail with "SDK unavailable". ' +
-        'Set platformService.picoAppId (and picoAppKey) in your app.config plugin options.',
+        `xrMode '${options.xrMode}' is an immersive build but picoAppId is empty. ` +
+        'Every PPS call (account, IAP, achievements, leaderboards, social) will fail at runtime with PICO error 100008 "appkey is empty". ' +
+        envHint,
     });
   }
 
