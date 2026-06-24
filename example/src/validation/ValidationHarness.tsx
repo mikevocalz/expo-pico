@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Share,
@@ -784,6 +785,7 @@ export function ValidationHarness() {
 
       <Section title="Account / Commerce" description="Identity, billing, subscriptions, and notification proving flows.">
         <PackageCardFromCatalog id="account" lastEvidence={latestPackageEvidence('account')}>
+          <UserAvatarBadge detail={actionStates['account.profile']?.detail} />
           <View style={styles.buttonRow}>
             <ActionButton
               label="Get user profile"
@@ -795,7 +797,11 @@ export function ValidationHarness() {
                   action: 'getUserProfile',
                   runtime: 'device',
                   fn: () => getUserProfile(),
-                  onSuccess: () => 'User profile loaded',
+                  onSuccess: (profile) => {
+                    const p = profile as Record<string, unknown>;
+                    const name = p.displayName ?? p.userId ?? 'unknown';
+                    return `Signed in as: ${name}`;
+                  },
                 })
               }
             />
@@ -1961,6 +1967,36 @@ function PackageCard({
   );
 }
 
+function UserAvatarBadge({ detail }: { detail: string | undefined }) {
+  if (!detail) return null;
+  let profile: Record<string, unknown>;
+  try { profile = JSON.parse(detail) as Record<string, unknown>; }
+  catch { return null; }
+  const avatar = (profile.avatarUrl ?? profile.headImage ?? profile.smallImageUrl) as string | undefined;
+  const name = (profile.displayName ?? profile.userId) as string | undefined;
+  if (!avatar && !name) return null;
+  return (
+    <View style={avatarStyles.row}>
+      {avatar
+        ? <Image source={{ uri: avatar }} style={avatarStyles.avatar} />
+        : <View style={[avatarStyles.avatar, avatarStyles.avatarFallback]} />}
+      <View style={avatarStyles.text}>
+        {name ? <Text style={avatarStyles.name}>{name}</Text> : null}
+        {profile.userId ? <Text style={avatarStyles.id}>{String(profile.userId)}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+const avatarStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
+  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#1a1c30' },
+  avatarFallback: { borderWidth: 1, borderColor: '#2a2d45' },
+  text: { flex: 1 },
+  name: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  id: { color: '#8a91c0', fontSize: 11, fontFamily: 'monospace', marginTop: 2 },
+});
+
 function Section({
   title,
   description,
@@ -1992,9 +2028,16 @@ function ActionButton({
     <Pressable style={styles.actionButton} onPress={onPress}>
       <Text style={styles.actionLabel}>{label}</Text>
       {state ? (
-        <Text style={[styles.actionState, { color: getStatusColor(state.status) }]}>
-          {state.status}
-        </Text>
+        <View>
+          <Text style={[styles.actionState, { color: getStatusColor(state.status) }]}>
+            {state.status}
+          </Text>
+          {state.summary && state.summary !== 'Running...' ? (
+            <Text style={styles.actionSummary} numberOfLines={3}>
+              {state.summary}
+            </Text>
+          ) : null}
+        </View>
       ) : null}
     </Pressable>
   );
@@ -2174,6 +2217,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
+  },
+  actionSummary: {
+    color: '#a4adcc',
+    fontSize: 11,
+    marginTop: 4,
+    maxWidth: 320,
   },
   inputGrid: {
     gap: 10,

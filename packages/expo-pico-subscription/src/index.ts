@@ -1,7 +1,6 @@
 import {
   guardService,
   wrapNativeCall,
-  notImplementedError,
 } from '@expo-pico/platform-service-common';
 import { NativeSubscription } from './ExpoPicoSubscriptionModule';
 import type {
@@ -14,7 +13,6 @@ import type {
 export * from './types';
 
 const PKG = '@expo-pico/subscription';
-const DOCS = 'https://developer.picoxr.com/document/unity/subscription/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────
 
@@ -57,20 +55,13 @@ export async function getSubscriptionEntitlement(sku: string): Promise<Subscript
   return raw as unknown as SubscriptionEntitlement;
 }
 
-// ─── Purchase / cancel (permanent seams) ─────────────────────────────────────
-
-/**
- * @seam Permanent — requires OS storefront UI. No headless purchase path
- * documented in public PICO SDK. Wire when PICO adds headless subscription API.
- */
-export async function subscribe(_options: SubscribeOptions): Promise<void> {
-  throw notImplementedError(PKG, 'subscribe', DOCS);
+export async function subscribe(options: SubscribeOptions): Promise<void> {
+  guardService(isSubscriptionAvailable(), PKG, 'subscribe');
+  await wrapNativeCall(PKG, 'subscribe', NativeSubscription!.subscribe(options.sku));
 }
 
-/**
- * @seam Permanent — cancellation redirects to OS subscription management screen.
- * No programmatic cancellation path documented.
- */
-export async function cancelSubscription(_sku: string): Promise<void> {
-  throw notImplementedError(PKG, 'cancelSubscription', DOCS);
+// PPS 1.0.x has no programmatic cancel — native rejects REQUIRES_OS_UI.
+export async function cancelSubscription(sku: string): Promise<void> {
+  guardService(isSubscriptionAvailable(), PKG, 'cancelSubscription');
+  await wrapNativeCall(PKG, 'cancelSubscription', NativeSubscription!.cancelSubscription(sku));
 }

@@ -52,7 +52,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'native account bridge still stubbed',
+    stableBlocker: 'on-device verification of PicoSignInClient.getUserInfo round-trip',
   },
   {
     id: 'iap',
@@ -60,7 +60,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'query bridge stubbed; purchase remains deferred',
+    stableBlocker: 'on-device verification of IAP query/purchase round-trip with real product catalog',
   },
   {
     id: 'notifications',
@@ -68,7 +68,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'alpha',
     validationEnvironments: ['non-pico', 'emulator', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'token registration and delivery proof not complete',
+    stableBlocker: 'on-device verification of push token + delivery proof',
   },
   {
     id: 'subscription',
@@ -76,7 +76,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'subscription bridge stubbed; subscribe/cancel remain deferred',
+    stableBlocker: 'on-device verification of subscribe/cancel round-trip',
   },
   {
     id: 'rtc',
@@ -92,7 +92,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'room lifecycle bridge stubbed; matchmaking deferred',
+    stableBlocker: 'on-device verification of room create/join + matchmaking',
   },
   {
     id: 'storage',
@@ -100,7 +100,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'cloud storage bridge stubbed; conflict proof missing',
+    stableBlocker: 'on-device verification of read/write + conflict resolution proof',
   },
   {
     id: 'social',
@@ -108,7 +108,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'social graph bridge stubbed',
+    stableBlocker: 'on-device verification of friends list + presence',
   },
   {
     id: 'achievements',
@@ -116,7 +116,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'achievement bridge stubbed',
+    stableBlocker: 'on-device verification of unlock + progress round-trip',
   },
   {
     id: 'leaderboards',
@@ -124,6 +124,6 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'leaderboard bridge stubbed',
+    stableBlocker: 'on-device verification of submit + query top-N',
   },
 ];

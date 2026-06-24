@@ -7,7 +7,7 @@ internal object StorageUtils {
     PicoPlatformSdkDetector.probeAny(
       "com.pvr.platform.sdk.storage.CloudStorageAPI",
       "com.pico.pps.sdk.storage.PicoStorageClient",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isStorageSdkAvailable(): Boolean = SDK_AVAILABLE

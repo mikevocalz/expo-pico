@@ -1297,8 +1297,8 @@ Three concerns left over from the original Viro-style audit and from the
    prebuild rather than runtime surprises.
 
 This phase is also where the plugin's renderer-agnostic contract gets
-made explicit: nothing the plugin does favors `react-three-fiber` over
-`@babylonjs/react-native` over Unity-as-a-Library. All three consume
+made explicit: nothing the plugin does favors `@reactvision/react-viro`
+over Unity-as-a-Library over a custom OpenXR renderer. All three consume
 the same manifest + Gradle output.
 
 ### 19.2 New plugin options
@@ -1318,7 +1318,7 @@ needs no explicit opt-in, while escape hatches exist for:
   / legacy reasons → `ndkAbiFilters: false`.
 - Using a renderer whose own runtime bundles a non-system OpenXR loader
   → `openXrLoaderDeclaration: false`. This is rare in practice;
-  Babylon React Native and Unity-as-a-Library both use the system
+  `@reactvision/react-viro` and Unity-as-a-Library both use the system
   loader.
 
 ### 19.3 What lands in the flavor manifest
@@ -1382,41 +1382,39 @@ All are warnings, never errors. The pattern matches Viro's
 
 The plugin is renderer-agnostic. Confirmed compositions:
 
-| Renderer                                | Android surface | OpenXR loader | PICO plugin compat                                                            |
-| --------------------------------------- | --------------- | ------------- | ----------------------------------------------------------------------------- |
-| `@react-three/fiber/native` + `expo-gl` | `GLView`        | System loader | ✅ (prior example renderer; Phase X swapped to Babylon)                        |
-| `@babylonjs/react-native` + OpenXR      | Babylon Native native view | System loader | ✅ (example app demonstrates; Babylon uses system loader; `openXrLoaderDeclaration: true` is correct) |
-| Unity-as-a-Library                      | Unity-managed   | System loader | ✅ (Unity's own PICO integration module expects the system loader declaration) |
-| Custom renderer with bundled loader     | Custom          | Bundled       | ✅ with `openXrLoaderDeclaration: false`                                       |
-| Pure 2D RN                              | View hierarchy  | —             | ✅ under `xrMode: 'mobile'` (plugin is a mostly-no-op)                         |
+| Renderer                                | Android surface             | OpenXR loader | PICO plugin compat                                                            |
+| --------------------------------------- | --------------------------- | ------------- | ----------------------------------------------------------------------------- |
+| `@reactvision/react-viro`               | ViroReact native view       | System loader | ✅ (example app renderer; ships immersive on PICO + Meta Quest from one APK)  |
+| Unity-as-a-Library                      | Unity-managed               | System loader | ✅ (Unity's own PICO integration module expects the system loader declaration) |
+| Custom renderer with bundled loader     | Custom                      | Bundled       | ✅ with `openXrLoaderDeclaration: false`                                       |
+| Pure 2D RN                              | View hierarchy              | —             | ✅ under `xrMode: 'mobile'` (plugin is a mostly-no-op)                         |
 
 There is no runtime or renderer code in `expo-pico-core`. Sibling
 packages (account / IAP / notifications / rtc / rooms / subscription /
 storage / social / achievements / leaderboards) are Expo Modules that
 bind to PICO Platform SDK surfaces independently of the rendering
-stack — a Babylon Native app calls `getUserProfile()` from
-`expo-pico-account` the same way a three.js app does.
+stack — a Viro app calls `getUserProfile()` from `expo-pico-account`
+the same way any other app does.
 
-### 19.7 Babylon React Native — integration notes
+### 19.7 ReactVision/Viro — integration notes
 
-1. Install `@babylonjs/react-native` alongside `@babylonjs/core`.
-   Follow Babylon's Expo config plugin docs for the initial
-   `AndroidManifest` + Gradle wiring Babylon needs for its XR view.
-2. Keep `expo-pico-core` listed **before** `@babylonjs/react-native` in
+1. Install `@reactvision/react-viro` and the `mikevocalz/virocore`
+   `pico-support` branch overrides (PICO controller profiles, foveation,
+   16KB ELF alignment).
+2. Keep `expo-pico-core` listed **before** `@reactvision/react-viro` in
    the `plugins` array. The PICO plugin's flavor manifest / launcher
-   categories must land first so Babylon's own manifest merges land on
-   top.
+   categories must land first so Viro's manifest merges land on top.
 3. `openXrLoaderDeclaration` default `true` is the correct setting —
-   Babylon's OpenXR integration uses the system loader (`libopenxr_loader.so`).
-4. `ndkAbiFilters: true` is also correct — Babylon React Native ships
-   `arm64-v8a` on Android by default; the filter enforces that the
-   final PICO APK doesn't accidentally include a non-functional 32-bit
-   slice from another dep.
-5. `xrMode: 'pico-os6'` or `'pico-swan'` tells Babylon you're on PICO;
-   Babylon's XR plugin reads system features (`pico.hardware.*`) to
-   decide which tracking surfaces to enable. The `uses-feature`
-   declarations emitted by `expo-pico-core` Phases A / C / D are what
-   Babylon queries.
+   Viro's OpenXR backend uses the system loader (`libopenxr_loader.so`).
+4. `ndkAbiFilters: true` is also correct — Viro ships `arm64-v8a` on
+   Android by default; the filter enforces that the final PICO APK
+   doesn't accidentally include a non-functional 32-bit slice from
+   another dep.
+5. `xrMode: 'pico-os6'` or `'pico-swan'` tells the plugin to emit PICO
+   launcher categories; Viro's OpenXR runtime is queried via the
+   ByteDance interaction profiles + `XR_FB_foveation` extension our
+   fork enables. The `uses-feature` declarations emitted by Phases A /
+   C / D are what the OpenXR runtime queries at session-create time.
 
 ### 19.8 Validation matrix
 
@@ -1426,7 +1424,7 @@ stack — a Babylon Native app calls `getUserProfile()` from
 | `applyCapabilityContract` emits `<uses-native-library>` + idempotency   | Jest (`__tests__/withPicoCapabilities.test.ts`, 5 Phase E cases)   |
 | Every diagnostic fires on the right misconfig                            | Jest (`__tests__/withPicoDiagnostics.test.ts`, 16 cases)           |
 | The actual built APK carries the filter and the `<uses-native-library>` | Requires `npx expo prebuild --clean` + `aapt dump xmltree` / `aapt dump badging` (deferred) |
-| Babylon React Native boots under `xrMode: 'pico-swan'`                  | Requires a Babylon + PICO sample wiring (deferred)                 |
+| Viro boots immersive under `xrMode: 'pico-swan'`                        | Verified on-device via `example/src/scene/PicoSceneRoot.tsx`       |
 
 ---
 

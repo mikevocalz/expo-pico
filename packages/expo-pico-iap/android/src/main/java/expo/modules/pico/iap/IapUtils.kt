@@ -7,7 +7,7 @@ object IapUtils {
         return PicoPlatformSdkDetector.probeAny(
             "com.pvr.iap.sdk.IAPClient",
             "com.pico.pps.sdk.iap.PicoIapClient",
-        )
+        ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     }
 
     fun getIapSdkVersion(): String? = null

@@ -102,6 +102,32 @@ object PicoPlatformSdkDetector {
         "com.bytedance.pico.matrix.action.PPSPushAction",
         "com.bytedance.pico.matrix.action.SocialAction",
         "com.bytedance.pico.matrix.action.IapAction",
+        // PICO Platform Service SDK (PPS) 1.0.x — the actual artifact line
+        // published on `https://artifact.bytedance.com/repository/Volcengine/`
+        // (verified: `com.pico.pps:platform-service-auth:1.0.0`). All 11
+        // platform-service-* artifacts publish a `PPSSdkCore` umbrella class.
+        // Canonical (verified via decompile of platform-service-base-1.0.0.aar):
+        "com.pico.pps.sdk.base.PPSSdkCore",
+        // Legacy / alternate-layout fallbacks.
+        "com.pico.pps.sdk.core.PPSSdkCore",
+        "com.pico.pps.core.PPSSdkCore",
+        "com.pico.pps.PPSSdkCore",
+        // Sign-in client (verified): static factory `getSignInClient(Context)`.
+        "com.pico.pps.sdk.auth.PicoSignInClient",
+        // PICO Platform Service SDK 3.x (com.pico.platform.*) — alternate
+        // (older / pre-rename) class layout.
+        "com.pico.platform.PlatformServiceSDK",
+        "com.pico.platform.UserService",
+        "com.pico.platform.IapService",
+        "com.pico.platform.AchievementService",
+        "com.pico.platform.LeaderboardService",
+        "com.pico.platform.FriendService",
+        "com.pico.platform.SocialService",
+        "com.pico.platform.StorageService",
+        "com.pico.platform.SubscriptionService",
+        "com.pico.platform.PushService",
+        "com.pico.platform.RoomService",
+        "com.pico.platform.RtcService",
         // BuildConfig fallback — every PPS service AAR includes one and
         // it never conflicts with app code (BuildConfig is internal).
         "com.pico.pps.sdk.auth.BuildConfig",
@@ -195,6 +221,7 @@ object PicoPlatformSdkDetector {
     fun buildProbeReport(): Map<String, Boolean> {
         return mapOf(
             "account" to probeAny(
+                "com.pico.pps.sdk.auth.PicoSignInClient",
                 "com.pvr.platform.sdk.account.AccountAPI",
                 "com.pvr.platform.sdk.PlatformSDK",
             ),

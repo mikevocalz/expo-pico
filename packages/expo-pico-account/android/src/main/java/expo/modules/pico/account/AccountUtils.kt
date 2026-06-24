@@ -32,17 +32,21 @@ object AccountUtils {
      * canonical entry point when it's confirmed.
      */
     fun isPlatformSdkAvailable(): Boolean {
-        // Probe both the legacy `com.pvr.platform.sdk.*` namespace AND
-        // the new `com.pico.pps.sdk.auth.*` namespace published on the
-        // Bytedance Volcengine maven (com.pico.pps:platform-service-auth).
+        // Probe every PICO Platform SDK variant we know about so the seam
+        // flips green regardless of which AAR the consumer dropped in
+        // `android/app/libs/`:
         //
-        // The current PPS auth AAR (1.0.1-alpha.13) ships the auth flow as
-        // `com.bytedance.pico.matrix.action.AuthAction` rather than as a
-        // dedicated `PicoSignInClient` — verified by aapt-dumping the
-        // resolved AAR's classes.jar. We probe all three so the detector
-        // flips green on either the legacy `com.pvr.*` API or the modern
-        // matrix Action.
+        //   - `com.pico.platform.PlatformServiceSDK` — current SDK 3.x line
+        //     (https://developer.picoxr.com/document/platform_service/).
+        //     This is what `expo.modules.pico.PicoPlatformSDK` initializes.
+        //   - `com.pico.platform.UserService`        — SDK 3.x account API.
+        //   - `com.pvr.platform.sdk.PlatformSDK`     — legacy SDK 2.x.
+        //   - `com.pico.pps.sdk.auth.PicoSignInClient` — older PPS auth path.
+        //   - `com.bytedance.pico.matrix.action.AuthAction` — current matrix
+        //     auth action published on Bytedance Volcengine maven.
         return PicoPlatformSdkDetector.probeAny(
+            "com.pico.platform.PlatformServiceSDK",
+            "com.pico.platform.UserService",
             "com.pvr.platform.sdk.PlatformSDK",
             "com.pico.pps.sdk.auth.PicoSignInClient",
             "com.bytedance.pico.matrix.action.AuthAction",

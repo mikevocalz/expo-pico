@@ -7,7 +7,7 @@ internal object SocialUtils {
     PicoPlatformSdkDetector.probeAny(
       "com.pvr.platform.sdk.social.FriendsAPI",
       "com.pico.pps.sdk.social.PicoSocialClient",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isSocialSdkAvailable(): Boolean = SDK_AVAILABLE

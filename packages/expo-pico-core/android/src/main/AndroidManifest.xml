@@ -1,2 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!--
+            Captures the application Context at process start. The Android
+            runtime constructs all `<provider>` entries before
+            Application.onCreate, so this is the earliest possible hook.
+            Sibling @expo-pico/* bridges read the context from
+            PicoAppContext.get() instead of threading it through Module
+            sites — a pragmatic equivalent to the `appContext.reactContext`
+            access pattern used inside Expo Module definitions.
+            Authority must be unique across the device — we namespace it
+            with the consumer's applicationId via ${applicationId}.
+        -->
+        <provider
+            android:name="expo.modules.pico.PicoAppContextInitProvider"
+            android:authorities="${applicationId}.expo_pico_core_init"
+            android:exported="false" />
+    </application>
 </manifest>

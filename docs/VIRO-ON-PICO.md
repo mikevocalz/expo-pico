@@ -293,12 +293,28 @@ a separate small patch to `@reactvision/react-viro` — described in
 [`nitro-canvas-in-Vision/docs/CANVAS-SOURCE-PROP.md`](../../nitro-canvas-in-Vision/docs/CANVAS-SOURCE-PROP.md).
 Not part of the virocore patch.
 
-**Build:** rebuild the AAR (`./gradlew :sharedCode:assembleRelease`) and
-drop the resulting `sharedCode-release.aar` into the consumer's
+**Hand/controller rendering support.** The
+[`patches/virocore/virocore-v2.55.0-nitro-canvas.patch`](../patches/virocore/virocore-v2.55.0-nitro-canvas.patch)
+patch is external to this package. Apply it to the ViroCore native sources,
+apply the matching React Viro patch to the JS / TS bindings, then rebuild the
+consumer app from source. A JS-only reload or prebuilt binary will not pick up
+the native hand/controller rendering changes. On Android, rebuild the AAR
+(`./gradlew :sharedCode:assembleRelease`) and drop the resulting
+`sharedCode-release.aar` into the consumer's
 `node_modules/@reactvision/react-viro/android/viro_renderer/`. iOS / visionOS
 require rebuilding `ViroKit.framework` from the Xcode project after adding
 the new `.mm` file via Xcode (the pbxproj does not use synchronized folders,
 so file membership is manual).
+
+Headset hand/controller support is only verified in a consumer app after both
+patches are applied and the native app is rebuilt. This package cannot verify
+headset behavior on its own. Controllers plus hand tracking are the top input
+rung; if the patch is missing or the rebuild is stale, the scene should fall
+back to the next available method (controllers only, then gaze + dwell) rather
+than leaving the user with no input. Missing rendered hands/controllers points
+to a skipped patch or rebuild step, not a scene bug. This note is verified
+against ViroCore / React Viro v2.55.0 (`-nitro-canvas` variant); bumping either
+dependency invalidates the patch and requires re-testing.
 
 ## See also
 

@@ -8,7 +8,7 @@ internal object LeaderboardsUtils {
     PicoPlatformSdkDetector.probeAny(
       "com.pvr.platform.sdk.leaderboard.LeaderboardAPI",
       "com.pico.pps.sdk.leaderboard.LeaderboardClient",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isLeaderboardsSdkAvailable(): Boolean = SDK_AVAILABLE

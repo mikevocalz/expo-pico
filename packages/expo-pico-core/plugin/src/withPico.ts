@@ -9,6 +9,7 @@ import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
 import { withPicoMainApplication } from './withPicoMainApplication';
 import { withPicoNewArchCheck } from './withPicoNewArchCheck';
+import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
 import { withPicoSwan } from './withPicoSwan';
@@ -54,6 +55,9 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
 
   config = withPicoMainApplication(config, options);
   config = withPicoLocalProperties(config, options);
+  // 16KB ELF alignment overlay — runs last so it sees the final
+  // android/ tree (jniLibs are merged at packaging time).
+  config = withPicoOpenXrLoaderOverlay(config, options);
 
   return config;
 };

@@ -8,6 +8,8 @@ declare class ExpoPicoSubscriptionModule extends NativeModule {
   getSubscriptionProducts(skus: string[]): Promise<Record<string, unknown>[]>;
   getActiveSubscriptions(): Promise<Record<string, unknown>[]>;
   getSubscriptionEntitlement(sku: string): Promise<Record<string, unknown>>;
+  subscribe(sku: string): Promise<Record<string, unknown>>;
+  cancelSubscription(sku: string): Promise<void>;
 }
 
 const { available, nativeModule } = resolveNativeModule<ExpoPicoSubscriptionModule>('ExpoPicoSubscription');

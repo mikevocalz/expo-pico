@@ -8,7 +8,7 @@ internal object AchievementsUtils {
     PicoPlatformSdkDetector.probeAny(
       "com.pvr.platform.sdk.achievements.AchievementsAPI",
       "com.pico.pps.sdk.achievement.AchievementClient",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isAchievementsSdkAvailable(): Boolean = SDK_AVAILABLE

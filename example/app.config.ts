@@ -9,9 +9,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   // Bundle any GLB / glTF assets so the scene renderer can require() them.
   // See `assets/models/README.md` for which file the scene looks for.
-  // Babylon React Native's SceneLoader reads the localUri exposed by
-  // expo-asset, so asset bundling is still the right distribution path
-  // regardless of which 3D engine consumes the file.
+  // Viro3DObject loads through `require()` resolved by expo-asset's Metro
+  // transformer, so asset bundling is the right distribution path here.
   assetBundlePatterns: ['assets/**/*'],
   android: {
     package: 'com.example.expopico',
@@ -20,22 +19,60 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#ffffff',
     },
   },
+  ios: {
+    bundleIdentifier: 'com.example.expopico',
+  },
   plugins: [
+    // Meta Horizon / Quest build flavor + manifest (Software Mansion).
+    // Creates the `quest` Android build flavor with the right
+    // <uses-feature> + panel sizing + supportedDevices entries for the
+    // Meta Horizon Store. Build with `npm run quest`.
+    [
+      'expo-horizon-core',
+      {
+        horizonAppId: process.env.HORIZON_APP_ID ?? '',
+        supportedDevices: 'quest3|quest3s',
+        // defaultWidth/defaultHeight intentionally omitted — those are for
+        // 2D panel apps. We're shipping an immersive VR app (Viro
+        // `<ViroVRSceneNavigator>` + `com.oculus.intent.category.VR`)
+        // so Horizon places it as an immersive session, not a flat panel.
+        disableVrHeadtracking: false,
+        allowBackup: false,
+      },
+    ],
+    // ReactVision/Viro renderer — pairs with expo-pico-core's openxr_loader
+    // declaration so the same JS runs immersive on PICO (picoDebug) and
+    // Meta Quest (questDebug).
+    [
+      '@reactvision/react-viro',
+      {
+        android: { xRMode: ['QUEST', 'PICO'] },
+      },
+    ],
     [
       '@expo-pico/core',
       {
         picoAppId: process.env.PICO_APP_ID ?? '',
         buildVariant: 'pico',
-        xrMode: (process.env.PICO_XR_MODE ?? 'pico-swan') as
+        // PICO 4 / PICO 4 Ultra ship on PICO OS 5 (the current PVR/legacy
+        // XR runtime). 'pico-swan' targets PICO OS 6 — the next-gen Swan
+        // runtime on different hardware. The `pico-os6` enum name here is
+        // a misnomer kept for backwards-compat — it's the *PICO OS 5* code
+        // path (PVR runtime + platform service). Don't confuse it with
+        // PICO OS 6 = Swan.
+        xrMode: (process.env.PICO_XR_MODE ?? 'pico-os6') as
           | 'mobile'
           | 'pico-os6'
           | 'pico-swan',
-        // Launcher contract app type. Drives `pvr.app.type` meta-data and
-        // immersive launcher activity categories (OpenXR IMMERSIVE_HMD +
-        // PICO VR). Defaults to 'vr' under any pico xrMode; set to 'mr'
-        // for passthrough-first MR apps, or '2d' to opt out of immersive
-        // enumeration entirely.
-        appType: 'vr',
+        // Launcher contract app type. Drives `pvr.app.type` meta-data.
+        //
+        // 'mr' = Mixed Reality / passthrough — PICO renders the camera feed
+        // as the background and our content composites on top. User sees
+        // the real room with our 2D panel floating in front, not an
+        // immersive VR void. The dedicated VRActivity (from react-viro's
+        // plugin) still handles any explicit `<ViroVRSceneNavigator>`
+        // transition when the Scene tab activates.
+        appType: 'mr',
         // Phase B — Platform SDK identity. Populate from env so secrets
         // don't land in source. Leave fields undefined to skip writing
         // their string resources; the flavor manifest writer will then
@@ -91,8 +128,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // Phase E — toolchain. Both default to true when xrMode !== 'mobile',
         // so these lines are only here for documentation / override. Set
         // ndkAbiFilters: false to keep the 32-bit slice; set
-        // openXrLoaderDeclaration: false if your renderer (e.g. a custom
-        // Babylon Native build) bundles its own non-system OpenXR loader.
+        // openXrLoaderDeclaration: false if your renderer bundles its own
+        // non-system OpenXR loader (rare — Viro uses the system loader).
         ndkAbiFilters: true,
         openXrLoaderDeclaration: true,
         entitlementCheck: false,

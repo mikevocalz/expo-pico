@@ -75,10 +75,9 @@ export function applyCapabilityContract(
 
   // ── <uses-native-library> (Phase E) ─────────────────────────────
   // Declared at <application> scope. Renderer-agnostic — works the same
-  // for Babylon Native's OpenXR integration, react-three-fiber /
-  // expo-gl, and Unity-as-a-Library. Opt out via
-  // `openXrLoaderDeclaration: false` when the renderer bundles its own
-  // non-system loader.
+  // for `@reactvision/react-viro`'s OpenXR integration and for
+  // Unity-as-a-Library. Opt out via `openXrLoaderDeclaration: false`
+  // when the renderer bundles its own non-system loader.
   upsertNativeLibraries(application, options.openXrLoaderDeclaration);
 
   return manifest;

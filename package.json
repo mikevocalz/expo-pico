@@ -15,6 +15,7 @@
     "packages/expo-pico-social",
     "packages/expo-pico-achievements",
     "packages/expo-pico-leaderboards",
+    "packages/expo-pico-app-kit",
     "packages/expo-pico-template",
     "example"
   ],

@@ -5,25 +5,32 @@
   "main": "./index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo run:android",
+    "android": "expo run:android --variant mobileDebug",
     "android:pico": "expo run:android --variant picoDebug",
     "android:mobile": "expo run:android --variant mobileDebug",
+    "quest": "expo run:android --variant questDebug",
+    "quest:release": "expo run:android --variant questRelease",
     "prebuild": "expo prebuild --clean",
     "prebuild:pico": "expo prebuild --clean && echo 'Run: cd android && ./gradlew assemblePicoDebug'",
+    "prebuild:quest": "expo prebuild --clean && echo 'Run: cd android && ./gradlew assembleQuestDebug'",
     "demo:model": "node scripts/download-demo-model.js --force --verbose",
     "demo:model:clean": "node -e \"require('fs').rmSync(require('path').join('assets','models','pico-demo.glb'), { force: true }); console.log('removed')\"",
     "postinstall": "patch-package && node scripts/download-demo-model.js --post-install",
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {
-    "@babylonjs/core": "^9.0.0",
-    "@babylonjs/loaders": "^9.0.0",
-    "@babylonjs/react-native": "^2.0.3",
-    "expo": "~56.0.3",
-    "expo-asset": "~11.1.0",
-    "expo-file-system": "~18.1.0",
+    "@reactvision/react-viro": "2.56.0",
+    "expo-horizon-core": "file:../.vendor/expo-horizon/expo-horizon-core",
+    "@fishjam-cloud/react-native-client": "0.28.1",
+    "@fishjam-cloud/ts-client": "0.28.1",
+    "@fishjam-cloud/react-native-webrtc": "0.28.0",
+    "react-native-get-random-values": "2.0.0",
+    "expo": "~56.0.12",
+    "expo-asset": "~56.0.17",
+    "expo-file-system": "~56.0.8",
     "@expo-pico/account": "*",
     "@expo-pico/achievements": "*",
+    "@expo-pico/app-kit": "*",
     "@expo-pico/core": "*",
     "@expo-pico/iap": "*",
     "@expo-pico/leaderboards": "*",
@@ -34,12 +41,12 @@
     "@expo-pico/spatial": "*",
     "@expo-pico/storage": "*",
     "@expo-pico/subscription": "*",
-    "react": "19.2.3",
-    "react-native": "^0.85.3",
-    "react-native-permissions": "^5.5.1"
+    "react": "19.2.7",
+    "react-native": "0.86.0",
+    "react-native-permissions": "^5.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
+    "@babel/core": "^8.0.1",
     "patch-package": "^8.0.1"
   }
 }

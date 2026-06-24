@@ -8,6 +8,7 @@ declare class ExpoPicoIapModule extends NativeModule {
   getProducts(skus: string[]): Promise<Record<string, unknown>[]>;
   consumePurchase(purchaseToken: string): Promise<Record<string, unknown>>;
   getPurchaseHistory(): Promise<Record<string, unknown>[]>;
+  purchase(sku: string): Promise<Record<string, unknown>>;
 }
 
 const { available, nativeModule } = resolveNativeModule<ExpoPicoIapModule>('ExpoPicoIap');

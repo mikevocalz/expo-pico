@@ -12,7 +12,7 @@ object RtcUtils {
         return PicoPlatformSdkDetector.probeAny(
             "com.pvr.rtc.sdk.RtcEngine",
             "com.pico.pps.sdk.rtc.PicoRtcClient",
-        )
+        ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     }
 
     fun getRtcSdkVersion(): String? {

@@ -29,7 +29,7 @@ object NotificationUtils {
             "com.pvr.push.sdk.PushSDK",
             "com.pico.pps.sdk.push.PPSPushClient",
             "com.bytedance.pico.matrix.action.PPSPushAction",
-        )
+        ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     }
 
     fun getPermissionStatus(context: Context?): String {

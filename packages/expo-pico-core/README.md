@@ -11,7 +11,7 @@ Expo config plugin + runtime module + diagnostics CLI for **PICO OS 6** / **Proj
 - **Maturity:** stable candidate
 - **Platform:** Android only (PICO is Android-only)
 - **Runtime target:** PICO OS 6 (PICO 4 / 4 Ultra / Swan / Neo3), Android New Architecture
-- **Renderer:** renderer-agnostic — composes cleanly with [`@react-three/fiber/native`](https://github.com/pmndrs/react-three-fiber) + [`expo-gl`](https://github.com/expo/expo/tree/main/packages/expo-gl), [`@babylonjs/react-native`](https://github.com/BabylonJS/BabylonReactNative), Unity-as-a-Library, and any Android renderer that uses the system OpenXR loader
+- **Renderer:** renderer-agnostic — composes cleanly with [`@reactvision/react-viro`](https://github.com/ReactVision/viro) (the example app's renderer), Unity-as-a-Library, and any Android renderer that uses the system OpenXR loader
 
 ## Compatibility
 

@@ -36,11 +36,11 @@
     "prepare": "echo 'No prepare needed for expo-pico-template'"
   },
   "dependencies": {
-    "expo": "~56.0.3",
+    "expo": "~56.0.12",
     "@expo-pico/core": "*",
     "expo-status-bar": "~2.0.0",
-    "react": "19.2.3",
-    "react-native": "^0.85.3"
+    "react": "^19.2.7",
+    "react-native": "^0.86.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

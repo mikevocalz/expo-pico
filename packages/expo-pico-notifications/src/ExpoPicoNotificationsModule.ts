@@ -7,6 +7,7 @@ declare class ExpoPicoNotificationsModule extends NativeModule {
 
   getPermissionStatus(): string;
   requestPermissions(): Promise<Record<string, unknown>>;
+  registerForPushNotifications(): Promise<Record<string, unknown>>;
 }
 
 const { available, nativeModule } = resolveNativeModule<ExpoPicoNotificationsModule>('ExpoPicoNotifications');

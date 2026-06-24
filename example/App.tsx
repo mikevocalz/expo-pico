@@ -8,42 +8,40 @@ import { Tabs, type TabDefinition } from './src/ui/Tabs';
 import { ValidationHarness } from './src/validation/ValidationHarness';
 
 /**
- * Three-tab layout:
- *   - Scene       — 3D preview + compact runtime HUD.
- *   - Diagnostics — Phase F runtime report + Phase J SDK probe table.
- *   - Harness     — full per-sibling validation harness (2247-line test surface).
+ * App entry point.
  *
- * Tabs are lazy — only the active tab's content is mounted. This keeps
- * the ValidationHarness's initialization cost out of the 3D scene's
- * warm-up window, and lets the Canvas keep a stable ref when the user
- * switches tabs and back.
+ * Standard Viro flow: MainActivity is a normal 2D React Native activity. The
+ * three-tab dev surface lives at the root. When the user opens the Scene tab,
+ * `<ViroVRSceneNavigator>` mounts inside and Viro itself launches the
+ * immersive `VRActivity` to claim the HMD surface — so we DON'T put the
+ * navigator at the absolute root. Same code on PICO, Quest, and mobile.
+ *
+ *   - Scene       — Viro scene + compact runtime HUD.
+ *   - Diagnostics — Phase F runtime report + Phase J SDK probe table.
+ *   - Harness     — full per-sibling validation harness.
  */
-export default function App(): JSX.Element {
+export default function App(): React.JSX.Element {
   const info = useMemo(() => getPicoRuntimeInfo(), []);
-  const tabs: readonly TabDefinition[] = useMemo(
-    () => [
-      {
-        id: 'scene',
-        label: 'Scene',
-        badge: info.xrMode === 'mobile' ? null : info.xrMode,
-        render: () => <PicoSceneRoot />,
-      },
-      {
-        id: 'diagnostics',
-        label: 'Diagnostics',
-        // Red dot when the platform SDK isn't detected — matches the
-        // "seam" state consumers care about at a glance.
-        badge: info.platformSdkPresent ? 'live' : 'seam',
-        render: () => <DiagnosticsPanel />,
-      },
-      {
-        id: 'harness',
-        label: 'Harness',
-        render: () => <ValidationHarness />,
-      },
-    ],
-    [info.xrMode, info.platformSdkPresent]
-  );
+
+  const tabs: readonly TabDefinition[] = [
+    {
+      id: 'harness',
+      label: 'Harness',
+      render: () => <ValidationHarness />,
+    },
+    {
+      id: 'scene',
+      label: 'Scene',
+      badge: info.xrMode === 'mobile' ? null : info.xrMode,
+      render: () => <PicoSceneRoot />,
+    },
+    {
+      id: 'diagnostics',
+      label: 'Diagnostics',
+      badge: info.platformSdkPresent ? 'live' : 'seam',
+      render: () => <DiagnosticsPanel />,
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.root}>
@@ -55,7 +53,7 @@ export default function App(): JSX.Element {
           {info.deviceModel ? ` · ${info.deviceModel}` : ''}
         </Text>
       </View>
-      <Tabs tabs={tabs} initialId="scene" />
+      <Tabs tabs={tabs} initialId="harness" />
     </SafeAreaView>
   );
 }

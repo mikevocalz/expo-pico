@@ -1,7 +1,7 @@
 {
   "name": "@expo-pico/app-kit",
   "version": "0.1.0",
-  "description": "App-side orchestration layer for the expo-pico-* family \u2014 boot probe, capability cache, no-op-safe wrappers for haptics, eye gaze, scene mesh, face/body tracking, window container, and Pico Platform Service SDK (account, IAP, social, achievements, leaderboards, push, friend).",
+  "description": "App-side orchestration layer for the expo-pico-* family — boot probe, capability cache, no-op-safe wrappers for haptics, eye gaze, scene mesh, face/body tracking, window container, and Pico Platform Service SDK (account, IAP, social, achievements, leaderboards, push, friend).",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "exports": {
@@ -35,7 +35,7 @@
   "license": "MIT",
   "private": true,
   "peerDependencies": {
-    "expo": ">=56.0.0",
+    "expo": "~56.0.12",
     "@expo-pico/core": ">=0.1.0",
     "@expo-pico/spatial": ">=0.1.0",
     "react-native": "*",

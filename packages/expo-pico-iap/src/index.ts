@@ -1,7 +1,6 @@
 import {
   guardService,
   wrapNativeCall,
-  notImplementedError,
 } from '@expo-pico/platform-service-common';
 import { NativeIap } from './ExpoPicoIapModule';
 import type { IapProduct, IapPurchase, PurchaseResult, ConsumeResult } from './types';
@@ -9,7 +8,6 @@ import type { IapProduct, IapPurchase, PurchaseResult, ConsumeResult } from './t
 export * from './types';
 
 const PKG = '@expo-pico/iap';
-const DOCS = 'https://developer.picoxr.com/document/unity/in-app-purchase/';
 
 // ─── Availability ─────────────────────────────────────────────────────────────
 
@@ -41,12 +39,8 @@ export async function getPurchaseHistory(): Promise<IapPurchase[]> {
   return raw as unknown as IapPurchase[];
 }
 
-// ─── Seam ─────────────────────────────────────────────────────────────────────
-
-/**
- * @seam Permanent — PICO IAP requires OS storefront UI.
- * No headless purchase path documented in public PICO SDK.
- */
-export async function purchase(_sku: string): Promise<PurchaseResult> {
-  throw notImplementedError(PKG, 'purchase', DOCS);
+export async function purchase(sku: string): Promise<PurchaseResult> {
+  guardService(isIapAvailable(), PKG, 'purchase');
+  const raw = await wrapNativeCall(PKG, 'purchase', NativeIap!.purchase(sku));
+  return raw as unknown as PurchaseResult;
 }

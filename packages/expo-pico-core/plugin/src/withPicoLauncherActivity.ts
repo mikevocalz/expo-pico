@@ -60,7 +60,18 @@ export function applyLauncherContract(
 
   ensureToolsNamespace(manifest);
   upsertAppType(manifest, options);
-  addLauncherIntentFilter(manifest);
+  // Only `vr` apps want the immersive launcher categories on MainActivity.
+  // MR apps run as a passthrough spatial window — adding
+  // `org.khronos.openxr.intent.category.IMMERSIVE_HMD` /
+  // `com.pico.intent.category.VR` to MainActivity causes PICO to route the
+  // app through the SeeThrough boundary wizard at every cold launch and
+  // hand the immersive HMD surface to MainActivity, which a React Native
+  // 2D root view cannot fulfill. The Viro plugin already declares a
+  // separate `VRActivity` with these categories — that's what gets started
+  // when `<ViroVRSceneNavigator>` mounts at user request.
+  if (options.appType === 'vr') {
+    addLauncherIntentFilter(manifest);
+  }
   addPicoSystemQueries(manifest);
 
   return manifest;

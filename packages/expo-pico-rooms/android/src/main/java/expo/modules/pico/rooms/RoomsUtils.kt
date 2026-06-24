@@ -14,7 +14,7 @@ internal object RoomsUtils {
       "com.pvr.platform.sdk.room.RoomService",
       "com.pico.pps.sdk.friend.PicoFriendClient",
       "com.bytedance.pico.matrix.action.FriendAction",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isRoomsSdkAvailable(): Boolean = SDK_AVAILABLE

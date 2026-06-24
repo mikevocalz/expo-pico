@@ -1,111 +1,52 @@
 package expo.modules.pico.storage
 
 /**
- * StorageBridge isolates all PICO Platform SDK cloud storage calls.
+ * PPS 1.0.x has NO cloud storage client. PICO removed PVR CloudStorage
+ * during the PVR→PPS rewrite (entitlement-checked Player Pref equivalent
+ * was a PVR-only feature).
  *
- * Threading: All functions called from AsyncFunction background threads.
- *
- * See: https://developer.picoxr.com/document/unreal/cloud-storage/
+ * Apps that need per-player cloud storage should run their own backend
+ * keyed off the PICO openUid (account.getUserProfile().userId). For
+ * device-local storage, use Expo's secure-store or AsyncStorage.
  */
 internal object StorageBridge {
 
-  @Volatile
-  var moduleRef: ExpoPicoStorageModule? = null
+    private fun notInPps(method: String, onError: (String, String) -> Unit) {
+        onError(
+            "NOT_IN_PPS_1_0",
+            "$method is not in PPS 1.0.x. PICO removed cloud storage during " +
+            "the PVR→PPS rewrite. Run per-player storage on your own backend " +
+            "keyed off account.getUserProfile().userId, or use expo-secure-store " +
+            "for device-local storage."
+        )
+    }
 
-  fun saveEntry(
-    key: String,
-    value: String,
-    conflictPolicy: String,
-    maxBytes: Int,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   CloudStorageAPI.getInstance().put(key, value.toByteArray(), conflictPolicy) { result ->
-    //     if (result.isSuccess) onSuccess(mapOf(
-    //       "key"           to key,
-    //       "version"       to result.version,
-    //       "conflict"      to result.hasConflict,
-    //       "resolvedValue" to result.resolvedValue
-    //     ))
-    //     else onError("UNKNOWN", result.errorMessage ?: "saveEntry failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "saveEntry: Storage SDK not yet linked.")
-  }
+    fun saveEntry(
+        _key: String, _value: String, _conflictPolicy: String, _maxBytes: Int,
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("saveEntry", onError)
 
-  fun loadEntry(
-    key: String,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   CloudStorageAPI.getInstance().get(key) { result ->
-    //     onSuccess(mapOf(
-    //       "key"     to key,
-    //       "value"   to result.value?.let { String(it) },
-    //       "version" to (result.version ?: 0),
-    //       "found"   to result.found
-    //     ))
-    //   }
-    onError("NOT_IMPLEMENTED", "loadEntry: Storage SDK not yet linked.")
-  }
+    fun loadEntry(
+        _key: String, onSuccess: (Map<String, Any?>?) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("loadEntry", onError)
 
-  fun deleteEntry(
-    key: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): CloudStorageAPI.getInstance().delete(key) { result -> ... }
-    onError("NOT_IMPLEMENTED", "deleteEntry: Storage SDK not yet linked.")
-  }
+    fun deleteEntry(
+        _key: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("deleteEntry", onError)
 
-  fun listKeys(
-    onSuccess: (List<String>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): CloudStorageAPI.getInstance().listKeys { result -> ... }
-    onError("NOT_IMPLEMENTED", "listKeys: Storage SDK not yet linked.")
-  }
+    fun listKeys(
+        onSuccess: (List<String>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("listKeys", onError)
 
-  fun syncStorage(
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   CloudStorageAPI.getInstance().sync { result ->
-    //     if (result.isSuccess) onSuccess(mapOf(
-    //       "syncedCount"   to result.syncedCount,
-    //       "conflictCount" to result.conflictCount,
-    //       "errorCount"    to result.errorCount,
-    //       "syncedAt"      to System.currentTimeMillis()
-    //     ))
-    //     else onError("UNKNOWN", result.errorMessage ?: "syncStorage failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "syncStorage: Storage SDK not yet linked.")
-  }
+    fun syncStorage(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("syncStorage", onError)
 
-  fun getStorageQuota(
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   CloudStorageAPI.getInstance().getQuota { result ->
-    //     if (result.isSuccess) onSuccess(mapOf(
-    //       "usedBytes"   to result.usedBytes,
-    //       "totalBytes"  to result.totalBytes,
-    //       "entryCount"  to result.entryCount,
-    //       "maxEntries"  to result.maxEntries
-    //     ))
-    //     else onError("UNKNOWN", result.errorMessage ?: "getStorageQuota failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "getStorageQuota: Storage SDK not yet linked.")
-  }
+    fun getStorageQuota(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("getStorageQuota", onError)
 
-  fun clearLocalCache(
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): CloudStorageAPI.getInstance().clearLocalCache { result -> ... }
-    onError("NOT_IMPLEMENTED", "clearLocalCache: Storage SDK not yet linked.")
-  }
+    fun clearLocalCache(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("clearLocalCache", onError)
 }

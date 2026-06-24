@@ -34,19 +34,17 @@ Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that select
 
 See [ARCHITECTURE §15.5](../ARCHITECTURE.md#155-what-is-intentionally-not-copied-from-quest-support) for the full "what we deliberately did not copy from Viro" list, and [docs/MIGRATING-FROM-VIRO.md](./MIGRATING-FROM-VIRO.md) for a step-by-step porting guide (including a JSX-component mapping table for the renderer swap).
 
-## 5. Can I use Babylon React Native instead of react-three-fiber?
+## 5. Which renderer should I use?
 
-Yes. The plugin touches only config / manifest / Gradle — never rendering code. Confirmed compatible renderers:
+`@reactvision/react-viro` — that's what the example app uses, and the only renderer we run end-to-end CI against. The plugin touches only config / manifest / Gradle (never rendering code), so other OpenXR-loader renderers also compose cleanly:
 
-- `@babylonjs/react-native` + `@babylonjs/core` + `@babylonjs/loaders` (what the example app uses; Khronos BrainStem glTF renders with one skeletal animation clip on loop)
-- `@babylonjs/react-native` + its OpenXR plugin for real immersive sessions
-- `@react-three/fiber/native` + `expo-gl` + `three`
+- `@reactvision/react-viro` (example app; Khronos BrainStem glTF loads through `<Viro3DObject>`; ships immersive on PICO + Meta Quest from one APK via this repo's `mikevocalz/virocore` fork)
 - Unity-as-a-Library
 - Any custom renderer that binds to the system OpenXR loader
 
-For Babylon specifically, list `expo-pico-core` **before** `@babylonjs/react-native` in `app.config.ts`'s plugins array so the flavor manifest lands first. Babylon's plugin additions then merge on top.
+List `expo-pico-core` **before** `@reactvision/react-viro` in `app.config.ts`'s plugins array so the flavor manifest lands first. Viro's plugin additions then merge on top.
 
-See [ARCHITECTURE §19.6](../ARCHITECTURE.md#196-renderer-compatibility-matrix) for the full matrix and [§19.7](../ARCHITECTURE.md#197-babylon-react-native--integration-notes) for Babylon-specific wiring notes.
+See [ARCHITECTURE §19.6](../ARCHITECTURE.md#196-renderer-compatibility-matrix) for the full matrix and [§19.7](../ARCHITECTURE.md#197-reactvisionviro--integration-notes) for Viro-specific wiring notes.
 
 ## 6. Why is `expo-pico-core`'s version 0.1.x but the first release goes to 1.0.0?
 

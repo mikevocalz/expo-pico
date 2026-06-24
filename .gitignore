@@ -45,3 +45,9 @@ packages/*/android/.gradle/
 # patch-package error dumps (auto-generated on failed npm install)
 patch-package-error.json
 patch-package-error.json.gz
+.vendor/
+
+# env files with PICO credentials — never commit
+.env
+.env.local
+.env.*.local

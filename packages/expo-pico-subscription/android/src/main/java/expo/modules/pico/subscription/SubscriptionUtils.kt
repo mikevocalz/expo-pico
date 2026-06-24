@@ -8,7 +8,7 @@ internal object SubscriptionUtils {
     PicoPlatformSdkDetector.probeAny(
       "com.pvr.platform.sdk.subscription.SubscriptionService",
       "com.pico.pps.sdk.subscription.PicoSubscriptionClient",
-    )
+    ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
   }
 
   fun isSubscriptionSdkAvailable(): Boolean = SDK_AVAILABLE

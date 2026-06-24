@@ -54,17 +54,17 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.0",
     "@types/react": "~19.2.14",
-    "expo": "~56.0.3",
+    "expo": "~56.0.12",
     "expo-modules-core": "~56.0.12",
     "expo-module-scripts": "~56.0.2",
     "@expo-pico/core": "*",
     "jest": "^30.3.0",
-    "react-native": "^0.85.3",
+    "react-native": "^0.86.0",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=56.0.0",
+    "expo": "~56.0.12",
     "@expo-pico/core": ">=0.2.0",
     "react": "*",
     "react-native": "*"

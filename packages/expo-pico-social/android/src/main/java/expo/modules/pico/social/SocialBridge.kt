@@ -1,165 +1,182 @@
 package expo.modules.pico.social
 
+import expo.modules.pico.PicoAppContext
+import expo.modules.pico.PicoPlatformSDK
+
 /**
- * SocialBridge isolates all PICO Platform SDK social calls.
+ * PPS 1.0.x splits "social" across two clients:
  *
- * Threading: All functions called from AsyncFunction background threads.
+ *   PicoFriendClient.getFriendClient(ctx) → IFriendClient
+ *     getFriends() → Task<GetFriendsResponse>
+ *     getNextFriendList(NextInfo) → ...
+ *     launchFriendRequestFlow(String userId) → Task<Boolean>   // opens UI
+ *     loadAccountInfo(List<String> userIds) → Task<List<OpenUserInfo>>
+ *     getFriendsAndRooms() → Task<LoadFriendsAndRoomsResponse>
  *
- * See: https://developer.picoxr.com/document/unity/friends/
+ *   PicoSocialClient.getSocialClient(ctx) → ISocialClient
+ *     setPresence(PresenceOptions) → Task<Boolean>
+ *     clearPresence() → Task<Boolean>
+ *     sendInvites(List<String>, String dest) → Task<List<SentInviteInfo>>
+ *     launchPresenceInvitePanel() → Task<Boolean>
+ *     launchInviteUserJoinRoomFlow(String) → Task<Boolean>
+ *     getDestinations() → Task<DestinationsListResult>
+ *     ... etc
+ *
+ * PPS 1.0.x does NOT expose: getFriendshipStatus, acceptFriendRequest,
+ * declineFriendRequest, removeFriend, blockUser, unblockUser. These are
+ * either UI-driven (launchFriendRequestFlow) or out of scope. They return
+ * an honest `NOT_IN_PPS_1_0` error so callers can adapt.
  */
 internal object SocialBridge {
+    private val FRIEND_CLIENT = arrayOf("com.pico.pps.sdk.friend.PicoFriendClient")
+    private val FRIEND_FACTORY = arrayOf("getFriendClient")
 
-  @Volatile
-  var moduleRef: ExpoPicoSocialModule? = null
+    private val SOCIAL_CLIENT = arrayOf("com.pico.pps.sdk.social.PicoSocialClient")
+    private val SOCIAL_FACTORY = arrayOf("getSocialClient")
 
-  fun getCurrentUser(
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   FriendsAPI.getCurrentUser { result ->
-    //     if (result.isSuccess) onSuccess(mapOf(
-    //       "userId"            to result.user.id,
-    //       "displayName"       to result.user.displayName,
-    //       "avatarUrl"         to result.user.avatarUrl,
-    //       "presenceStatus"    to result.user.presenceStatus.name.lowercase(),
-    //       "presenceRichText"  to result.user.presenceRichText,
-    //       "isInSameApp"       to result.user.isInSameApp
-    //     ))
-    //     else onError("UNKNOWN", result.errorMessage ?: "getCurrentUser failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "getCurrentUser: Social SDK not yet linked.")
-  }
+    // For "getCurrentUser", route to the auth client (same identity as account module).
+    private val AUTH_CLIENT = arrayOf("com.pico.pps.sdk.auth.PicoSignInClient")
+    private val AUTH_FACTORY = arrayOf("getSignInClient")
 
-  fun getFriendList(
-    pageToken: String?,
-    pageSize: Int,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   FriendsAPI.getFriendList(pageToken, pageSize) { result ->
-    //     if (result.isSuccess) onSuccess(mapOf(
-    //       "friends"       to result.friends.map { it.toMap() },
-    //       "nextPageToken" to result.nextPageToken,
-    //       "totalCount"    to result.totalCount
-    //     ))
-    //     else onError("UNKNOWN", result.errorMessage ?: "getFriendList failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "getFriendList: Social SDK not yet linked.")
-  }
+    private inline fun ctx(onError: (String, String) -> Unit, block: (android.content.Context) -> Unit) {
+        PicoAppContext.get()?.let(block) ?: onError("NO_CONTEXT", "PicoAppContext not initialized")
+    }
 
-  fun getFriendshipStatus(
-    userId: String,
-    onSuccess: (String) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.getFriendshipStatus(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "getFriendshipStatus: Social SDK not yet linked.")
-  }
+    private fun notInPps(method: String, onError: (String, String) -> Unit) {
+        onError("NOT_IN_PPS_1_0",
+            "$method not in PPS 1.0.x. PICO removed it during the PVR→PPS SDK rewrite.")
+    }
 
-  fun sendFriendRequest(
-    userId: String,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.sendFriendRequest(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "sendFriendRequest: Social SDK not yet linked.")
-  }
+    fun getCurrentUser(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        PicoPlatformSDK.callTask(c, AUTH_CLIENT, AUTH_FACTORY,
+            arrayOf("getUserInfo"),
+            arrayOf<Any?>(),
+            { raw ->
+                val resp = if (raw is Map<*, *>) {
+                    @Suppress("UNCHECKED_CAST") raw as Map<String, Any?>
+                } else PicoPlatformSDK.objectToMap(raw) ?: emptyMap()
+                (resp["loginUser"] as? Map<*, *>)?.let {
+                    @Suppress("UNCHECKED_CAST") it as Map<String, Any?>
+                } ?: resp
+            },
+            onSuccess, onError)
+    }
 
-  fun acceptFriendRequest(
-    requestId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.acceptFriendRequest(requestId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "acceptFriendRequest: Social SDK not yet linked.")
-  }
+    fun getFriendList(
+        pageToken: String?, pageSize: Int,
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        // PPS getFriends() takes no pagination args (SDK paginates internally
+        // via getNextFriendList). pageToken/pageSize are ignored.
+        PicoPlatformSDK.callTask(c, FRIEND_CLIENT, FRIEND_FACTORY,
+            arrayOf("getFriends"),
+            arrayOf<Any?>(),
+            { raw -> PicoPlatformSDK.objectToMap(raw) ?: mapOf<String, Any?>("friends" to PicoPlatformSDK.coerceToList(raw)) },
+            onSuccess, onError)
+    }
 
-  fun declineFriendRequest(
-    requestId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.declineFriendRequest(requestId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "declineFriendRequest: Social SDK not yet linked.")
-  }
+    fun getFriendshipStatus(
+        userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) {
+        // Emulate via loadAccountInfo([userId]) — if the user is in the bulk
+        // info response with no relationship error, we report "known".
+        val ctx = PicoAppContext.get() ?: return onError("NO_CONTEXT", "PicoAppContext not initialized")
+        PicoPlatformSDK.callTask(ctx, FRIEND_CLIENT, FRIEND_FACTORY,
+            arrayOf("loadAccountInfo"),
+            arrayOf<Any?>(listOf(userId)),
+            { raw ->
+                val list = PicoPlatformSDK.coerceToList(raw)
+                mapOf<String, Any?>(
+                    "userId" to userId,
+                    "status" to if (list.isNotEmpty()) "known" else "unknown",
+                    "info" to list.firstOrNull(),
+                )
+            },
+            onSuccess, onError)
+    }
 
-  fun removeFriend(
-    userId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.removeFriend(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "removeFriend: Social SDK not yet linked.")
-  }
+    fun sendFriendRequest(
+        userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        // PPS only exposes launchFriendRequestFlow — opens the OS UI, user
+        // confirms inside. We bubble the return boolean as `flowLaunched`.
+        PicoPlatformSDK.callTask(c, FRIEND_CLIENT, FRIEND_FACTORY,
+            arrayOf("launchFriendRequestFlow"),
+            arrayOf<Any?>(userId),
+            { raw -> mapOf<String, Any?>("userId" to userId, "flowLaunched" to (raw as? Boolean ?: true)) },
+            onSuccess, onError)
+    }
 
-  fun blockUser(
-    userId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.blockUser(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "blockUser: Social SDK not yet linked.")
-  }
+    fun acceptFriendRequest(_id: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("acceptFriendRequest", onError)
 
-  fun unblockUser(
-    userId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.unblockUser(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "unblockUser: Social SDK not yet linked.")
-  }
+    fun declineFriendRequest(_id: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("declineFriendRequest", onError)
 
-  fun setPresence(
-    status: String,
-    richText: String?,
-    destinationApiName: String?,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   FriendsAPI.setPresence(status, richText, destinationApiName) { result -> ... }
-    onError("NOT_IMPLEMENTED", "setPresence: Social SDK not yet linked.")
-  }
+    fun removeFriend(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("removeFriend", onError)
 
-  fun clearPresence(
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.clearPresence { result -> ... }
-    onError("NOT_IMPLEMENTED", "clearPresence: Social SDK not yet linked.")
-  }
+    fun blockUser(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("blockUser", onError)
 
-  fun sendInvites(
-    destinationApiName: String,
-    userIds: List<String>,
-    data: Map<String, String>,
-    onSuccess: (List<Map<String, Any?>>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk):
-    //   FriendsAPI.sendInvites(destinationApiName, userIds, data) { result ->
-    //     if (result.isSuccess) onSuccess(result.invites.map { i ->
-    //       mapOf(
-    //         "inviteId"           to i.id,
-    //         "toUserId"           to i.toUserId,
-    //         "destinationApiName" to i.destinationApiName,
-    //         "sentAt"             to i.sentAt,
-    //         "expiresAt"          to i.expiresAt
-    //       )
-    //     })
-    //     else onError("UNKNOWN", result.errorMessage ?: "sendInvites failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "sendInvites: Social SDK not yet linked.")
-  }
+    fun unblockUser(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("unblockUser", onError)
 
-  fun getPendingFriendRequests(
-    onSuccess: (List<Map<String, Any?>>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): FriendsAPI.getPendingFriendRequests { result -> ... }
-    onError("NOT_IMPLEMENTED", "getPendingFriendRequests: Social SDK not yet linked.")
-  }
+    fun getPendingFriendRequests(_onSuccess: (List<Map<String, Any?>>) -> Unit, onError: (String, String) -> Unit) =
+        notInPps("getPendingFriendRequests", onError)
+
+    fun sendInvites(
+        userIds: List<String>, destination: String,
+        onSuccess: (List<Map<String, Any?>>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        PicoPlatformSDK.callTask(c, SOCIAL_CLIENT, SOCIAL_FACTORY,
+            arrayOf("sendInvites"),
+            arrayOf<Any?>(userIds, destination),
+            { PicoPlatformSDK.coerceToList(it) },
+            onSuccess, onError)
+    }
+
+    // ISocialClient.setPresence(PresenceOptions) — construct via Builder.
+    fun setPresence(
+        status: String, richText: String?, destinationApiName: String?,
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        val options = try { buildPresenceOptions(destinationApiName, status, richText) }
+        catch (t: Throwable) {
+            return@ctx onError("SDK_SCHEMA", "Could not construct PresenceOptions: ${t.javaClass.simpleName}: ${t.message}")
+        }
+        PicoPlatformSDK.callTask(c, SOCIAL_CLIENT, SOCIAL_FACTORY,
+            arrayOf("setPresence"),
+            arrayOf<Any?>(options),
+            { _ -> mapOf<String, Any?>("status" to status, "set" to true) },
+            onSuccess, onError)
+    }
+
+    fun clearPresence(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = ctx(onError) { c ->
+        PicoPlatformSDK.callTask(c, SOCIAL_CLIENT, SOCIAL_FACTORY,
+            arrayOf("clearPresence"),
+            arrayOf<Any?>(),
+            { _ -> mapOf<String, Any?>("cleared" to true) },
+            onSuccess, onError)
+    }
+
+    private fun buildPresenceOptions(destination: String?, status: String, richText: String?): Any {
+        val builderClass = Class.forName("com.pico.pps.sdk.social.PresenceOptions\$Builder")
+        val builder = builderClass.getDeclaredConstructor().newInstance()
+        // destinationApiName carries the deep-link destination; isJoinable comes
+        // from `status` if it's "joinable"; richText goes into extra.
+        if (destination != null) {
+            builderClass.getMethod("destinationApiName", String::class.java).invoke(builder, destination)
+        }
+        builderClass.getMethod("isJoinable", java.lang.Boolean.TYPE)
+            .invoke(builder, status.equals("joinable", ignoreCase = true) || status.equals("online", ignoreCase = true))
+        if (richText != null) {
+            builderClass.getMethod("extra", String::class.java).invoke(builder, richText)
+        }
+        return builderClass.getDeclaredMethod("build").invoke(builder)
+    }
 }

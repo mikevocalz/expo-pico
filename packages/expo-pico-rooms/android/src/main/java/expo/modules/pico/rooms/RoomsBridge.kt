@@ -1,92 +1,51 @@
 package expo.modules.pico.rooms
 
 /**
- * RoomsBridge isolates all PICO Platform SDK room/matchmaking calls.
+ * PPS 1.0.x has NO dedicated rooms client (PICO removed PVR Rooms during
+ * the PVR→PPS rewrite). The closest available surface is
+ * `PicoFriendClient.getFriendsAndRooms()` which returns READ-ONLY data
+ * about which rooms your friends are currently in.
  *
- * Architecture:
- * - ExpoPicoRoomsModule holds all Expo Module DSL wiring and local atomic state.
- * - RoomsBridge holds all SDK boundary logic. It never imports Expo Module types.
- * - When the SDK AAR is available, replace each TODO(pico-sdk) block only in this file.
- *   The module, TypeScript layer, and tests require no changes.
+ * Apps that need create/join/leave/kick rooms must:
+ *   - run their own room state on a backend (Fishjam, Colyseus, etc.), OR
+ *   - wait for a future PPS release that re-adds room management.
  *
- * Threading:
- * - All functions are called from AsyncFunction background threads (Expo Modules default).
- * - SDK callbacks may arrive on a different thread — onSuccess/onError lambdas are
- *   thread-safe by design (they call promise.resolve/reject which is thread-safe).
- * - moduleRef is used for push events only; access it on the SDK callback thread is safe
- *   because sendEvent() is internally thread-safe in Expo Modules.
- *
- * See: https://developer.picoxr.com/document/unity/room-matchmaking/
+ * Each function here surfaces an actionable error.
  */
 internal object RoomsBridge {
 
-  /**
-   * Weak reference to the module instance for push-event forwarding.
-   * Set by ExpoPicoRoomsModule when the module is created.
-   */
-  @Volatile
-  var moduleRef: ExpoPicoRoomsModule? = null
+    private fun notInPps(method: String, onError: (String, String) -> Unit) {
+        onError(
+            "NOT_IN_PPS_1_0",
+            "$method is not in PPS 1.0.x. PICO removed dedicated room management " +
+            "during the PVR→PPS rewrite. Run room state on a backend " +
+            "(Fishjam, Colyseus) or use friend.getFriendsAndRooms() for read-only " +
+            "discovery of friends' rooms."
+        )
+    }
 
-  fun createRoom(
-    joinPolicy: String,
-    maxMembers: Int,
-    data: Map<String, String>,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): Replace with real SDK call:
-    //   RoomService.createRoom(
-    //     RoomJoinPolicy.fromString(joinPolicy),
-    //     maxMembers,
-    //     data
-    //   ) { result ->
-    //     if (result.isSuccess) onSuccess(result.room.toMap())
-    //     else onError("NETWORK_ERROR", result.errorMessage ?: "createRoom failed")
-    //   }
-    onError("NOT_IMPLEMENTED", "createRoom: Rooms SDK not yet linked. Add PICO Platform SDK AAR.")
-  }
+    fun createRoom(
+        _joinPolicy: String, _maxMembers: Int, _data: Map<String, String>,
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("createRoom", onError)
 
-  fun joinRoom(
-    roomId: String,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): RoomService.joinRoom(roomId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "joinRoom: Rooms SDK not yet linked.")
-  }
+    fun joinRoom(
+        _roomId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("joinRoom", onError)
 
-  fun leaveRoom(
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): RoomService.leaveRoom { result -> ... }
-    onError("NOT_IMPLEMENTED", "leaveRoom: Rooms SDK not yet linked.")
-  }
+    fun leaveRoom(
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("leaveRoom", onError)
 
-  fun getRoomInfo(
-    roomId: String,
-    onSuccess: (Map<String, Any?>) -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): RoomService.getRoomInfo(roomId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "getRoomInfo: Rooms SDK not yet linked.")
-  }
+    fun getRoomInfo(
+        _roomId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("getRoomInfo", onError)
 
-  fun kickUser(
-    userId: String,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): RoomService.kickUser(userId) { result -> ... }
-    onError("NOT_IMPLEMENTED", "kickUser: Rooms SDK not yet linked.")
-  }
+    fun kickUser(
+        _userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("kickUser", onError)
 
-  fun updateRoomData(
-    data: Map<String, String>,
-    onSuccess: () -> Unit,
-    onError: (String, String) -> Unit,
-  ) {
-    // TODO(pico-sdk): RoomService.updateRoomCustomData(data) { result -> ... }
-    onError("NOT_IMPLEMENTED", "updateRoomData: Rooms SDK not yet linked.")
-  }
+    fun updateRoomData(
+        _data: Map<String, String>, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+    ) = notInPps("updateRoomData", onError)
 }

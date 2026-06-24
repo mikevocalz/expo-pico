@@ -40,7 +40,7 @@ The plugin option API itself is strictly additive — every new option defaults 
 **Platform hardening (Phase E)**
 
 - New `ndkAbiFilters` option (default true under PICO xrModes): restricts `pico`/`dual` flavors to `arm64-v8a`. The `mobile` flavor is never filtered.
-- New `openXrLoaderDeclaration` option (default true under PICO xrModes): emits `<uses-native-library android:name="libopenxr_loader.so" android:required="false"/>`. Required for `targetSdkVersion >= 31`. Renderer-agnostic — works with `@react-three/fiber/native` + `expo-gl`, `@babylonjs/react-native` OpenXR plugin, Unity-as-a-Library, and any Android renderer using the system OpenXR loader.
+- New `openXrLoaderDeclaration` option (default true under PICO xrModes): emits `<uses-native-library android:name="libopenxr_loader.so" android:required="false"/>`. Required for `targetSdkVersion >= 31`. Renderer-agnostic — works with `@reactvision/react-viro` (example app), Unity-as-a-Library, and any Android renderer using the system OpenXR loader.
 - New prebuild diagnostics (`withPicoDiagnostics`) emits `WarningAggregator` warnings for seven misconfig patterns (immersive-without-identity, 2d-with-pico-xrMode, mobile-with-immersive-appType, capability-toggles-under-mobile, Swan-subproject-without-Swan, refreshRates-under-mobile, partial IAP identity).
 
 **Runtime diagnostics (Phase F)**

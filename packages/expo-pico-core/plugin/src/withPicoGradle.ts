@@ -15,6 +15,37 @@ const MISSING_DIM_MARKER = '// expo-pico-core: missing dimension strategy';
 const PICO_SDK_MARKER = '// expo-pico-core: pico sdk config';
 const PICO_REPO_MARKER = '// expo-pico-core: pico maven repo';
 const HERMES_PATH_MARKER = '// expo-pico-core: hermesc path compatibility';
+const PACKAGING_PICK_FIRST_MARKER = '// expo-pico-core: 16KB openxr loader overlay';
+const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
+const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
+const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
+
+/**
+ * PICO Platform Service SDK (PPS) — public maven artifacts.
+ *
+ * Confirmed live at `https://artifact.bytedance.com/repository/Volcengine/`
+ * (the maven repo this plugin already registers via withPicoProjectBuildGradle).
+ * Direct file paths are publicly readable — browsing returns 403 but
+ * resolving specific (group, artifact, version) tuples succeeds.
+ *
+ * Version `1.0.0` is the current stable line. Bump the constant when PICO
+ * publishes a new stable; pinning here keeps consumer apps reproducible.
+ */
+const PPS_PLATFORM_VERSION = '1.0.0';
+const PPS_SERVICES = [
+  'auth',          // expo-pico-account — PicoSignInClient
+  'iap',           // expo-pico-iap — PicoIapClient
+  'friend',        // expo-pico-rooms / -social shared
+  'social',        // expo-pico-social
+  'achievement',   // expo-pico-achievements
+  'leaderboard',   // expo-pico-leaderboards
+  'push',          // expo-pico-notifications
+  'entitlement',
+  'compliance',
+  'sport',
+  'speech',
+];
+
 const LEGACY_HERMES_PATH_PATTERN =
   /\n\s*hermesCommand\s*=.*\/sdks\/hermesc\/%OS-BIN%\/hermesc"\n/;
 const HERMES_COMMENT_ONLY_PATTERN =
@@ -56,7 +87,7 @@ const PICO_REPO_BLOCK = `
  * Phase E: the `pico` (and `dual`) flavors get `ndk { abiFilters 'arm64-v8a' }`
  * when `options.ndkAbiFilters` is true. PICO 4 / 4 Ultra / Swan are all
  * 64-bit ARM. Renderer-agnostic — same filter whether the app renders
- * with react-three-fiber + expo-gl, Babylon React Native, or any other
+ * with `@reactvision/react-viro`, Unity-as-a-Library, or any other
  * Android-side renderer.
  *
  * The `mobile` flavor is deliberately never ABI-filtered so phone /
@@ -76,6 +107,27 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
         }`
     : '';
 
+  // Quest flavor co-exists with pico when expo-horizon-core is installed
+  // alongside us — it declares its own (mobile, quest) device variants and
+  // would otherwise fail to resolve under the picoDebug build. The
+  // missingDimensionStrategy lets pico fall back to expo-horizon-core's
+  // mobile variant (its Quest-specific bits are no-op on PICO by design).
+  // Symmetric: quest falls back to our mobile flavor.
+  const questFlavor = options.buildVariant === 'pico' || options.buildVariant === 'dual'
+    ? `
+        quest {
+            dimension "device"
+            minSdkVersion 29
+            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
+            missingDimensionStrategy 'device', 'mobile'
+        }`
+    : '';
+
+  const picoMissingDimensionLine = options.buildVariant === 'pico' || options.buildVariant === 'dual'
+    ? `
+            missingDimensionStrategy 'device', 'mobile'`
+    : '';
+
   return `
     ${FLAVOR_MARKER}
     flavorDimensions += "device"
@@ -84,8 +136,8 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
         pico {
             dimension "device"
             minSdkVersion ${options.minSdkVersion}
-            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
-        }${dualFlavor}
+            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}${picoMissingDimensionLine}
+        }${dualFlavor}${questFlavor}
     }
 `;
 }
@@ -130,6 +182,70 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
         } else {
           console.warn('[expo-pico-core] Could not find android {} block in app/build.gradle');
         }
+      }
+    }
+
+    // PICO Platform Service SDK (PPS) deps — pulled from the public
+    // Volcengine maven that withPicoProjectBuildGradle already registers.
+    // Confirmed downloadable without auth via direct artifact paths;
+    // browsing the repo root returns 403, but resolving specific
+    // group/artifact/version tuples succeeds.
+    //
+    // Consumers don't need to drop any AAR files — Gradle pulls each
+    // service from maven on first build. The legacy AAR-drop fallback
+    // below stays in place for offline / air-gapped builds.
+    if (
+      options.xrMode !== 'mobile' &&
+      !gradleContains(contents, PPS_DEPS_MARKER)
+    ) {
+      const lines = PPS_SERVICES.map(
+        (svc) => `    implementation "com.pico.pps:platform-service-${svc}:${PPS_PLATFORM_VERSION}"`
+      ).join('\n');
+      const ppsDepsBlock = `
+${PPS_DEPS_MARKER}
+dependencies {
+${lines}
+}
+`;
+      contents = contents + '\n' + ppsDepsBlock;
+    }
+
+    // PICO Platform SDK AAR drop-in (offline fallback). Consumers who
+    // need to vendor the AARs into source control (air-gapped CI, etc.)
+    // can drop them into android/app/libs/. This block picks up anything
+    // there without further build.gradle edits.
+    if (
+      options.xrMode !== 'mobile' &&
+      !gradleContains(contents, APP_LIBS_AAR_MARKER)
+    ) {
+      const libsBlock = `
+${APP_LIBS_AAR_MARKER}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+}
+`;
+      contents = contents + '\n' + libsBlock;
+    }
+
+    // 16KB ELF alignment for libopenxr_loader.so. Viro 2.56.0 ships a
+    // 4KB-aligned Khronos loader (1.1.38); PICO OS 6 / Android 14+ rejects
+    // it. withPicoOpenXrLoaderOverlay drops a 16KB-aligned copy into
+    // app/src/main/jniLibs/; we pickFirst so it wins over the AAR's.
+    if (
+      options.xrMode !== 'mobile' &&
+      !gradleContains(contents, PACKAGING_PICK_FIRST_MARKER)
+    ) {
+      const pickFirstBlock = `
+    ${PACKAGING_PICK_FIRST_MARKER}
+    packagingOptions {
+        jniLibs {
+            pickFirsts += ["**/libopenxr_loader.so"]
+        }
+    }
+`;
+      const result = insertAfterPattern(contents, /android\s*\{/, pickFirstBlock);
+      if (result) {
+        contents = result;
       }
     }
 
@@ -194,7 +310,7 @@ android.defaultConfig {
   });
 };
 
-export const withPicoProjectBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, _options) => {
+export const withPicoProjectBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   return withProjectBuildGradle(config, (config) => {
     let contents = config.modResults.contents;
 
@@ -220,6 +336,30 @@ ${PICO_REPO_BLOCK}
       } else {
         contents = result;
       }
+    }
+
+    // Global `subprojects { missingDimensionStrategy 'device', 'mobile' }`
+    // fallback. Without this, every autolinked module that doesn't declare
+    // the `device` dimension fails to resolve under picoDebug/questDebug
+    // (e.g. `:expo:questDebugCompileClasspath > Could not resolve project
+    // :expo-pico-core`). The per-flavor strategy on the app module only
+    // covers direct deps; this catches transitive autolinked modules.
+    if (
+      options.xrMode !== 'mobile' &&
+      !gradleContains(contents, SUBPROJECT_MISSING_DIM_MARKER)
+    ) {
+      contents += `
+${SUBPROJECT_MISSING_DIM_MARKER}
+subprojects { sub ->
+    sub.plugins.withId("com.android.library") {
+        sub.android {
+            defaultConfig {
+                missingDimensionStrategy 'device', 'mobile'
+            }
+        }
+    }
+}
+`;
     }
 
     config.modResults.contents = contents;

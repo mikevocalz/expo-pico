@@ -229,9 +229,9 @@ export interface PicoPluginOptions {
    * unconstrained so phone/tablet builds pick up whatever ABIs the
    * app already declares.
    *
-   * Compatible with Babylon React Native (requires arm64-v8a on PICO),
-   * react-three-fiber / expo-gl, and Unity-as-a-Library — the filter is
-   * a build-output concern, not a runtime rendering choice.
+   * Compatible with `@reactvision/react-viro` (requires arm64-v8a on
+   * PICO / Quest) and Unity-as-a-Library — the filter is a build-output
+   * concern, not a runtime rendering choice.
    *
    * Set to `false` if your CI pipeline depends on producing a 32-bit
    * slice for another purpose and you accept the larger PICO APK.
@@ -242,13 +242,13 @@ export interface PicoPluginOptions {
    * Emit `<uses-native-library android:name="libopenxr_loader.so"
    * android:required="false"/>` in the PICO-flavor manifest. Required
    * for `targetSdkVersion >= 31` so `System.loadLibrary("openxr_loader")`
-   * succeeds at runtime — both Khronos-conformant OpenXR loaders used
-   * by Babylon Native's XR plugin and by the PICO Native SDK hit this
+   * succeeds at runtime — the Khronos-conformant OpenXR loader used by
+   * `@reactvision/react-viro` and by the PICO Native SDK hits this
    * requirement.
    *
    * Opt this to `false` if your renderer bundles its own OpenXR loader
-   * and does NOT go through the system loader (rare — Babylon Native
-   * and Unity both use the system loader). Setting to `true` when
+   * and does NOT go through the system loader (rare — Viro and Unity
+   * both use the system loader). Setting to `true` when
    * `xrMode === 'mobile'` has no observable effect on mobile builds
    * but also no harm; defaults track xrMode to keep mobile builds
    * minimal.

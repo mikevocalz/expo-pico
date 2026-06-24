@@ -1,7 +1,6 @@
 import {
   guardService,
   wrapNativeCall,
-  notImplementedError,
   safeAddListener,
   createNativeEventEmitter,
   type Subscription,
@@ -23,7 +22,6 @@ export * from './types';
 export type { Subscription };
 
 const PKG = '@expo-pico/rooms';
-const DOCS = 'https://developer.picoxr.com/document/unity/room-matchmaking/';
 
 const emitter = createNativeEventEmitter(NativeRooms);
 
@@ -88,23 +86,22 @@ export async function updateRoomData(data: Record<string, string>): Promise<void
   return wrapNativeCall(PKG, 'updateRoomData', NativeRooms!.updateRoomData(data));
 }
 
-// ─── Matchmaking (seam — SDK callback signature unstable across minor versions)
-
-/**
- * @seam Matchmaking request is not yet implemented.
- * The PICO Platform SDK matchmaking callback interface varies between minor
- * SDK versions and is not yet stable enough to wire safely.
- * Wire through RoomsBridge.requestMatchmaking() when the SDK is linked.
- */
+// PPS 1.0.x has no matchmaking surface (Bytedance removed it during the
+// PVR→PPS rewrite). Closest paths are direct room create/join + social
+// invite flows. These functions reject with a clear, actionable code so
+// callers can surface "use createRoom + sendInvites" guidance.
 export async function requestMatchmaking(_options: MatchmakingOptions): Promise<void> {
-  throw notImplementedError(PKG, 'requestMatchmaking', DOCS);
+  throw new Error(
+    `${PKG}: requestMatchmaking — not in PPS 1.0.x. Use createRoom() + ` +
+    `social.sendInvites() (or social.launchInviteUserJoinRoomFlow). ` +
+    `Matchmaking was removed during the PVR→PPS SDK rewrite.`
+  );
 }
 
-/**
- * @seam See requestMatchmaking() — same deferral reason.
- */
 export async function cancelMatchmaking(): Promise<void> {
-  throw notImplementedError(PKG, 'cancelMatchmaking', DOCS);
+  throw new Error(
+    `${PKG}: cancelMatchmaking — not in PPS 1.0.x (matchmaking not supported).`
+  );
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────

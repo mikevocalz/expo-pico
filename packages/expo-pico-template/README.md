@@ -90,22 +90,22 @@ Per-sibling docs: each package ships a README with a usage snippet, API table, a
 
 ## Adding a 3D renderer
 
-The plugin is renderer-agnostic — nothing in it touches the rendering stack. Two well-tested options:
-
-**react-three-fiber + three:**
+The plugin is renderer-agnostic — nothing in it touches the rendering stack. Recommended renderer (what the repo's `example/` app uses):
 
 ```bash
-yarn add @react-three/fiber expo-gl expo-asset three
-yarn add -D @types/three
+bun add @reactvision/react-viro
 ```
 
-**Babylon React Native:**
+Add the Viro config plugin entry to `app.config.ts` **after** `@expo-pico/core`:
 
-```bash
-yarn add @babylonjs/react-native @babylonjs/core
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  ['@reactvision/react-viro', { android: { xRMode: ['QUEST', 'PICO'] } }],
+],
 ```
 
-See [FAQ #5](https://github.com/mikevocalz/expo-pico/blob/main/docs/FAQ.md#5-can-i-use-babylon-react-native-instead-of-react-three-fiber) for the plugin-ordering rule when composing multiple XR plugins.
+See [FAQ #5](https://github.com/mikevocalz/expo-pico/blob/main/docs/FAQ.md#5-which-renderer-should-i-use) for plugin-ordering and [ARCHITECTURE §19.7](https://github.com/mikevocalz/expo-pico/blob/main/ARCHITECTURE.md#197-reactvisionviro--integration-notes) for Viro-specific wiring notes.
 
 ## Art, icons, and splash
 

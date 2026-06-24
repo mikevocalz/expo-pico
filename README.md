@@ -11,7 +11,7 @@
 
 Expo-native package family for **PICO OS 6** and **Project Swan** XR devices.
 
-Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@react-three/fiber/native`, `@babylonjs/react-native`, Unity-as-a-Library, and anything else that uses the system OpenXR loader.
+Config plugins + Expo Modules that teach an Expo Android project how to build, install, and enumerate correctly on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets — without ejecting to a bare workflow. Renderer-agnostic: composes with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
 
 **New here?** [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from zero to a running PICO app in 5 minutes. Common questions live in [docs/FAQ.md](./docs/FAQ.md).
 
@@ -125,7 +125,7 @@ Ships with `expo-pico-core`. See [ARCHITECTURE §21](./ARCHITECTURE.md#21-expo-p
 ## Shipping
 
 - [docs/QUICKSTART.md](./docs/QUICKSTART.md) — zero-to-running in 5 minutes.
-- [docs/FAQ.md](./docs/FAQ.md) — why Expo, why Android-only, how this differs from Viro, Babylon compat, release versioning.
+- [docs/FAQ.md](./docs/FAQ.md) — why Expo, why Android-only, which renderer to use, release versioning.
 - [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md) — porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
 - [docs/EAS.md](./docs/EAS.md) — EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
 - [docs/PRODUCTION-READINESS.md](./docs/PRODUCTION-READINESS.md) — single-page pre-ship checklist covering plugin config, identity, manifest contract, toolchain, diagnostics, and submission.
@@ -166,7 +166,7 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
-The example renders a **Babylon React Native** animating scene (Khronos BrainStem glTF auto-downloaded on install), a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time + runtime diagnostics + Phase J SDK probe), and the full `ValidationHarness` exercising every sibling module's public API. Babylon's OpenXR binding composes with `expo-pico-core`'s launcher contract + the `libopenxr_loader.so` `<uses-native-library>` declaration from Phase E — on PICO hardware the example is a working end-to-end XR app, on mobile it falls back to a 2D canvas.
+The example renders a **ReactVision/Viro** immersive scene (Khronos BrainStem glTF auto-downloaded on install) inside `<ViroVRSceneNavigator>`, a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time + runtime diagnostics + Phase J SDK probe), and the full `ValidationHarness` exercising every sibling module's public API. Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract + the `libopenxr_loader.so` `<uses-native-library>` declaration from Phase E — on PICO / Meta Quest hardware the example is a working end-to-end immersive XR app; on a non-XR device it falls back to a flat preview.
 
 ## License
 
