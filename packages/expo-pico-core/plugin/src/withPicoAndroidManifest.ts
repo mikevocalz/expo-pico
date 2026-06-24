@@ -1,5 +1,6 @@
 import {
   ConfigPlugin,
+  withAndroidManifest,
   withDangerousMod,
   AndroidConfig,
 } from '@expo/config-plugins';
@@ -19,6 +20,40 @@ import { resolveTargetProfile } from './types';
 import { applyCapabilityContract } from './withPicoCapabilities';
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
+
+/**
+ * Writes `pvr.app.id` (and other PPS-required metadata) into the **main**
+ * AndroidManifest so every build flavor — `pico`, `quest`, `mobile`, `dual`
+ * — sees it. The PICO Platform Service SDK reads it at first call via
+ * `AppUtils.getAppIdFromManifest("pvr.app.id")`; if the active flavor's
+ * merged manifest doesn't have it, the server rejects with 100008
+ * "appkey is empty".
+ *
+ * Idempotent via `tools:node="replace"` semantics on the meta-data tag.
+ */
+export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+  if (!options.picoAppId) return config;
+  return withAndroidManifest(config, (config) => {
+    const application = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
+    const metaData = (application['meta-data'] ?? []) as Array<{ $: Record<string, string> }>;
+    const idx = metaData.findIndex(
+      (m) => m.$?.['android:name'] === MANIFEST_META.PICO_APP_ID
+    );
+    // Reference a string resource (written by withPicoStrings from env)
+    // instead of inlining — the ID is per-environment and shouldn't be
+    // baked into the manifest at config time.
+    const entry = {
+      $: {
+        'android:name': MANIFEST_META.PICO_APP_ID,
+        'android:value': '@string/pico_app_id',
+      },
+    };
+    if (idx === -1) metaData.push(entry);
+    else metaData[idx] = entry;
+    application['meta-data'] = metaData as never;
+    return config;
+  });
+};
 
 export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   config = withDangerousMod(config, [
@@ -133,11 +168,10 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
     activity: [],
   };
 
-  if (options.picoAppId) {
-    application['meta-data'].push({
-      $: { 'android:name': MANIFEST_META.PICO_APP_ID, 'android:value': options.picoAppId },
-    });
-  }
+  // pvr.app.id is written to the MAIN manifest by
+  // withPicoPlatformServiceMainManifest so every flavor (pico, quest,
+  // mobile, dual) gets it. Don't duplicate here — would create a
+  // tools:replace conflict during manifest merging.
 
   if (options.targetDevices.length > 0) {
     const deviceValues = options.targetDevices.map((d) => DEVICE_TARGET_MAP[d] ?? d).join('|');
