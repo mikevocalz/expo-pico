@@ -1,23 +1,29 @@
 package expo.modules.pico.os6
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 
 /**
- * EXTENSION SEAM — PICO OS 6 runtime initialization.
+ * PICO OS 5 / PVR runtime boot-time initialization.
  *
- * Standard PICO OS 6 device initialization. The current public
- * `expo-pico-core` runtime detection module reads device facts from
- * Build.MANUFACTURER / system properties, but this seam exists for code
- * paths that need to actively register with the PICO Platform Service
- * (entitlement checks, identity, IAP, push) at app boot — separate from
- * lazy module initialization triggered on first JS call.
+ * (The enum value is named `PICO_OS6` for backwards-compat; it's the
+ * PICO OS 5 / PVR code path. PICO 4 / 4 Ultra ship on OS 5; OS 6 is
+ * the next-gen Swan target — see [expo.modules.pico.PicoXRPlatform].)
  *
- * The body of [initialize] is a no-op until the corresponding PICO
- * Platform SDK bindings are wrapped in this Expo Module. Sibling packages
- * (`expo-pico-account`, `expo-pico-iap`, etc.) currently perform their
- * own lazy registration; this seam is the future home for any boot-time
- * registration that must happen before the JS runtime starts.
+ * Currently does two jobs:
+ *   1. Marks the runtime as initialized so JS can read
+ *      [isInitialized] for diagnostics.
+ *   2. Installs the **Choreographer NPE guard** — a workaround for a
+ *      known PICO OS 5 / Android 14 vsync race where `VsyncEventData`
+ *      arrives null and `Choreographer$FrameData.update` throws an NPE
+ *      on `frameTimelinesLength`, killing the main thread.
+ *
+ *      The handler runs *before* the JVM unwinds the main thread;
+ *      re-entering `Looper.loop()` keeps the app alive. The crash is
+ *      benign (just a vsync timeline read), so swallowing it is safe.
+ *      Remove when PICO OS ships the fixed Choreographer.
  */
 object PicoOs6Runtime {
     private const val TAG = "PicoOs6Runtime"
@@ -29,8 +35,27 @@ object PicoOs6Runtime {
         if (initialized) return
         synchronized(this) {
             if (initialized) return
-            Log.i(TAG, "PICO OS 6 runtime initialization seam reached.")
+            installChoreographerNpeGuard()
+            Log.i(TAG, "PICO OS 5 runtime initialized; Choreographer NPE guard installed.")
             initialized = true
+        }
+    }
+
+    private fun installChoreographerNpeGuard() {
+        Handler(Looper.getMainLooper()).post {
+            val defaultHandler = Thread.currentThread().uncaughtExceptionHandler
+            Thread.currentThread().setUncaughtExceptionHandler { t, e ->
+                val isFrameTimelineNpe = e is NullPointerException &&
+                    e.message?.contains("frameTimelinesLength") == true
+                if (!isFrameTimelineNpe) {
+                    defaultHandler?.uncaughtException(t, e)
+                    return@setUncaughtExceptionHandler
+                }
+                Log.w(TAG, "Swallowed Choreographer frameTimelinesLength NPE (PICO OS 5 vsync race)", e)
+                try { Looper.loop() } catch (re: Throwable) {
+                    defaultHandler?.uncaughtException(t, re)
+                }
+            }
         }
     }
 
