@@ -23,9 +23,12 @@ class ExpoPicoIapModule : Module() {
                 if (IapUtils.isIapSdkAvailable())
                     (PicoPlatformSDK.getInitFailureReason() ?: "ready")
                 else
-                    "PICO Platform SDK AAR not found. Download from " +
-                    "developer.picoxr.com/resources and drop into " +
-                    "android/app/libs/, then rebuild."
+                    "PICO Platform Service SDK (PPS) not on classpath. " +
+                    "Build the picoDebug variant on PICO hardware — " +
+                    "withPicoGradle pulls com.pico.pps:platform-service-iap:1.0.0 " +
+                    "from the public Bytedance Maven repo automatically. " +
+                    "If you're already on picoDebug, confirm Gradle had " +
+                    "network access at prebuild time and rebuild."
             ),
         )
 

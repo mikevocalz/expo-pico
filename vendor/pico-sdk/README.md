@@ -1,23 +1,39 @@
-# PICO SDK AARs — Manual Download Required
+# PICO SDK AARs — Legacy PVR-prefixed SDKs Only
 
-This directory holds PICO SDK AARs that **cannot be bundled in the npm packages**
-due to their proprietary license. You must download them manually from the
-PICO Developer Console before building a PICO-targeted APK.
+> **Heads up.** The modern **PICO Platform Service SDK (PPS)** —
+> `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,
+> leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` — is
+> resolved automatically from the public Bytedance Maven repo
+> (`https://artifact.bytedance.com/repository/Volcengine/`) by
+> `expo-pico-core`'s `withPicoGradle` plugin. **You do NOT drop those
+> into this directory.** PPS-backed siblings (account, IAP, social,
+> friend, leaderboards, achievements, notifications, subscription,
+> rooms, RTC, storage) get the modern client classes from Maven on
+> every `picoDebug` build.
+>
+> This directory only holds the **legacy PVR-prefixed AARs** that PICO
+> still distributes through the Developer Console rather than public
+> Maven — used by `expo-pico-core`'s programmatic `setPassthrough()` /
+> `PXR_Plugin` haptics and by all of `expo-pico-spatial`. Those AARs
+> remain proprietary and cannot be bundled in the npm packages.
 
-## Required Files
+## Required Files (legacy PVR SDKs)
 
 | File | Source | Purpose |
 |------|--------|---------|
-| `pico-platform-sdk.aar` | PPS Developer Console → App Information → SDK Download | Controller haptics (`PXR_Plugin`), IAP, account |
-| `pico-spatial-sdk.aar`  | PPS Developer Console → App Information → SDK Download | Eye gaze, scene mesh, face tracking, body tracking, spatial anchors |
+| `pico-platform-sdk.aar` (legacy PVR Platform SDK 3.x) | PICO Developer Console → App Information → SDK Download | `PXR_Plugin` programmatic passthrough toggle + controller haptics |
+| `pico-spatial-sdk.aar`  (legacy PVR Spatial SDK 1.x) | PICO Developer Console → App Information → SDK Download | Spatial anchors, scene mesh, eye/face/body tracking, space transitions |
 
 ## Download Steps
 
 1. Log in to [PICO Developer Console](https://developer.picoxr.com/)
 2. Navigate to **App Information → SDK Download**
-3. Download the **PICO Platform SDK** AAR and rename it `pico-platform-sdk.aar`
-4. Download the **PICO Spatial SDK** AAR and rename it `pico-spatial-sdk.aar`
+3. Download the **legacy PVR-prefixed Platform SDK** (3.x) and rename it `pico-platform-sdk.aar`
+4. Download the **legacy PVR-prefixed Spatial SDK** (1.x) and rename it `pico-spatial-sdk.aar`
 5. Place both files in this directory (`vendor/pico-sdk/`)
+
+These are **not** the modern PPS Maven artifacts. PPS pulls in via Gradle
+on every `picoDebug` build with no manual download.
 
 ## Gradle Wiring
 

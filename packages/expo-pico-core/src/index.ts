@@ -82,8 +82,11 @@ export async function pulseHaptic(
 
 /**
  * Returns true when the PICO Platform SDK haptics surface is wired at runtime.
- * False on non-PICO builds, non-PICO devices, or when the Platform SDK AAR
- * is absent from the build.
+ * False on non-PICO builds, non-PICO devices, or when the haptics surface
+ * (legacy PVR `PXR_Plugin`, from the older PICO Platform SDK 3.x AAR) is
+ * absent from the build. Note: haptics is one of the few surfaces still
+ * gated by the legacy PVR AAR; the modern PPS Maven artifacts do NOT
+ * cover programmatic haptics.
  */
 export function isHapticsAvailable(): boolean {
   return _hapticsModule.hapticsAvailable ?? false;
@@ -208,9 +211,10 @@ export function hasIapIdentity(): boolean {
  * leaderboards, rooms, social, storage, subscription).
  *
  * Sibling packages can short-circuit here before attempting their own
- * per-surface probe — if this is `false`, the real PICO Platform SDK
- * AAR is definitely not on the classpath and every sibling will
- * degrade to its SDK-unavailable path.
+ * per-surface probe — if this is `false`, no PICO Platform SDK
+ * surface resolves on the classpath (PPS Maven deps didn't resolve at
+ * build time and no legacy PVR AAR was dropped in), so every sibling
+ * will degrade to its SDK-unavailable path.
  */
 export function isPlatformSdkPresent(): boolean {
   return ExpoPicoModule.platformSdkPresent ?? false;

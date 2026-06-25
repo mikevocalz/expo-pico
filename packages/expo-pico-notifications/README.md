@@ -7,7 +7,7 @@ PICO push notification registration and token APIs for Expo apps.
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Registration / token bridge methods return `SERVICE_UNAVAILABLE` until the PICO Push SDK is on the classpath.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. The PPS push client from `com.pico.pps:platform-service-push:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Registration / token bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6. Requires the user to have PICO Platform Services available (default on PICO hardware).
 

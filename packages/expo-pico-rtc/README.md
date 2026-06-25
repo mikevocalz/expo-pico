@@ -69,13 +69,17 @@ sub.remove();
 
 ## Extension Seams
 
-All async APIs are extension seams pending PICO RTC SDK AAR integration.
-They throw descriptive errors until the native SDK is linked.
+The PPS Maven artifacts that back voice / channels resolve from public
+Maven on `picoDebug` builds — `expo-pico-core`'s `withPicoGradle` plugin
+registers the Bytedance repo and the dependencies automatically, so no
+AAR drop is required. A handful of channel-management endpoints may
+still surface `NOT_IMPLEMENTED` until the matching PPS endpoint ships in
+a future PPS release.
 
 ## Status
 
-- `getRtcServiceStatus()`: implemented (SDK presence check)
-- All async APIs: extension seams (SDK not yet linked)
+- `getRtcServiceStatus()`: implemented (SDK presence check, reflection-based)
+- Most async APIs: live on `picoDebug` builds via PPS Maven. Some advanced channel-management endpoints are extension seams pending a future PPS release.
 
 ## Requirements
 

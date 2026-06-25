@@ -62,7 +62,7 @@ sub.remove();
 
 ## Extension Seams
 
-All async APIs are extension seams pending PICO Platform SDK AAR integration.
+PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0`, `…:social:1.0.0`) resolve automatically on `picoDebug` builds — no AAR drop is required. Some matchmaking endpoints may still surface `NOT_IMPLEMENTED` until they ship in a future PPS release.
 
 ## Status
 

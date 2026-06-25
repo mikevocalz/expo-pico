@@ -37,9 +37,11 @@ export async function bootPico(options: BootOptions = {}): Promise<PicoCapabilit
   const caps = refreshPicoCapabilities();
   if (__DEV__) logPicoCapabilities();
 
-  // Fire-and-forget the panel resize. We don't await — if the Spatial
-  // SDK AAR isn't on the classpath, the call rejects fast and we don't
-  // want to block boot on a network-ish error path.
+  // Fire-and-forget the panel resize. We don't await — if the legacy
+  // PVR-prefixed Spatial SDK AAR isn't on the classpath, the call
+  // rejects fast and we don't want to block boot on a network-ish
+  // error path. (Distinct from the modern PPS Maven deps, which
+  // expo-pico-core resolves automatically.)
   const { hydrateStorage, ...windowProps } = options;
   if (Object.keys(windowProps).length > 0) {
     setWindowContainerProperties(windowProps).catch(() => {
@@ -49,7 +51,8 @@ export async function bootPico(options: BootOptions = {}): Promise<PicoCapabilit
 
   // Warm the mmkv cache from Pico cloud storage so synchronous reads at
   // first render hit. Skipped when the storage capability isn't present
-  // (PPS storage AAR not on classpath).
+  // (mobile flavor, non-PICO host, or PPS storage Maven dep didn't
+  // resolve at prebuild time).
   if (hydrateStorage !== false && caps.storage) {
     hydrateFromCloud().catch(() => {
       /* picoStorage swallows internally; this is just defensive */

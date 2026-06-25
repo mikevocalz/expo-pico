@@ -44,7 +44,7 @@ export PICO_PLATFORM_APP_ID=your-app-id
 export PICO_PLATFORM_APP_KEY=your-app-key
 ```
 
-You get these by registering at [developer.picoxr.com](https://developer.picoxr.com/). The app will still build and launch without them. Any PICO Platform SDK call (account, IAP, etc.) returns `SERVICE_UNAVAILABLE`.
+You get these by registering at [developer.picoxr.com](https://developer.picoxr.com/). The app will still build and launch without them. Any PICO Platform Service SDK (PPS) call (account, IAP, etc.) returns `SERVICE_UNAVAILABLE` until you set the identity env vars and rebuild. The PPS Maven artifacts (`com.pico.pps:platform-service-*:1.0.0`) themselves are pulled in automatically by `expo-pico-core`'s plugin from the public Bytedance Maven repo — no AAR drop is needed.
 
 ## Adding sibling packages
 

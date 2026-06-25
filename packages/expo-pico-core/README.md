@@ -242,7 +242,7 @@ const trackers = await capabilities.motionTracker.list();
 const sensors = await capabilities.sensors.getHighRate();
 ```
 
-The capability runtime is reflection-gated on the Kotlin side. There's no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
+The capability runtime is reflection-gated on the Kotlin side. For the modern PPS surfaces (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) there's nothing to "drop in" — `withPicoGradle` registers the public Bytedance Maven repo and pulls `com.pico.pps:platform-service-*:1.0.0` into the `picoDebug` flavor automatically, so the PPS classes resolve at runtime with no further setup. The reflection layer is what lets sibling packages stay decoupled across PPS / legacy PVR class-name variance and across the `mobile` vs `picoDebug` split. For the narrower legacy surfaces still gated by the older PVR-prefixed SDKs (`PXR_Plugin` programmatic passthrough/haptics, the Spatial SDK) you still drop the legacy AAR into `vendor/pico-sdk/` or `android/app/libs/`; the probes light up the same way.
 
 ## CLI: `expo-pico-doctor`
 
@@ -278,7 +278,7 @@ Each sibling adds a narrow native surface and a matching JS API. All are peer-de
 - New Architecture only. `newArchEnabled: true` is required.
 - Plugin emits a single `withDangerousMod` when writing the PICO-flavor source-set manifest. That is the only filesystem mutation; every other mutation uses safe structured mods.
 - Some hardware capability keys are best-known seams, flagged in the options table. Emitted with `android:required="false"` so misnames are install-safe.
-- PICO Platform SDK native bindings (account, IAP, RTC, etc.) are extension seams in the sibling packages until the PICO SDK AAR is a public Maven artifact. Core's reflection probe activates siblings automatically when a consumer drops the AAR into `android/app/libs/`.
+- PICO Platform Service SDK (PPS) bindings (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) are live on `picoDebug` builds — `withPicoGradle` pulls `com.pico.pps:platform-service-*:1.0.0` from the public Bytedance Maven automatically, so consumers don't drop any AAR. PPS-backed siblings only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time. A narrower set of legacy surfaces (`expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics and all of `expo-pico-spatial`) still rides the older PVR-prefixed AARs (`com.pvr.platform:platform-sdk:3.2.0`, `com.pvr.spatial:spatial-sdk:1.0.0`) — those are not on public Maven and do require dropping the AAR into `vendor/pico-sdk/` or `android/app/libs/`.
 
 ## Links
 

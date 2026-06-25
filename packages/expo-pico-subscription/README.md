@@ -7,7 +7,7 @@ PICO platform subscription billing and entitlement for Expo apps.
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `IapClient` + entitlement helpers from `com.pico.pps:platform-service-iap:1.0.0` (and `…:entitlement:1.0.0`) are pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -89,7 +89,7 @@ if (result.status === 'subscribed') {
 
 ## Extension Seams
 
-All async APIs are extension seams pending PICO IAP SDK AAR integration.
+The PPS `IapClient` Maven artifact (`com.pico.pps:platform-service-iap:1.0.0`) resolves automatically on `picoDebug` builds; no AAR drop is required. A handful of subscription endpoints may still surface `NOT_IMPLEMENTED` until they ship in a future PPS release.
 
 ## Requirements
 

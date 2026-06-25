@@ -98,7 +98,11 @@ export function getSpatialSdkVersion(): string | null {
 /**
  * Creates a spatial anchor at the given pose.
  *
- * Requires PICO Spatial SDK AAR in vendor/pico-sdk/ and a PICO 4 Ultra
+ * Requires the legacy PICO Spatial SDK 1.x AAR
+ * (`com.pvr.spatial:spatial-sdk:1.0.0`) in `vendor/pico-sdk/` or
+ * `android/app/libs/`. This is the older PVR-prefixed Spatial SDK —
+ * distinct from the modern PPS Maven artifacts (`com.pico.pps:*`) which
+ * `expo-pico-core` resolves automatically. Also requires a PICO 4 Ultra
  * or Neo3 device running PICO OS 6+.
  *
  * Rejects with SERVICE_UNAVAILABLE when the SDK is absent.

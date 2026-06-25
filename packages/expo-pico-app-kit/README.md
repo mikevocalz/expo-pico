@@ -17,7 +17,9 @@ import { bootPico, getPicoCapabilities, haptics, onGaze, account } from '@expo-p
   capability. Renders dimmed UI for absent SDKs without an async hop.
 - `haptics.{tap,confirm,warn,grab,drop}(hand)`. Semantic haptic
   helpers that map to amplitude and duration internally. Safe no-op when
-  the Pico Native SDK AAR isn't on the classpath.
+  the legacy PVR `PXR_Plugin` AAR (`com.pvr.platform:platform-sdk:3.2.0`)
+  isn't on the classpath — haptics is one of the few surfaces still
+  gated by the legacy AAR rather than the modern PPS Maven artifacts.
 - `onGaze / onSceneMeshUpdate / onFace / onBody`. Event listeners
   that return a `Subscription` (or a `NULL_SUB` no-op when the
   Spatial SDK is absent).

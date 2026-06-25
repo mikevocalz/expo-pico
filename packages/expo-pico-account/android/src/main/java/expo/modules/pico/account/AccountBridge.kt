@@ -14,14 +14,18 @@ import expo.modules.pico.PicoPlatformSDK
  *
  * Verified against https://developer.picoxr.com/reference/platform_service/latest/account-api/
  *
- * Until the PICO Platform Service SDK AAR is dropped into
- * `android/app/libs/`, every call returns `SDK_UNAVAILABLE`.
+ * PPS is wired by default on `picoDebug` builds — `@expo-pico/core`'s
+ * `withPicoGradle` adds `com.pico.pps:platform-service-auth:1.0.0` from
+ * the public Bytedance Maven, so `PicoSignInClient` is on the classpath
+ * with no AAR drop. Calls return `SDK_UNAVAILABLE` only on the mobile
+ * flavor, on non-PICO hardware, or if Gradle could not reach the Maven
+ * repo at build time.
  */
 internal object AccountBridge {
 
-    // PicoSignInClient (com.pico.pps.sdk.auth.*) — auth-gated AAR from PICO
-    // Developer Console. The legacy callback-style PlatformSDK is kept as
-    // a fallback for older SDK variants.
+    // PicoSignInClient (com.pico.pps.sdk.auth.*) — modern PPS SDK, pulled
+    // from public Maven by withPicoGradle. The legacy callback-style
+    // PlatformSDK is kept as a fallback for older PVR-prefixed SDK variants.
     private val CLIENT = arrayOf(
         "com.pico.pps.sdk.auth.PicoSignInClient",
         "com.pvr.platform.sdk.PlatformSDK",

@@ -54,9 +54,14 @@ The plugin option API itself is strictly additive. Every option defaults off or 
 
 No for the basics: `expo-pico-core` alone gets you flavor manifests, launcher categories, BuildConfig fields, runtime device detection, and the full prebuild + runtime diagnostics, all without any PICO-proprietary binary.
 
-Yes for sibling features: account, IAP, notifications, RTC, rooms, leaderboards, achievements, storage, social, subscription. Their bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath. The reflection probes (`PicoPlatformSdkDetector`) flip them to live automatically when the AAR appears in `android/app/libs/`. No code change in your app.
+No for the modern PPS-backed siblings either: account, IAP, notifications, rooms, RTC, leaderboards, achievements, storage, social, subscription. PICO publishes the Platform Service SDK (PPS) as public Maven artifacts — `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` — at `https://artifact.bytedance.com/repository/Volcengine/`. The `withPicoGradle` plugin registers the repo and the dependencies automatically, so on a `picoDebug` build the PPS classes (`com.pico.pps.sdk.iap.IapClient`, `PicoSignInClient`, `LeaderboardClient`, `PicoSocialClient`, etc.) land in the APK and the reflection probe flips each sibling to live with no further action. These siblings only report `SERVICE_UNAVAILABLE` when the active flavor is `mobile`, the host is not PICO hardware, or Gradle was offline at prebuild time.
 
-The SDK AAR is not publicly distributed from a Maven repo (yet). Consumers get it through the PICO Developer Console after registering an app.
+Yes, but only for a narrower set of surfaces that still ride the **legacy PVR-prefixed SDKs** (not on public Maven):
+
+- `expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics — legacy PICO Platform SDK 3.x (`com.pvr.platform:platform-sdk:3.2.0`)
+- `expo-pico-spatial` (anchors, scene mesh, eye/face/body tracking) — legacy PICO Spatial SDK 1.x (`com.pvr.spatial:spatial-sdk:1.0.0`)
+
+For those, download the AAR through the PICO Developer Console and drop it into `vendor/pico-sdk/` or `android/app/libs/`. The drop-in path is kept around for these specifically; it is not the path for the modern PPS surfaces.
 
 ## 8. How do I check that my app is configured correctly before building?
 
@@ -97,7 +102,7 @@ We deliberately don't bundle `esbuild-register` or similar to transpile `.ts` co
 ## 11. What happens if I build the mobile flavor on a PICO device (or vice-versa)?
 
 - Mobile flavor on PICO hardware. The app runs, but appears in the PICO launcher's 2D-apps section, not the immersive section. No Platform SDK surfaces are wired. The diagnostics panel shows a `mobile-on-pico-device` warning. Useful for rapid iteration on UI that doesn't need XR.
-- Pico flavor on non-PICO hardware. The app installs (thanks to `android:required="false"` on every `uses-feature`), renders 2D content, and runs the PICO core module's no-op runtime init. All Platform SDK calls return `SERVICE_UNAVAILABLE`. Diagnostics shows `build-device-mismatch`. Useful for screenshot generation, unit tests, and CI.
+- Pico flavor on non-PICO hardware. The app installs (thanks to `android:required="false"` on every `uses-feature`), renders 2D content, and runs the PICO core module's no-op runtime init. PPS classes are present on the classpath (Gradle resolved them from public Maven at build time), but their runtime services aren't installed on the host, so the PPS-backed siblings still return `SERVICE_UNAVAILABLE`. Diagnostics shows `build-device-mismatch`. Useful for screenshot generation, unit tests, and CI.
 
 Both are intentional. Neither flavor crashes on the other hardware type.
 

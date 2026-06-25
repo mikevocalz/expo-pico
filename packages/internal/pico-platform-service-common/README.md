@@ -25,7 +25,7 @@ import {
 
 Shared error codes. Every sibling throws only from this taxonomy:
 
-- `SERVICE_UNAVAILABLE`: SDK class not found in this build (AAR not linked).
+- `SERVICE_UNAVAILABLE`: SDK class not found in this build. Typically means the `mobile` flavor is active, the host is not PICO hardware, Gradle could not resolve the PPS Maven artifacts at prebuild time, or — for legacy PVR surfaces only — the legacy PVR AAR was not dropped into `vendor/pico-sdk/` / `android/app/libs/`.
 - `NOT_IMPLEMENTED`: method exists but native wiring is pending (documented seam).
 - `NOT_SUPPORTED`: feature unavailable on this OS version / target profile.
 - `INITIALIZATION_FAILED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NETWORK_ERROR`, `TIMEOUT`, `UNKNOWN`.

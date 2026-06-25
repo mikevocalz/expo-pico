@@ -50,7 +50,7 @@ Within three business days of receiving a report we will:
   - Validates the `glTF` magic bytes before writing to disk.
   - Is skippable via `EXPO_PICO_SKIP_DEMO_MODEL=1`.
   - Never touches any file outside `example/assets/models/`.
-- No sibling package ships native binaries. PICO Platform SDK AARs, when used, are supplied by the consumer.
+- No sibling package ships native binaries. The modern PICO Platform Service SDK (PPS) is resolved by Gradle from the public Bytedance Maven repo (`com.pico.pps:*:1.0.0`); only the narrower legacy PVR-prefixed AARs (`com.pvr.platform:*`, `com.pvr.spatial:*`) are consumer-supplied via `vendor/pico-sdk/` or `android/app/libs/`.
 
 ## Credential handling
 
@@ -65,4 +65,4 @@ None of these are encrypted at rest. Consumers **must not** hard-code credential
 ## Known limitations
 
 - The plugin does not enforce key-format validation beyond non-empty-string. A consumer can set `picoAppKey: 'not-a-real-key'`; the plugin writes it as-is. Key validation happens at PICO Platform SDK runtime, not at plugin time.
-- The reflection probe (`PicoPlatformSdkDetector`) relies on the PICO Platform SDK AAR being honest about its class names. A malicious fork of the SDK could present the same class names and pass the probe; the plugin doesn't verify signatures.
+- The reflection probe (`PicoPlatformSdkDetector`) relies on whatever SDK is on the classpath (PPS from Maven, or the legacy PVR AAR) being honest about its class names. A malicious fork could present the same class names and pass the probe; the plugin doesn't verify signatures.

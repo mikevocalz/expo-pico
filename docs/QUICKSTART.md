@@ -205,7 +205,7 @@ On a PICO device with developer mode enabled:
 - `isPicoDevice`: true. Device detection matched `Build.MANUFACTURER`.
 - `xrMode`: 'pico-os5' (or `'pico-swan'` if you set that).
 - `appType`: 'vr'.
-- `platformSdkPresent`: false. Expected until you link the PICO Platform SDK AAR. The reflection probe flips this automatically when the AAR is present.
+- `platformSdkPresent`: should be `true` on a `picoDebug` build with network access during prebuild — `withPicoGradle` resolves the PPS Maven artifacts (`com.pico.pps:platform-service-*:1.0.0`) from the public Bytedance Maven repo automatically. Stays `false` only on a `mobile`-flavor build, on non-PICO hardware, or when Gradle couldn't reach the repo at prebuild time. The reflection probe flips it back to `true` as soon as the PPS classes (or, for the legacy PVR SDKs, a manually dropped AAR) are on the classpath.
 - Diagnostics: one `identity.missing` info row until `platformService.picoAppId` is set. No errors.
 
 On a mobile device or emulator (without `--variant picoDebug`):
@@ -237,7 +237,8 @@ When you're ready to submit to the PICO Store:
 | `SecurityException` on `RECORD_AUDIO` when using `expo-pico-rtc`                     | Runtime permission not yet granted.                                       | Call `requestPermissions()` at first-use site. Permission is declared automatically by the RTC plugin.       |
 | PICO launcher shows the app in "2D apps" section instead of VR.                      | `pvr.app.type` / `IMMERSIVE_HMD` not landing.                             | Run `npx expo-pico-doctor`. Verify `appType: 'vr'` and `buildVariant: 'pico'`.                               |
 | `System.loadLibrary("openxr_loader")` fails.                                         | `<uses-native-library>` not emitted.                                      | Confirm `openXrLoaderDeclaration: true` (the default). `targetSdkVersion >= 31` requires this declaration.   |
-| Every Platform SDK call returns `SERVICE_UNAVAILABLE`.                               | PICO Platform SDK AAR not on the classpath.                               | Real SDK AAR isn't public yet. The reflection probe auto-activates siblings when it's dropped in.            |
+| Every PPS Platform SDK call (account, IAP, social, etc.) returns `SERVICE_UNAVAILABLE`. | Built the `mobile` flavor, running on non-PICO hardware, or Gradle was offline during prebuild and couldn't resolve `com.pico.pps:platform-service-*:1.0.0` from the Bytedance Maven repo. | Build the `picoDebug` variant on a PICO device. PPS deps are pulled from public Maven automatically by `withPicoGradle` — no AAR drop is needed for the modern PPS surfaces. |
+| Programmatic `setPassthrough()` or `expo-pico-spatial` anchors return `SERVICE_UNAVAILABLE`. | These surfaces still depend on the **legacy** PICO Platform SDK 3.x / Spatial SDK 1.x (PVR-prefixed AARs), which are not on public Maven. | Download the AAR from the PICO Developer portal and drop it into `vendor/pico-sdk/` or `android/app/libs/`. Distinct from the modern PPS Maven artifacts. |
 | Doctor says `identity.missing` but env vars are set locally.                         | `app.config.ts` reads from `process.env` but vars weren't loaded.         | Use a `.env` file plus `expo-dotenv`, or prefix the command: `PICO_PLATFORM_APP_ID=xyz npx expo prebuild`.   |
 | Prebuild hangs on first run.                                                         | Gradle downloading dependencies over slow network.                        | Wait. Subsequent runs use the warm cache.                                                                    |
 

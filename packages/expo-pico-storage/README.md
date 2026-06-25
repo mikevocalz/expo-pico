@@ -7,7 +7,7 @@ PICO platform cloud storage APIs for Expo apps. Save, load, sync, and manage key
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. Storage routes through the same PPS Maven artifacts (`com.pico.pps:*:1.0.0`) that `expo-pico-core` resolves from public Maven automatically, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -122,7 +122,7 @@ if (isStorageAvailable()) {
 - Android only (PICO is an Android platform)
 - New Architecture only (`newArchEnabled: true` required)
 - Requires `expo-pico-core` as a peer dependency
-- Bridge methods return `NOT_IMPLEMENTED` until the PICO Platform SDK AAR is linked
+- Some bridge methods may surface `NOT_IMPLEMENTED` until the corresponding PPS endpoint ships in a future PPS release. The PPS Maven deps themselves resolve automatically on `picoDebug` builds; no AAR drop is required.
 
 ## Links
 

@@ -67,8 +67,13 @@ class ExpoPicoPassthroughModule : Module() {
         AsyncFunction("setPassthrough") { enabled: Boolean, level: Double ->
             if (!PassthroughBridge.isSdkAvailable()) {
                 throw PassthroughUnavailableException(
-                    "PICO Platform SDK not available. " +
-                    "Ensure pico-platform-sdk.aar is in vendor/pico-sdk/."
+                    "Programmatic passthrough toggle requires the legacy PICO " +
+                    "Platform SDK 3.x AAR (com.pvr.platform:platform-sdk:3.2.0) " +
+                    "exposing PXR_Plugin. Drop the AAR into vendor/pico-sdk/ or " +
+                    "android/app/libs/. Download it from the PICO Developer " +
+                    "portal — this is the older PVR-prefixed SDK, NOT the " +
+                    "modern PPS Maven artifacts (com.pico.pps:*) which " +
+                    "expo-pico-core resolves automatically on picoDebug builds."
                 )
             }
             val clampedLevel = level.coerceIn(0.0, 1.0).toFloat()

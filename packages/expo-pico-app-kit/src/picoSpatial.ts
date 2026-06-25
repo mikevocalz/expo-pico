@@ -1,7 +1,10 @@
 // Pico Spatial SDK wrapper — window container resize, eye gaze, scene
-// mesh, face tracking, body tracking. Each helper degrades gracefully
-// when the auth-gated Spatial SDK AAR isn't on the classpath: listeners
-// stay quiet, snapshot getters return null, async calls resolve to false.
+// mesh, face tracking, body tracking. These ride the legacy PVR-prefixed
+// Spatial SDK 1.x AAR (`com.pvr.spatial:spatial-sdk:1.0.0`), which is
+// NOT on public Maven — distinct from the modern PPS artifacts that
+// expo-pico-core resolves automatically. Each helper degrades gracefully
+// when the legacy Spatial SDK AAR isn't on the classpath: listeners stay
+// quiet, snapshot getters return null, async calls resolve to false.
 
 import { getPicoCapabilities } from './picoCapabilities';
 

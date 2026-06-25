@@ -7,7 +7,7 @@ PICO store in-app purchase APIs for Expo apps.
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO IAP SDK AAR is on the classpath.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `IapClient` from `com.pico.pps:platform-service-iap:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 plus a signed-in PICO Store account.
 
@@ -107,7 +107,7 @@ console.log({
 
 ## Limitations
 
-- `purchase()` is a documented seam because PICO IAP requires the store's UI flow. There is no headless purchase path. The bridge method will wrap the PICO IAP SDK call when the AAR is linked.
+- `purchase()` is a documented seam because PICO IAP requires the store's UI flow. There is no headless purchase path. The bridge method wraps the PPS `IapClient.startPurchase(...)` call directly — no AAR drop is required; the PPS Maven dep is pulled automatically on `picoDebug` builds.
 - Server-side receipt verification is the app's responsibility; this package does not implement it.
 - Subscription products are handled by [`expo-pico-subscription`](../expo-pico-subscription), not here.
 

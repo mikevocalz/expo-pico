@@ -25,8 +25,9 @@ export function getAccountSdkVersion(): string {
 /**
  * Human-readable remediation step from the native module. Returns
  * "ready" once the SDK is initialized, or an actionable message like
- * "PICO Platform SDK AAR not found. Download from ... and drop into
- * android/app/libs/" when it's not.
+ * "PICO Platform Service SDK not on classpath — build the picoDebug
+ * flavor so Gradle resolves com.pico.pps:platform-service-auth from the
+ * Bytedance Maven repo" when it's not.
  */
 export function getAccountSdkStatus(): string {
   return (NativeAccount as { accountSdkStatus?: string } | undefined)?.accountSdkStatus ?? 'unknown';
@@ -35,8 +36,9 @@ export function getAccountSdkStatus(): string {
 /**
  * Throws SERVICE_UNAVAILABLE with the EXACT remediation step in the message
  * (read from `accountSdkStatus` on the native module). Lets callers surface a
- * useful error to users — "drop the AAR in app/libs/" instead of "not
- * present in this build".
+ * useful error to users — "build the picoDebug flavor" or "run prebuild
+ * with network access so PPS resolves from Maven" instead of "not present
+ * in this build".
  */
 function requireAvailable(method: string): void {
   if (isAccountAvailable()) return;

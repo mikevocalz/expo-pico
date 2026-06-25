@@ -123,7 +123,7 @@ function RuntimeCard({ info }: { info: PicoRuntimeInfo }): JSX.Element {
         value={
           info.platformSdkPresent
             ? info.platformSdkVersion ?? 'present'
-            : 'seam (AAR not on classpath)'
+            : 'unavailable (build picoDebug on PICO hardware)'
         }
         accent={info.platformSdkPresent ? 'good' : 'info'}
       />

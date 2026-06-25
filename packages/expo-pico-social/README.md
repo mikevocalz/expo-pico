@@ -7,7 +7,7 @@ PICO platform social APIs for Expo apps. Friends, presence, invites, and real-ti
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSocialClient` (plus the friend client) from `com.pico.pps:platform-service-social:1.0.0` and `…:friend:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -115,7 +115,7 @@ if (isSocialAvailable()) {
 - Android only (PICO is an Android platform)
 - New Architecture only (`newArchEnabled: true` required)
 - Requires `expo-pico-core` as a peer dependency
-- Bridge methods return `NOT_IMPLEMENTED` until the PICO Platform SDK AAR is linked
+- Some bridge methods may surface `NOT_IMPLEMENTED` until the corresponding PPS endpoint ships in a future PPS release. The PPS Maven deps themselves resolve automatically on `picoDebug` builds; no AAR drop is required.
 
 ## Links
 

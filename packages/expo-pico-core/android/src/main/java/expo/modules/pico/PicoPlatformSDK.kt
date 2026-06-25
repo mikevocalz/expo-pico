@@ -6,20 +6,26 @@ import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Reflection-based facade over the PICO Platform Service SDK.
+ * Reflection-based facade over the PICO Platform Service SDK (PPS).
  *
- * The SDK AAR is auth-gated by PICO — it's distributed through the
- * PICO Developer Console (https://developer.picoxr.com/resources/) and is
- * not available on public Maven. Consumers drop the AAR into
- * `android/app/libs/` and the (`@expo-pico/core` plugin's `withPicoGradle`
- * adds `implementation fileTree(dir: 'libs', include: ['*.aar'])` to the
- * pico flavor automatically).
+ * The modern PPS SDK ships as public Maven artifacts at
+ * `https://artifact.bytedance.com/repository/Volcengine/` — the
+ * `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,
+ * leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` coordinates.
+ * The `@expo-pico/core` plugin (`withPicoGradle`) registers the repo and
+ * the dependencies automatically, so on a `picoDebug` build the PPS
+ * classes land in the APK with no AAR drop. The legacy `fileTree(dir:
+ * 'libs', include: ['*.aar'])` rule is kept as an offline fallback for
+ * air-gapped CI and for the older PVR-prefixed SDK lines.
  *
- * Because the AAR isn't a build-time dependency, sibling packages cannot
- * reference its classes directly. This object resolves them via
- * `Class.forName` and invokes methods reflectively. When the SDK is absent
- * (no AAR dropped, mobile flavor, etc.) every entry point returns false /
- * null / an honest `SDK_UNAVAILABLE` error — never throws.
+ * We still resolve PPS classes via `Class.forName` rather than a direct
+ * import. Two reasons: (a) the mobile flavor never adds the PPS deps and
+ * sibling packages still need to compile against it; (b) class names
+ * vary slightly between PPS 1.x (modern, `com.pico.pps.sdk.*`) and the
+ * legacy PVR SDK 3.x (`com.pvr.platform.sdk.*`), and reflection lets one
+ * call site cover both. When the SDK is absent (mobile flavor, Gradle
+ * offline, non-PICO hardware) every entry point returns false / null /
+ * an honest `SDK_UNAVAILABLE` error — never throws.
  *
  * App ID / app key come from `BuildConfig.PICO_APP_ID` / `PICO_APP_KEY`,
  * which `withPicoGradle` populates from `app.config.ts`'s `picoAppId` and

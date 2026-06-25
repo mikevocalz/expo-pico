@@ -2,7 +2,7 @@
  * Shared error taxonomy for the expo-pico SDK family.
  *
  * Rules:
- * - SERVICE_UNAVAILABLE: SDK class not found in this build (AAR not linked)
+ * - SERVICE_UNAVAILABLE: SDK class not found in this build. Typically: mobile flavor active, non-PICO host, Gradle couldn't resolve PPS Maven artifacts, or (for legacy PVR surfaces only) the legacy PVR AAR wasn't dropped in.
  * - NOT_IMPLEMENTED: method exists but native wiring is not yet complete (seam pending)
  * - NOT_SUPPORTED: feature is unavailable on this OS version or target profile
  * - BILLING_UNAVAILABLE / PURCHASE_*: shared across expo-pico-iap and expo-pico-subscription
@@ -63,7 +63,11 @@ export function isPicoServiceError(err: unknown): err is PicoServiceError {
 // ─── Error factories ─────────────────────────────────────────────────────────
 
 /**
- * SDK class not present in this build — AAR not linked.
+ * SDK class not present in this build. Common causes: mobile flavor active,
+ * running on non-PICO hardware, Gradle was offline at prebuild time (so PPS
+ * Maven deps didn't resolve), or — for legacy PVR-only surfaces such as
+ * `PXR_Plugin` haptics / passthrough and `expo-pico-spatial` — the legacy
+ * PVR AAR wasn't dropped into `vendor/pico-sdk/` or `android/app/libs/`.
  * Thrown synchronously by guardService(), not by native bridge.
  */
 export function serviceUnavailableError(pkg: string, method: string): PicoServiceError {

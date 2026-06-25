@@ -40,8 +40,13 @@ class ExpoPicoSpatialModule : Module() {
         AsyncFunction("createSpatialAnchor") { pose: Map<String, Any> ->
             if (!PicoSpatialSdkDetector.isAnchorSdkPresent()) {
                 throw SpatialServiceUnavailableException(
-                    "PICO Spatial SDK anchor support not available. " +
-                    "Ensure pico-spatial-sdk.aar is in vendor/pico-sdk/ and the device supports spatial anchors."
+                    "Spatial anchors require the legacy PICO Spatial SDK 1.x AAR " +
+                    "(com.pvr.spatial:spatial-sdk:1.0.0) in vendor/pico-sdk/ or " +
+                    "android/app/libs/. Download it from the PICO Developer " +
+                    "portal — this is the older PVR-prefixed Spatial SDK, NOT " +
+                    "the modern PPS Maven artifacts (com.pico.pps:*) which " +
+                    "expo-pico-core resolves automatically. Anchor surfaces also " +
+                    "require a PICO 4 Ultra / Neo3 on PICO OS 6+."
                 )
             }
             val position = pose["position"] as? Map<*, *>
@@ -63,8 +68,13 @@ class ExpoPicoSpatialModule : Module() {
         AsyncFunction("setWindowContainerProperties") { props: Map<String, Any> ->
             if (!PicoSpatialSdkDetector.isWindowContainerSdkPresent()) {
                 throw SpatialServiceUnavailableException(
-                    "PICO Spatial SDK WindowContainer support not available. " +
-                    "Ensure pico-spatial-sdk.aar is in vendor/pico-sdk/ and you are running on PICO OS 6+."
+                    "WindowContainer support requires the legacy PICO Spatial SDK " +
+                    "1.x AAR (com.pvr.spatial:spatial-sdk:1.0.0) in " +
+                    "vendor/pico-sdk/ or android/app/libs/. Download it from the " +
+                    "PICO Developer portal — this is the older PVR-prefixed " +
+                    "Spatial SDK, NOT the modern PPS Maven artifacts " +
+                    "(com.pico.pps:*) which expo-pico-core resolves " +
+                    "automatically. Also requires PICO OS 6+."
                 )
             }
             WindowContainerBridge.setProperties(props)
@@ -73,8 +83,13 @@ class ExpoPicoSpatialModule : Module() {
         AsyncFunction("requestFullSpace") {
             if (!PicoSpatialSdkDetector.isSpaceTransitionSdkPresent()) {
                 throw SpatialServiceUnavailableException(
-                    "PICO Spatial SDK space transition not available. " +
-                    "Ensure pico-spatial-sdk.aar is in vendor/pico-sdk/ and you are running on PICO OS 6+."
+                    "Space transitions require the legacy PICO Spatial SDK 1.x " +
+                    "AAR (com.pvr.spatial:spatial-sdk:1.0.0) in vendor/pico-sdk/ " +
+                    "or android/app/libs/. Download it from the PICO Developer " +
+                    "portal — this is the older PVR-prefixed Spatial SDK, NOT " +
+                    "the modern PPS Maven artifacts (com.pico.pps:*) which " +
+                    "expo-pico-core resolves automatically. Also requires " +
+                    "PICO OS 6+."
                 )
             }
             SpaceTransitionBridge.requestFullSpace()

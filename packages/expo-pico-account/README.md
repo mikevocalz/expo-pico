@@ -7,7 +7,7 @@ PICO platform account, session, and identity APIs for Expo apps.
 ## Status
 
 - Maturity: alpha
-- PICO Platform SDK linkage: extension seam. Bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is present on the classpath (detected automatically; see [Runtime diagnostics](#runtime-diagnostics)).
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSignInClient` from `com.pico.pps:platform-service-auth:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time (detected automatically; see [Runtime diagnostics](#runtime-diagnostics)).
 - Platform: Android only (PICO is Android-only).
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -75,8 +75,8 @@ async function loadUser() {
 
 | Function                   | Description                                                             |
 | -------------------------- | ----------------------------------------------------------------------- |
-| `isAccountAvailable()`     | `true` on a PICO build with the Platform SDK linked.                    |
-| `getAccountSdkVersion()`   | `'unavailable'` when the SDK isn't linked; otherwise the version string. |
+| `isAccountAvailable()`     | `true` on a `picoDebug` build with the PPS auth client resolved.        |
+| `getAccountSdkVersion()`   | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
 | `getUserProfile()`         | Fetches the logged-in PICO user profile.                                |
 | `getAccountLinkStatus()`   | Returns link status across external identity providers.                 |
 | `login()` *(seam)*         | PICO OS owns the account session. No programmatic login path. Throws `notImplementedError`. |
@@ -102,7 +102,7 @@ Or run the CLI before building: `npx expo-pico-doctor --fail-on-warning`. It sur
 
 ## Limitations
 
-- Account bindings are an extension seam. When the PICO Platform SDK AAR ships as a public Maven artifact (or you drop it into `android/app/libs/`), account bridge methods start returning real data automatically. No plugin or JS API change needed.
+- Account bindings ride the modern PPS Maven artifact (`com.pico.pps:platform-service-auth:1.0.0`), which `withPicoGradle` resolves from public Maven on `picoDebug` builds. No AAR drop is required; bridge methods return real data automatically on PICO hardware.
 - `login()` / `logout()` are deliberately `notImplementedError`: PICO OS owns the account session at device level. Apps receive an already-authenticated session on launch.
 
 ## Links
