@@ -212,7 +212,24 @@ function main(): void {
   }
 
   const resolved = resolveOptions(raw);
-  const findings = runDiagnosticChecks(resolved);
+  const hasDevClient = (() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const fsLocal = require('fs') as typeof import('fs');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const pathLocal = require('path') as typeof import('path');
+      const pkg = JSON.parse(
+        fsLocal.readFileSync(pathLocal.join(args.projectRoot, 'package.json'), 'utf8')
+      );
+      return Boolean(
+        pkg.dependencies?.['expo-dev-client'] ||
+          pkg.devDependencies?.['expo-dev-client']
+      );
+    } catch {
+      return false;
+    }
+  })();
+  const findings = runDiagnosticChecks(resolved, { hasDevClient });
 
   const errorCount = findings.filter((f) => f.severity === 'error').length;
   const warnCount = findings.filter((f) => f.severity === 'warning').length;

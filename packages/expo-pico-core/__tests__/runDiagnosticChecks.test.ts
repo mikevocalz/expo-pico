@@ -132,6 +132,55 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
   });
 });
 
+describe('runDiagnosticChecks — dev-client environment signal', () => {
+  it('fires dev-client.immersive-clash when dev-client present + immersive build', () => {
+    const f = runDiagnosticChecks(
+      resolveOptions({
+        xrMode: 'pico-os5',
+        appType: 'vr',
+        platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
+      }),
+      { hasDevClient: true }
+    );
+    expect(ids(f)).toContain('dev-client.immersive-clash');
+    const match = f.find((x) => x.id === 'dev-client.immersive-clash')!;
+    expect(match.severity).toBe('warning');
+    expect(match.message).toContain('picoDebug');
+  });
+
+  it('does not fire when dev-client absent', () => {
+    const f = runDiagnosticChecks(
+      resolveOptions({
+        xrMode: 'pico-os5',
+        appType: 'vr',
+        platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
+      }),
+      { hasDevClient: false }
+    );
+    expect(ids(f)).not.toContain('dev-client.immersive-clash');
+  });
+
+  it('does not fire under mobile xrMode (no immersive surface to clash with)', () => {
+    const f = runDiagnosticChecks(
+      resolveOptions({ xrMode: 'mobile' }),
+      { hasDevClient: true }
+    );
+    expect(ids(f)).not.toContain('dev-client.immersive-clash');
+  });
+
+  it('does not fire under appType=2d (no immersive launcher to skip)', () => {
+    const f = runDiagnosticChecks(
+      resolveOptions({
+        xrMode: 'pico-os5',
+        appType: '2d',
+        platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
+      }),
+      { hasDevClient: true }
+    );
+    expect(ids(f)).not.toContain('dev-client.immersive-clash');
+  });
+});
+
 describe('runDiagnosticChecks — finding shape', () => {
   it('every finding has id + severity + non-empty message', () => {
     const all = runDiagnosticChecks(

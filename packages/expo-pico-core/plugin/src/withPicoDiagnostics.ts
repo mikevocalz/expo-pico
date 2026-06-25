@@ -1,6 +1,22 @@
 import { ConfigPlugin, WarningAggregator } from '@expo/config-plugins';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
+
+/**
+ * Environment signals fed into the reducer alongside resolved options.
+ * Kept separate so the reducer stays pure — tests pass an explicit
+ * `env`; the config-plugin wrapper probes the project's package.json.
+ */
+export interface DiagnosticEnv {
+  /**
+   * True when `expo-dev-client` is declared (deps or devDeps) in the
+   * consuming app's package.json. Drives the `dev-client.immersive-clash`
+   * check — see `runDiagnosticChecks`.
+   */
+  hasDevClient?: boolean;
+}
 
 const TAG = '@expo-pico/core';
 
@@ -60,7 +76,8 @@ export interface DiagnosticCheckFinding {
  *   - Any consumer that wants to surface these checks in custom tooling.
  */
 export function runDiagnosticChecks(
-  options: ResolvedPicoOptions
+  options: ResolvedPicoOptions,
+  env: DiagnosticEnv = {}
 ): DiagnosticCheckFinding[] {
   const findings: DiagnosticCheckFinding[] = [];
 
@@ -164,7 +181,30 @@ export function runDiagnosticChecks(
     });
   }
 
-  // 7. Partial IAP identity
+  // 7. expo-dev-client in an immersive PICO build. PICO's compositor can't
+  // promote DevLauncherActivity onto the immersive HMD surface — logcat
+  // spams "Will skip draw vr actvity" and the user sees a 2D launcher
+  // window inside the VR shell, with no path to immersive. expo-horizon-core
+  // ships zero dev-client in its example app for the same reason; the
+  // documented workflow is `expo run:android --variant picoDebug` + Metro,
+  // which gives you live JS reload without inserting a 2D launcher root.
+  if (
+    env.hasDevClient &&
+    options.xrMode !== 'mobile' &&
+    options.appType !== '2d'
+  ) {
+    findings.push({
+      id: 'dev-client.immersive-clash',
+      severity: 'warning',
+      message:
+        `expo-dev-client is declared in package.json alongside xrMode '${options.xrMode}' + appType '${options.appType}'. ` +
+        "PICO's compositor refuses to draw the DevLauncherActivity on the immersive HMD surface, so the immersive launcher intent-filter is skipped and the app falls back to a 2D panel. " +
+        'Recommended workflow (mirrors expo-horizon-core): remove expo-dev-client and use `expo run:android --variant picoDebug` + Metro for hot reload. ' +
+        'Keep dev-client only if you intentionally want a 2D companion build.',
+    });
+  }
+
+  // 8. Partial IAP identity
   const ps = options.platformService;
   const cnPartial = Boolean(ps.picoMerchantId) !== Boolean(ps.picoPayKey);
   const foreignPartial =
@@ -194,11 +234,27 @@ export function runDiagnosticChecks(
  * (throwing would abort `npx expo prebuild` with a stack trace which
  * is less useful than a clear warning pointing at the right setting).
  */
+function detectDevClient(projectRoot: string): boolean {
+  try {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8')
+    );
+    return Boolean(
+      pkg.dependencies?.['expo-dev-client'] ||
+        pkg.devDependencies?.['expo-dev-client']
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const withPicoDiagnostics: ConfigPlugin<ResolvedPicoOptions> = (
   config,
   options
 ) => {
-  for (const finding of runDiagnosticChecks(options)) {
+  const projectRoot = (config as { _internal?: { projectRoot?: string } })._internal?.projectRoot ?? process.cwd();
+  const env: DiagnosticEnv = { hasDevClient: detectDevClient(projectRoot) };
+  for (const finding of runDiagnosticChecks(options, env)) {
     WarningAggregator.addWarningAndroid(TAG, finding.message);
   }
   return config;
