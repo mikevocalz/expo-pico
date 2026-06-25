@@ -3,9 +3,24 @@
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": ".",
-    "types": ["jest", "node"],
-    "typeRoots": ["../../node_modules/@types"]
+    "types": [
+      "jest",
+      "node"
+    ],
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*.ts", "__tests__/**/*.ts", "src/__tests__/**/*.ts"],
-  "exclude": ["node_modules", "build", "plugin", "android"]
+  "include": [
+    "src/**/*.ts",
+    "__tests__/**/*.ts",
+    "src/__tests__/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "plugin",
+    "android"
+  ]
 }

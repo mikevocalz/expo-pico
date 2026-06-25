@@ -150,8 +150,8 @@ describe('renderFlavorBlock — NDK ABI filter', () => {
       resolveOptions({ xrMode: 'pico-swan', buildVariant: 'dual', ndkAbiFilters: true })
     );
     const matches = out.match(/ndk \{ abiFilters 'arm64-v8a' \}/g) ?? [];
-    // Both pico and dual flavors should carry the filter.
-    expect(matches).toHaveLength(2);
+    // pico, dual, and the quest fallback flavor should each carry the filter.
+    expect(matches).toHaveLength(3);
   });
 });
 

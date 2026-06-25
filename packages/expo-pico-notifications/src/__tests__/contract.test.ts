@@ -15,11 +15,10 @@ runPackageContractTests({
   versionMethod: 'getNotificationsSdkVersion',
   asyncMethods: [
     'requestPermissions',
-  ],
-  listenerMethods: [],
-  seamMethods: [
     'registerForPushNotifications',
   ],
+  listenerMethods: [],
+  seamMethods: [],
 });
 
 describe('getNotificationPermissionStatus default', () => {

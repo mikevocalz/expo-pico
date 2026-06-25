@@ -19,10 +19,9 @@ runPackageContractTests({
     ['getSubscriptionProducts', ['sku_monthly']],
     'getActiveSubscriptions',
     ['getSubscriptionEntitlement', 'sku_monthly'],
-  ],
-  listenerMethods: [],
-  seamMethods: [
     ['subscribe', { sku: 'sku_monthly' }],
     ['cancelSubscription', 'sku_monthly'],
   ],
+  listenerMethods: [],
+  seamMethods: [],
 });

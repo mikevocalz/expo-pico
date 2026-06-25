@@ -48,9 +48,9 @@ function driver(): Driver | null {
   const rnWebrtc = '@fishjam-cloud' + '/react-native-webrtc';
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const tc = (eval('require') as NodeRequire)(tsClient);
+    const tc = (eval('require') as (id: string) => any)(tsClient);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const wrtc = (eval('require') as NodeRequire)(rnWebrtc);
+    const wrtc = (eval('require') as (id: string) => any)(rnWebrtc);
     driverCache = {
       FishjamClient: tc.FishjamClient,
       mediaDevices: wrtc.mediaDevices,

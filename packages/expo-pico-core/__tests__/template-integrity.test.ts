@@ -16,7 +16,7 @@ import * as path from 'path';
  *      the template itself has no test harness (it's static files).
  */
 
-const TEMPLATE_ROOT = path.resolve(__dirname, '..', '..', '@expo-pico/template');
+const TEMPLATE_ROOT = path.resolve(__dirname, '..', '..', 'expo-pico-template');
 
 describe('expo-pico-template integrity', () => {
   it('directory exists', () => {
@@ -55,7 +55,7 @@ describe('expo-pico-template integrity', () => {
   it('app.config.ts registers the expo-pico-core plugin with xrMode + appType + buildVariant', () => {
     const cfg = fs.readFileSync(path.join(TEMPLATE_ROOT, 'app.config.ts'), 'utf8');
     expect(cfg).toContain("'@expo-pico/core'");
-    expect(cfg).toMatch(/xrMode:\s*'pico-(os6|swan)'/);
+    expect(cfg).toMatch(/xrMode:\s*'pico-(os5|os6|swan)'/);
     expect(cfg).toMatch(/appType:\s*'(vr|mr|2d)'/);
     expect(cfg).toMatch(/buildVariant:\s*'(pico|dual|mobile)'/);
     expect(cfg).toContain('newArchEnabled: true');

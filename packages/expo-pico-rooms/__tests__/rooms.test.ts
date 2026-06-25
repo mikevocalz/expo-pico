@@ -17,18 +17,18 @@ describe('@expo-pico/rooms', () => {
   describe('extension seams', () => {
     it('createRoom throws a descriptive error', async () => {
       const { createRoom } = await import('../src/index');
-      await expect(createRoom()).rejects.toThrow('expo-pico-rooms: createRoom()');
+      await expect(createRoom()).rejects.toThrow('@expo-pico/rooms: createRoom()');
     });
 
     it('joinRoom throws a descriptive error', async () => {
       const { joinRoom } = await import('../src/index');
-      await expect(joinRoom('room-123')).rejects.toThrow('expo-pico-rooms: joinRoom()');
+      await expect(joinRoom('room-123')).rejects.toThrow('@expo-pico/rooms: joinRoom()');
     });
 
     it('requestMatchmaking throws a descriptive error', async () => {
       const { requestMatchmaking } = await import('../src/index');
       await expect(requestMatchmaking({ poolName: 'default' })).rejects.toThrow(
-        'expo-pico-rooms: requestMatchmaking()'
+        '@expo-pico/rooms: requestMatchmaking()'
       );
     });
   });

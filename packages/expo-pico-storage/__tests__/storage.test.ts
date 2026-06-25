@@ -40,30 +40,30 @@ describe('@expo-pico/storage', () => {
   });
 
   it('saveEntry throws extension seam error', async () => {
-    await expect(saveEntry('key', 'value')).rejects.toThrow('expo-pico-storage: saveEntry()');
+    await expect(saveEntry('key', 'value')).rejects.toThrow('@expo-pico/storage: saveEntry()');
   });
 
   it('loadEntry throws extension seam error', async () => {
-    await expect(loadEntry('key')).rejects.toThrow('expo-pico-storage: loadEntry()');
+    await expect(loadEntry('key')).rejects.toThrow('@expo-pico/storage: loadEntry()');
   });
 
   it('deleteEntry throws extension seam error', async () => {
-    await expect(deleteEntry('key')).rejects.toThrow('expo-pico-storage: deleteEntry()');
+    await expect(deleteEntry('key')).rejects.toThrow('@expo-pico/storage: deleteEntry()');
   });
 
   it('listKeys throws extension seam error', async () => {
-    await expect(listKeys()).rejects.toThrow('expo-pico-storage: listKeys()');
+    await expect(listKeys()).rejects.toThrow('@expo-pico/storage: listKeys()');
   });
 
   it('syncStorage throws extension seam error', async () => {
-    await expect(syncStorage()).rejects.toThrow('expo-pico-storage: syncStorage()');
+    await expect(syncStorage()).rejects.toThrow('@expo-pico/storage: syncStorage()');
   });
 
   it('getStorageQuota throws extension seam error', async () => {
-    await expect(getStorageQuota()).rejects.toThrow('expo-pico-storage: getStorageQuota()');
+    await expect(getStorageQuota()).rejects.toThrow('@expo-pico/storage: getStorageQuota()');
   });
 
   it('clearLocalCache throws extension seam error', async () => {
-    await expect(clearLocalCache()).rejects.toThrow('expo-pico-storage: clearLocalCache()');
+    await expect(clearLocalCache()).rejects.toThrow('@expo-pico/storage: clearLocalCache()');
   });
 });

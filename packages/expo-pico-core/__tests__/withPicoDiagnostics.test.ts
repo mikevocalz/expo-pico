@@ -50,7 +50,7 @@ describe('withPicoDiagnostics — immersive without identity', () => {
   it('warns when xrMode=pico-os5 and no picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5' });
     expect(calls.length).toBeGreaterThanOrEqual(1);
-    expect(calls[0].message).toMatch(/no picoAppId/);
+    expect(calls[0].message).toMatch(/picoAppId is empty/);
   });
 
   it('warns when xrMode=pico-swan and no picoAppId is set', () => {
@@ -61,7 +61,7 @@ describe('withPicoDiagnostics — immersive without identity', () => {
   it('does not warn when legacy top-level picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
     expect(
-      calls.some((c) => c.message.includes('no picoAppId'))
+      calls.some((c) => c.message.includes('picoAppId is empty'))
     ).toBe(false);
   });
 });

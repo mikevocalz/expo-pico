@@ -17,9 +17,8 @@ runPackageContractTests({
     ['getProducts', ['sku_1']],
     ['consumePurchase', 'token_123'],
     'getPurchaseHistory',
-  ],
-  listenerMethods: [],
-  seamMethods: [
     ['purchase', 'sku_1'],
   ],
+  listenerMethods: [],
+  seamMethods: [],
 });

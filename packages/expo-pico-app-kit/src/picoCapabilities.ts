@@ -146,7 +146,7 @@ function buildCapabilities(): PicoCapabilities {
         // Indirect-name require so Metro static analysis doesn't bail
         // when the package isn't installed yet.
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        return (eval('require') as NodeRequire)(pkg);
+        return (eval('require') as (id: string) => unknown)(pkg);
       },
       (m) => typeof m?.FishjamClient === 'function',
     ),

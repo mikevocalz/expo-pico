@@ -42,7 +42,7 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
     const f = runDiagnosticChecks(resolveOptions({ xrMode: 'pico-os5' }));
     expect(ids(f)).toContain('identity.missing');
     const match = f.find((x) => x.id === 'identity.missing')!;
-    expect(match.severity).toBe('warning');
+    expect(match.severity).toBe('error');
   });
 
   it('appType.hidden-launcher fires on 2d with pico xrMode', () => {

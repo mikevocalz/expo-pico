@@ -16,11 +16,10 @@ runPackageContractTests({
   asyncMethods: [
     'getUserProfile',
     'getAccountLinkStatus',
-  ],
-  listenerMethods: [],
-  seamMethods: [
     'login',
     'getAccessToken',
     'logout',
   ],
+  listenerMethods: [],
+  seamMethods: [],
 });

@@ -33,22 +33,22 @@ describe('@expo-pico/leaderboards', () => {
   });
 
   it('getAllLeaderboards throws extension seam error', async () => {
-    await expect(getAllLeaderboards()).rejects.toThrow('expo-pico-leaderboards: getAllLeaderboards()');
+    await expect(getAllLeaderboards()).rejects.toThrow('@expo-pico/leaderboards: getAllLeaderboards()');
   });
 
   it('writeScore throws extension seam error', async () => {
-    await expect(writeScore('board_1', 9999)).rejects.toThrow('expo-pico-leaderboards: writeScore()');
+    await expect(writeScore('board_1', 9999)).rejects.toThrow('@expo-pico/leaderboards: writeScore()');
   });
 
   it('getEntries throws extension seam error', async () => {
-    await expect(getEntries('board_1')).rejects.toThrow('expo-pico-leaderboards: getEntries()');
+    await expect(getEntries('board_1')).rejects.toThrow('@expo-pico/leaderboards: getEntries()');
   });
 
   it('getEntriesAfterRank throws extension seam error', async () => {
-    await expect(getEntriesAfterRank('board_1', 10)).rejects.toThrow('expo-pico-leaderboards: getEntriesAfterRank()');
+    await expect(getEntriesAfterRank('board_1', 10)).rejects.toThrow('@expo-pico/leaderboards: getEntriesAfterRank()');
   });
 
   it('getUserEntry throws extension seam error', async () => {
-    await expect(getUserEntry('board_1')).rejects.toThrow('expo-pico-leaderboards: getUserEntry()');
+    await expect(getUserEntry('board_1')).rejects.toThrow('@expo-pico/leaderboards: getUserEntry()');
   });
 });

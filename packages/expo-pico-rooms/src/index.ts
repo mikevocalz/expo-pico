@@ -3,6 +3,7 @@ import {
   wrapNativeCall,
   safeAddListener,
   createNativeEventEmitter,
+  notImplementedError,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 import { NativeRooms } from './ExpoPicoRoomsModule';
@@ -91,16 +92,20 @@ export async function updateRoomData(data: Record<string, string>): Promise<void
 // invite flows. These functions reject with a clear, actionable code so
 // callers can surface "use createRoom + sendInvites" guidance.
 export async function requestMatchmaking(_options: MatchmakingOptions): Promise<void> {
-  throw new Error(
-    `${PKG}: requestMatchmaking — not in PPS 1.0.x. Use createRoom() + ` +
-    `social.sendInvites() (or social.launchInviteUserJoinRoomFlow). ` +
-    `Matchmaking was removed during the PVR→PPS SDK rewrite.`
+  throw notImplementedError(
+    PKG,
+    'requestMatchmaking',
+    'PPS 1.0.x has no matchmaking surface — use createRoom() + social.sendInvites() ' +
+    '(or social.launchInviteUserJoinRoomFlow). Matchmaking was removed during the ' +
+    'PVR→PPS SDK rewrite.'
   );
 }
 
 export async function cancelMatchmaking(): Promise<void> {
-  throw new Error(
-    `${PKG}: cancelMatchmaking — not in PPS 1.0.x (matchmaking not supported).`
+  throw notImplementedError(
+    PKG,
+    'cancelMatchmaking',
+    'PPS 1.0.x has no matchmaking surface (matchmaking not supported).'
   );
 }
 

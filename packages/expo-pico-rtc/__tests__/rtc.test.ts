@@ -27,19 +27,19 @@ describe('@expo-pico/rtc', () => {
   describe('extension seams', () => {
     it('initRtcEngine throws a descriptive error', async () => {
       const { initRtcEngine } = await import('../src/index');
-      await expect(initRtcEngine()).rejects.toThrow('expo-pico-rtc: initRtcEngine()');
+      await expect(initRtcEngine()).rejects.toThrow('@expo-pico/rtc: initRtcEngine()');
     });
 
     it('joinChannel throws a descriptive error', async () => {
       const { joinChannel } = await import('../src/index');
       await expect(
         joinChannel({ channelId: 'test', token: 'tok', uid: 1 })
-      ).rejects.toThrow('expo-pico-rtc: joinChannel()');
+      ).rejects.toThrow('@expo-pico/rtc: joinChannel()');
     });
 
     it('leaveChannel throws a descriptive error', async () => {
       const { leaveChannel } = await import('../src/index');
-      await expect(leaveChannel()).rejects.toThrow('expo-pico-rtc: leaveChannel()');
+      await expect(leaveChannel()).rejects.toThrow('@expo-pico/rtc: leaveChannel()');
     });
   });
 });
