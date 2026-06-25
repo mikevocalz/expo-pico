@@ -34,7 +34,7 @@ export type {
 
 export type { Subscription };
 
-// ─── Phase K: Controller Haptics ────────────────────────────────────────────
+// ─── Controller Haptics ─────────────────────────────────────────────────────
 
 const _hapticsRes = resolveNativeModule<ExpoPicoHapticsModuleInterface>('ExpoPicoHaptics');
 const _hapticsModule: ExpoPicoHapticsModuleInterface = _hapticsRes.available
@@ -45,7 +45,7 @@ const _hapticsModule: ExpoPicoHapticsModuleInterface = _hapticsRes.available
       isHapticsAvailable: () => false,
     };
 
-// ─── Phase K: Passthrough / mixed-reality dial ───────────────────────────────
+// ─── Passthrough / mixed-reality dial ───────────────────────────────────────
 
 const _passthroughRes =
   resolveNativeModule<ExpoPicoPassthroughModuleInterface>('ExpoPicoPassthrough');
@@ -89,7 +89,7 @@ export function isHapticsAvailable(): boolean {
   return _hapticsModule.hapticsAvailable ?? false;
 }
 
-// ─── Phase K: Passthrough / mixed-reality dial API ──────────────────────────
+// ─── Passthrough / mixed-reality dial API ───────────────────────────────────
 
 /**
  * Adds a listener for physical PICO passthrough dial events.
@@ -202,7 +202,7 @@ export function hasIapIdentity(): boolean {
 
 /**
  * True when any PICO Platform SDK class resolves on the classpath at
- * runtime. Phase J reflection probe — safer than checking for a
+ * runtime. Reflection probe — safer than checking for a
  * specific class name because the broad probe covers every known
  * entry point (account, IAP, notifications, RTC, achievements,
  * leaderboards, rooms, social, storage, subscription).
@@ -280,7 +280,7 @@ export function getPicoRuntimeInfo(): PicoRuntimeInfo {
   };
 }
 
-// Phase F — runtime diagnostics.
+// Runtime diagnostics.
 export {
   getPicoDiagnostics,
   buildDiagnosticsReport,
@@ -297,7 +297,7 @@ export type {
   PicoDiagnosticsReport,
 } from './types';
 
-// Phase K — capability runtime surface (declared flags + per-capability
+// Capability runtime surface (declared flags + per-capability
 // async APIs covering display, tracking, spatial, controllers, sensors,
 // and spatial audio).
 export {

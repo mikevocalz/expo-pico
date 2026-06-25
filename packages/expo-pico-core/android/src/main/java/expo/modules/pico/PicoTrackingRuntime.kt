@@ -1,7 +1,7 @@
 package expo.modules.pico
 
 /**
- * Phase K — eye / face / body / hand tracking surfaces.
+ * eye / face / body / hand tracking surfaces.
  *
  * All four are reflection-gated to PICO's `cvinterface` SDK (sometimes
  * also distributed under `tobsupport`). Each `enable*` call returns true

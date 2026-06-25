@@ -5,7 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 
 /**
- * Phase K — high-sampling-rate sensor probe.
+ * high-sampling-rate sensor probe.
  *
  * Runtime check for whether the AOSP `android.permission.HIGH_SAMPLING_RATE_SENSORS`
  * permission is actually being honored on this device. Even when the permission

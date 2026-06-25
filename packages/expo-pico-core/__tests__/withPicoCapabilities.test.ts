@@ -234,7 +234,7 @@ describe('applyCapabilityContract — idempotency and toggle-off cleanup', () =>
   });
 });
 
-describe('applyCapabilityContract — boundary + scene mesh (Phase D)', () => {
+describe('applyCapabilityContract — boundary + scene mesh', () => {
   it('emits boundary feature + permission', () => {
     const m = emptyManifest();
     applyCapabilityContract(m, resolveOptions({ boundary: true }));
@@ -269,7 +269,7 @@ describe('applyCapabilityContract — boundary + scene mesh (Phase D)', () => {
   });
 });
 
-describe('applyCapabilityContract — controller input (Phase I)', () => {
+describe('applyCapabilityContract — controller input', () => {
   it('emits picoSenseController feature + permission', () => {
     const m = emptyManifest();
     applyCapabilityContract(m, resolveOptions({ picoSenseController: true }));
@@ -342,7 +342,7 @@ describe('applyCapabilityContract — controller input (Phase I)', () => {
   });
 });
 
-describe('applyCapabilityContract — uses-native-library (Phase E)', () => {
+describe('applyCapabilityContract — uses-native-library', () => {
   function nativeLibs(m: Manifest): Array<{ name: string; required: string }> {
     const app = m.manifest.application![0] as any;
     const list = (app['uses-native-library'] as any[]) ?? [];

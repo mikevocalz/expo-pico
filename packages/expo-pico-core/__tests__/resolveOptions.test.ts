@@ -96,7 +96,7 @@ describe('xrMode resolution', () => {
   });
 });
 
-describe('spatialMode volume (Phase D)', () => {
+describe('spatialMode volume', () => {
   it('accepts and preserves the volume spatial mode', () => {
     const result = resolveOptions({ spatialMode: 'volume' });
     expect(result.spatialMode).toBe('volume');

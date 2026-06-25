@@ -1,5 +1,5 @@
 /**
- * Phase K — capability runtime TS layer.
+ * Capability runtime TS layer.
  *
  * Verifies the `capabilities.*` umbrella + per-domain helpers forward
  * correctly to the native module and degrade to the documented null /

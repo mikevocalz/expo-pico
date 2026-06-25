@@ -73,7 +73,7 @@ export function applyCapabilityContract(
     options.refreshRates.length > 0 ? options.refreshRates.join(',') : null
   );
 
-  // ── <uses-native-library> (Phase E) ─────────────────────────────
+  // ── <uses-native-library> ───────────────────────────────────────
   // Declared at <application> scope. Renderer-agnostic — works the same
   // for `@reactvision/react-viro`'s OpenXR integration and for
   // Unity-as-a-Library. Opt out via `openXrLoaderDeclaration: false`

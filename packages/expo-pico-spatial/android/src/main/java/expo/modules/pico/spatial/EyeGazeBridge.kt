@@ -5,7 +5,7 @@ import android.os.Looper
 import android.view.Choreographer
 
 /**
- * Phase K — Eye gaze polling bridge.
+ * Eye gaze polling bridge.
  *
  * Polls the PICO Spatial SDK EyeGazeProvider via reflection on the
  * Choreographer vsync callback so gaze data is synchronised with frame

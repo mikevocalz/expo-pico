@@ -8,7 +8,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — Eye gaze Expo Module.
+ * Eye gaze Expo Module.
  *
  * Emits `onGazeUpdate` events at display vsync frequency while at least
  * one JS listener is active. Uses Choreographer.FrameCallback so gaze

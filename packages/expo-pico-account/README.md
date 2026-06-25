@@ -87,7 +87,7 @@ Types: `PicoUserProfile`, `PicoLoginResult`, `PicoAccountLinkStatus`.
 
 ## Runtime diagnostics
 
-Use [`expo-pico-core`](../expo-pico-core)'s Phase J probe to check whether the Account SDK is live at runtime:
+Use [`expo-pico-core`](../expo-pico-core)'s reflection probe to check whether the Account SDK is live at runtime:
 
 ```ts
 import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';

@@ -65,4 +65,4 @@ None of these are encrypted at rest. Consumers **must not** hard-code credential
 ## Known limitations
 
 - The plugin does not enforce key-format validation beyond non-empty-string. A consumer can set `picoAppKey: 'not-a-real-key'`; the plugin writes it as-is. Key validation happens at PICO Platform SDK runtime, not at plugin time.
-- The Phase J reflection probe (`PicoPlatformSdkDetector`) relies on the PICO Platform SDK AAR being honest about its class names. A malicious fork of the SDK could present the same class names and pass the probe; the plugin doesn't verify signatures.
+- The reflection probe (`PicoPlatformSdkDetector`) relies on the PICO Platform SDK AAR being honest about its class names. A malicious fork of the SDK could present the same class names and pass the probe; the plugin doesn't verify signatures.

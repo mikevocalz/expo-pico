@@ -17,7 +17,7 @@ Starter `App.tsx`:
 
 - Live runtime HUD showing every field of `getPicoRuntimeInfo()` (xrMode, appType, device/build flavor, identity, Platform SDK presence).
 - Diagnostics card running `getPicoDiagnostics()` on mount. Flags any config miss before you build.
-- Platform SDK probe card running Phase J's `getPlatformSdkProbe()`. Shows which sibling SDK surfaces (account, iap, notifications, rtc, etc.) are live vs stubbed.
+- Platform SDK probe card running `getPlatformSdkProbe()`. Shows which sibling SDK surfaces (account, iap, notifications, rtc, etc.) are live vs stubbed.
 
 ## First run
 

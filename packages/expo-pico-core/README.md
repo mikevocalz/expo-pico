@@ -161,16 +161,16 @@ import {
   getAppType,
   // Spatial
   getSpatialMode,
-  // Platform SDK identity (Phase B)
+  // Platform SDK identity
   hasPlatformIdentity,
   hasIapIdentity,
-  // Runtime SDK detection (Phase J)
+  // Runtime SDK detection
   isPlatformSdkPresent,
   getPlatformSdkVersion,
   getPlatformSdkProbe,
   // Aggregate info
   getPicoRuntimeInfo,
-  // Diagnostics (Phase F)
+  // Diagnostics
   getPicoDiagnostics,
   formatDiagnostics,
 } from '@expo-pico/core';
@@ -200,7 +200,7 @@ if (report.summary.hasError) {
 
 All device / identity / SDK getters are synchronous. They read compile-time constants and BuildConfig fields resolved at module init.
 
-## Capability runtime (Phase K)
+## Capability runtime
 
 Every prebuild capability flag (eye tracking, passthrough, foveated rendering, boundary, scene mesh, controller haptics, …) has a matching runtime API. Flags that aren't enabled at prebuild time or that the device doesn't support return `null`, `false`, or empty lists, so callers destructure safely without branching.
 
@@ -242,7 +242,7 @@ const trackers = await capabilities.motionTracker.list();
 const sensors = await capabilities.sensors.getHighRate();
 ```
 
-Phase K is reflection-gated on the Kotlin side. There's no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
+The capability runtime is reflection-gated on the Kotlin side. There's no compile-time dependency on the NDA-distributed PICO Platform SDK. Drop the SDK AAR into `android/app/libs/` and the probes light up automatically; without it every method returns the documented degraded shape.
 
 ## CLI: `expo-pico-doctor`
 
@@ -278,7 +278,7 @@ Each sibling adds a narrow native surface and a matching JS API. All are peer-de
 - New Architecture only. `newArchEnabled: true` is required.
 - Plugin emits a single `withDangerousMod` when writing the PICO-flavor source-set manifest. That is the only filesystem mutation; every other mutation uses safe structured mods.
 - Some hardware capability keys are best-known seams, flagged in the options table. Emitted with `android:required="false"` so misnames are install-safe.
-- PICO Platform SDK native bindings (account, IAP, RTC, etc.) are extension seams in the sibling packages until the PICO SDK AAR is a public Maven artifact. Core's Phase J probe activates siblings automatically when a consumer drops the AAR into `android/app/libs/`.
+- PICO Platform SDK native bindings (account, IAP, RTC, etc.) are extension seams in the sibling packages until the PICO SDK AAR is a public Maven artifact. Core's reflection probe activates siblings automatically when a consumer drops the AAR into `android/app/libs/`.
 
 ## Links
 

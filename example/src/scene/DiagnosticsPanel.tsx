@@ -24,8 +24,8 @@ import {
 /**
  * Live runtime diagnostics panel.
  *
- * Phase M polish over the Phase F baseline:
- *   - Per-sibling SDK probe table (Phase J) rendered inline.
+ * Polish over the baseline diagnostics:
+ *   - Per-sibling SDK probe table rendered inline.
  *   - Share / copy button on the raw formatDiagnostics output so users
  *     can paste a full diagnostic report into a bug report.
  *   - Filter chips — hide info-severity findings when the user only
@@ -200,7 +200,7 @@ function DiagnosticsBody({
 
       {capabilities && capabilities.length > 0 ? (
         <>
-          <Text style={styles.sectionHeader}>CAPABILITIES (Phase K)</Text>
+          <Text style={styles.sectionHeader}>CAPABILITIES</Text>
           <View style={styles.capTable}>
             {capabilities.map((entry) => (
               <View key={entry.name} style={styles.capRow}>

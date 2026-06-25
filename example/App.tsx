@@ -17,7 +17,7 @@ import { ValidationHarness } from './src/validation/ValidationHarness';
  * navigator at the absolute root. Same code on PICO, Quest, and mobile.
  *
  *   - Scene       — Viro scene + compact runtime HUD.
- *   - Diagnostics — Phase F runtime report + Phase J SDK probe table.
+ *   - Diagnostics — runtime report + SDK probe table.
  *   - Harness     — full per-sibling validation harness.
  */
 export default function App(): React.JSX.Element {

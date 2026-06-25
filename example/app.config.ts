@@ -69,7 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // plugin) still handles any explicit `<ViroVRSceneNavigator>`
         // transition when the Scene tab activates.
         appType: 'mr',
-        // Phase B — Platform SDK identity. Populate from env so secrets
+        // Platform SDK identity. Populate from env so secrets
         // don't land in source. Leave fields undefined to skip writing
         // their string resources; the flavor manifest writer will then
         // also skip declaring the login/browser activities.
@@ -99,11 +99,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         handTracking: true,
         passthrough: true,
         sceneUnderstanding: false,
-        // Phase C — hardware capabilities. Each toggle emits a
+        // Hardware capabilities. Each toggle emits a
         // uses-feature (required=false so non-capable devices still
         // install) plus the matching permission where applicable.
         // The example app declares every capability on so the Diagnostics
-        // tab can exercise the Phase K runtime probes end-to-end on a
+        // tab can exercise the runtime probes end-to-end on a
         // real PICO Swan device. Downstream apps should turn these off
         // unless they actually use the hardware — PICO reviewers flag
         // over-declared features.
@@ -114,14 +114,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         foveatedRendering: true,
         highSamplingRateSensors: true, // Head-tracked VR typically needs 500+Hz IMU sampling.
         refreshRates: [72, 90, 120], // Declare the rates the renderer supports.
-        // Phase D — late-audit additions.
+        // Late-audit additions.
         boundary: true, // Guardian / boundary system; opt in for room-scale apps.
         sceneMesh: true, // Scene mesh capture; distinct from plane-only sceneUnderstanding.
-        // Phase I — controller input + Motion Tracker + haptics.
+        // Controller input + Motion Tracker + haptics.
         picoSenseController: true,
         motionTracker: true,
         controllerHaptics: true,
-        // Phase E — toolchain. Both default to true when xrMode !== 'mobile',
+        // Toolchain. Both default to true when xrMode !== 'mobile',
         // so these lines are only here for documentation / override. Set
         // ndkAbiFilters: false to keep the 32-bit slice; set
         // openXrLoaderDeclaration: false if your renderer bundles its own

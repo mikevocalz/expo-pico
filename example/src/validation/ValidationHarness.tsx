@@ -252,7 +252,7 @@ const defaultInputs: InputState = {
   storageValue: 'hello-from-expo-pico',
   socialUserId: 'friend-demo',
   socialRequestId: 'request-demo',
-  presenceRichText: 'Phase 6 validation in progress',
+  presenceRichText: 'Validation in progress',
   presenceDestination: 'demo-destination',
   inviteDestination: 'demo-destination',
   inviteUserIds: 'friend-a,friend-b',
@@ -634,7 +634,7 @@ export function ValidationHarness() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>Phase 6 / Phase 7</Text>
+        <Text style={styles.eyebrow}>Validation</Text>
         <Text style={styles.title}>expo-pico validation harness</Text>
         <Text style={styles.subtitle}>
           Action-driven proving UI for device validation, negative-path capture, and prerelease evidence.

@@ -32,28 +32,28 @@ declare class ExpoPicoModule extends NativeModule {
   swanRuntimeInitialized: boolean;
   os5RuntimeInitialized: boolean;
 
-  // Phase J — reflection-based PICO Platform SDK detection.
+  // Reflection-based PICO Platform SDK detection.
   platformSdkPresent: boolean;
   platformSdkVersion: string | null;
 
-  // Phase K — prebuild-declared capability mirror.
+  // Prebuild-declared capability mirror.
   declaredCapabilities: PicoDeclaredCapabilities;
   declaredRefreshRates: number[];
   declaredTargetDevices: string[];
 
-  // Phase F — async runtime introspection.
+  // Async runtime introspection.
   hasSystemFeature(name: string): Promise<boolean>;
   getDeclaredFeatures(): Promise<Array<{ name: string; required: boolean; glEsVersion?: string }>>;
   getDeclaredPermissions(): Promise<Array<{ name: string; granted: boolean }>>;
 
-  // Phase J — per-surface SDK probe report.
+  // Per-surface SDK probe report.
   getPlatformSdkProbe(): Promise<Record<string, boolean>>;
 
-  // Phase K — capability runtime snapshot.
+  // Capability runtime snapshot.
   getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]>;
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | null>;
 
-  // Phase K — XR display.
+  // XR display.
   getCurrentRefreshRate(): Promise<number | null>;
   getSupportedRefreshRates(): Promise<number[] | null>;
   setRefreshRate(hz: number): Promise<boolean>;
@@ -62,7 +62,7 @@ declare class ExpoPicoModule extends NativeModule {
   setPassthroughEnabled(enabled: boolean): Promise<boolean>;
   isPassthroughActive(): Promise<boolean | null>;
 
-  // Phase K — tracking.
+  // Tracking.
   enableEyeTracking(): Promise<boolean>;
   disableEyeTracking(): Promise<boolean>;
   getEyePose(): Promise<PicoEyePose | null>;
@@ -76,7 +76,7 @@ declare class ExpoPicoModule extends NativeModule {
   disableHandTracking(): Promise<boolean>;
   getHandPose(): Promise<PicoHandPose | null>;
 
-  // Phase K — spatial.
+  // Spatial.
   isBoundaryVisible(): Promise<boolean | null>;
   setBoundaryVisible(visible: boolean): Promise<boolean>;
   getBoundaryGeometry(): Promise<number[][] | null>;
@@ -85,12 +85,12 @@ declare class ExpoPicoModule extends NativeModule {
   getDetectedPlanes(): Promise<PicoDetectedPlane[] | null>;
   refreshScene(): Promise<boolean>;
 
-  // Phase K — controllers + haptics + motion tracker.
+  // Controllers + haptics + motion tracker.
   getControllers(): Promise<PicoController[] | null>;
   triggerHaptic(hand: 'left' | 'right', amplitude: number, durationMs: number): Promise<boolean>;
   getMotionTrackers(): Promise<PicoMotionTracker[] | null>;
 
-  // Phase K — sensors + spatial audio.
+  // Sensors + spatial audio.
   getHighRateSensors(): Promise<PicoHighRateSensor[]>;
   isSpatialAudioEnabled(): Promise<boolean | null>;
   setSpatialAudioEnabled(enabled: boolean): Promise<boolean>;

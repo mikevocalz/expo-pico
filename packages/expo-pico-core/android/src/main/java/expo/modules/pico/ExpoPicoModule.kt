@@ -26,13 +26,13 @@ class ExpoPicoModule : Module() {
             "emulatorOptimizations" to BuildConfig.PICO_EMULATOR_OPTIMIZATIONS,
             "swanRuntimeInitialized" to PicoSwanRuntime.isInitialized(),
             "os5RuntimeInitialized" to PicoOs5Runtime.isInitialized(),
-            // Phase J — reflection-based Platform SDK detection. Both
+            // Reflection-based Platform SDK detection. Both
             // values are evaluated once at module-init time (cheap — each
             // Class.forName with initialize=false only touches the
             // classloader) and cached by Expo Modules.
             "platformSdkPresent" to PicoPlatformSdkDetector.isAnyPlatformSdkPresent(),
             "platformSdkVersion" to PicoPlatformSdkDetector.readVersion(),
-            // Phase K — capability declarations from the prebuild plugin
+            // Capability declarations from the prebuild plugin
             // exposed at runtime so JS code can ask "did the prebuild
             // declare X?" without re-reading the manifest.
             // mapOf is explicitly typed Map<String, Any> because the
@@ -64,7 +64,7 @@ class ExpoPicoModule : Module() {
             "declaredTargetDevices" to PicoCapabilityRuntime.getDeclaredTargetDevices()
         )
 
-        // Phase F runtime introspection + Phase J SDK probes. Async so
+        // Runtime introspection + SDK probes. Async so
         // they don't block module init if the caller has many of them;
         // each hits PackageManager or the classloader.
         AsyncFunction("hasSystemFeature") { name: String ->
@@ -86,7 +86,7 @@ class ExpoPicoModule : Module() {
             PicoPlatformSdkDetector.buildProbeReport()
         }
 
-        // ── Phase K: per-capability runtime snapshot ────────────────
+        // ── Per-capability runtime snapshot ─────────────────────────
 
         AsyncFunction("getCapabilitySnapshot") {
             val ctx = appContext.reactContext ?: return@AsyncFunction emptyList<Map<String, Any?>>()
@@ -98,7 +98,7 @@ class ExpoPicoModule : Module() {
             PicoCapabilityRuntime.isCapabilityAvailable(ctx, name)
         }
 
-        // ── Phase K: XR display surfaces (refresh rate, foveation, passthrough)
+        // ── XR display surfaces (refresh rate, foveation, passthrough)
 
         AsyncFunction("getCurrentRefreshRate") {
             PicoXrRuntime.getCurrentRefreshRate()
@@ -128,7 +128,7 @@ class ExpoPicoModule : Module() {
             PicoXrRuntime.isPassthroughActive()
         }
 
-        // ── Phase K: tracking surfaces (eye, face, body, hand) ──────
+        // ── Tracking surfaces (eye, face, body, hand) ───────────────
 
         AsyncFunction("enableEyeTracking") {
             PicoTrackingRuntime.enableEyeTracking()
@@ -170,7 +170,7 @@ class ExpoPicoModule : Module() {
             PicoTrackingRuntime.getHandPose()
         }
 
-        // ── Phase K: spatial surfaces (boundary, scene mesh, planes) ─
+        // ── Spatial surfaces (boundary, scene mesh, planes) ─────────
 
         AsyncFunction("isBoundaryVisible") {
             PicoSpatialRuntime.isBoundaryVisible()
@@ -194,7 +194,7 @@ class ExpoPicoModule : Module() {
             PicoSpatialRuntime.refreshScene()
         }
 
-        // ── Phase K: controllers + haptics + Motion Tracker ─────────
+        // ── Controllers + haptics + Motion Tracker ──────────────────
 
         AsyncFunction("getControllers") {
             PicoControllerRuntime.getControllers()
@@ -206,14 +206,14 @@ class ExpoPicoModule : Module() {
             PicoControllerRuntime.getMotionTrackers()
         }
 
-        // ── Phase K: high-rate sensors ──────────────────────────────
+        // ── High-rate sensors ───────────────────────────────────────
 
         AsyncFunction("getHighRateSensors") {
             val ctx = appContext.reactContext ?: return@AsyncFunction emptyList<Map<String, Any?>>()
             PicoSensorRuntime.getHighRateSensors(ctx)
         }
 
-        // ── Phase K: spatial audio ──────────────────────────────────
+        // ── Spatial audio ───────────────────────────────────────────
 
         AsyncFunction("isSpatialAudioEnabled") {
             PicoSpatialAudioRuntime.isSpatialAudioEnabled()

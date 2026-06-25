@@ -148,7 +148,7 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
-The example renders a ReactVision/Viro immersive scene (Khronos BrainStem glTF auto-downloaded on install) inside `<ViroVRSceneNavigator>`, a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time and runtime diagnostics plus Phase J SDK probe), and a `ValidationHarness` that exercises every sibling module's public API. Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration from Phase E. On PICO / Meta Quest hardware the example runs as an end-to-end immersive XR app; on a non-XR device it falls back to a flat preview.
+The example renders a ReactVision/Viro immersive scene (Khronos BrainStem glTF auto-downloaded on install) inside `<ViroVRSceneNavigator>`, a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time and runtime diagnostics plus the SDK probe), and a `ValidationHarness` that exercises every sibling module's public API. Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO / Meta Quest hardware the example runs as an end-to-end immersive XR app; on a non-XR device it falls back to a flat preview.
 
 ## License
 

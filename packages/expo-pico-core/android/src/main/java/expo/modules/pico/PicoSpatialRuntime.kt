@@ -1,7 +1,7 @@
 package expo.modules.pico
 
 /**
- * Phase K — spatial / boundary / scene-mesh / passthrough surfaces.
+ * spatial / boundary / scene-mesh / passthrough surfaces.
  *
  * Reflection-gated to PICO's `cvinterface` SDK. All callers degrade
  * gracefully when the SDK is absent (mobile emulator, non-PICO target).

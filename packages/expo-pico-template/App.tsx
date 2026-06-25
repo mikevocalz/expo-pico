@@ -25,7 +25,7 @@ import {
  * What you see on a PICO device:
  *   - "PICO runtime" card with xrMode, appType, target profile, device
  *     model, OS version, platform identity + Platform SDK presence
- *     (Phase J reflection probe).
+ *     (reflection probe).
  *   - "Diagnostics" card with the result of `getPicoDiagnostics()`.
  *   - "Platform SDK probe" card with per-surface live/seam status for
  *     every `expo-pico-*` sibling package.

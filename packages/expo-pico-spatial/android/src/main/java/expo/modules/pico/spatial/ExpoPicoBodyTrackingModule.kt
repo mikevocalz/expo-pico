@@ -8,7 +8,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — Body tracking Expo Module.
+ * Body tracking Expo Module.
  *
  * Emits `onBodyUpdate` with a joint array at vsync frequency while at
  * least one JS listener is active. Pauses on host pause, cleaned up

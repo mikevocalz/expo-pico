@@ -100,13 +100,13 @@ const probe = await getPlatformSdkProbe();
 console.log('Push SDK live:', probe.notifications);
 ```
 
-The Phase F `DiagnosticsPanel` shows the `permission.ungranted:android.permission.POST_NOTIFICATIONS` info when the user hasn't accepted the runtime prompt yet.
+The `DiagnosticsPanel` shows the `permission.ungranted:android.permission.POST_NOTIFICATIONS` info when the user hasn't accepted the runtime prompt yet.
 
 ## Limitations
 
 - Delivery is the backend's responsibility; this package only handles registration and token retrieval on the client.
 - Android 13+ requires runtime `POST_NOTIFICATIONS` consent. The plugin option `requestPostNotificationsPermission: true` (default) declares the permission; the app must call `requestPermissions()` at the feature-use site.
-- Foreground notification event listeners (e.g. `addNotificationReceivedListener`) are a future-phase addition. Today the package exposes only registration and permission flow.
+- Foreground notification event listeners (e.g. `addNotificationReceivedListener`) are a future addition. Today the package exposes only registration and permission flow.
 
 ## Links
 

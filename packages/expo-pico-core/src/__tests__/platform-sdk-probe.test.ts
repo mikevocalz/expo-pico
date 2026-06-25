@@ -1,5 +1,5 @@
 /**
- * Phase J — reflection-based PICO Platform SDK detection.
+ * Reflection-based PICO Platform SDK detection.
  *
  * The Kotlin detector (`PicoPlatformSdkDetector`) wraps `Class.forName`;
  * it can only be exercised on a real or emulated device. These tests
@@ -162,7 +162,7 @@ describe('getPlatformSdkProbe', () => {
   });
 });
 
-describe('getPicoRuntimeInfo — Phase J fields', () => {
+describe('getPicoRuntimeInfo — Platform SDK fields', () => {
   it('surfaces platformSdkPresent and platformSdkVersion', () => {
     mockModule.platformSdkPresent = true;
     mockModule.platformSdkVersion = '3.2.0';

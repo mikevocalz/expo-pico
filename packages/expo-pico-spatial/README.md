@@ -36,8 +36,8 @@ export default {
         handTracking: true,
         passthrough: true,
         sceneUnderstanding: true,
-        boundary: true, // Phase D: XR_PICO_boundary_ext
-        sceneMesh: true, // Phase D: distinct from sceneUnderstanding
+        boundary: true, // XR_PICO_boundary_ext
+        sceneMesh: true, // distinct from sceneUnderstanding
       },
     ],
     '@expo-pico/spatial',
@@ -109,8 +109,8 @@ console.log({
 
 ## Limitations
 
-- Anchor / container / space-transition runtime APIs are seams. The plugin correctly declares every relevant manifest feature (`pico.software.spatialanchor`, `pico.software.scene`, `pico.software.scenemesh`), but native runtime bindings require the PICO Spatial SDK AAR. Expect these to land in a future phase when the SDK surfaces stabilize publicly.
-- `spatialMode: 'volume'` (Phase D) is the PICO OS 6 3D Volume container. The meta-data key is emitted as a best-known seam; verify against the PICO launcher when the Spatial SDK ships.
+- Anchor / container / space-transition runtime APIs are seams. The plugin correctly declares every relevant manifest feature (`pico.software.spatialanchor`, `pico.software.scene`, `pico.software.scenemesh`), but native runtime bindings require the PICO Spatial SDK AAR. Expect these to land later when the SDK surfaces stabilize publicly.
+- `spatialMode: 'volume'` is the PICO OS 6 3D Volume container. The meta-data key is emitted as a best-known seam; verify against the PICO launcher when the Spatial SDK ships.
 
 ## Links
 

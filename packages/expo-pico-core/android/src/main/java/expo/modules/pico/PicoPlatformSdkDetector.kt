@@ -3,7 +3,7 @@ package expo.modules.pico
 /**
  * Shared reflection-based probes for the PICO Platform SDK.
  *
- * Phase J design: sibling packages (account, iap, rtc, rooms, leaderboards,
+ * Design: sibling packages (account, iap, rtc, rooms, leaderboards,
  * achievements, storage, social, subscription, notifications) historically
  * each duplicated their own `Class.forName` try/catch. The names they
  * probed drifted — `com.pvr.platform.sdk.X`, `com.pvr.iap.sdk.Y`,

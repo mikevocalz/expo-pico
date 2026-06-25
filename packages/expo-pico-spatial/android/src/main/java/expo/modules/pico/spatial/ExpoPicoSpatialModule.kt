@@ -5,7 +5,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — PICO spatial runtime Expo Module.
+ * PICO spatial runtime Expo Module.
  *
  * Wires createSpatialAnchor, setWindowContainerProperties, and
  * requestFullSpace to the PICO Spatial SDK via reflection. All calls

@@ -25,7 +25,7 @@ const PICO_BROWSER_ACTIVITY = 'com.pico.loginpaysdk.component.PicoSDKBrowser';
  * Idempotent: activities are keyed on `android:name`, so a repeat apply
  * updates the element in place rather than duplicating.
  *
- * Note on scope: this is Phase B (Platform SDK identity). The activities
+ * Note on scope: Platform SDK identity. The activities
  * exist so the Platform SDK auth/payment flows bind correctly. The
  * actual `CoreService.Initialize` call remains an extension seam in
  * `PicoOs5Runtime` / sibling packages — this plugin only ensures the

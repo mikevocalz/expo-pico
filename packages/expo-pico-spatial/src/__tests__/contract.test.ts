@@ -33,8 +33,8 @@ describe('expo-pico-spatial — SDK family contract', () => {
     });
   });
 
-  // ── Phase K availability flags — all false when SDK absent ───────────────────
-  describe('Phase K availability flags — false when SDK absent', () => {
+  // ── Availability flags — all false when SDK absent ─────────────────────────
+  describe('availability flags — false when SDK absent', () => {
     it('isEyeGazeAvailable() returns false', () => {
       expect(api.isEyeGazeAvailable()).toBe(false);
     });

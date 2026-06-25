@@ -84,7 +84,7 @@ const PICO_REPO_BLOCK = `
  * (ABI filter presence, dual-flavor suffix, SDK version interpolation)
  * without spinning up the full @expo/config-plugins mod pipeline.
  *
- * Phase E: the `pico` (and `dual`) flavors get `ndk { abiFilters 'arm64-v8a' }`
+ * The `pico` (and `dual`) flavors get `ndk { abiFilters 'arm64-v8a' }`
  * when `options.ndkAbiFilters` is true. PICO 4 / 4 Ultra / Swan are all
  * 64-bit ARM. Renderer-agnostic — same filter whether the app renders
  * with `@reactvision/react-viro`, Unity-as-a-Library, or any other
@@ -278,7 +278,7 @@ android.defaultConfig {
     buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityValue
     buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityValue
     buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", "${emulatorFlag}"
-    // Phase K — capability declarations exposed at runtime so JS code can
+    // Capability declarations exposed at runtime so JS code can
     // ask "did the prebuild flag X?" without re-reading the manifest.
     buildConfigField "boolean", "PICO_HAND_TRACKING", "${options.handTracking}"
     buildConfigField "boolean", "PICO_PASSTHROUGH", "${options.passthrough}"

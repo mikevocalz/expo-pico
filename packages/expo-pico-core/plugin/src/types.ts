@@ -570,7 +570,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     options.minSdkVersion ??
     (xrMode === 'pico-swan' ? swan.swanMinSdkVersion : PICO_OPTION_DEFAULTS.minSdkVersion);
 
-  // Phase E — toolchain / loader defaults. When the build is an
+  // Toolchain / loader defaults. When the build is an
   // immersive PICO build, default to ABI-filtered arm64 and declare the
   // OpenXR loader. Mobile builds keep both off to stay ABI-flexible and
   // avoid an unused loader declaration.

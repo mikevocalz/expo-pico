@@ -5,7 +5,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — Scene mesh / room mesh Expo Module.
+ * Scene mesh / room mesh Expo Module.
  *
  * Exposes `getSceneMesh()` (async one-shot query) and
  * `addSceneMeshUpdateListener` / `removeSceneMeshUpdateListener`

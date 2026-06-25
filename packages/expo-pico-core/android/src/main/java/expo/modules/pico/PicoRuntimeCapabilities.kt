@@ -44,8 +44,8 @@ internal object PicoRuntimeCapabilities {
      * @return the list of `<uses-feature>` entries declared in this app's
      *   merged AndroidManifest. Each entry is a map with `name`,
      *   `required`, and `glEsVersion` (the latter only populated for
-     *   glEs features). Useful for confirming that the Phase A/C/D
-     *   declarations actually landed after manifest merging.
+     *   glEs features). Useful for confirming that the launcher and
+     *   capability declarations actually landed after manifest merging.
      */
     fun getDeclaredFeatures(context: Context): List<Map<String, Any?>> {
         return try {

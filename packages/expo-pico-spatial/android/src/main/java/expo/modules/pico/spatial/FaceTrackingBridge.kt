@@ -1,7 +1,7 @@
 package expo.modules.pico.spatial
 
 /**
- * Phase K — Face tracking reflection bridge.
+ * Face tracking reflection bridge.
  *
  * Targets PICO Spatial SDK FaceTracker via reflection.
  *

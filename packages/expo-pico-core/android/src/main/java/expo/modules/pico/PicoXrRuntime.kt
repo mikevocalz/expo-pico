@@ -3,7 +3,7 @@ package expo.modules.pico
 import java.lang.reflect.Method
 
 /**
- * Phase K — XR display capabilities (refresh rate, foveation, passthrough).
+ * XR display capabilities (refresh rate, foveation, passthrough).
  *
  * All methods are reflection-gated to PICO's `PXR_Plugin` (the in-process
  * VR plugin shipped on PICO OS 6 / Swan). When the class is absent (mobile

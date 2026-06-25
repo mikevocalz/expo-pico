@@ -6,13 +6,13 @@ import expo.modules.pico.PicoPlatformSdkDetector
 /**
  * Availability + version probes for the PICO Platform account surface.
  *
- * Phase L canary: version reporting delegates to the shared
+ * Version reporting delegates to the shared
  * `PicoPlatformSdkDetector` in `expo-pico-core`. The presence probe
  * stays inline here because it names the account-specific entry
  * class, while the shared detector's broad probe covers every sibling.
  *
  * Other siblings can migrate their version reporting to the shared
- * detector in follow-up PRs once this canary is validated on a real
+ * detector in follow-up PRs once this is validated on a real
  * device — see `docs/DEVICE-TESTING-REQUIRED.md`.
  *
  * Rollback: if the Gradle `implementation project(':expo-pico-core')`
@@ -54,9 +54,9 @@ object AccountUtils {
     }
 
     /**
-     * Phase L canary — delegates to the shared detector. Returns null
-     * when the SDK isn't on the classpath or the version field can't
-     * be read. The JS side renders null as `'unavailable'`.
+     * Delegates to the shared detector. Returns null when the SDK
+     * isn't on the classpath or the version field can't be read.
+     * The JS side renders null as `'unavailable'`.
      */
     fun getPlatformSdkVersion(): String? {
         return PicoPlatformSdkDetector.readVersion()

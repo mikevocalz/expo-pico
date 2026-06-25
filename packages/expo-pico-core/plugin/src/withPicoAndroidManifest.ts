@@ -84,14 +84,14 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // changes. Viro's VRActivity owns immersive entry either way.
       const hasDevClient = detectExpoDevClient(projectRoot);
       const manifest = buildPicoManifest(options);
-      // Phase A launcher contract: pvr.app.type meta + immersive launcher
+      // Launcher contract: pvr.app.type meta + immersive launcher
       // categories on .MainActivity + <queries> for PICO system packages.
       // Mutates the manifest object in place; gated on resolved appType.
       applyLauncherContract(manifest, options, { hasDevClient });
-      // Phase B Platform SDK contract: UnityAuthInterface + PicoSDKBrowser
+      // Platform SDK contract: UnityAuthInterface + PicoSDKBrowser
       // activities. Gated on platformService.hasIdentity && declareActivities.
       applyPlatformServiceContract(manifest, options);
-      // Phase C hardware capabilities: eye/face/body tracking features +
+      // Hardware capabilities: eye/face/body tracking features +
       // permissions, spatial-audio + foveation features, refresh-rate
       // meta-data. Each capability is independently gated; all writes
       // are idempotent and toggling off cleans up the entry.

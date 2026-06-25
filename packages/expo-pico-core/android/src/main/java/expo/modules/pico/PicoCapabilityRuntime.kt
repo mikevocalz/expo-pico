@@ -3,7 +3,7 @@ package expo.modules.pico
 import android.content.Context
 
 /**
- * Phase K — central registry mapping every prebuild capability flag to:
+ * central registry mapping every prebuild capability flag to:
  *   1. its build-time declared state (BuildConfig field), and
  *   2. its runtime availability state (PackageManager.hasSystemFeature +
  *      PICO Platform SDK reflection probe + native library probe).

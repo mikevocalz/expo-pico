@@ -12,7 +12,7 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
  *     activity, and the PICO system-package <queries> block.
  *   - `platformService` reads app ID + key from env. Never commit
  *     credentials — keep them in EAS Secrets or a .env file.
- *   - `handTracking` + `passthrough` opt-in. Add more Phase C / D
+ *   - `handTracking` + `passthrough` opt-in. Add more hardware
  *     capabilities as you need them.
  *
  * Extension points — uncomment and fill as needed:

@@ -104,7 +104,7 @@ describe('BuildConfig fields injection', () => {
   });
 });
 
-describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
+describe('renderFlavorBlock — NDK ABI filter', () => {
   // Local imports so the utility-focused tests above stay light.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { renderFlavorBlock } = require('../plugin/src/withPicoGradle');
@@ -155,7 +155,7 @@ describe('renderFlavorBlock — NDK ABI filter (Phase E)', () => {
   });
 });
 
-describe('Phase K — capability BuildConfig fields', () => {
+describe('capability BuildConfig fields', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { withPicoAppBuildGradle } = require('../plugin/src/withPicoGradle');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -180,7 +180,7 @@ describe('Phase K — capability BuildConfig fields', () => {
   // Because `withAppBuildGradle` imports the full `@expo/config-plugins`
   // pipeline, we exercise the payload via `renderFlavorBlock` AND a focused
   // check that the BuildConfig block structure is stable across capability
-  // permutations. The key invariant: every Phase K flag produces exactly
+  // permutations. The key invariant: every capability flag produces exactly
   // one buildConfigField line with the right boolean literal.
   //
   // We don't invoke the full plugin here; instead we assert on the public

@@ -341,7 +341,7 @@ else
 
   if [[ -z "$LOGCAT" ]]; then
     record_fail 'logcat: PicoCorePackage registration' \
-      'no PicoCorePackage / PicoSwanRuntime / PicoOs6Runtime lines in recent logcat. Either MainApplication injection failed (Phase Swan) or the example app crashed at boot.'
+      'no PicoCorePackage / PicoSwanRuntime / PicoOs6Runtime lines in recent logcat. Either MainApplication injection failed or the example app crashed at boot.'
   else
     record_pass 'logcat: PicoCorePackage registration' \
       "$(echo "$LOGCAT" | head -1)"

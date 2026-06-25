@@ -5,7 +5,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — Controller haptics runtime binding.
+ * Controller haptics runtime binding.
  *
  * Wraps PICO Platform SDK `PXR_Plugin.UPxr_VibrateController` via
  * reflection so the module is safe when the SDK AAR is absent.

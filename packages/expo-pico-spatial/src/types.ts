@@ -105,7 +105,7 @@ export interface ExpoPicoSpatialModuleInterface {
 }
 
 /**
- * Phase K — Eye gaze types.
+ * Eye gaze types.
  */
 export interface GazePose {
   position: { x: number; y: number; z: number };
@@ -120,7 +120,7 @@ export interface ExpoPicoEyeGazeModuleInterface {
 }
 
 /**
- * Phase K — Scene mesh types.
+ * Scene mesh types.
  *
  * Native returns plain number arrays; JS normalizes to TypedArrays.
  */
@@ -143,7 +143,7 @@ export interface ExpoPicoSceneMeshModuleInterface {
 }
 
 /**
- * Phase K — Face tracking types.
+ * Face tracking types.
  */
 export type FaceBlendShapes = Record<string, number>;
 
@@ -153,7 +153,7 @@ export interface ExpoPicoFaceTrackingModuleInterface {
 }
 
 /**
- * Phase K — Body tracking types.
+ * Body tracking types.
  */
 export interface BodyJoint {
   name: string;

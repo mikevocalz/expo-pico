@@ -10,7 +10,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — PICO passthrough / mixed-reality dial module.
+ * PICO passthrough / mixed-reality dial module.
  *
  * The physical transparency dial on PICO 4 / PICO 4 Ultra broadcasts an intent
  * whenever the user turns it:

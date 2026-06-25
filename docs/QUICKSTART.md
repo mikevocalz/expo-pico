@@ -205,7 +205,7 @@ On a PICO device with developer mode enabled:
 - `isPicoDevice`: true. Device detection matched `Build.MANUFACTURER`.
 - `xrMode`: 'pico-os5' (or `'pico-swan'` if you set that).
 - `appType`: 'vr'.
-- `platformSdkPresent`: false. Expected until you link the PICO Platform SDK AAR. Phase J's probe flips this automatically when the AAR is present.
+- `platformSdkPresent`: false. Expected until you link the PICO Platform SDK AAR. The reflection probe flips this automatically when the AAR is present.
 - Diagnostics: one `identity.missing` info row until `platformService.picoAppId` is set. No errors.
 
 On a mobile device or emulator (without `--variant picoDebug`):
@@ -237,7 +237,7 @@ When you're ready to submit to the PICO Store:
 | `SecurityException` on `RECORD_AUDIO` when using `expo-pico-rtc`                     | Runtime permission not yet granted.                                       | Call `requestPermissions()` at first-use site. Permission is declared automatically by the RTC plugin.       |
 | PICO launcher shows the app in "2D apps" section instead of VR.                      | `pvr.app.type` / `IMMERSIVE_HMD` not landing.                             | Run `npx expo-pico-doctor`. Verify `appType: 'vr'` and `buildVariant: 'pico'`.                               |
 | `System.loadLibrary("openxr_loader")` fails.                                         | `<uses-native-library>` not emitted.                                      | Confirm `openXrLoaderDeclaration: true` (the default). `targetSdkVersion >= 31` requires this declaration.   |
-| Every Platform SDK call returns `SERVICE_UNAVAILABLE`.                               | PICO Platform SDK AAR not on the classpath.                               | Real SDK AAR isn't public yet. Phase J reflection auto-activates siblings when it's dropped in.              |
+| Every Platform SDK call returns `SERVICE_UNAVAILABLE`.                               | PICO Platform SDK AAR not on the classpath.                               | Real SDK AAR isn't public yet. The reflection probe auto-activates siblings when it's dropped in.            |
 | Doctor says `identity.missing` but env vars are set locally.                         | `app.config.ts` reads from `process.env` but vars weren't loaded.         | Use a `.env` file plus `expo-dotenv`, or prefix the command: `PICO_PLATFORM_APP_ID=xyz npx expo prebuild`.   |
 | Prebuild hangs on first run.                                                         | Gradle downloading dependencies over slow network.                        | Wait. Subsequent runs use the warm cache.                                                                    |
 

@@ -1,7 +1,7 @@
 package expo.modules.pico.spatial
 
 /**
- * Phase K — reflection-based probes for the PICO Spatial SDK.
+ * reflection-based probes for the PICO Spatial SDK.
  *
  * Mirrors the `PicoPlatformSdkDetector` pattern from expo-pico-core.
  * All probes swallow Throwable so partially-linked or absent AARs

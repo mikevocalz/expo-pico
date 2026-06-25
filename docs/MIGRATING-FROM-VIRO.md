@@ -14,14 +14,14 @@ Viro is the renderer used by this repo's example app and is actively maintained 
 | Native package registration target    | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`                             | `PicoCorePackage(PicoXRPlatform.PICO_OS5)` or `…PICO_SWAN`                                                         |
 | Platform-mode option                  | `android.xRMode: ['OVR_MOBILE']`                                        | `xrMode: 'pico-os5'` or `'pico-swan'`                                                                              |
 | New-Architecture check                | warning-only soft check                                                  | warning-only soft check (same pattern: `withPicoNewArchCheck`)                                                      |
-| Launcher contract                     | not emitted                                                              | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>` (Phase A)                    |
-| Platform SDK identity                 | not emitted                                                              | `pico_app_id` / `pico_app_key` string resources + login/browser activities (Phase B)                                |
-| Hardware capability features          | `handTracking`, `passthrough` booleans                                   | Same flags plus eye / face / body / foveation / refresh rates / boundary / sceneMesh (Phase C + D)                  |
-| NDK ABI filter                        | none                                                                     | `ndk { abiFilters 'arm64-v8a' }` on pico flavor (Phase E, default on)                                               |
-| OpenXR loader declaration             | none (consumer responsibility)                                           | `<uses-native-library android:name="libopenxr_loader.so"/>` (Phase E, default on)                                   |
-| Runtime SDK detection                 | none                                                                     | `PicoPlatformSdkDetector` reflection probes (Phase J): `getPlatformSdkProbe()` returns per-surface presence         |
-| Prebuild diagnostics                  | `WarningAggregator` soft new-arch check                                  | 7-check `withPicoDiagnostics` plus standalone `expo-pico-doctor` CLI (Phase E + G)                                  |
-| Runtime diagnostics                   | none                                                                     | `getPicoDiagnostics()` returns structured findings plus Platform SDK probe and `formatDiagnostics` (Phase F)        |
+| Launcher contract                     | not emitted                                                              | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>`                              |
+| Platform SDK identity                 | not emitted                                                              | `pico_app_id` / `pico_app_key` string resources + login/browser activities                                          |
+| Hardware capability features          | `handTracking`, `passthrough` booleans                                   | Same flags plus eye / face / body / foveation / refresh rates / boundary / sceneMesh                                |
+| NDK ABI filter                        | none                                                                     | `ndk { abiFilters 'arm64-v8a' }` on pico flavor (default on)                                                        |
+| OpenXR loader declaration             | none (consumer responsibility)                                           | `<uses-native-library android:name="libopenxr_loader.so"/>` (default on)                                            |
+| Runtime SDK detection                 | none                                                                     | `PicoPlatformSdkDetector` reflection probes: `getPlatformSdkProbe()` returns per-surface presence                   |
+| Prebuild diagnostics                  | `WarningAggregator` soft new-arch check                                  | 7-check `withPicoDiagnostics` plus standalone `expo-pico-doctor` CLI                                                |
+| Runtime diagnostics                   | none                                                                     | `getPicoDiagnostics()` returns structured findings plus Platform SDK probe and `formatDiagnostics`                  |
 | Rendering                             | Viro's own native scene graph                                            | renderer-agnostic (plugin never touches rendering code)                                                             |
 
 ## Option A: keep Viro for rendering, add `expo-pico-core` for PICO plumbing
@@ -116,10 +116,10 @@ aapt dump xmltree android/app/build/outputs/apk/pico/debug/app-pico-debug.apk An
 After porting, run the PICO-specific gates before submitting to the store:
 
 ```bash
-# Phase G: lint the plugin config without building
+# Lint the plugin config without building
 npx expo-pico-doctor --fail-on-warning
 
-# Phase E + J: runtime diagnostics should report cleanly on a real device
+# Runtime diagnostics should report cleanly on a real device
 # (add to app boot for development builds; remove for production release)
 ```
 

@@ -20,7 +20,7 @@ Concretely: Platform SDK integrations fail silently on Legacy Architecture becau
 
 ## 4. How is this different from [react-three/viro](https://github.com/ReactVision/viro) or other Quest / MR libraries?
 
-Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that selects a Meta-specific native runtime. This repo's Phase S work studied that architecture and deliberately rebuilt it for PICO rather than shoehorning PICO into an Oculus-shaped enum:
+Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that selects a Meta-specific native runtime. This repo studied that architecture and deliberately rebuilt it for PICO rather than shoehorning PICO into an Oculus-shaped enum:
 
 | Concern                           | Viro (Quest)                                    | `expo-pico-core`                                                 |
 | --------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
@@ -28,7 +28,7 @@ Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that select
 | Immersive launcher category       | not emitted                                     | `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + legacy PICO VR |
 | ABI filter                        | none                                            | `arm64-v8a` on pico flavor only                                  |
 | Platform SDK identity             | none                                            | `pico_app_id` / `pico_app_key` / IAP + foreign-region siblings   |
-| Runtime SDK detection             | none                                            | Phase J `PicoPlatformSdkDetector` reflection probes              |
+| Runtime SDK detection             | none                                            | `PicoPlatformSdkDetector` reflection probes                      |
 | Prebuild diagnostics              | limited `WarningAggregator` on new-arch         | 7-check `withPicoDiagnostics` + standalone `expo-pico-doctor`    |
 | Renderer                          | bundles its own OpenGL scene graph              | renderer-agnostic                                                |
 
@@ -48,13 +48,13 @@ List `expo-pico-core` before `@reactvision/react-viro` in `app.config.ts`'s plug
 
 Changesets cascades peer-dep changes as major bumps per strict semver (hardcoded in `@changesets/assemble-release-plan`). The `expo-pico-*` siblings declare `peerDependencies: { "@expo-pico/core": ">=0.1.0" }`, so when core bumps minor, every sibling is forced to bump major. With the `linked` policy pulling everyone to the same version, the first release lands at 1.0.0 across all 12 packages.
 
-The plugin option API itself is strictly additive. Every Phase A through T option defaults off or tracks an existing option. Configs written for `0.1.x` keep working unchanged on `1.0.0`. The major version reflects install-visible manifest / Gradle changes (Phase A launcher contract, Phase E ABI filter, Phase E `<uses-native-library>`), not a breaking API.
+The plugin option API itself is strictly additive. Every option defaults off or tracks an existing option. Configs written for `0.1.x` keep working unchanged on `1.0.0`. The major version reflects install-visible manifest / Gradle changes (launcher contract, ABI filter, `<uses-native-library>`), not a breaking API.
 
 ## 7. Do I need the PICO Platform SDK AAR to use this?
 
-No for the basics: `expo-pico-core` alone gets you flavor manifests, launcher categories, BuildConfig fields, runtime device detection, and the full Phase F and Phase G diagnostics, all without any PICO-proprietary binary.
+No for the basics: `expo-pico-core` alone gets you flavor manifests, launcher categories, BuildConfig fields, runtime device detection, and the full prebuild + runtime diagnostics, all without any PICO-proprietary binary.
 
-Yes for sibling features: account, IAP, notifications, RTC, rooms, leaderboards, achievements, storage, social, subscription. Their bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath. Phase J reflection probes (`PicoPlatformSdkDetector`) flip them to live automatically when the AAR appears in `android/app/libs/`. No code change in your app.
+Yes for sibling features: account, IAP, notifications, RTC, rooms, leaderboards, achievements, storage, social, subscription. Their bridge methods return `SERVICE_UNAVAILABLE` until the PICO Platform SDK AAR is on the classpath. The reflection probes (`PicoPlatformSdkDetector`) flip them to live automatically when the AAR appears in `android/app/libs/`. No code change in your app.
 
 The SDK AAR is not publicly distributed from a Maven repo (yet). Consumers get it through the PICO Developer Console after registering an app.
 
@@ -66,7 +66,7 @@ Run the doctor:
 npx expo-pico-doctor
 ```
 
-It runs the seven Phase E checks against your `app.config` without touching the Android toolchain. `--fail-on-warning` flips it into a strict CI gate.
+It runs the seven prebuild checks against your `app.config` without touching the Android toolchain. `--fail-on-warning` flips it into a strict CI gate.
 
 ## 9. How do I see which SDK surfaces are live at runtime?
 
@@ -77,7 +77,7 @@ const probe = await getPlatformSdkProbe();
 // { account: true, iap: false, notifications: true, ... }
 ```
 
-Or open the example app's Diagnostics tab. The Phase M `DiagnosticsPanel` renders the probe as a per-surface table with "live" / "seam" labels.
+Or open the example app's Diagnostics tab. The `DiagnosticsPanel` renders the probe as a per-surface table with "live" / "seam" labels.
 
 ## 10. My `app.config.ts` isn't being picked up by `expo-pico-doctor`.
 
@@ -105,7 +105,7 @@ Both are intentional. Neither flavor crashes on the other hardware type.
 
 Yes. `expo-pico-core` is the only required package. Add siblings à la carte. Each one only pulls in its own native module and adds ~30 KB to the final APK. The sibling packages have zero cross-dependencies; installing `expo-pico-iap` doesn't force you to install `expo-pico-account`.
 
-The Phase J probe reports every surface, but surfaces whose package isn't installed will always show `false`. That's correct.
+The probe reports every surface, but surfaces whose package isn't installed will always show `false`. That's correct.
 
 ## 13. How do I version my own app against `expo-pico-core`?
 

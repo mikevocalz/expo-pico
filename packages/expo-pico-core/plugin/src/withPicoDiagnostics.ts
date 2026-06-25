@@ -6,7 +6,7 @@ const TAG = '@expo-pico/core';
 
 /**
  * One finding from the diagnostic reducer. Deliberately mirrors the
- * shape of `DiagnosticFinding` in the Phase F runtime diagnostics
+ * shape of `DiagnosticFinding` in the runtime diagnostics
  * (`src/types.ts`) so the CLI pretty-printer and the runtime
  * DiagnosticsPanel can render from the same structure.
  */
@@ -56,7 +56,7 @@ export interface DiagnosticCheckFinding {
  *
  * Used by:
  *   - `withPicoDiagnostics` config plugin (prebuild warnings).
- *   - `expo-pico-doctor` CLI (Phase G — standalone lint).
+ *   - `expo-pico-doctor` CLI (standalone lint).
  *   - Any consumer that wants to surface these checks in custom tooling.
  */
 export function runDiagnosticChecks(

@@ -1,5 +1,5 @@
 /**
- * Phase K — Passthrough / mixed-reality types.
+ * Passthrough / mixed-reality types.
  *
  * The physical dial on PICO 4 / 4 Ultra emits a level in [0, 1]:
  *   0.0 = fully virtual (opaque VR background)
@@ -19,7 +19,7 @@ export interface ExpoPicoPassthroughModuleInterface {
 }
 
 /**
- * Phase K — Controller haptics types.
+ * Controller haptics types.
  */
 export type HapticHand = 'left' | 'right' | 'both';
 
@@ -172,7 +172,7 @@ export interface PicoDiagnosticsReport {
   };
 }
 
-// ─── Phase K: per-capability runtime surface ─────────────────────────
+// ─── Per-capability runtime surface ──────────────────────────────────
 
 /**
  * Stable names for every PICO capability the plugin can declare. Matches

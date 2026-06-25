@@ -17,7 +17,7 @@ type XrSessionStatus = 'idle' | 'requesting' | 'active' | 'unsupported' | 'faile
 /**
  * Root 3D scene for the example app, rendered via ReactVision/Viro on top of
  * the system OpenXR loader that `expo-pico-core` declares
- * (`<uses-native-library android:name="libopenxr_loader.so"/>`, Phase E).
+ * (`<uses-native-library android:name="libopenxr_loader.so"/>`).
  *
  * Layout:
  *   - `<ViroVRSceneNavigator>` fills the tab body and owns the immersive XR
@@ -56,8 +56,8 @@ export function PicoSceneRoot(): React.JSX.Element {
   const [sceneStatus, setSceneStatus] = useState<DemoModelStatus>('booting');
   // ponytail: Viro reports immersive session state through the navigator's
   // own lifecycle. Marking `active` once the first model load fires is the
-  // right "renderer is live" moment for this surface; Phase J will swap to
-  // the Meta OpenXR runtime status feed.
+  // right "renderer is live" moment for this surface; later this will swap
+  // to the Meta OpenXR runtime status feed.
   const xrStatusRaw: XrSessionStatus = !info.isPicoDevice
     ? 'unsupported'
     : sceneStatus === 'booting'

@@ -1,7 +1,7 @@
 package expo.modules.pico.spatial
 
 /**
- * Phase K — Body tracking reflection bridge.
+ * Body tracking reflection bridge.
  *
  * Targets PICO Spatial SDK BodyTracker via reflection.
  *

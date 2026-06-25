@@ -1,7 +1,7 @@
 package expo.modules.pico
 
 /**
- * Phase K — spatial audio engine reflection probe.
+ * spatial audio engine reflection probe.
  *
  * PICO ships a head-tracked spatial audio engine on Project Swan that
  * downmixes positional sources to head-related transfer functions on

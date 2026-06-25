@@ -8,7 +8,7 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Phase K — Face tracking Expo Module.
+ * Face tracking Expo Module.
  *
  * Emits `onFaceUpdate` with a blendshape map at vsync frequency while
  * at least one JS listener is active. Polling pauses on host pause

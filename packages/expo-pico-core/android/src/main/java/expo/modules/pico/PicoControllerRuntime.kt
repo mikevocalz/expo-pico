@@ -1,7 +1,7 @@
 package expo.modules.pico
 
 /**
- * Phase K — controller input + haptics + Motion Tracker accessory access.
+ * controller input + haptics + Motion Tracker accessory access.
  *
  * Reflection-gated to PICO's `cvinterface` SDK. Three surfaces:
  *

@@ -14,7 +14,7 @@ import type {
 } from './types';
 
 /**
- * Phase K — unified capability runtime surface.
+ * Unified capability runtime surface.
  *
  * This module is the public TypeScript contract for every capability the
  * prebuild plugin declares. Everything is optional at the device/SDK

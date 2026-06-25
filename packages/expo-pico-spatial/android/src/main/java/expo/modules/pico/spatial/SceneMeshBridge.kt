@@ -1,7 +1,7 @@
 package expo.modules.pico.spatial
 
 /**
- * Phase K — Scene mesh / room mesh reflection bridge.
+ * Scene mesh / room mesh reflection bridge.
  *
  * Targets PICO Spatial SDK MROManager.getSceneMesh() via reflection.
  *

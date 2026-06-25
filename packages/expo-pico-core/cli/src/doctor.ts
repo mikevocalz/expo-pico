@@ -2,7 +2,7 @@
 /**
  * `expo-pico-doctor` — lint an Expo project's `app.config.{ts,js,json}`
  * against the `expo-pico-core` plugin options schema without running
- * `npx expo prebuild`. Surfaces the same diagnostics the Phase E
+ * `npx expo prebuild`. Surfaces the same diagnostics the
  * prebuild pass emits, plus a few config-shape checks that require
  * inspecting the raw plugin entry before `resolveOptions` normalizes it.
  *

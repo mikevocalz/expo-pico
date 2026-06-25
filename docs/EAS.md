@@ -87,7 +87,7 @@ EAS injects these as env vars into the build pipeline. Your `app.config.ts` read
 
 Keep a `.env.production` that the build reads. Never commit this file. Use EAS Secrets for hosted builds. `.env` files are only practical for `eas build --local`.
 
-If a secret is missing at build time, `expo-pico-core`'s Phase E diagnostics emit `identity.missing` warnings; the build still succeeds but Platform SDK calls return `SERVICE_UNAVAILABLE` at runtime. Run the doctor first to verify:
+If a secret is missing at build time, `expo-pico-core`'s diagnostics emit `identity.missing` warnings; the build still succeeds but Platform SDK calls return `SERVICE_UNAVAILABLE` at runtime. Run the doctor first to verify:
 
 ```bash
 npx expo-pico-doctor --fail-on-warning
@@ -134,13 +134,13 @@ After EAS produces the APK / AAB, confirm the merged manifest carries the expect
 # Inspect the merged manifest
 aapt dump xmltree path/to/app.apk AndroidManifest.xml > /tmp/merged-manifest.xml
 
-# Check Phase A launcher contract
+# Check launcher contract
 grep -E 'pvr\.app\.type|IMMERSIVE_HMD|com\.pico\.intent\.category\.VR' /tmp/merged-manifest.xml
 
-# Check Phase B Platform SDK identity
+# Check Platform SDK identity
 grep -E 'UnityAuthInterface|PicoSDKBrowser' /tmp/merged-manifest.xml
 
-# Check Phase E OpenXR loader + ABI
+# Check OpenXR loader + ABI
 grep libopenxr_loader.so /tmp/merged-manifest.xml
 aapt dump badging path/to/app.apk | grep native-code
 ```
@@ -187,7 +187,7 @@ Same as above with the trigger changed to `push: branches: [main]` and `--profil
 | Symptom                                                             | Likely cause                                                    | Fix                                                                                     |
 | ------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `eas build` fails with `Task :app:assemblePicoDebug not found`       | `expo-pico-core` plugin not listed, or `buildVariant` is `'mobile'`. | Add the plugin, set `buildVariant: 'pico'` or `'dual'`.                                 |
-| Platform SDK calls return `SERVICE_UNAVAILABLE` at runtime          | PICO Platform SDK AAR not on the classpath.                     | Real PICO SDK AAR isn't public yet. Siblings will auto-activate when it's dropped in (Phase J reflection probe). |
+| Platform SDK calls return `SERVICE_UNAVAILABLE` at runtime          | PICO Platform SDK AAR not on the classpath.                     | Real PICO SDK AAR isn't public yet. Siblings will auto-activate when it's dropped in via the reflection probe. |
 | `pvr.app.type` missing from merged manifest                          | `appType: '2d'` or `buildVariant: 'mobile'` is set.             | Set `appType: 'vr'` and `buildVariant: 'pico'`.                                         |
 | APK installs but PICO launcher doesn't enumerate it as immersive    | Missing launcher contract.                                      | Run `expo-pico-doctor`; confirm OpenXR `IMMERSIVE_HMD` category lands in merged manifest (§5). |
 | 32-bit ABI slice included in the AAB                                | `ndkAbiFilters: false` (explicit opt-out).                      | Flip to `true` unless you have a specific reason to ship armeabi-v7a.                   |
