@@ -55,6 +55,15 @@ export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptio
   });
 };
 
+function detectExpoDevClient(projectRoot: string): boolean {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+    return Boolean(pkg.dependencies?.['expo-dev-client'] || pkg.devDependencies?.['expo-dev-client']);
+  } catch {
+    return false;
+  }
+}
+
 export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   config = withDangerousMod(config, [
     'android',
@@ -67,11 +76,18 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
         fs.mkdirSync(picoManifestDir, { recursive: true });
       }
 
+      // ponytail: detect expo-dev-client so we skip the IMMERSIVE_HMD launcher
+      // intent-filter on MainActivity — its 2D RN/dev-launcher root can't
+      // fulfill the immersive HMD surface and PICO black-screens. Keep
+      // pvr.app.type/spatialMode honored so MR builds still get the
+      // passthrough capability at app level; only the launcher contract
+      // changes. Viro's VRActivity owns immersive entry either way.
+      const hasDevClient = detectExpoDevClient(projectRoot);
       const manifest = buildPicoManifest(options);
       // Phase A launcher contract: pvr.app.type meta + immersive launcher
       // categories on .MainActivity + <queries> for PICO system packages.
       // Mutates the manifest object in place; gated on resolved appType.
-      applyLauncherContract(manifest, options);
+      applyLauncherContract(manifest, options, { hasDevClient });
       // Phase B Platform SDK contract: UnityAuthInterface + PicoSDKBrowser
       // activities. Gated on platformService.hasIdentity && declareActivities.
       applyPlatformServiceContract(manifest, options);
@@ -81,15 +97,15 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // are idempotent and toggling off cleans up the entry.
       applyCapabilityContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
+      console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
 
       // If dual variant, also write a dual/ source set manifest
       if (options.buildVariant === 'dual') {
         const dualDir = path.join(projectRoot, 'android', 'app', 'src', 'dual');
         if (!fs.existsSync(dualDir)) fs.mkdirSync(dualDir, { recursive: true });
-        await AndroidConfig.Manifest.writeAndroidManifestAsync(
-          path.join(dualDir, 'AndroidManifest.xml'),
-          manifest
-        );
+        const dualManifestPath = path.join(dualDir, 'AndroidManifest.xml');
+        await AndroidConfig.Manifest.writeAndroidManifestAsync(dualManifestPath, manifest);
+        console.log(`✅ Created dual-variant AndroidManifest at: ${dualManifestPath}`);
       }
 
       return config;
@@ -123,6 +139,9 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
       $: { 'android:name': fullName, 'tools:node': 'remove' },
     } as any);
   }
+  console.log(
+    `🚫 Blocked ${PICO_PROHIBITED_PERMISSIONS.length} prohibited permissions in PICO manifest`
+  );
 
   // VR headtracking — required false when emulator optimizations on
   const headtrackingRequired = options.enableEmulatorOptimizations ? 'false' : 'true';

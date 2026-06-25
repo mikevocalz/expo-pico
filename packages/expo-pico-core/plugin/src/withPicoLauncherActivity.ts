@@ -52,7 +52,8 @@ const MAIN_ACTIVITY_NAME = '.MainActivity';
  */
 export function applyLauncherContract(
   manifest: AndroidConfig.Manifest.AndroidManifest,
-  options: ResolvedPicoOptions
+  options: ResolvedPicoOptions,
+  ctx: { hasDevClient?: boolean } = {}
 ): AndroidConfig.Manifest.AndroidManifest {
   if (options.appType === '2d') {
     return manifest;
@@ -69,7 +70,13 @@ export function applyLauncherContract(
   // 2D root view cannot fulfill. The Viro plugin already declares a
   // separate `VRActivity` with these categories — that's what gets started
   // when `<ViroVRSceneNavigator>` mounts at user request.
-  if (options.appType === 'vr') {
+  //
+  // ponytail: same trap applies to vr dev builds — expo-dev-client's
+  // DevLauncherActivity is a 2D root and PICO refuses to draw it on the
+  // immersive HMD surface (logcat spams "Will skip draw vr actvity"). Skip
+  // the launcher intent-filter when dev-client is present; let the standard
+  // 2D LAUNCHER filter catch it and Viro VRActivity handle immersive entry.
+  if (options.appType === 'vr' && !ctx.hasDevClient) {
     addLauncherIntentFilter(manifest);
   }
   addPicoSystemQueries(manifest);
