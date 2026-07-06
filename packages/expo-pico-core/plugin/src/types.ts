@@ -106,6 +106,22 @@ export interface PicoPluginOptions {
    * @default 'none'
    */
   defaultContainerMode?: 'window-container' | 'stage' | 'none';
+  /**
+   * Default panel width for the 2D MainActivity when running as a
+   * window-container in the immersive environment. Mirrors expo-horizon-core's
+   * `defaultWidth`. Emits `<layout android:defaultWidth="…"/>` on MainActivity.
+   * Value is a dp string (e.g. `"1024dp"`).
+   * @default Not added
+   */
+  defaultWidth?: string;
+  /**
+   * Default panel height for the 2D MainActivity when running as a
+   * window-container in the immersive environment. Mirrors expo-horizon-core's
+   * `defaultHeight`. Emits `<layout android:defaultHeight="…"/>` on MainActivity.
+   * Value is a dp string (e.g. `"640dp"`).
+   * @default Not added
+   */
+  defaultHeight?: string;
   handTracking?: boolean;
   passthrough?: boolean;
   sceneUnderstanding?: boolean;
@@ -444,6 +460,8 @@ export interface ResolvedPicoOptions {
   targetDevices: PicoDeviceTarget[];
   spatialMode: PicoSpatialMode;
   defaultContainerMode: 'window-container' | 'stage' | 'none';
+  defaultWidth: string | null;
+  defaultHeight: string | null;
   handTracking: boolean;
   passthrough: boolean;
   sceneUnderstanding: boolean;
@@ -510,6 +528,8 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   targetDevices: [],
   spatialMode: '2d',
   defaultContainerMode: 'none',
+  defaultWidth: null,
+  defaultHeight: null,
   handTracking: false,
   passthrough: false,
   sceneUnderstanding: false,
@@ -591,6 +611,8 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     ndkAbiFilters,
     openXrLoaderDeclaration,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
+    defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
+    defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,
     // Copy refreshRates to avoid mutating user input, and filter out
     // non-positive / non-finite entries that would produce invalid
     // meta-data values.
