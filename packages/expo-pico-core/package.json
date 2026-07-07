@@ -76,11 +76,15 @@
   "peerDependencies": {
     "expo": "~56.0.12",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "expo-location": "*"
   },
   "peerDependenciesMeta": {
     "expo": {
       "optional": false
+    },
+    "expo-location": {
+      "optional": true
     }
   },
   "files": [

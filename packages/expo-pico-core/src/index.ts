@@ -338,4 +338,14 @@ export type {
   PicoMotionTracker,
 } from './types';
 
+// ─── Location (expo-location wrapper) ───────────────────────────────────────
+// PICO OS is Android-based, so stock expo-location works on device. Exposed
+// here so PICO apps get a permission-aware getPicoLocation() from the library.
+export {
+  getPicoLocation,
+  requestLocationPermission,
+  isLocationAvailable,
+} from './location';
+export type { PicoCoordinates } from './location';
+
 export default ExpoPicoModule;
