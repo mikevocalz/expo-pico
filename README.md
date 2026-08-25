@@ -15,7 +15,7 @@
 
 Expo-native package family for PICO 4 / 4 Ultra (PICO OS 5) and Project Swan (PICO OS 6) XR devices.
 
-Config plugins and Nitro Modules that teach an Expo Android project how to build, install, and enumerate on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
+Config plugins and Nitro Modules that teach an Expo Android project how to build, install, and enumerate on PICO 4, 4 Ultra, 4 Ultra Enterprise and Space Pro / Swan headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
 
 > OS note. PICO 4 and PICO 4 Ultra ship on PICO OS 5 (the legacy PVR / current XR runtime), so set `xrMode: 'pico-os5'`. The next-gen Project Swan hardware ships on PICO OS 6, so set `xrMode: 'pico-swan'`.
 
@@ -168,14 +168,22 @@ which runtime initialised at runtime.
 </tr>
 <tr>
 <td width="200" valign="top">
+<img src="./docs/assets/pico-4-ultra-enterprise.jpg" alt="PICO 4 Ultra Enterprise headset with two controllers" width="180">
 </td>
 <td valign="top">
 
-### Meta Quest 3 / Quest 3S
+### PICO 4 Ultra Enterprise
 
-Built from the same source through the `quest` build flavor. The plugin is
-renderer-agnostic, and the `<uses-native-library>` declaration it writes
-composes with Quest's OpenXR loader, so one APK can ship to both ecosystems.
+The managed-deployment variant of the 4 Ultra. Same **PICO OS 5** runtime and
+the same `xrMode`:
+
+```ts
+xrMode: 'pico-os5';
+```
+
+Nothing in this family is consumer-only — `platformService` identity, IAP and
+entitlement all work the same under enterprise provisioning. Fleet enrolment
+and kiosk policy are handled by PICO Business Suite, outside the app.
 
 </td>
 </tr>
@@ -234,7 +242,7 @@ The example opens on a designed home surface — an isometric cube mark, live `g
 
 Layout is breakpoint-driven rather than phone-shaped: PICO renders the 2D activity into a WindowContainer panel roughly 1000-1600dp wide, so the home screen goes two-column above 700dp and caps content width so line length stays readable. Every route stays mounted behind `<Freeze>` — unmounting the Viro navigator while its native session is live is the reliable way to crash the app, so inactive routes suspend instead of tearing down.
 
-Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO / Meta Quest hardware the example runs as an end-to-end immersive XR app; on a non-XR device the same scene renders through the flat navigator.
+Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO hardware the example runs as an end-to-end immersive XR app; on a non-XR device the same scene renders through the flat navigator.
 
 ## License
 
