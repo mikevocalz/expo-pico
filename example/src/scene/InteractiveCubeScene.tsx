@@ -3,6 +3,7 @@ import {
   Viro3DPoint,
   ViroAmbientLight,
   ViroBox,
+  ViroController,
   ViroDirectionalLight,
   ViroMaterials,
   ViroNode,
@@ -109,6 +110,13 @@ export function InteractiveCubeScene(): React.JSX.Element {
 
   return (
     <ViroScene>
+      {/* Controllers are not drawn unless a ViroController is in the scene.
+          Without it the tracked controllers and their pointer ray are simply
+          absent, so a scene built around drag/tap has nothing to aim with.
+          The reticle is the aim point; controllerVisibility draws the models
+          themselves. */}
+      <ViroController reticleVisibility controllerVisibility />
+
       {/* Lighting: low ambient fill, a key from the upper-left, and a spot
           that pools light on the floor to seat the cube in the space. */}
       <ViroAmbientLight color="#5A6488" intensity={520} />

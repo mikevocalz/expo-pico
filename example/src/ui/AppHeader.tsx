@@ -23,7 +23,7 @@ export function AppHeader({ title = 'XR Sample' }: { title?: string }): React.JS
   return (
     <View style={[styles.root, { paddingTop: insets.top + space.sm }]}>
       <View style={styles.lockup}>
-        <PicoWordmark height={16} color={palette.text} />
+        <PicoWordmark height={16} />
         <View style={styles.divider} />
         <Text style={styles.title}>{title}</Text>
       </View>

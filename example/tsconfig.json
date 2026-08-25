@@ -10,5 +10,5 @@
     "noEmit": true,
     "types": []
   },
-  "include": ["app/**/*", "src/**/*", "app.config.ts", "svg.d.ts"]
+  "include": ["app/**/*", "src/**/*", "app.config.ts", "svg.d.ts", "index.js"]
 }
