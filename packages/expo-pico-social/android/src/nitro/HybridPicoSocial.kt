@@ -6,8 +6,12 @@ import com.pico.pps.sdk.base.common.NextInfo
 import com.pico.pps.sdk.friend.IFriendClient
 import com.pico.pps.sdk.friend.PicoFriendClient
 import com.pico.pps.sdk.social.ISocialClient
+import com.pico.pps.sdk.social.ILaunchIntentChangeCallback
+import com.pico.pps.sdk.social.LaunchAppOptions as PpsLaunchAppOptions
+import com.pico.pps.sdk.social.LaunchDetails as PpsLaunchDetails
 import com.pico.pps.sdk.social.LaunchResult
 import com.pico.pps.sdk.social.LaunchType
+import com.pico.pps.sdk.social.InviteOptions as PpsInviteOptions
 import com.pico.pps.sdk.social.PicoSocialClient
 
 /**
@@ -221,11 +225,11 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
   /**
    * PPS pushes no presence or friend-request events.
    *
-   * The one callback it does offer is
-   * `setLaunchIntentChangeCallback`, which fires when the app is
-   * re-launched from an invite — a different thing from receiving one, and
-   * with no matching event shape in this spec. Registration returns a real
-   * id so JS subscribe/unsubscribe code is uniform; nothing is emitted.
+   * The one callback it does offer is `setLaunchIntentChangeCallback`, which
+   * fires when the launch intent changes while the app runs — a different
+   * thing from receiving an invite. That one is now exposed as
+   * `addLaunchDetailsListener`. These three still emit nothing; registration
+   * returns a real id so JS subscribe/unsubscribe code stays uniform.
    */
   override fun addFriendPresenceChangedListener(
     listener: (event: FriendPresenceChangedEvent) -> Unit
@@ -239,7 +243,38 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
     listener: (event: InviteReceivedEvent) -> Unit
   ): Double = nextListenerId()
 
-  override fun removeListener(id: Double): Unit = Unit
+  // PPS holds a single launch-intent callback, so it is installed once on the
+  // first listener and never replaced; JS listeners fan out from here. There is
+  // no PPS call to uninstall it, so removal just drops the local listener.
+  private val launchListeners = mutableMapOf<Double, (PicoLaunchDetails) -> Unit>()
+  private var launchCallbackInstalled = false
+
+  override fun addLaunchDetailsListener(
+    listener: (details: PicoLaunchDetails) -> Unit
+  ): Double {
+    val id = nextListenerId()
+    launchListeners[id] = listener
+    if (!launchCallbackInstalled) {
+      val socialClient = social
+      if (socialClient != null) {
+        runCatching {
+          socialClient.setLaunchIntentChangeCallback(
+            object : ILaunchIntentChangeCallback {
+              override fun onChange(launchDetails: PpsLaunchDetails) {
+                val mapped = toLaunchDetails(launchDetails)
+                launchListeners.values.toList().forEach { it(mapped) }
+              }
+            }
+          )
+        }.onSuccess { launchCallbackInstalled = true }
+      }
+    }
+    return id
+  }
+
+  override fun removeListener(id: Double) {
+    launchListeners.remove(id)
+  }
 
   private var listenerCounter: Double = 0.0
 
@@ -289,7 +324,16 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
     val socialClient = social ?: return emptyLaunchDetails()
     val details = runCatching { socialClient.getLaunchDetails() }.getOrNull()
       ?: return emptyLaunchDetails()
-    return PicoLaunchDetails(
+    return toLaunchDetails(details)
+  }
+
+  /**
+   * Shared by the getter and the change callback. The PPS type name is
+   * verified against `javap` on platform-service-social, so naming it in a
+   * signature is safe here.
+   */
+  private fun toLaunchDetails(details: PpsLaunchDetails): PicoLaunchDetails =
+    PicoLaunchDetails(
       launchType = when (details.launchType) {
         LaunchType.NORMAL -> PicoLaunchType.NORMAL
         LaunchType.INVITE -> PicoLaunchType.INVITE
@@ -316,7 +360,6 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
       extra = details.extra.orEmpty(),
       clientAction = details.clientAction.orEmpty(),
     )
-  }
 
   private fun emptyLaunchDetails() = PicoLaunchDetails(
     launchType = PicoLaunchType.NORMAL,
@@ -332,23 +375,109 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
   )
 
   /**
-   * First page only. `DestinationsListResult` also carries a `NextInfo`
-   * cursor, but the family models pagination as an opaque `nextPageToken`
-   * string and how NextInfo(hasNext, nextId, bodyParams) encodes into one is
-   * still undecided — see docs/PPS-WIRING-GAPS.md. Returning the first page is
-   * honest; inventing a token format now would be an API break to undo later.
+   * Paged through the same opaque cursor `getFriendList` uses: `encode()` /
+   * `decodeCursor()` round-trip PPS's `NextInfo(hasNext, nextId, bodyParams)`.
+   * A token is only emitted when `hasNext` is true, so "no token" and "no more
+   * pages" are the same state and callers never have to read `hasNext`.
    */
-  override fun getDestinations(): Promise<Array<PicoDestination>> {
+  override fun getDestinations(pageToken: String?): Promise<DestinationListResult> {
     val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("getDestinations"))
-    return socialClient.getDestinations().bridge("getDestinations") { result ->
-      result.destinationList.orEmpty().map { destination ->
-        PicoDestination(
-          apiName = destination.apiName.orEmpty(),
-          displayName = destination.displayName.orEmpty(),
-          deepLinkMessage = destination.deepLinkMessage.orEmpty(),
-        )
-      }.toTypedArray()
+    val cursor = pageToken?.let { decodeCursor(it) }
+    val task = if (cursor == null) {
+      socialClient.getDestinations()
+    } else {
+      socialClient.getNextDestinationListPage(cursor)
     }
+    return task.bridge("getDestinations") { result ->
+      DestinationListResult(
+        destinations = result.destinationList.orEmpty().map { destination ->
+          PicoDestination(
+            apiName = destination.apiName.orEmpty(),
+            displayName = destination.displayName.orEmpty(),
+            deepLinkMessage = destination.deepLinkMessage.orEmpty(),
+          )
+        }.toTypedArray(),
+        nextPageToken = result.nextInfo?.takeIf { it.hasNext }?.encode(),
+      )
+    }
+  }
+
+  /**
+   * `suggestedUserIds` is PPS's `InviteOptions(suggestedUser)`, a bias on the
+   * returned list rather than a filter — the result can include users not in
+   * it. Only meaningful on the first page; the cursor carries it forward.
+   */
+  override fun getInvitableUsers(
+    suggestedUserIds: Array<String>?,
+    pageToken: String?,
+  ): Promise<InvitableUsersResult> {
+    val socialClient = social
+      ?: return Promise.rejected(PicoPps.unavailable("getInvitableUsers"))
+    val cursor = pageToken?.let { decodeCursor(it) }
+    val task = if (cursor == null) {
+      socialClient.getInvitableUsers(PpsInviteOptions(suggestedUserIds.orEmpty().toList()))
+    } else {
+      socialClient.getNextInvitableUsersList(cursor)
+    }
+    return task.bridge("getInvitableUsers") { result ->
+      InvitableUsersResult(
+        users = result.userList.orEmpty()
+          .map { it.toSocialUser(isInSameApp = false) }
+          .toTypedArray(),
+        nextPageToken = result.nextInfo?.takeIf { it.hasNext }?.encode(),
+      )
+    }
+  }
+
+  /**
+   * `SentInviteInfo` carries no expiry, so `expiresAt` stays 0 exactly as it
+   * does in `sendInvites`. Its `destination` is a full object here, so the
+   * destination api name is read from the payload rather than echoed back
+   * from the request.
+   */
+  override fun getSentInvites(pageToken: String?): Promise<SentInviteListResult> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("getSentInvites"))
+    val cursor = pageToken?.let { decodeCursor(it) }
+    val task = if (cursor == null) {
+      socialClient.getSentInvites()
+    } else {
+      socialClient.getNextSentInvitesListPage(cursor)
+    }
+    return task.bridge("getSentInvites") { result ->
+      SentInviteListResult(
+        invites = result.inviteInfoList.orEmpty().map { invite ->
+          SentInvite(
+            inviteId = invite.id?.toString().orEmpty(),
+            toUserId = invite.recipient?.openUid.orEmpty(),
+            destinationApiName = invite.destination?.apiName.orEmpty(),
+            sentAt = 0.0,
+            expiresAt = 0.0,
+          )
+        }.toTypedArray(),
+        nextPageToken = result.nextInfo?.takeIf { it.hasNext }?.encode(),
+      )
+    }
+  }
+
+  /**
+   * PPS has `launchApp` and `launchAppByAppId` taking the same options type.
+   * Which one applies is decided by what the caller filled in, so the JS side
+   * gets one method instead of two that differ only in which field matters.
+   */
+  override fun launchApp(options: LaunchAppOptions): Promise<String> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("launchApp"))
+    val appId = options.targetAppId?.takeIf { it.isNotEmpty() }
+    val ppsOptions = PpsLaunchAppOptions(
+      appId.orEmpty(),
+      options.targetPackageName.orEmpty(),
+      options.deepLinkMessage.orEmpty(),
+    )
+    val task = if (appId != null) {
+      socialClient.launchAppByAppId(ppsOptions)
+    } else {
+      socialClient.launchApp(ppsOptions)
+    }
+    return task.bridge("launchApp") { it.orEmpty() }
   }
 
   override fun launchPresenceInvitePanel(): Promise<Boolean> {

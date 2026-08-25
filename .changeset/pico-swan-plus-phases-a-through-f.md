@@ -105,6 +105,23 @@ Verified against `javap` on the published AARs, not inferred.
 - **`@expo-pico/iap`** — `isProductPurchased(sku)`, a per-SKU ownership check
   that avoids pulling the whole purchase list.
 
+### PPS surface is now complete
+
+Every call in the per-service tables of `docs/PPS-API-SURFACE.md` has a
+TypeScript surface. Additions beyond those listed below: `getInvitableUsers()`,
+`getSentInvites()`, paginated `getDestinations()`, `launchApp()` and
+`addLaunchDetailsListener()` on social, and `sendAuthScopesRequest()` on
+account.
+
+Pagination uses the opaque `nextPageToken` that `getFriendList` already
+round-tripped `NextInfo` through — a token appears only when `hasNext` is true,
+so callers never read `hasNext`. `getDestinations()` changes from
+`Promise<PicoDestination[]>` to `Promise<DestinationListResult>` to carry it.
+
+`sendAuthScopesRequest()` returns `refreshToken` among other credentials.
+Prefer exchanging the returned `authCode` server-side over holding a long-lived
+token in the JS bundle.
+
 ### `@expo-pico/social` — launch intent, destinations, share, invite flows
 
 Verified against `javap` on `platform-service-social`.

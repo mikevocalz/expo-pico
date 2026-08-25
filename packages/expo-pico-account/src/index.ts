@@ -4,7 +4,7 @@ import {
   PicoErrorCode,
   wrapNativeCall,
 } from '@expo-pico/platform-service-common';
-import type { PicoAccount } from './PicoAccount.nitro';
+import type { PicoAccount, PicoAuthType } from './PicoAccount.nitro';
 
 export type {
   PicoUserProfile,
@@ -12,6 +12,8 @@ export type {
   PicoLoginStatus,
   PicoAccountLinkStatus,
   PicoAdultStatus,
+  PicoAuthType,
+  PicoAuthScopeResult,
 } from './PicoAccount.nitro';
 
 const PKG = '@expo-pico/account';
@@ -98,6 +100,21 @@ export async function requestAuthScopes(scopes: string[]) {
 export async function cancelAuthorization(): Promise<void> {
   const native = requireAvailable('cancelAuthorization');
   await wrapNativeCall(PKG, 'cancelAuthorization', native.cancelAuthorization());
+}
+
+/**
+ * Interactive scope request that also returns credentials.
+ *
+ * Prefer exchanging the returned `authCode` server-side over holding
+ * `refreshToken` in the JS bundle.
+ */
+export async function sendAuthScopesRequest(scopes: string[], authType: PicoAuthType) {
+  const native = requireAvailable('sendAuthScopesRequest');
+  return wrapNativeCall(
+    PKG,
+    'sendAuthScopesRequest',
+    native.sendAuthScopesRequest(scopes, authType)
+  );
 }
 
 export async function logout(): Promise<void> {

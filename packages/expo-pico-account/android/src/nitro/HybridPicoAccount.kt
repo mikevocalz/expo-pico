@@ -6,6 +6,7 @@ import com.pico.pps.sdk.auth.PicoSignInClient
 import com.pico.pps.sdk.auth.SignInApiAvailableChecker
 import com.bytedance.pico.matrix.proto.v2.AdultStatus
 import com.bytedance.pico.matrix.proto.v2.AUTH_TYPE
+import com.bytedance.pico.matrix.proto.v2.AuthScopeRequest
 import com.bytedance.pico.matrix.proto.v2.SignInRequest
 
 /**
@@ -178,6 +179,40 @@ class HybridPicoAccount : HybridPicoAccountSpec() {
       ?: return Promise.rejected(PicoPps.unavailable("requestAuthScopes"))
     return signIn.requestAuthScopes(scopes.toList()).bridge("requestAuthScopes") { response ->
       response.authorizedScopes.orEmpty().toTypedArray()
+    }
+  }
+
+  /**
+   * Interactive scope request that also returns credentials.
+   *
+   * Unlike `requestAuthScopes`, which answers only which scopes were granted,
+   * `AuthScopeResponse` carries accessToken / refreshToken / idToken / authCode
+   * plus the user. Which of those is populated follows the requested
+   * `AUTH_TYPE`; the rest come back empty, so all four are mapped through as
+   * empty strings rather than being guessed at here.
+   */
+  override fun sendAuthScopesRequest(
+    scopes: Array<String>,
+    authType: PicoAuthType,
+  ): Promise<PicoAuthScopeResult> {
+    val signIn = client
+      ?: return Promise.rejected(PicoPps.unavailable("sendAuthScopesRequest"))
+    val ppsAuthType = when (authType) {
+      PicoAuthType.AUTH_CODE -> AUTH_TYPE.AUTH_CODE
+      PicoAuthType.ID_TOKEN -> AUTH_TYPE.ID_TOKEN
+      PicoAuthType.ACCESS_TOKEN -> AUTH_TYPE.ACCESS_TOKEN
+    }
+    val request = AuthScopeRequest(scopes.toList(), ppsAuthType)
+    return signIn.sendAuthScopesRequest(request).bridge("sendAuthScopesRequest") { response ->
+      PicoAuthScopeResult(
+        authorizedScopes = response.authorizedScopeList.orEmpty().toTypedArray(),
+        accessToken = response.accessToken.orEmpty(),
+        refreshToken = response.refreshToken.orEmpty(),
+        idToken = response.idToken.orEmpty(),
+        authCode = response.authCode.orEmpty(),
+        userId = response.userInfo?.openUid.orEmpty(),
+        displayName = response.userInfo?.displayName.orEmpty(),
+      )
     }
   }
 

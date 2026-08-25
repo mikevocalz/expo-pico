@@ -110,6 +110,32 @@ export interface PicoDestination {
   deepLinkMessage: string;
 }
 
+/** A page of users who can be invited to the current destination. */
+export interface InvitableUsersResult {
+  users: SocialUser[];
+  /** Opaque cursor. Absent when PPS reports no further page. */
+  nextPageToken?: string;
+}
+
+/** A page of invites this user has sent. */
+export interface SentInviteListResult {
+  invites: SentInvite[];
+  nextPageToken?: string;
+}
+
+/** A page of destinations declared in the developer console. */
+export interface DestinationListResult {
+  destinations: PicoDestination[];
+  nextPageToken?: string;
+}
+
+/** Target for {@link PicoSocial.launchApp}. Give an app id or a package name. */
+export interface LaunchAppOptions {
+  targetAppId?: string;
+  targetPackageName?: string;
+  deepLinkMessage?: string;
+}
+
 export interface PicoSocial extends HybridObject<{ android: 'kotlin' }> {
   readonly available: boolean;
   readonly sdkVersion: string;
@@ -132,8 +158,20 @@ export interface PicoSocial extends HybridObject<{ android: 'kotlin' }> {
 
   /** Why this app instance was launched. Synchronous; never throws. */
   getLaunchDetails(): PicoLaunchDetails;
-  /** Destinations declared in the developer console. First page only. */
-  getDestinations(): Promise<PicoDestination[]>;
+  /** Destinations declared in the developer console. Pass `nextPageToken` to page. */
+  getDestinations(pageToken?: string): Promise<DestinationListResult>;
+  /** Users invitable to the current destination. `suggestedUserIds` biases the list. */
+  getInvitableUsers(suggestedUserIds?: string[], pageToken?: string): Promise<InvitableUsersResult>;
+  /** Invites this user has already sent. */
+  getSentInvites(pageToken?: string): Promise<SentInviteListResult>;
+  /** Launches another PICO app. Resolves with the raw PPS result string. */
+  launchApp(options: LaunchAppOptions): Promise<string>;
+  /**
+   * Fires when the launch intent changes while the app is running — e.g. the
+   * user accepts an invite without the app restarting. PPS holds one callback,
+   * so listeners are multiplexed.
+   */
+  addLaunchDetailsListener(listener: (details: PicoLaunchDetails) => void): number;
   /** Opens the system invite panel for the current presence. */
   launchPresenceInvitePanel(): Promise<boolean>;
   /** Opens the system flow inviting friends into `roomId`. */

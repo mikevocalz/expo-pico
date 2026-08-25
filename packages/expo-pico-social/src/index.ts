@@ -13,6 +13,7 @@ import type {
   FriendPresenceChangedEvent,
   InviteReceivedEvent,
   PicoLaunchDetails,
+  LaunchAppOptions,
 } from './PicoSocial.nitro';
 
 export type {
@@ -157,10 +158,48 @@ export function getLaunchDetails(): PicoLaunchDetails {
   );
 }
 
-/** Destinations declared in the developer console. First page only. */
-export async function getDestinations() {
+/**
+ * Destinations declared in the developer console.
+ *
+ * Pass the previous result's `nextPageToken` to page. Its absence means there
+ * are no further pages, so there is no separate `hasMore` to check.
+ */
+export async function getDestinations(pageToken?: string) {
   guardService(isSocialAvailable(), PKG, 'getDestinations');
-  return wrapNativeCall(PKG, 'getDestinations', native()!.getDestinations());
+  return wrapNativeCall(PKG, 'getDestinations', native()!.getDestinations(pageToken));
+}
+
+/** Users invitable to the current destination. `suggestedUserIds` biases the list. */
+export async function getInvitableUsers(suggestedUserIds?: string[], pageToken?: string) {
+  guardService(isSocialAvailable(), PKG, 'getInvitableUsers');
+  return wrapNativeCall(
+    PKG,
+    'getInvitableUsers',
+    native()!.getInvitableUsers(suggestedUserIds, pageToken)
+  );
+}
+
+/** Invites this user has already sent. */
+export async function getSentInvites(pageToken?: string) {
+  guardService(isSocialAvailable(), PKG, 'getSentInvites');
+  return wrapNativeCall(PKG, 'getSentInvites', native()!.getSentInvites(pageToken));
+}
+
+/** Launches another PICO app by app id or package name. */
+export async function launchApp(options: LaunchAppOptions) {
+  guardService(isSocialAvailable(), PKG, 'launchApp');
+  return wrapNativeCall(PKG, 'launchApp', native()!.launchApp(options));
+}
+
+/**
+ * Fires when the launch intent changes while the app is running — the user
+ * accepting an invite without a restart, for example. Use `getLaunchDetails()`
+ * for the intent the app started with.
+ */
+export function addLaunchDetailsListener(
+  listener: (details: PicoLaunchDetails) => void
+): Subscription {
+  return subscribe((h) => h.addLaunchDetailsListener(listener));
 }
 
 export async function launchPresenceInvitePanel() {

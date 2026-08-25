@@ -13,24 +13,31 @@ means the family exposes it and PPS has no such call.
 
 ## Missing — real PPS calls with no TypeScript surface
 
-Re-audited against the Kotlin on 2026-08-25 by matching actual call sites
-(excluding comments — an earlier pass matched a method named only in a doc
-comment and reported it as wired). Five rows in this table were already closed
-by the Nitro migration and have been removed:
-`queryProductSubscriptionStatus`, `getDefinitionsByName`, `getAllProgress`,
-`getEntriesByIds` and `writeEntryWithSupplementaryMetric` all have real call
-sites today.
+**None.** Every call in the per-service tables of
+[PPS-API-SURFACE.md](./PPS-API-SURFACE.md) now has a TypeScript surface.
 
-Signatures and payload field names below come from `javap` on the published
-AARs, not inference. Field names are worth checking rather than guessing — the
-proto package is `com.bytedance.pico.matrix.proto.v2` (not `…sdk.*.bean`), and
-`QueryProductSubscriptionStatusResponse.IsFreeTrial` carries a capital `I`.
+Signatures and payload field names throughout came from `javap` on the
+published AARs rather than inference. That mattered more than expected — the
+proto package is `com.bytedance.pico.matrix.proto.v2` (not `…sdk.*.bean`),
+`QueryProductSubscriptionStatusResponse.IsFreeTrial` carries a capital `I`, and
+`SentInviteInfo` is snake_case (`is_active`, `lobby_session_id`). None of those
+are guessable, and none would fail until an Android build.
 
-| Package         | PPS method                                                                                                                                                                                                                          | Why it matters                                                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `account`       | `sendAuthScopesRequest(AuthScopeRequest)`                                                                                                                                                                                           | Third scope call. `requestAuthScopes` and `getAuthorizedScopes` are now wired; this one takes an `AuthScopeRequest` message whose construction is not yet modelled. |
-| `notifications` | `unRegister`, `setPushMsgReceiver`, `removePushMsgReceiver`                                                                                                                                                                         | Only `register` is wired. **Without `setPushMsgReceiver` the app cannot actually receive a push** — it can only obtain a token.                                     |
-| `social`        | `getInvitableUsers`, `launchPresenceInvitePanel`, `launchInviteUserJoinRoomFlow`, `getSentInvites`, `getDestinations`, `launchApp`, `launchStore`, `getLaunchDetails`, `setLaunchIntentChangeCallback`, `shareVideo`, `shareImages` | The social artifact is far richer than the package uses. `getLaunchDetails()` is synchronous and is how an app reads why it was launched (invite, deep link).       |
+### Pagination — resolved
+
+`NextInfo(hasNext, nextId, bodyParams)` round-trips through an opaque
+`nextPageToken` using the `encode()` / `decodeCursor()` pair in
+`HybridPicoSocial`. This was never actually undecided: `getFriendList` had been
+doing it since the Nitro migration. The token is emitted only when `hasNext` is
+true, so "no token" and "no further pages" are the same state and callers never
+read `hasNext`.
+
+`getInvitableUsers`, `getSentInvites` and `getDestinations` all use it.
+
+### `purchaseProduct(Product, Map)` — resolved
+
+`subscribe()` resolves the SKU to a `Product` before purchasing and passes
+`promoCode` through the extras map. See `HybridPicoSubscription.subscribe`.
 
 ### Closed in this pass
 
