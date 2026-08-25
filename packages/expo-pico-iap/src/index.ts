@@ -42,6 +42,11 @@ export async function getPurchaseHistory() {
   return wrapNativeCall(PKG, 'getPurchaseHistory', native()!.getPurchaseHistory());
 }
 
+export async function isProductPurchased(sku: string) {
+  guardService(isIapAvailable(), PKG, 'isProductPurchased');
+  return wrapNativeCall(PKG, 'isProductPurchased', native()!.isProductPurchased(sku));
+}
+
 /** Seam — PICO requires the OS storefront UI; no headless purchase path exists. */
 export async function purchase(sku: string) {
   guardService(isIapAvailable(), PKG, 'purchase');

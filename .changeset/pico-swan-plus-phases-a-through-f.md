@@ -93,6 +93,18 @@ plugin `tsconfig.json` files that extended it now inherit from the repo root
   parameter `hand` to `side`. Positional, so callers are unaffected; named-
   argument or `.length`-style reflection is not.
 
+### New PPS-backed exports
+
+Verified against `javap` on the published AARs, not inferred.
+
+- **`@expo-pico/account`** — `getAdultStatus()`, `getAuthorizedScopes()`,
+  `requestAuthScopes(scopes)`, `cancelAuthorization()`. `getAdultStatus()`
+  returns `'unknown' | 'minor' | 'adult'` rather than a boolean, because PPS
+  distinguishes an unverified account from a confirmed minor and an age gate
+  needs that distinction.
+- **`@expo-pico/iap`** — `isProductPurchased(sku)`, a per-SKU ownership check
+  that avoids pulling the whole purchase list.
+
 ### `@expo-pico/rooms` — new export
 
 `getFriendsAndRooms()` surfaces the read-only friends-and-rooms discovery feed

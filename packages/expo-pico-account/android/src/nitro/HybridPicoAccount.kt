@@ -4,6 +4,7 @@ import com.margelo.nitro.core.Promise
 import com.pico.pps.sdk.auth.ISignInClient
 import com.pico.pps.sdk.auth.PicoSignInClient
 import com.pico.pps.sdk.auth.SignInApiAvailableChecker
+import com.bytedance.pico.matrix.proto.v2.AdultStatus
 import com.bytedance.pico.matrix.proto.v2.AUTH_TYPE
 import com.bytedance.pico.matrix.proto.v2.SignInRequest
 
@@ -135,6 +136,58 @@ class HybridPicoAccount : HybridPicoAccountSpec() {
    * resolves `UNSUPPORTED`, which is a value the enum already carries and
    * which the JS layer already handles.
    */
+  /**
+   * Age gate.
+   *
+   * `IsAdultResponse.adultStatus` is `AdultStatus{UNKNOWN, MINOR, ADULT}`.
+   * UNKNOWN is carried through rather than folded into either answer: the
+   * account simply has not been verified, which is different from being
+   * confirmed a minor, and a store-compliance gate needs to tell them apart.
+   * A null field maps to UNKNOWN for the same reason.
+   */
+  override fun getAdultStatus(): Promise<PicoAdultStatus> {
+    val signIn = client ?: return Promise.rejected(PicoPps.unavailable("getAdultStatus"))
+    return signIn.isAdult().bridge("getAdultStatus") { response ->
+      when (response.adultStatus) {
+        AdultStatus.ADULT -> PicoAdultStatus.ADULT
+        AdultStatus.MINOR -> PicoAdultStatus.MINOR
+        else -> PicoAdultStatus.UNKNOWN
+      }
+    }
+  }
+
+  /**
+   * Scopes already granted. Empty list when the user has granted none —
+   * `authorizedScopes` is a Wire field and so nullable even here.
+   */
+  override fun getAuthorizedScopes(): Promise<Array<String>> {
+    val signIn = client
+      ?: return Promise.rejected(PicoPps.unavailable("getAuthorizedScopes"))
+    return signIn.getAuthorizedScopes().bridge("getAuthorizedScopes") { response ->
+      response.authorizedScopes.orEmpty().toTypedArray()
+    }
+  }
+
+  /**
+   * Requests scopes and resolves with what was actually granted, which may be
+   * narrower than what was asked for — the user can decline individually, so
+   * the response is the authority rather than the request.
+   */
+  override fun requestAuthScopes(scopes: Array<String>): Promise<Array<String>> {
+    val signIn = client
+      ?: return Promise.rejected(PicoPps.unavailable("requestAuthScopes"))
+    return signIn.requestAuthScopes(scopes.toList()).bridge("requestAuthScopes") { response ->
+      response.authorizedScopes.orEmpty().toTypedArray()
+    }
+  }
+
+  /** Revokes authorization. Returns `Task<Unit>`, so there is nothing to map. */
+  override fun cancelAuthorization(): Promise<Unit> {
+    val signIn = client
+      ?: return Promise.rejected(PicoPps.unavailable("cancelAuthorization"))
+    return signIn.cancelAuthorization().bridge("cancelAuthorization") { }
+  }
+
   override fun getAccountLinkStatus(): Promise<PicoAccountLinkStatus> =
     Promise.resolved(PicoAccountLinkStatus.UNSUPPORTED)
 

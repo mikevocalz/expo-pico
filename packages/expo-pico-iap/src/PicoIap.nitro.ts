@@ -42,4 +42,9 @@ export interface PicoIap extends HybridObject<{ android: 'kotlin' }> {
   consumePurchase(purchaseToken: string): Promise<ConsumeResult>;
   getPurchaseHistory(): Promise<IapPurchase[]>;
   purchase(sku: string): Promise<PurchaseResult>;
+  /**
+   * Whether this account owns `sku`, without pulling the whole purchase list.
+   * Cheaper than scanning `getPurchaseHistory()` for a single entitlement check.
+   */
+  isProductPurchased(sku: string): Promise<boolean>;
 }

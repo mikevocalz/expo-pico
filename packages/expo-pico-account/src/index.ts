@@ -11,6 +11,7 @@ export type {
   PicoLoginResult,
   PicoLoginStatus,
   PicoAccountLinkStatus,
+  PicoAdultStatus,
 } from './PicoAccount.nitro';
 
 const PKG = '@expo-pico/account';
@@ -77,6 +78,26 @@ export async function login() {
 export async function getAccessToken(): Promise<string> {
   const native = requireAvailable('getAccessToken');
   return wrapNativeCall(PKG, 'getAccessToken', native.getAccessToken());
+}
+
+export async function getAdultStatus() {
+  const native = requireAvailable('getAdultStatus');
+  return wrapNativeCall(PKG, 'getAdultStatus', native.getAdultStatus());
+}
+
+export async function getAuthorizedScopes() {
+  const native = requireAvailable('getAuthorizedScopes');
+  return wrapNativeCall(PKG, 'getAuthorizedScopes', native.getAuthorizedScopes());
+}
+
+export async function requestAuthScopes(scopes: string[]) {
+  const native = requireAvailable('requestAuthScopes');
+  return wrapNativeCall(PKG, 'requestAuthScopes', native.requestAuthScopes(scopes));
+}
+
+export async function cancelAuthorization(): Promise<void> {
+  const native = requireAvailable('cancelAuthorization');
+  await wrapNativeCall(PKG, 'cancelAuthorization', native.cancelAuthorization());
 }
 
 export async function logout(): Promise<void> {

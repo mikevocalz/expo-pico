@@ -102,6 +102,19 @@ class HybridPicoIap : HybridPicoIapSpec() {
    * no fields, so a successful call is the entire result and the timestamp
    * below is the moment the SDK acknowledged it.
    */
+  /**
+   * Per-SKU ownership check.
+   *
+   * `QueryProductPurchaseStatusResponse.purchased` is a Wire `Boolean`, so it
+   * is nullable; absent means "no record of a purchase", which is `false`.
+   */
+  override fun isProductPurchased(sku: String): Promise<Boolean> {
+    val iap = client ?: return Promise.rejected(PicoPps.unavailable("isProductPurchased"))
+    return iap.queryProductPurchaseStatus(sku).bridge("isProductPurchased") { response ->
+      response.purchased ?: false
+    }
+  }
+
   override fun consumePurchase(purchaseToken: String): Promise<ConsumeResult> {
     val iap = client ?: return Promise.rejected(PicoPps.unavailable("consumePurchase"))
     return iap.consumeProduct(purchaseToken).bridge("consumePurchase") {
