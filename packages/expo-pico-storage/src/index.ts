@@ -1,13 +1,25 @@
 import {
   guardService,
   wrapNativeCall,
-  safeAddListener,
-  createNativeEventEmitter,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import { NativeStorage } from './ExpoPicoStorageModule';
 import type {
+  PicoStorage,
   StorageStatus,
+  StorageEntryType,
+  StorageSaveOptions,
+  StorageConflictEvent,
+  StorageSyncProgressEvent,
+  StorageSyncResult,
+} from './PicoStorage.nitro';
+
+export type {
+  StorageStatus,
+  StorageConflictPolicy,
+  StorageEntryType,
+  StorageSyncPhase,
   StorageSaveOptions,
   StorageLoadResult,
   StorageSaveResult,
@@ -15,101 +27,87 @@ import type {
   StorageSyncResult,
   StorageConflictEvent,
   StorageSyncProgressEvent,
-} from './types';
-
-export * from './types';
-export type { Subscription };
+} from './PicoStorage.nitro';
 
 const PKG = '@expo-pico/storage';
-const emitter = createNativeEventEmitter(NativeStorage);
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoStorage | null {
+  return resolveHybridObject<PicoStorage>('PicoStorage');
+}
 
 export function isStorageAvailable(): boolean {
-  return NativeStorage?.storageSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getStorageSdkVersion(): string {
-  return NativeStorage?.storageSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
 export function getStorageStatus(): StorageStatus {
-  if (!NativeStorage?.storageSdkAvailable) return 'unavailable';
-  return 'available';
+  return native()?.status ?? 'unavailable';
 }
-
-// ─── CRUD ─────────────────────────────────────────────────────────────────────
 
 export async function saveEntry(
   key: string,
   value: string,
+  type: StorageEntryType,
   options?: StorageSaveOptions
-): Promise<StorageSaveResult> {
+) {
   guardService(isStorageAvailable(), PKG, 'saveEntry');
-  const raw = await wrapNativeCall(
-    PKG, 'saveEntry',
-    NativeStorage!.saveEntry(
-      key,
-      value,
-      options?.conflictPolicy ?? 'server-wins',
-      options?.maxBytes ?? 65536
-    )
-  );
-  return raw as unknown as StorageSaveResult;
+  return wrapNativeCall(PKG, 'saveEntry', native()!.saveEntry(key, value, type, options));
 }
 
-export async function loadEntry(key: string): Promise<StorageLoadResult> {
+export async function loadEntry(key: string) {
   guardService(isStorageAvailable(), PKG, 'loadEntry');
-  const raw = await wrapNativeCall(PKG, 'loadEntry', NativeStorage!.loadEntry(key));
-  return raw as unknown as StorageLoadResult;
+  return wrapNativeCall(PKG, 'loadEntry', native()!.loadEntry(key));
 }
 
 export async function deleteEntry(key: string): Promise<void> {
   guardService(isStorageAvailable(), PKG, 'deleteEntry');
-  await wrapNativeCall(PKG, 'deleteEntry', NativeStorage!.deleteEntry(key));
+  await wrapNativeCall(PKG, 'deleteEntry', native()!.deleteEntry(key));
 }
 
-export async function listKeys(): Promise<string[]> {
+export async function listKeys() {
   guardService(isStorageAvailable(), PKG, 'listKeys');
-  const raw = await wrapNativeCall(PKG, 'listKeys', NativeStorage!.listKeys());
-  return raw as unknown as string[];
+  return wrapNativeCall(PKG, 'listKeys', native()!.listKeys());
 }
 
-// ─── Sync ─────────────────────────────────────────────────────────────────────
-
-export async function syncStorage(): Promise<StorageSyncResult> {
+export async function syncStorage() {
   guardService(isStorageAvailable(), PKG, 'syncStorage');
-  const raw = await wrapNativeCall(PKG, 'syncStorage', NativeStorage!.syncStorage());
-  return raw as unknown as StorageSyncResult;
+  return wrapNativeCall(PKG, 'syncStorage', native()!.syncStorage());
 }
 
-export async function getStorageQuota(): Promise<StorageQuota> {
+export async function getStorageQuota() {
   guardService(isStorageAvailable(), PKG, 'getStorageQuota');
-  const raw = await wrapNativeCall(PKG, 'getStorageQuota', NativeStorage!.getStorageQuota());
-  return raw as unknown as StorageQuota;
+  return wrapNativeCall(PKG, 'getStorageQuota', native()!.getStorageQuota());
 }
 
 export async function clearLocalCache(): Promise<void> {
   guardService(isStorageAvailable(), PKG, 'clearLocalCache');
-  await wrapNativeCall(PKG, 'clearLocalCache', NativeStorage!.clearLocalCache());
+  await wrapNativeCall(PKG, 'clearLocalCache', native()!.clearLocalCache());
 }
 
-// ─── Event Listeners ──────────────────────────────────────────────────────────
+function subscribe(register: (h: PicoStorage) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
+}
 
 export function addStorageConflictListener(
   listener: (event: StorageConflictEvent) => void
 ): Subscription {
-  return safeAddListener<StorageConflictEvent>(emitter, 'onStorageConflict', listener);
+  return subscribe((h) => h.addStorageConflictListener(listener));
 }
 
 export function addStorageSyncProgressListener(
   listener: (event: StorageSyncProgressEvent) => void
 ): Subscription {
-  return safeAddListener<StorageSyncProgressEvent>(emitter, 'onStorageSyncProgress', listener);
+  return subscribe((h) => h.addStorageSyncProgressListener(listener));
 }
 
 export function addStorageSyncCompleteListener(
-  listener: (event: StorageSyncResult) => void
+  listener: (result: StorageSyncResult) => void
 ): Subscription {
-  return safeAddListener<StorageSyncResult>(emitter, 'onStorageSyncComplete', listener);
+  return subscribe((h) => h.addStorageSyncCompleteListener(listener));
 }

@@ -10,8 +10,7 @@ plugin/build/
 cli/build/
 .turbo/
 
-# Stray tsc emit — if a tsconfig ever misroots its outDir, catch it
-# before it gets committed alongside .ts sources.
+# tsc emit that lands next to sources when a tsconfig outDir is misrooted
 packages/*/plugin/src/**/*.js
 packages/*/plugin/src/**/*.d.ts
 packages/*/cli/src/**/*.js
@@ -20,39 +19,33 @@ packages/*/src/**/*.js
 packages/*/src/**/*.d.ts
 !packages/__jest_stubs__/**/*.js
 
-# CNG-generated native projects (example app only)
-# Do NOT ignore packages/*/android/ — those contain library source code
+# CNG output for the example app. packages/*/android/ is library source — keep it.
 example/android/
 example/ios/
 
-# Phase N — postinstall-downloaded demo glTF. Every checkout regenerates
-# via `example/scripts/download-demo-model.js`. Skippable via
-# EXPO_PICO_SKIP_DEMO_MODEL=1.
+# Regenerated on postinstall by example/scripts/download-demo-model.js.
 example/assets/models/pico-demo.glb
 
-# PICO SDK AARs — proprietary, must be downloaded manually.
-# See vendor/pico-sdk/README.md for instructions.
+# Proprietary PICO SDK AARs. See vendor/pico-sdk/README.md.
 vendor/pico-sdk/*.aar
-
-# Local tooling / agent state (not source, do not commit)
-.claude/
-.vscode/
-
-# Per-package gradle daemon caches that occasionally leak into the
-# package tree when running `./gradlew assemble*` from a consuming app.
-packages/*/android/.gradle/
-
-# patch-package error dumps (auto-generated on failed npm install)
-patch-package-error.json
-patch-package-error.json.gz
 .vendor/
 
-# env files with PICO credentials — never commit
+packages/*/android/.gradle/
+patch-package-error.json
+patch-package-error.json.gz
+
+# Editor and agent state
+.claude/
+.cursor/
+.qodo/
+.vscode/
+.idea/
+
 .env
 .env.local
 .env.*.local
 
-# Internal/working docs — keep local, not published
+# Working docs, not part of the published surface
 ARCHITECTURE.md
 RELEASING.md
 docs/DEVICE-TESTING-REQUIRED.md
@@ -61,4 +54,3 @@ docs/VIRO-ON-PICO.md
 docs/example/
 docs/release/
 docs/validation/
-.changeset/pico-swan-plus-phases-a-through-f.md

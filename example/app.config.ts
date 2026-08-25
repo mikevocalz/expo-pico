@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'expo-pico-example',
   slug: 'expo-pico-example',
   version: '1.0.0',
-  orientation: 'landscape',
+  orientation: 'default',
   newArchEnabled: true,
   // Bundle any GLB / glTF assets so the scene renderer can require() them.
   // See `assets/models/README.md` for which file the scene looks for.

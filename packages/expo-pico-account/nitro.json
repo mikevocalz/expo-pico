@@ -1,0 +1,30 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "expopico",
+    "account"
+  ],
+  "ios": {
+    "iosModuleName": "ExpoPicoAccount"
+  },
+  "android": {
+    "androidNamespace": [
+      "expopico",
+      "account"
+    ],
+    "androidCxxLibName": "ExpoPicoAccount"
+  },
+  "autolinking": {
+    "PicoAccount": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridPicoAccount"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules",
+    "build",
+    "lib"
+  ]
+}

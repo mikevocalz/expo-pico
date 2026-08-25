@@ -1,7 +1,4 @@
 {
-  "platforms": ["android"],
-  "android": {
-    "modules": ["expo.modules.pico.storage.ExpoPicoStorageModule"]
-  },
+  "platforms": [],
   "plugin": "./plugin/build/index"
 }

@@ -1,45 +1,45 @@
 import {
   guardService,
   wrapNativeCall,
+  resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import { NativeNotifications } from './ExpoPicoNotificationsModule';
-import type {
+import type { PicoNotifications, NotificationPermissionStatus } from './PicoNotifications.nitro';
+
+export type {
   NotificationPermissionStatus,
   NotificationPermissionResult,
+  NotificationProvider,
   NotificationToken,
-} from './types';
-
-export * from './types';
+} from './PicoNotifications.nitro';
 
 const PKG = '@expo-pico/notifications';
 
+function native(): PicoNotifications | null {
+  return resolveHybridObject<PicoNotifications>('PicoNotifications');
+}
+
 export function isNotificationsAvailable(): boolean {
-  return NativeNotifications?.notificationsSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getNotificationsSdkVersion(): string {
-  return NativeNotifications?.notificationsSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
 export function getNotificationPermissionStatus(): NotificationPermissionStatus {
-  if (!NativeNotifications) return 'not-determined';
-  return NativeNotifications.getPermissionStatus() as NotificationPermissionStatus;
+  return native()?.permissionStatus ?? 'not-determined';
 }
 
-export async function requestPermissions(): Promise<NotificationPermissionResult> {
+export async function requestPermissions() {
   guardService(isNotificationsAvailable(), PKG, 'requestPermissions');
-  const raw = await wrapNativeCall(
-    PKG, 'requestPermissions',
-    NativeNotifications!.requestPermissions()
-  );
-  return raw as unknown as NotificationPermissionResult;
+  return wrapNativeCall(PKG, 'requestPermissions', native()!.requestPermissions());
 }
 
-export async function registerForPushNotifications(): Promise<NotificationToken> {
+export async function registerForPushNotifications() {
   guardService(isNotificationsAvailable(), PKG, 'registerForPushNotifications');
-  const raw = await wrapNativeCall(
-    PKG, 'registerForPushNotifications',
-    NativeNotifications!.registerForPushNotifications()
+  return wrapNativeCall(
+    PKG,
+    'registerForPushNotifications',
+    native()!.registerForPushNotifications()
   );
-  return raw as unknown as NotificationToken;
 }

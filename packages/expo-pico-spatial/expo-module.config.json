@@ -1,12 +1,3 @@
 {
-  "platforms": ["android"],
-  "android": {
-    "modules": [
-      "expo.modules.pico.spatial.ExpoPicoSpatialModule",
-      "expo.modules.pico.spatial.ExpoPicoEyeGazeModule",
-      "expo.modules.pico.spatial.ExpoPicoSceneMeshModule",
-      "expo.modules.pico.spatial.ExpoPicoFaceTrackingModule",
-      "expo.modules.pico.spatial.ExpoPicoBodyTrackingModule"
-    ]
-  }
+  "platforms": []
 }

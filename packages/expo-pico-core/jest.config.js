@@ -8,6 +8,7 @@ module.exports = {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],
   },
   moduleNameMapper: {
-    '^expo$': '<rootDir>/../__jest_stubs__/expo.js',
+    '^react-native-nitro-modules$':
+      '<rootDir>/../__jest_stubs__/react-native-nitro-modules.js',
   },
 };

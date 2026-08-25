@@ -71,7 +71,7 @@ export function applyLauncherContract(
   // separate `VRActivity` with these categories — that's what gets started
   // when `<ViroVRSceneNavigator>` mounts at user request.
   //
-  // ponytail: same trap applies to vr dev builds — expo-dev-client's
+  // The same trap applies to VR dev builds — expo-dev-client's
   // DevLauncherActivity is a 2D root and PICO refuses to draw it on the
   // immersive HMD surface (logcat spams "Will skip draw vr actvity"). Skip
   // the launcher intent-filter when dev-client is present; let the standard

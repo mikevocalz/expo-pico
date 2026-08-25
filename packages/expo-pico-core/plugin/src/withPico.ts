@@ -12,6 +12,7 @@ import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
 import { withPicoMainApplication } from './withPicoMainApplication';
 import { withPicoNewArchCheck } from './withPicoNewArchCheck';
+import { withPicoNitroModules } from './withPicoNitroModules';
 import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
@@ -49,6 +50,7 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   config = withPicoProjectBuildGradle(config, options);
   config = withPicoAppBuildGradle(config, options);
   config = withPicoSettingsGradle(config, options);
+  config = withPicoNitroModules(config, options);
   config = withPicoSwan(config, options);
   config = withPicoStrings(config, options);
 

@@ -1,18 +1,12 @@
 import {
-  createNativeEventEmitter,
-  safeAddListener,
   guardService,
   wrapNativeCall,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import {
-  NativeSpatial,
-  NativeEyeGaze,
-  NativeSceneMesh,
-  NativeFaceTracking,
-  NativeBodyTracking,
-} from './ExpoPicoSpatialModule';
+import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatial.nitro';
 import type {
   PicoSpaceState,
   PicoContainerType,
@@ -22,175 +16,28 @@ import type {
   WindowContainerProperties,
   GazePose,
   SceneMesh,
-  SceneMeshRaw,
   FaceBlendShapes,
   BodyJoint,
 } from './types';
 
-export type {
-  PicoSpaceState,
-  PicoContainerType,
-  SpatialCapabilities,
-  SpatialAnchorHandle,
-  SpatialPose,
-  WindowContainerProperties,
-  GazePose,
-  SceneMesh,
-  SceneMeshRaw,
-  FaceBlendShapes,
-  BodyJoint,
-  ExpoPicoSpatialModuleInterface,
-  ExpoPicoEyeGazeModuleInterface,
-  ExpoPicoSceneMeshModuleInterface,
-  ExpoPicoFaceTrackingModuleInterface,
-  ExpoPicoBodyTrackingModuleInterface,
-} from './types';
-
-export type { Subscription };
+export * from './types';
 
 const PKG = '@expo-pico/spatial';
 
-// ─── Event emitters (created once at module init) ────────────────────────────
+const NO_CAPABILITIES: SpatialCapabilities = {
+  spaceStates: false,
+  spatialAnchors: false,
+  sceneUnderstanding: false,
+  passthrough: false,
+  handTracking: false,
+  spatialSdkAvailable: false,
+};
 
-const gazeEmitter = createNativeEventEmitter(NativeEyeGaze);
-const meshEmitter = createNativeEventEmitter(NativeSceneMesh);
-const faceEmitter = createNativeEventEmitter(NativeFaceTracking);
-const bodyEmitter = createNativeEventEmitter(NativeBodyTracking);
-
-// ─── Space / container state ──────────────────────────────────────────────────
-
-/**
- * Returns the current space state the app is operating in.
- *
- * - 'shared-space': Multiple apps visible; app runs in a WindowContainer or panel
- * - 'full-space': App has exclusive use of the spatial environment
- * - 'unknown': Not running on PICO OS 6 or space state not yet determined
- */
-export function getSpaceState(): PicoSpaceState {
-  const s = NativeSpatial?.spaceState;
-  if (s === 'shared-space' || s === 'full-space') return s;
-  return 'unknown';
+function native(): PicoSpatial | null {
+  return resolveHybridObject<PicoSpatial>('PicoSpatial');
 }
 
-export function getContainerType(): PicoContainerType {
-  const c = NativeSpatial?.containerType;
-  if (c === 'window-container' || c === 'stage') return c;
-  return 'none';
-}
-
-export function getSpatialCapabilities(): SpatialCapabilities {
-  return {
-    spaceStates: NativeSpatial?.capabilities?.spaceStates ?? false,
-    spatialAnchors: NativeSpatial?.capabilities?.spatialAnchors ?? false,
-    sceneUnderstanding: NativeSpatial?.capabilities?.sceneUnderstanding ?? false,
-    passthrough: NativeSpatial?.capabilities?.passthrough ?? false,
-    handTracking: NativeSpatial?.capabilities?.handTracking ?? false,
-    spatialSdkAvailable: NativeSpatial?.capabilities?.spatialSdkAvailable ?? false,
-  };
-}
-
-export function getSpatialSdkVersion(): string | null {
-  return NativeSpatial?.spatialSdkVersion ?? null;
-}
-
-// ─── Spatial anchor ───────────────────────────────────────────────────────────
-
-/**
- * Creates a spatial anchor at the given pose.
- *
- * Requires the legacy PICO Spatial SDK 1.x AAR
- * (`com.pvr.spatial:spatial-sdk:1.0.0`) in `vendor/pico-sdk/` or
- * `android/app/libs/`. This is the older PVR-prefixed Spatial SDK —
- * distinct from the modern PPS Maven artifacts (`com.pico.pps:*`) which
- * `expo-pico-core` resolves automatically. Also requires a PICO 4 Ultra
- * or Neo3 device running PICO OS 6+.
- *
- * Rejects with SERVICE_UNAVAILABLE when the SDK is absent.
- * Rejects with VALIDATION_ERROR for malformed pose input.
- */
-export async function createSpatialAnchor(pose: SpatialPose): Promise<SpatialAnchorHandle> {
-  guardService(NativeSpatial != null, PKG, 'createSpatialAnchor');
-  const result = await wrapNativeCall(
-    PKG,
-    'createSpatialAnchor',
-    NativeSpatial!.createSpatialAnchor(pose)
-  );
-  return {
-    anchorId:
-      (result as { anchorId?: string; id?: string }).anchorId ??
-      (result as { anchorId?: string; id?: string }).id ??
-      'unknown',
-    persisted: (result as { persisted?: boolean }).persisted ?? false,
-  };
-}
-
-/**
- * Sets properties for a WindowContainer.
- * Rejects with SERVICE_UNAVAILABLE when the Spatial SDK is absent.
- */
-export async function setWindowContainerProperties(
-  props: WindowContainerProperties
-): Promise<void> {
-  guardService(NativeSpatial != null, PKG, 'setWindowContainerProperties');
-  await wrapNativeCall(
-    PKG,
-    'setWindowContainerProperties',
-    NativeSpatial!.setWindowContainerProperties(props)
-  );
-}
-
-/**
- * Requests transition to Full Space mode.
- * Rejects with SERVICE_UNAVAILABLE when the Spatial SDK is absent.
- */
-export async function requestFullSpace(): Promise<void> {
-  guardService(NativeSpatial != null, PKG, 'requestFullSpace');
-  await wrapNativeCall(PKG, 'requestFullSpace', NativeSpatial!.requestFullSpace());
-}
-
-// ─── Eye gaze ─────────────────────────────────────────────────────────────────
-
-/**
- * Adds a listener for per-frame eye gaze updates.
- *
- * Fires at vsync frequency on PICO devices with eye tracking hardware and
- * PICO Spatial SDK present. On unsupported devices the subscription
- * is returned but the callback never fires (NULL_SUBSCRIPTION).
- */
-export function addGazeListener(cb: (g: GazePose) => void): Subscription {
-  return safeAddListener<GazePose>(gazeEmitter, 'onGazeUpdate', cb);
-}
-
-/**
- * One-shot gaze snapshot. Returns null when eye gaze is unavailable.
- */
-export async function getGazeSnapshot(): Promise<GazePose | null> {
-  if (!NativeEyeGaze) return null;
-  return wrapNativeCall(PKG, 'getGazeSnapshot', NativeEyeGaze.getGazeSnapshot());
-}
-
-/** Returns true when eye gaze SDK is wired and hardware is present. */
-export function isEyeGazeAvailable(): boolean {
-  return NativeEyeGaze?.eyeGazeAvailable ?? false;
-}
-
-// ─── Scene mesh ───────────────────────────────────────────────────────────────
-
-/**
- * Queries the current scene mesh from the PICO Spatial SDK.
- *
- * Normalizes the native plain-number arrays to typed arrays in JS:
- *   vertices → Float32Array,  indices → Uint32Array,  normals → Float32Array
- *
- * Rejects with SERVICE_UNAVAILABLE when the Spatial SDK is absent.
- */
-export async function getSceneMesh(): Promise<SceneMesh> {
-  guardService(NativeSceneMesh != null, PKG, 'getSceneMesh');
-  const raw: SceneMeshRaw = await wrapNativeCall(
-    PKG,
-    'getSceneMesh',
-    NativeSceneMesh!.getSceneMesh()
-  );
+function toTypedMesh(raw: SceneMeshRaw): SceneMesh {
   return {
     vertices: new Float32Array(raw.vertices),
     indices: new Uint32Array(raw.indices),
@@ -198,52 +45,159 @@ export async function getSceneMesh(): Promise<SceneMesh> {
   };
 }
 
+function subscribe(register: (h: PicoSpatial) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
+}
+
+// ─── Space / container state ─────────────────────────────────────────────────
+
 /**
- * Adds a listener for scene mesh updates.
- * Payload is normalized to typed arrays in JS before the callback fires.
+ * Current space state.
+ *
+ * - 'shared-space': other apps visible; this one runs in a WindowContainer
+ * - 'full-space': exclusive use of the spatial environment
+ * - 'unknown': not PICO OS 6, or not yet determined
  */
+export function getSpaceState(): PicoSpaceState {
+  const s = native()?.spaceState;
+  return s === 'shared-space' || s === 'full-space' ? s : 'unknown';
+}
+
+export function getContainerType(): PicoContainerType {
+  const c = native()?.containerType;
+  return c === 'window-container' || c === 'stage' ? c : 'none';
+}
+
+export function getSpatialCapabilities(): SpatialCapabilities {
+  return native()?.capabilities ?? NO_CAPABILITIES;
+}
+
+export function getSpatialSdkVersion(): string | null {
+  return native()?.spatialSdkVersion ?? null;
+}
+
+// ─── Spatial anchors ─────────────────────────────────────────────────────────
+
+/**
+ * Creates a spatial anchor at the given pose.
+ *
+ * Requires the legacy PVR Spatial SDK 1.x AAR in `vendor/pico-sdk/` or
+ * `android/app/libs/` — distinct from the PPS Maven artifacts that
+ * expo-pico-core resolves automatically — plus a PICO 4 Ultra or Neo3 on
+ * PICO OS 6+.
+ *
+ * Rejects with SERVICE_UNAVAILABLE when the SDK is absent, VALIDATION_ERROR
+ * for a malformed pose.
+ */
+export async function createSpatialAnchor(pose: SpatialPose): Promise<SpatialAnchorHandle> {
+  guardService(native() != null, PKG, 'createSpatialAnchor');
+  const result = await wrapNativeCall(
+    PKG,
+    'createSpatialAnchor',
+    native()!.createSpatialAnchor(pose)
+  );
+  return {
+    anchorId: result.anchorId || result.id || 'unknown',
+    persisted: result.persisted,
+  };
+}
+
+export async function setWindowContainerProperties(
+  props: WindowContainerProperties
+): Promise<void> {
+  guardService(native() != null, PKG, 'setWindowContainerProperties');
+  await wrapNativeCall(
+    PKG,
+    'setWindowContainerProperties',
+    native()!.setWindowContainerProperties(props)
+  );
+}
+
+export async function requestFullSpace(): Promise<void> {
+  guardService(native() != null, PKG, 'requestFullSpace');
+  await wrapNativeCall(PKG, 'requestFullSpace', native()!.requestFullSpace());
+}
+
+// ─── Eye gaze ────────────────────────────────────────────────────────────────
+
+/**
+ * Per-frame eye gaze updates, at vsync on hardware that supports it. On
+ * unsupported devices the subscription is returned but never fires.
+ */
+export function addGazeListener(cb: (g: GazePose) => void): Subscription {
+  return subscribe((h) => h.addGazeListener(cb));
+}
+
+/** One-shot gaze snapshot; null when eye gaze is unavailable. */
+export async function getGazeSnapshot(): Promise<GazePose | null> {
+  const hybrid = native();
+  if (!hybrid?.eyeGazeAvailable) return null;
+  return (await wrapNativeCall(PKG, 'getGazeSnapshot', hybrid.getGazeSnapshot())) ?? null;
+}
+
+export function isEyeGazeAvailable(): boolean {
+  return native()?.eyeGazeAvailable ?? false;
+}
+
+// ─── Scene mesh ──────────────────────────────────────────────────────────────
+
+/**
+ * Current scene mesh. Native returns flat number arrays; they are normalised
+ * here to Float32Array / Uint32Array.
+ *
+ * Rejects with SERVICE_UNAVAILABLE when the Spatial SDK is absent.
+ */
+export async function getSceneMesh(): Promise<SceneMesh> {
+  guardService(native()?.sceneMeshAvailable ?? false, PKG, 'getSceneMesh');
+  const raw = await wrapNativeCall(PKG, 'getSceneMesh', native()!.getSceneMesh());
+  return toTypedMesh(raw);
+}
+
+/** Payload is normalised to typed arrays before the callback fires. */
 export function addSceneMeshUpdateListener(cb: (m: SceneMesh) => void): Subscription {
-  return safeAddListener<SceneMeshRaw>(meshEmitter, 'onSceneMeshUpdate', (raw) => {
-    cb({
-      vertices: new Float32Array(raw.vertices),
-      indices: new Uint32Array(raw.indices),
-      normals: raw.normals ? new Float32Array(raw.normals) : undefined,
-    });
-  });
+  return subscribe((h) => h.addSceneMeshUpdateListener((raw) => cb(toTypedMesh(raw))));
 }
 
 export function isSceneMeshAvailable(): boolean {
-  return NativeSceneMesh?.sceneMeshAvailable ?? false;
+  return native()?.sceneMeshAvailable ?? false;
 }
 
-// ─── Face tracking ────────────────────────────────────────────────────────────
+// ─── Face tracking ───────────────────────────────────────────────────────────
 
-/**
- * Adds a listener for per-frame face blendshape updates.
- * Fires at vsync when face tracking is active. Never fires on unsupported runtimes.
- */
+/** Per-frame blendshape updates at vsync. Never fires on unsupported runtimes. */
 export function addFaceListener(cb: (b: FaceBlendShapes) => void): Subscription {
-  return safeAddListener<FaceBlendShapes>(faceEmitter, 'onFaceUpdate', cb);
+  return subscribe((h) => h.addFaceListener(cb));
 }
 
 export function isFaceTrackingAvailable(): boolean {
-  return NativeFaceTracking?.faceTrackingAvailable ?? false;
+  return native()?.faceTrackingAvailable ?? false;
 }
 
-// ─── Body tracking ────────────────────────────────────────────────────────────
+// ─── Body tracking ───────────────────────────────────────────────────────────
 
-/**
- * Adds a listener for per-frame body joint updates.
- * Fires at vsync when body tracking is active. Never fires on unsupported runtimes.
- */
+/** Per-frame body joint updates at vsync. Never fires on unsupported runtimes. */
 export function addBodyListener(cb: (joints: BodyJoint[]) => void): Subscription {
-  return safeAddListener<{ joints: BodyJoint[] }>(bodyEmitter, 'onBodyUpdate', (payload) => {
-    cb(payload.joints ?? []);
-  });
+  return subscribe((h) =>
+    h.addBodyListener((joints: SpatialBodyJoint[]) =>
+      cb(
+        joints.map((j) => ({
+          name: j.name,
+          position: [j.position.x, j.position.y, j.position.z] as [number, number, number],
+          rotation: [j.rotation.x, j.rotation.y, j.rotation.z, j.rotation.w] as [
+            number,
+            number,
+            number,
+            number,
+          ],
+        }))
+      )
+    )
+  );
 }
 
 export function isBodyTrackingAvailable(): boolean {
-  return NativeBodyTracking?.bodyTrackingAvailable ?? false;
+  return native()?.bodyTrackingAvailable ?? false;
 }
-
-export default NativeSpatial;

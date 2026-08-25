@@ -1,10 +1,10 @@
-jest.mock('expo', () => ({
-  requireNativeModule: jest.fn(() => { throw new Error('Module not found'); }),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    createHybridObject: jest.fn(() => {
+      throw new Error('HybridObject not available in test environment');
+    }),
+  },
 }));
-jest.mock('expo-modules-core', () => ({
-  EventEmitter: jest.fn(),
-}));
-
 import * as api from '../index';
 import { runPackageContractTests } from '@expo-pico/platform-service-common/testing';
 

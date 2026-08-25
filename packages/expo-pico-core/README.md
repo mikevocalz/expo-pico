@@ -20,7 +20,7 @@ Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project 
 ## Install
 
 ```bash
-yarn add expo-pico-core
+yarn add @expo-pico/core react-native-nitro-modules
 ```
 
 ## Quick start
@@ -89,6 +89,7 @@ Full plugin option reference. All options are optional; defaults shown below.
 | `platformService.picoPayKey`        | `string`                                     | IAP payment key (writes `pico_pay_key`)                                         |
 | `platformService.foreign`           | `{ picoAppId?, picoAppKey?, picoMerchantId?, picoPayKey? }` | Global-region identity siblings (writes `_foreign` resources)                   |
 | `platformService.declareActivities` | `boolean`                                    | Declare `com.pico.loginpaysdk.UnityAuthInterface` + `PicoSDKBrowser` activities in flavor manifest. Default: true when any identity field is set. |
+| `platformService.services`          | `string[]`                                   | Which `com.pico.pps:platform-service-*` artifacts to put on the classpath. Default: derived from the installed `@expo-pico/*` packages, de-duplicated. Set it to reach `entitlement`, `compliance`, `sport` or `speech`, which no package wraps yet. |
 
 ### Hardware capability declarations
 
@@ -246,13 +247,48 @@ The capability runtime is reflection-gated on the Kotlin side. For the modern PP
 
 ## CLI: `expo-pico-doctor`
 
-Ships as a binary alongside the JS API. Lints your `app.config` against the same seven checks the prebuild pass emits, without running `npx expo prebuild`.
+Ships as a binary alongside the JS API. Lints your `app.config` against the checks the prebuild pass emits, without running `npx expo prebuild`, plus three that need the filesystem: a duplicate PPS dependency block, a vendored AAR shadowing the Maven copy, and a `com.pico.pps` coordinate pinned to an unsupported version.
 
 ```bash
 npx expo-pico-doctor                  # pretty output
 npx expo-pico-doctor --json           # machine-readable
 npx expo-pico-doctor --fail-on-warning # CI gate
 ```
+
+## One copy of the SDK, however many packages you install
+
+`expo-pico-core` declares every `com.pico.pps` coordinate, in the app
+module, **once**. No sibling package declares one — they reach the SDK
+through `implementation project(':expo-pico-core')`. Adding
+`@expo-pico/social` to an app that already has `@expo-pico/account` adds a
+project dependency, never a second Maven coordinate, so there is nothing to
+duplicate.
+
+Which services get declared is derived from the packages actually
+installed, de-duplicated: `social` and `rooms` both need the `friend`
+service and produce one line between them. If detection can't see
+`node_modules`, all eleven are declared — a miss costs APK size, never a
+`ClassNotFoundException`.
+
+Two things outside the plugin's control could still duplicate, and both are
+guarded:
+
+- **A vendored AAR shadowing the Maven copy.** PICO's docs tell you to drop
+  SDK AARs into `android/app/libs/`. The generated `fileTree` over that
+  directory excludes every filename Maven already supplies, so a stray
+  `platform-service-auth-1.0.0.aar` can't trigger `Duplicate class
+  com.pico.pps.…`. Unrelated vendored libraries still load normally.
+- **Version skew.** All eleven services share `com.pico.pps:pps_sdk_base`,
+  and the repo publishes newer lines than the one pinned here. Gradle picks
+  the highest version it sees, so one foreign declaration is enough to move
+  the shared base while the services stay behind. A `constraints` block in
+  the app module and a `resolutionStrategy` under `allprojects` hold every
+  pinned coordinate at one version.
+
+`npx expo-pico-doctor` reports all three failure modes. See
+[docs/PPS-ARTIFACTS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-ARTIFACTS.md)
+for the resolved artifact list, the per-package service map, and how to
+reproduce the resolution locally.
 
 ## Sibling packages
 

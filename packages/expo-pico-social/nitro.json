@@ -1,0 +1,31 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "expopico",
+    "social"
+  ],
+  "ios": {
+    "iosModuleName": "ExpoPicoSocial"
+  },
+  "android": {
+    "androidNamespace": [
+      "expopico",
+      "social"
+    ],
+    "androidCxxLibName": "ExpoPicoSocial"
+  },
+  "autolinking": {
+    "PicoSocial": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridPicoSocial"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules",
+    "build",
+    "lib",
+    "plugin"
+  ]
+}

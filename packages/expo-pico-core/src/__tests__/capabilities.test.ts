@@ -97,8 +97,10 @@ const mockModule = {
   getHrtfProfile: jest.fn(async () => null),
 };
 
-jest.mock('expo', () => ({
-  requireNativeModule: jest.fn(() => mockModule),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    createHybridObject: jest.fn(() => mockModule),
+  },
 }));
 
 import {

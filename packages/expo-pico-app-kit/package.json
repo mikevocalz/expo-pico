@@ -1,7 +1,7 @@
 {
   "name": "@expo-pico/app-kit",
   "version": "0.1.0",
-  "description": "App-side orchestration layer for the expo-pico-* family — boot probe, capability cache, no-op-safe wrappers for haptics, eye gaze, scene mesh, face/body tracking, window container, and Pico Platform Service SDK (account, IAP, social, achievements, leaderboards, push, friend).",
+  "description": "Orchestration layer for the expo-pico packages: boot probe, capability cache, and no-op-safe wrappers over the sibling modules.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "exports": {
@@ -16,13 +16,15 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "tsc"
   },
   "files": [
+    "LICENSE",
+    "README.md",
     "build",
     "src",
-    "plugins",
-    "README.md"
+    "plugins"
   ],
   "keywords": [
     "expo",
@@ -33,32 +35,96 @@
     "spatial"
   ],
   "license": "MIT",
-  "private": true,
   "peerDependencies": {
-    "expo": "~56.0.12",
-    "@expo-pico/core": ">=0.1.0",
-    "@expo-pico/spatial": ">=0.1.0",
-    "react-native": "*",
-    "react-native-mmkv": ">=4.0.0",
-    "@fishjam-cloud/react-native-client": ">=0.27.0",
-    "@fishjam-cloud/ts-client": ">=0.27.0",
-    "@fishjam-cloud/react-native-webrtc": ">=0.27.0"
-  },
-  "optionalPeerDependencies": {
     "@expo-pico/account": ">=0.1.0",
-    "@expo-pico/iap": ">=0.1.0",
     "@expo-pico/achievements": ">=0.1.0",
+    "@expo-pico/core": ">=0.2.0",
+    "@expo-pico/iap": ">=0.1.0",
     "@expo-pico/leaderboards": ">=0.1.0",
-    "@expo-pico/rooms": ">=0.1.0",
     "@expo-pico/notifications": ">=0.1.0",
-    "@expo-pico/social": ">=0.1.0",
+    "@expo-pico/rooms": ">=0.1.0",
     "@expo-pico/rtc": ">=0.1.0",
+    "@expo-pico/social": ">=0.1.0",
+    "@expo-pico/spatial": ">=0.2.0",
     "@expo-pico/storage": ">=0.1.0",
-    "@expo-pico/subscription": ">=0.1.0"
+    "@expo-pico/subscription": ">=0.1.0",
+    "@fishjam-cloud/react-native-client": ">=0.27.0",
+    "@fishjam-cloud/react-native-webrtc": ">=0.27.0",
+    "@fishjam-cloud/ts-client": ">=0.27.0",
+    "expo": "~57.0.16",
+    "react-native": "*",
+    "react-native-mmkv": ">=4.0.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.14",
     "typescript": "~6.0.3",
     "react-native-mmkv": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo-pico/account": {
+      "optional": true
+    },
+    "@expo-pico/achievements": {
+      "optional": true
+    },
+    "@expo-pico/core": {
+      "optional": false
+    },
+    "@expo-pico/iap": {
+      "optional": true
+    },
+    "@expo-pico/leaderboards": {
+      "optional": true
+    },
+    "@expo-pico/notifications": {
+      "optional": true
+    },
+    "@expo-pico/rooms": {
+      "optional": true
+    },
+    "@expo-pico/rtc": {
+      "optional": true
+    },
+    "@expo-pico/social": {
+      "optional": true
+    },
+    "@expo-pico/spatial": {
+      "optional": true
+    },
+    "@expo-pico/storage": {
+      "optional": true
+    },
+    "@expo-pico/subscription": {
+      "optional": true
+    },
+    "@fishjam-cloud/react-native-client": {
+      "optional": true
+    },
+    "@fishjam-cloud/react-native-webrtc": {
+      "optional": true
+    },
+    "@fishjam-cloud/ts-client": {
+      "optional": true
+    },
+    "expo": {
+      "optional": false
+    },
+    "react-native": {
+      "optional": false
+    },
+    "react-native-mmkv": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-app-kit"
+  },
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-app-kit",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

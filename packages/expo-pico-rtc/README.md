@@ -7,7 +7,7 @@ Wraps the PICO RTC SDK to provide channel-based voice comms.
 ## Installation
 
 ```sh
-yarn add expo-pico-rtc
+yarn add @expo-pico/rtc react-native-nitro-modules
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -87,6 +87,16 @@ a future PPS release.
 - Expo SDK 56+
 - New Architecture
 - Android only
+
+## Native artifacts
+
+This package declares no Maven coordinate of its own. It has no PICO
+Platform Service artifact behind it — see
+[docs/PPS-WIRING-GAPS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-WIRING-GAPS.md)
+— and reaches whatever native code it needs through
+`@expo-pico/core`. Installing it alongside other `@expo-pico/*`
+packages adds nothing to the Android classpath that is not already
+there.
 
 ## Links
 

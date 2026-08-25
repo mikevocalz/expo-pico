@@ -4,6 +4,24 @@ PICO platform leaderboard APIs for Expo apps. Query rankings, write scores, and 
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Requires a signed-in PICO account
+
+`@expo-pico/account` is a runtime prerequisite for this package — entries are written against the signed-in user. It is
+**not** a code-level import, so nothing here fails to compile without it; calls
+simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
+
+```bash
+yarn add @expo-pico/account react-native-nitro-modules
+```
+
+```ts
+import { login, isAccountAvailable } from '@expo-pico/account';
+
+if (isAccountAvailable()) {
+  await login();   // connect the PICO account before calling into this package
+}
+```
+
 ## Status
 
 - Maturity: alpha
@@ -105,6 +123,20 @@ interface PicoPage<T> {
 ```
 
 Pass `nextPageToken` as `options.pageToken` in the next call to advance pages.
+
+## Native artifacts
+
+This package needs `com.pico.pps:platform-service-leaderboard` on the Android classpath.
+
+**It does not declare it.** `@expo-pico/core` declares every
+`com.pico.pps` coordinate once, in the app module, and this package
+reaches it through `implementation project(':expo-pico-core')`. So
+installing it next to other `@expo-pico/*` packages never produces a
+second declaration of the same artifact.
+
+See [docs/PPS-ARTIFACTS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-ARTIFACTS.md)
+for the full artifact list and the two cases that can still duplicate
+(a vendored AAR shadowing the Maven copy, and version skew).
 
 ## Limitations
 

@@ -1,38 +1,115 @@
-plugins {
-    id 'com.android.library'
-    id 'expo-module-gradle-plugin'
+buildscript {
+    ext.safeExtGet = { prop, fallback ->
+        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:${safeExtGet('agpVersion', '8.9.1')}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '2.1.20')}"
+    }
 }
 
-expoModule {
-    canBePublished false
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+/**
+ * ABIs the consuming app builds for. PICO 4 / 4 Ultra / Swan are all
+ * 64-bit ARM, but the `mobile` flavor may target more, so this reads the
+ * app's own `reactNativeArchitectures` instead of hard-coding arm64-v8a.
+ */
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
 android {
     namespace "expo.modules.pico.rtc"
+    compileSdk safeExtGet('compileSdkVersion', 36)
+    ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
+
     defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
+        // expo-pico-core declares the `device` dimension (pico / mobile).
+        // This module has no flavor-specific code, so it falls back to the
+        // `pico` variant and then `mobile`.
         missingDimensionStrategy "device", "pico", "mobile"
         versionCode 1
         versionName "0.1.0"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions", "-frtti", "-std=c++20"
+                arguments "-DANDROID_STL=c++_shared"
+                abiFilters(*reactNativeArchitectures())
+            }
+        }
     }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    packagingOptions {
+        // This module's own JNI library is uniquely named after
+        // `androidCxxLibName` in nitro.json, so two @expo-pico packages can
+        // never collide. React Native's shared libraries, however, arrive
+        // from several prefabs at once and must not be packaged twice.
+        excludes += [
+            "META-INF/**",
+            "**/libc++_shared.so",
+            "**/libfbjni.so",
+            "**/libjsi.so",
+            "**/libreactnative.so",
+        ]
+    }
+
+    sourceSets {
+        main {
+            // Assignment, not `+=`, and that is the whole point: it drops
+            // AGP's default `src/main/java` from the build.
+            //
+            // `src/main/java` still holds the Expo Modules Kotlin this
+            // package used before the Nitro migration. Those classes extend
+            // `expo.modules.kotlin.modules.Module`, which is no longer on
+            // the classpath — expo-module-gradle-plugin is gone — so
+            // compiling them would fail. They stay on disk as the reference
+            // for porting each method across, and come out of the build the
+            // moment `src/nitro` has an equivalent.
+            //
+            // `../nitrogen/generated/android/kotlin` is appended by the
+            // autolinking script applied at the bottom of this file.
+            java.srcDirs = ["src/nitro"]
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+        prefab true
+    }
+
     lint {
         abortOnError false
     }
-    buildFeatures {
-        buildConfig true
-    }
+}
+
+repositories {
+    mavenCentral()
+    google()
 }
 
 dependencies {
-    // Phase L — cross-module Kotlin import of
-    // `PicoPlatformSdkDetector` from expo-pico-core. Resolved via
-    // Expo Modules autolinking, which generates an
-    // `include :expo-pico-core` line in the consuming app's
-    // settings.gradle at prebuild time. If your autolinking path
-    // uses a different project name, remove this line — sibling
-    // Utils.kt still works via its own inline Class.forName probe.
-    // See docs/DEVICE-TESTING-REQUIRED.md.
-    implementation project(':expo-pico-core')
-    // PICO RTC SDK — extension seam
-    // Uncomment when the RTC SDK AAR is available from PICO Maven:
-    // implementation "com.pvr:pvr-rtc-sdk:1.0.0"
+    implementation "com.facebook.react:react-android"
+    implementation "com.facebook.react:hermes-android"
+    implementation project(":react-native-nitro-modules")
 }
+
+// Adds the nitrogen-generated Kotlin to this module's source set. Run
+// `yarn nitrogen` in this package before syncing Gradle — the file below
+// does not exist until nitrogen has run, and Gradle fails fast if it is
+// missing rather than silently building a module with no bindings.
+apply from: '../nitrogen/generated/android/ExpoPicoRtc+autolinking.gradle'

@@ -3,8 +3,10 @@
 // native bridge, so stub the module before the import chain resolves.
 // We only test the pure reducer + formatter here, neither of which
 // touches the native mock, so returning an empty object is enough.
-jest.mock('expo', () => ({
-  requireNativeModule: jest.fn(() => ({})),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    createHybridObject: jest.fn(() => ({})),
+  },
 }));
 
 import {

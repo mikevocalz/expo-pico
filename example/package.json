@@ -19,15 +19,15 @@
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {
-    "@reactvision/react-viro": "2.56.0",
+    "@reactvision/react-viro": "2.58.1",
     "expo-horizon-core": "file:../.vendor/expo-horizon/expo-horizon-core",
     "@fishjam-cloud/react-native-client": "0.28.1",
     "@fishjam-cloud/ts-client": "0.28.1",
     "@fishjam-cloud/react-native-webrtc": "0.28.0",
     "react-native-get-random-values": "2.0.0",
-    "expo": "~56.0.12",
-    "expo-asset": "~56.0.17",
-    "expo-file-system": "~56.0.8",
+    "expo": "~57.0.16",
+    "expo-asset": "~57.0.14",
+    "expo-file-system": "~57.0.5",
     "@expo-pico/account": "*",
     "@expo-pico/achievements": "*",
     "@expo-pico/app-kit": "*",
@@ -41,9 +41,11 @@
     "@expo-pico/spatial": "*",
     "@expo-pico/storage": "*",
     "@expo-pico/subscription": "*",
-    "react": "19.2.7",
-    "react-native": "0.86.0",
-    "react-native-permissions": "^5.6.0"
+    "react": "19.2.8",
+    "react-native": "0.86.2",
+    "react-native-permissions": "^5.6.0",
+    "react-native-nitro-modules": "0.37.0",
+    "react-freeze": "^1.0.4"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",

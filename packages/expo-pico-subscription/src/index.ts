@@ -1,67 +1,60 @@
 import {
   guardService,
   wrapNativeCall,
+  resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import { NativeSubscription } from './ExpoPicoSubscriptionModule';
-import type {
+import type { PicoSubscription, SubscribeOptions } from './PicoSubscription.nitro';
+
+export type {
+  SubscriptionPeriod,
+  EntitlementStatus,
   SubscriptionProduct,
   ActiveSubscription,
   SubscriptionEntitlement,
   SubscribeOptions,
-} from './types';
-
-export * from './types';
+} from './PicoSubscription.nitro';
 
 const PKG = '@expo-pico/subscription';
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoSubscription | null {
+  return resolveHybridObject<PicoSubscription>('PicoSubscription');
+}
 
 export function isSubscriptionAvailable(): boolean {
-  return NativeSubscription?.subscriptionSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getSubscriptionSdkVersion(): string {
-  return NativeSubscription?.subscriptionSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
-// ─── Products ────────────────────────────────────────────────────────────────
-
-export async function getSubscriptionProducts(skus: string[]): Promise<SubscriptionProduct[]> {
+export async function getSubscriptionProducts(skus: string[]) {
   guardService(isSubscriptionAvailable(), PKG, 'getSubscriptionProducts');
-  const raw = await wrapNativeCall(
-    PKG, 'getSubscriptionProducts',
-    NativeSubscription!.getSubscriptionProducts(skus)
-  );
-  return raw as unknown as SubscriptionProduct[];
+  return wrapNativeCall(PKG, 'getSubscriptionProducts', native()!.getSubscriptionProducts(skus));
 }
 
-// ─── Active subscriptions ────────────────────────────────────────────────────
-
-export async function getActiveSubscriptions(): Promise<ActiveSubscription[]> {
+export async function getActiveSubscriptions() {
   guardService(isSubscriptionAvailable(), PKG, 'getActiveSubscriptions');
-  const raw = await wrapNativeCall(
-    PKG, 'getActiveSubscriptions',
-    NativeSubscription!.getActiveSubscriptions()
-  );
-  return raw as unknown as ActiveSubscription[];
+  return wrapNativeCall(PKG, 'getActiveSubscriptions', native()!.getActiveSubscriptions());
 }
 
-export async function getSubscriptionEntitlement(sku: string): Promise<SubscriptionEntitlement> {
+export async function getSubscriptionEntitlement(sku: string) {
   guardService(isSubscriptionAvailable(), PKG, 'getSubscriptionEntitlement');
-  const raw = await wrapNativeCall(
-    PKG, 'getSubscriptionEntitlement',
-    NativeSubscription!.getSubscriptionEntitlement(sku)
+  return wrapNativeCall(
+    PKG,
+    'getSubscriptionEntitlement',
+    native()!.getSubscriptionEntitlement(sku)
   );
-  return raw as unknown as SubscriptionEntitlement;
 }
 
+/** Seam — PICO requires the OS storefront UI. */
 export async function subscribe(options: SubscribeOptions): Promise<void> {
   guardService(isSubscriptionAvailable(), PKG, 'subscribe');
-  await wrapNativeCall(PKG, 'subscribe', NativeSubscription!.subscribe(options.sku));
+  await wrapNativeCall(PKG, 'subscribe', native()!.subscribe(options));
 }
 
-// PPS 1.0.x has no programmatic cancel — native rejects REQUIRES_OS_UI.
+/** Returns REQUIRES_OS_UI — cancellation happens in the PICO settings app. */
 export async function cancelSubscription(sku: string): Promise<void> {
   guardService(isSubscriptionAvailable(), PKG, 'cancelSubscription');
-  await wrapNativeCall(PKG, 'cancelSubscription', NativeSubscription!.cancelSubscription(sku));
+  await wrapNativeCall(PKG, 'cancelSubscription', native()!.cancelSubscription(sku));
 }

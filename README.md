@@ -1,13 +1,9 @@
 # expo-pico
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-56-000020.svg?logo=expo)](https://docs.expo.dev/)
-[![Node >=20](https://img.shields.io/badge/node-%E2%89%A520-43853D.svg?logo=node.js&logoColor=white)](.nvmrc)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](./tsconfig.base.json)
+[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-57-000020.svg?logo=expo)](https://docs.expo.dev/)
 [![New Architecture](https://img.shields.io/badge/React%20Native-New%20Architecture-20232A.svg?logo=react)](https://reactnative.dev/architecture/landing-page)
 [![Android only](https://img.shields.io/badge/platform-Android-3DDC84.svg?logo=android&logoColor=white)]()
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](./CONTRIBUTING.md)
-[![Tests](https://img.shields.io/badge/tests-223%20passing-76b989.svg)](./packages/expo-pico-core/__tests__)
 
 Expo-native package family for PICO 4 / 4 Ultra (PICO OS 5) and Project Swan (PICO OS 6) XR devices.
 
@@ -49,7 +45,7 @@ The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [doc
 Ships with `expo-pico-core` already wired, a runtime diagnostics HUD, and a pre-flight doctor script.
 
 ```bash
-npx create-expo-app --template expo-pico-template my-pico-app
+npx create-expo-app --template @expo-pico/template my-pico-app
 cd my-pico-app
 yarn install
 npx expo-pico-doctor       # lint the config
@@ -60,7 +56,7 @@ npx expo run:android --variant picoDebug
 ### Option 2: add to an existing Expo app
 
 ```bash
-yarn add expo-pico-core
+yarn add @expo-pico/core react-native-nitro-modules
 # (add siblings as needed)
 ```
 
@@ -70,7 +66,9 @@ export default {
   expo: {
     name: 'my-pico-app',
     newArchEnabled: true,
-    orientation: 'landscape',
+    // 'default' — a locked orientation overrides the panel dimensions
+    // the plugin writes via defaultWidth/defaultHeight.
+    orientation: 'default',
     plugins: [
       [
         '@expo-pico/core',
@@ -102,7 +100,7 @@ npx expo run:android --variant picoDebug
 
 ## Compatibility
 
-- Expo SDK 56 (current baseline). React Native 0.86. React 19.2. Hermes.
+- Expo SDK 57 (current baseline). React Native 0.86.2. React 19.2. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices:
@@ -136,7 +134,7 @@ Ships with `expo-pico-core`.
 yarn install
 yarn build      # build all packages (core + plugin + CLI)
 yarn typecheck  # turbo run typecheck across the workspace
-yarn test       # turbo run test (223+ tests)
+yarn test
 yarn lint
 ```
 
@@ -148,7 +146,11 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
-The example renders a ReactVision/Viro immersive scene (Khronos BrainStem glTF auto-downloaded on install) inside `<ViroVRSceneNavigator>`, a live PICO runtime-info HUD, a full `DiagnosticsPanel` (build-time and runtime diagnostics plus the SDK probe), and a `ValidationHarness` that exercises every sibling module's public API. Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO / Meta Quest hardware the example runs as an end-to-end immersive XR app; on a non-XR device it falls back to a flat preview.
+The example opens on a designed home surface — an isometric cube mark, live `getPicoRuntimeInfo()` status chips, and an **Enter XR Scene** call to action — which routes into a `<ViroVRSceneNavigator>` holding an interactive cube you can drag with the controller ray, hover for a focus ring, and tap to recolour. A live position caption above the cube confirms the drag is real. `DiagnosticsPanel` (build-time and runtime diagnostics plus the SDK probe) and `ValidationHarness` (exercises every sibling module's public API) are reachable from the home screen.
+
+Layout is breakpoint-driven rather than phone-shaped: PICO renders the 2D activity into a WindowContainer panel roughly 1000-1600dp wide, so the home screen goes two-column above 700dp and caps content width so line length stays readable. Every route stays mounted behind `<Freeze>` — unmounting the Viro navigator while its native session is live is the reliable way to crash the app, so inactive routes suspend instead of tearing down.
+
+Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO / Meta Quest hardware the example runs as an end-to-end immersive XR app; on a non-XR device the same scene renders through the flat navigator.
 
 ## License
 

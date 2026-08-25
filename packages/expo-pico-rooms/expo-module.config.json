@@ -1,6 +1,3 @@
 {
-  "platforms": ["android"],
-  "android": {
-    "modules": ["expo.modules.pico.rooms.ExpoPicoRoomsModule"]
-  }
+  "platforms": []
 }

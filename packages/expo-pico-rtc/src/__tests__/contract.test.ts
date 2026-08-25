@@ -1,16 +1,11 @@
 // Mock native module as absent — simulates non-PICO build
-jest.mock('expo', () => ({
-  requireNativeModule: jest.fn(() => { throw new Error('Module not found'); }),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    createHybridObject: jest.fn(() => {
+      throw new Error('HybridObject not available in test environment');
+    }),
+  },
 }));
-
-jest.mock('expo-modules-core', () => ({
-  requireNativeModule: jest.fn(() => { throw new Error('Module not found'); }),
-  EventEmitter: jest.fn().mockImplementation(() => ({
-    addListener: jest.fn(() => ({ remove: jest.fn() })),
-    removeAllListeners: jest.fn(),
-  })),
-}));
-
 jest.unmock('@expo-pico/platform-service-common');
 
 import * as api from '../index';

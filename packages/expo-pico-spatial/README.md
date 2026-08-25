@@ -14,7 +14,7 @@ Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SD
 ## Install
 
 ```bash
-yarn add expo-pico-core expo-pico-spatial
+yarn add @expo-pico/core @expo-pico/spatial react-native-nitro-modules
 ```
 
 ## Configure
@@ -106,6 +106,16 @@ console.log({
   caps, // runtime-probed feature flags
 });
 ```
+
+## Native artifacts
+
+This package declares no Maven coordinate of its own. It has no PICO
+Platform Service artifact behind it — see
+[docs/PPS-WIRING-GAPS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-WIRING-GAPS.md)
+— and reaches whatever native code it needs through
+`@expo-pico/core`. Installing it alongside other `@expo-pico/*`
+packages adds nothing to the Android classpath that is not already
+there.
 
 ## Limitations
 

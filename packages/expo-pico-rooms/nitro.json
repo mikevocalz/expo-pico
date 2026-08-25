@@ -1,0 +1,31 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "expopico",
+    "rooms"
+  ],
+  "ios": {
+    "iosModuleName": "ExpoPicoRooms"
+  },
+  "android": {
+    "androidNamespace": [
+      "expopico",
+      "rooms"
+    ],
+    "androidCxxLibName": "ExpoPicoRooms"
+  },
+  "autolinking": {
+    "PicoRooms": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridPicoRooms"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules",
+    "build",
+    "lib",
+    "plugin"
+  ]
+}

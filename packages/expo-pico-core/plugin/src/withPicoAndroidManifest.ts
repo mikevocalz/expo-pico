@@ -77,7 +77,7 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
         fs.mkdirSync(picoManifestDir, { recursive: true });
       }
 
-      // ponytail: detect expo-dev-client so we skip the IMMERSIVE_HMD launcher
+      // Detect expo-dev-client so we skip the IMMERSIVE_HMD launcher
       // intent-filter on MainActivity — its 2D RN/dev-launcher root can't
       // fulfill the immersive HMD surface and PICO black-screens. Keep
       // pvr.app.type/spatialMode honored so MR builds still get the

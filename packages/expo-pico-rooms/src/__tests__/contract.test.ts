@@ -1,14 +1,10 @@
-// Mock native module resolution — simulates non-PICO build
-jest.mock('expo', () => ({
-  requireNativeModule: jest.fn(() => { throw new Error('Module not found'); }),
-}));
-
-// Mock expo-modules-core EventEmitter
-jest.mock('expo-modules-core', () => ({
-  EventEmitter: jest.fn().mockImplementation(() => ({
-    addListener: jest.fn(() => ({ remove: jest.fn() })),
-    removeAllListeners: jest.fn(),
-  })),
+// Simulates a build with no PICO native library present.
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    createHybridObject: jest.fn(() => {
+      throw new Error('HybridObject not available in test environment');
+    }),
+  },
 }));
 
 // Ensure @expo-pico/platform-service-common uses real implementations

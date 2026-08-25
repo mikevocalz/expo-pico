@@ -1,136 +1,126 @@
 import {
   guardService,
   wrapNativeCall,
-  safeAddListener,
-  createNativeEventEmitter,
-  notImplementedError,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import { NativeRooms } from './ExpoPicoRoomsModule';
 import type {
-  RoomInfo,
+  PicoRooms,
   RoomSessionState,
   CreateRoomOptions,
-  JoinRoomResult,
   MatchmakingOptions,
   RoomUpdatedEvent,
   RoomUserJoinedEvent,
   RoomUserLeftEvent,
   MatchmakingFoundEvent,
-} from './types';
+} from './PicoRooms.nitro';
 
-export * from './types';
-export type { Subscription };
+export type {
+  RoomConnectionState,
+  RoomJoinPolicy,
+  RoomMemberRole,
+  RoomLeaveReason,
+  RoomMember,
+  RoomInfo,
+  CreateRoomOptions,
+  JoinRoomResult,
+  MatchmakingOptions,
+  RoomSessionState,
+  RoomUpdatedEvent,
+  RoomUserJoinedEvent,
+  RoomUserLeftEvent,
+  MatchmakingFoundEvent,
+} from './PicoRooms.nitro';
 
 const PKG = '@expo-pico/rooms';
 
-const emitter = createNativeEventEmitter(NativeRooms);
+const DISCONNECTED: RoomSessionState = {
+  memberCount: 0,
+  connectionState: 'disconnected',
+};
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoRooms | null {
+  return resolveHybridObject<PicoRooms>('PicoRooms');
+}
 
 export function isRoomsAvailable(): boolean {
-  return NativeRooms?.roomsSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getRoomsSdkVersion(): string {
-  return NativeRooms?.roomsSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
-
-// ─── Session state snapshot (sync) ────────────────────────────────────────────
 
 export function getRoomSessionState(): RoomSessionState {
-  if (!NativeRooms) {
-    return { roomId: null, memberCount: 0, connectionState: 'disconnected', role: null };
-  }
-  return NativeRooms.getRoomSessionState() as unknown as RoomSessionState;
+  return native()?.sessionState ?? DISCONNECTED;
 }
 
-// ─── Room lifecycle ───────────────────────────────────────────────────────────
-
-export async function createRoom(options?: CreateRoomOptions): Promise<RoomInfo> {
+export async function createRoom(options?: CreateRoomOptions) {
   guardService(isRoomsAvailable(), PKG, 'createRoom');
-  const raw = await wrapNativeCall(
-    PKG, 'createRoom',
-    NativeRooms!.createRoom(
-      options?.joinPolicy ?? 'everyone',
-      options?.maxMembers ?? 16,
-      options?.data ?? {}
-    )
-  );
-  return raw as unknown as RoomInfo;
+  return wrapNativeCall(PKG, 'createRoom', native()!.createRoom(options));
 }
 
-export async function joinRoom(roomId: string): Promise<JoinRoomResult> {
+export async function joinRoom(roomId: string) {
   guardService(isRoomsAvailable(), PKG, 'joinRoom');
-  const raw = await wrapNativeCall(PKG, 'joinRoom', NativeRooms!.joinRoom(roomId));
-  return raw as unknown as JoinRoomResult;
+  return wrapNativeCall(PKG, 'joinRoom', native()!.joinRoom(roomId));
 }
 
 export async function leaveRoom(): Promise<void> {
   guardService(isRoomsAvailable(), PKG, 'leaveRoom');
-  return wrapNativeCall(PKG, 'leaveRoom', NativeRooms!.leaveRoom());
+  await wrapNativeCall(PKG, 'leaveRoom', native()!.leaveRoom());
 }
 
-export async function getRoomInfo(roomId: string): Promise<RoomInfo> {
+export async function getRoomInfo(roomId: string) {
   guardService(isRoomsAvailable(), PKG, 'getRoomInfo');
-  const raw = await wrapNativeCall(PKG, 'getRoomInfo', NativeRooms!.getRoomInfo(roomId));
-  return raw as unknown as RoomInfo;
+  return wrapNativeCall(PKG, 'getRoomInfo', native()!.getRoomInfo(roomId));
 }
 
 export async function kickUser(userId: string): Promise<void> {
   guardService(isRoomsAvailable(), PKG, 'kickUser');
-  return wrapNativeCall(PKG, 'kickUser', NativeRooms!.kickUser(userId));
+  await wrapNativeCall(PKG, 'kickUser', native()!.kickUser(userId));
 }
 
 export async function updateRoomData(data: Record<string, string>): Promise<void> {
   guardService(isRoomsAvailable(), PKG, 'updateRoomData');
-  return wrapNativeCall(PKG, 'updateRoomData', NativeRooms!.updateRoomData(data));
+  await wrapNativeCall(PKG, 'updateRoomData', native()!.updateRoomData(data));
 }
 
-// PPS 1.0.x has no matchmaking surface (Bytedance removed it during the
-// PVR→PPS rewrite). Closest paths are direct room create/join + social
-// invite flows. These functions reject with a clear, actionable code so
-// callers can surface "use createRoom + sendInvites" guidance.
-export async function requestMatchmaking(_options: MatchmakingOptions): Promise<void> {
-  throw notImplementedError(
-    PKG,
-    'requestMatchmaking',
-    'PPS 1.0.x has no matchmaking surface — use createRoom() + social.sendInvites() ' +
-    '(or social.launchInviteUserJoinRoomFlow). Matchmaking was removed during the ' +
-    'PVR→PPS SDK rewrite.'
-  );
+export async function requestMatchmaking(options: MatchmakingOptions): Promise<void> {
+  guardService(isRoomsAvailable(), PKG, 'requestMatchmaking');
+  await wrapNativeCall(PKG, 'requestMatchmaking', native()!.requestMatchmaking(options));
 }
 
 export async function cancelMatchmaking(): Promise<void> {
-  throw notImplementedError(
-    PKG,
-    'cancelMatchmaking',
-    'PPS 1.0.x has no matchmaking surface (matchmaking not supported).'
-  );
+  guardService(isRoomsAvailable(), PKG, 'cancelMatchmaking');
+  await wrapNativeCall(PKG, 'cancelMatchmaking', native()!.cancelMatchmaking());
 }
 
-// ─── Event listeners ──────────────────────────────────────────────────────────
+function subscribe(register: (h: PicoRooms) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
+}
 
-export function addRoomUpdatedListener(
-  listener: (event: RoomUpdatedEvent) => void
-): Subscription {
-  return safeAddListener<RoomUpdatedEvent>(emitter, 'onRoomUpdated', listener);
+export function addRoomUpdatedListener(listener: (event: RoomUpdatedEvent) => void): Subscription {
+  return subscribe((h) => h.addRoomUpdatedListener(listener));
 }
 
 export function addRoomUserJoinedListener(
   listener: (event: RoomUserJoinedEvent) => void
 ): Subscription {
-  return safeAddListener<RoomUserJoinedEvent>(emitter, 'onRoomUserJoined', listener);
+  return subscribe((h) => h.addRoomUserJoinedListener(listener));
 }
 
 export function addRoomUserLeftListener(
   listener: (event: RoomUserLeftEvent) => void
 ): Subscription {
-  return safeAddListener<RoomUserLeftEvent>(emitter, 'onRoomUserLeft', listener);
+  return subscribe((h) => h.addRoomUserLeftListener(listener));
 }
 
 export function addMatchmakingFoundListener(
   listener: (event: MatchmakingFoundEvent) => void
 ): Subscription {
-  return safeAddListener<MatchmakingFoundEvent>(emitter, 'onMatchmakingFound', listener);
+  return subscribe((h) => h.addMatchmakingFoundListener(listener));
 }

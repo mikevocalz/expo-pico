@@ -1,47 +1,56 @@
+import { NitroModules } from 'react-native-nitro-modules';
 import {
   PicoServiceError,
   PicoErrorCode,
   wrapNativeCall,
-  notImplementedError,
 } from '@expo-pico/platform-service-common';
-import { NativeAccount } from './ExpoPicoAccountModule';
-import type { PicoUserProfile, PicoLoginResult, PicoAccountLinkStatus } from './types';
+import type { PicoAccount } from './PicoAccount.nitro';
 
-export * from './types';
+export type {
+  PicoUserProfile,
+  PicoLoginResult,
+  PicoLoginStatus,
+  PicoAccountLinkStatus,
+} from './PicoAccount.nitro';
 
 const PKG = '@expo-pico/account';
-const DOCS = 'https://developer.picoxr.com/document/unity/account/';
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+/**
+ * Created lazily: createHybridObject throws when the native library is absent
+ * (mobile flavor, non-PICO hardware), and that must surface as
+ * SERVICE_UNAVAILABLE rather than a module-load crash.
+ */
+let cached: PicoAccount | null = null;
+let resolved = false;
+
+function nativeAccount(): PicoAccount | null {
+  if (!resolved) {
+    resolved = true;
+    try {
+      cached = NitroModules.createHybridObject<PicoAccount>('PicoAccount');
+    } catch {
+      cached = null;
+    }
+  }
+  return cached;
+}
 
 export function isAccountAvailable(): boolean {
-  return NativeAccount?.accountSdkAvailable ?? false;
+  return nativeAccount()?.available ?? false;
 }
 
 export function getAccountSdkVersion(): string {
-  return NativeAccount?.accountSdkVersion ?? 'unavailable';
+  return nativeAccount()?.sdkVersion ?? 'unavailable';
 }
 
-/**
- * Human-readable remediation step from the native module. Returns
- * "ready" once the SDK is initialized, or an actionable message like
- * "PICO Platform Service SDK not on classpath — build the picoDebug
- * flavor so Gradle resolves com.pico.pps:platform-service-auth from the
- * Bytedance Maven repo" when it's not.
- */
+/** Remediation step from the native side; 'ready' once the SDK is initialized. */
 export function getAccountSdkStatus(): string {
-  return (NativeAccount as { accountSdkStatus?: string } | undefined)?.accountSdkStatus ?? 'unknown';
+  return nativeAccount()?.sdkStatus ?? 'unknown';
 }
 
-/**
- * Throws SERVICE_UNAVAILABLE with the EXACT remediation step in the message
- * (read from `accountSdkStatus` on the native module). Lets callers surface a
- * useful error to users — "build the picoDebug flavor" or "run prebuild
- * with network access so PPS resolves from Maven" instead of "not present
- * in this build".
- */
-function requireAvailable(method: string): void {
-  if (isAccountAvailable()) return;
+function requireAvailable(method: string): PicoAccount {
+  const native = nativeAccount();
+  if (native?.available) return native;
   throw new PicoServiceError({
     code: PicoErrorCode.SERVICE_UNAVAILABLE,
     packageName: PKG,
@@ -50,34 +59,27 @@ function requireAvailable(method: string): void {
   });
 }
 
-// ─── Implemented methods ──────────────────────────────────────────────────────
-
-export async function getUserProfile(): Promise<PicoUserProfile> {
-  requireAvailable('getUserProfile');
-  const raw = await wrapNativeCall(PKG, 'getUserProfile', NativeAccount!.getUserProfile());
-  return raw as unknown as PicoUserProfile;
+export async function getUserProfile() {
+  const native = requireAvailable('getUserProfile');
+  return wrapNativeCall(PKG, 'getUserProfile', native.getUserProfile());
 }
 
-export async function getAccountLinkStatus(): Promise<PicoAccountLinkStatus> {
-  requireAvailable('getAccountLinkStatus');
-  const raw = await wrapNativeCall(PKG, 'getAccountLinkStatus', NativeAccount!.getAccountLinkStatus());
-  return raw as unknown as PicoAccountLinkStatus;
+export async function getAccountLinkStatus() {
+  const native = requireAvailable('getAccountLinkStatus');
+  return wrapNativeCall(PKG, 'getAccountLinkStatus', native.getAccountLinkStatus());
 }
 
-// ─── Seams ────────────────────────────────────────────────────────────────────
-
-export async function login(): Promise<PicoLoginResult> {
-  requireAvailable('login');
-  const raw = await wrapNativeCall(PKG, 'login', NativeAccount!.login());
-  return raw as unknown as PicoLoginResult;
+export async function login() {
+  const native = requireAvailable('login');
+  return wrapNativeCall(PKG, 'login', native.login());
 }
 
 export async function getAccessToken(): Promise<string> {
-  requireAvailable('getAccessToken');
-  return (await wrapNativeCall(PKG, 'getAccessToken', NativeAccount!.getAccessToken())) as string;
+  const native = requireAvailable('getAccessToken');
+  return wrapNativeCall(PKG, 'getAccessToken', native.getAccessToken());
 }
 
 export async function logout(): Promise<void> {
-  requireAvailable('logout');
-  await wrapNativeCall(PKG, 'logout', NativeAccount!.logout());
+  const native = requireAvailable('logout');
+  await wrapNativeCall(PKG, 'logout', native.logout());
 }

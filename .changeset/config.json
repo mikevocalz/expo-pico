@@ -16,11 +16,15 @@
       "@expo-pico/storage",
       "@expo-pico/social",
       "@expo-pico/achievements",
-      "@expo-pico/leaderboards"
+      "@expo-pico/leaderboards",
+      "@expo-pico/platform-service-common",
+      "@expo-pico/app-kit"
     ]
   ],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["expo-pico-example"]
+  "ignore": [
+    "expo-pico-example"
+  ]
 }

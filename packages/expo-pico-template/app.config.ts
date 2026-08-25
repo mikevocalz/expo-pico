@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'my-pico-app',
   slug: 'my-pico-app',
   version: '1.0.0',
-  orientation: 'landscape',
+  orientation: 'default',
   // Add your own icon + splash by dropping PNGs into an assets/ directory
   // and uncommenting. The template intentionally does not ship default
   // artwork — every PICO app wants its own brand, and unbranded

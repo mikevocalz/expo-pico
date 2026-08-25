@@ -1,164 +1,134 @@
 import {
   guardService,
   wrapNativeCall,
-  safeAddListener,
-  createNativeEventEmitter,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import { NativeSocial } from './ExpoPicoSocialModule';
 import type {
-  FriendListResult,
+  PicoSocial,
+  PresenceOptions,
+  InviteOptions,
   FriendRequest,
+  FriendPresenceChangedEvent,
+  InviteReceivedEvent,
+} from './PicoSocial.nitro';
+
+export type {
   FriendshipStatus,
+  PresenceStatus,
+  SocialUser,
+  FriendRequest,
+  FriendListResult,
+  SentInvite,
   InviteOptions,
   PresenceOptions,
-  SocialUser,
-  SentInvite,
   FriendPresenceChangedEvent,
-  FriendRequestReceivedEvent,
   InviteReceivedEvent,
-} from './types';
-
-export * from './types';
-export type { Subscription };
+} from './PicoSocial.nitro';
 
 const PKG = '@expo-pico/social';
-const emitter = createNativeEventEmitter(NativeSocial);
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoSocial | null {
+  return resolveHybridObject<PicoSocial>('PicoSocial');
+}
 
 export function isSocialAvailable(): boolean {
-  return NativeSocial?.socialSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getSocialSdkVersion(): string {
-  return NativeSocial?.socialSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
-// ─── Current user ─────────────────────────────────────────────────────────────
-
-export async function getCurrentUser(): Promise<SocialUser> {
+export async function getCurrentUser() {
   guardService(isSocialAvailable(), PKG, 'getCurrentUser');
-  const raw = await wrapNativeCall(PKG, 'getCurrentUser', NativeSocial!.getCurrentUser());
-  return raw as unknown as SocialUser;
+  return wrapNativeCall(PKG, 'getCurrentUser', native()!.getCurrentUser());
 }
 
-// ─── Friends ──────────────────────────────────────────────────────────────────
-
-export async function getFriendList(
-  pageToken?: string,
-  pageSize?: number
-): Promise<FriendListResult> {
+export async function getFriendList(pageSize?: number, pageToken?: string) {
   guardService(isSocialAvailable(), PKG, 'getFriendList');
-  const raw = await wrapNativeCall(
-    PKG, 'getFriendList',
-    NativeSocial!.getFriendList(pageToken ?? null, pageSize ?? 20)
-  );
-  return raw as unknown as FriendListResult;
+  return wrapNativeCall(PKG, 'getFriendList', native()!.getFriendList(pageSize, pageToken));
 }
 
-export async function getFriendshipStatus(userId: string): Promise<FriendshipStatus> {
+export async function getFriendshipStatus(userId: string) {
   guardService(isSocialAvailable(), PKG, 'getFriendshipStatus');
-  const raw = await wrapNativeCall(
-    PKG, 'getFriendshipStatus',
-    NativeSocial!.getFriendshipStatus(userId)
-  );
-  return raw as unknown as FriendshipStatus;
+  return wrapNativeCall(PKG, 'getFriendshipStatus', native()!.getFriendshipStatus(userId));
 }
 
-export async function sendFriendRequest(userId: string): Promise<FriendRequest> {
+export async function sendFriendRequest(userId: string) {
   guardService(isSocialAvailable(), PKG, 'sendFriendRequest');
-  const raw = await wrapNativeCall(
-    PKG, 'sendFriendRequest',
-    NativeSocial!.sendFriendRequest(userId)
-  );
-  return raw as unknown as FriendRequest;
+  return wrapNativeCall(PKG, 'sendFriendRequest', native()!.sendFriendRequest(userId));
 }
+
+export async function getPendingFriendRequests() {
+  guardService(isSocialAvailable(), PKG, 'getPendingFriendRequests');
+  return wrapNativeCall(PKG, 'getPendingFriendRequests', native()!.getPendingFriendRequests());
+}
+
+// Removed in PPS 1.0.x — kept as typed seams that reject with NOT_IN_PPS_1_0.
 
 export async function acceptFriendRequest(requestId: string): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'acceptFriendRequest');
-  await wrapNativeCall(PKG, 'acceptFriendRequest', NativeSocial!.acceptFriendRequest(requestId));
+  await wrapNativeCall(PKG, 'acceptFriendRequest', native()!.acceptFriendRequest(requestId));
 }
 
 export async function declineFriendRequest(requestId: string): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'declineFriendRequest');
-  await wrapNativeCall(PKG, 'declineFriendRequest', NativeSocial!.declineFriendRequest(requestId));
+  await wrapNativeCall(PKG, 'declineFriendRequest', native()!.declineFriendRequest(requestId));
 }
 
 export async function removeFriend(userId: string): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'removeFriend');
-  await wrapNativeCall(PKG, 'removeFriend', NativeSocial!.removeFriend(userId));
+  await wrapNativeCall(PKG, 'removeFriend', native()!.removeFriend(userId));
 }
 
 export async function blockUser(userId: string): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'blockUser');
-  await wrapNativeCall(PKG, 'blockUser', NativeSocial!.blockUser(userId));
+  await wrapNativeCall(PKG, 'blockUser', native()!.blockUser(userId));
 }
 
 export async function unblockUser(userId: string): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'unblockUser');
-  await wrapNativeCall(PKG, 'unblockUser', NativeSocial!.unblockUser(userId));
+  await wrapNativeCall(PKG, 'unblockUser', native()!.unblockUser(userId));
 }
-
-// ─── Presence ─────────────────────────────────────────────────────────────────
 
 export async function setPresence(options: PresenceOptions): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'setPresence');
-  await wrapNativeCall(
-    PKG, 'setPresence',
-    NativeSocial!.setPresence(
-      options.status,
-      options.richText ?? null,
-      options.destinationApiName ?? null
-    )
-  );
+  await wrapNativeCall(PKG, 'setPresence', native()!.setPresence(options));
 }
 
 export async function clearPresence(): Promise<void> {
   guardService(isSocialAvailable(), PKG, 'clearPresence');
-  await wrapNativeCall(PKG, 'clearPresence', NativeSocial!.clearPresence());
+  await wrapNativeCall(PKG, 'clearPresence', native()!.clearPresence());
 }
 
-// ─── Invites ──────────────────────────────────────────────────────────────────
-
-export async function sendInvites(options: InviteOptions): Promise<SentInvite[]> {
+export async function sendInvites(options: InviteOptions) {
   guardService(isSocialAvailable(), PKG, 'sendInvites');
-  const raw = await wrapNativeCall(
-    PKG, 'sendInvites',
-    NativeSocial!.sendInvites(
-      options.destinationApiName,
-      options.userIds,
-      options.data ?? {}
-    )
-  );
-  return raw as unknown as SentInvite[];
+  return wrapNativeCall(PKG, 'sendInvites', native()!.sendInvites(options));
 }
 
-export async function getPendingFriendRequests(): Promise<FriendRequest[]> {
-  guardService(isSocialAvailable(), PKG, 'getPendingFriendRequests');
-  const raw = await wrapNativeCall(
-    PKG, 'getPendingFriendRequests',
-    NativeSocial!.getPendingFriendRequests()
-  );
-  return raw as unknown as FriendRequest[];
+function subscribe(register: (h: PicoSocial) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
 }
-
-// ─── Event Listeners ──────────────────────────────────────────────────────────
 
 export function addFriendPresenceChangedListener(
   listener: (event: FriendPresenceChangedEvent) => void
 ): Subscription {
-  return safeAddListener<FriendPresenceChangedEvent>(emitter, 'onFriendPresenceChanged', listener);
+  return subscribe((h) => h.addFriendPresenceChangedListener(listener));
 }
 
 export function addFriendRequestReceivedListener(
-  listener: (event: FriendRequestReceivedEvent) => void
+  listener: (request: FriendRequest) => void
 ): Subscription {
-  return safeAddListener<FriendRequestReceivedEvent>(emitter, 'onFriendRequestReceived', listener);
+  return subscribe((h) => h.addFriendRequestReceivedListener(listener));
 }
 
 export function addInviteReceivedListener(
   listener: (event: InviteReceivedEvent) => void
 ): Subscription {
-  return safeAddListener<InviteReceivedEvent>(emitter, 'onInviteReceived', listener);
+  return subscribe((h) => h.addInviteReceivedListener(listener));
 }

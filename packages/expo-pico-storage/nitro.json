@@ -1,0 +1,31 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "expopico",
+    "storage"
+  ],
+  "ios": {
+    "iosModuleName": "ExpoPicoStorage"
+  },
+  "android": {
+    "androidNamespace": [
+      "expopico",
+      "storage"
+    ],
+    "androidCxxLibName": "ExpoPicoStorage"
+  },
+  "autolinking": {
+    "PicoStorage": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridPicoStorage"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules",
+    "build",
+    "lib",
+    "plugin"
+  ]
+}

@@ -1,46 +1,49 @@
 import {
   guardService,
   wrapNativeCall,
+  resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import { NativeIap } from './ExpoPicoIapModule';
-import type { IapProduct, IapPurchase, PurchaseResult, ConsumeResult } from './types';
+import type { PicoIap } from './PicoIap.nitro';
 
-export * from './types';
+export type {
+  IapProduct,
+  IapProductType,
+  IapPurchase,
+  ConsumeResult,
+  PurchaseResult,
+} from './PicoIap.nitro';
 
 const PKG = '@expo-pico/iap';
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoIap | null {
+  return resolveHybridObject<PicoIap>('PicoIap');
+}
 
 export function isIapAvailable(): boolean {
-  return NativeIap?.iapSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getIapSdkVersion(): string {
-  return NativeIap?.iapSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
-// ─── Implemented ──────────────────────────────────────────────────────────────
-
-export async function getProducts(skus: string[]): Promise<IapProduct[]> {
+export async function getProducts(skus: string[]) {
   guardService(isIapAvailable(), PKG, 'getProducts');
-  const raw = await wrapNativeCall(PKG, 'getProducts', NativeIap!.getProducts(skus));
-  return raw as unknown as IapProduct[];
+  return wrapNativeCall(PKG, 'getProducts', native()!.getProducts(skus));
 }
 
-export async function consumePurchase(purchaseToken: string): Promise<ConsumeResult> {
+export async function consumePurchase(purchaseToken: string) {
   guardService(isIapAvailable(), PKG, 'consumePurchase');
-  const raw = await wrapNativeCall(PKG, 'consumePurchase', NativeIap!.consumePurchase(purchaseToken));
-  return raw as unknown as ConsumeResult;
+  return wrapNativeCall(PKG, 'consumePurchase', native()!.consumePurchase(purchaseToken));
 }
 
-export async function getPurchaseHistory(): Promise<IapPurchase[]> {
+export async function getPurchaseHistory() {
   guardService(isIapAvailable(), PKG, 'getPurchaseHistory');
-  const raw = await wrapNativeCall(PKG, 'getPurchaseHistory', NativeIap!.getPurchaseHistory());
-  return raw as unknown as IapPurchase[];
+  return wrapNativeCall(PKG, 'getPurchaseHistory', native()!.getPurchaseHistory());
 }
 
-export async function purchase(sku: string): Promise<PurchaseResult> {
+/** Seam — PICO requires the OS storefront UI; no headless purchase path exists. */
+export async function purchase(sku: string) {
   guardService(isIapAvailable(), PKG, 'purchase');
-  const raw = await wrapNativeCall(PKG, 'purchase', NativeIap!.purchase(sku));
-  return raw as unknown as PurchaseResult;
+  return wrapNativeCall(PKG, 'purchase', native()!.purchase(sku));
 }

@@ -1,12 +1,34 @@
-plugins {
-    id 'com.android.library'
-    id 'expo-module-gradle-plugin'
+buildscript {
+    ext.safeExtGet = { prop, fallback ->
+        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:${safeExtGet('agpVersion', '8.9.1')}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '2.1.20')}"
+    }
 }
 
-expoModule {
-    canBePublished false
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+/**
+ * ABIs the consuming app builds for. PICO 4 / 4 Ultra / Swan are all
+ * 64-bit ARM, but the `mobile` flavor may target more, so this reads the
+ * app's own `reactNativeArchitectures` instead of hard-coding arm64-v8a.
+ */
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
+// Values written into gradle.properties by the withPicoGradleProperties
+// config plugin. Each has a fallback so this module still compiles when the
+// consuming app has not run prebuild — the Kotlin references resolve in
+// both the `pico` and `mobile` flavors either way.
 def picoAppIdConfigField = "\"${project.findProperty('picoAppId') ?: ''}\""
 def picoAppKeyConfigField = "\"${project.findProperty('picoAppKey') ?: ''}\""
 def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
@@ -17,11 +39,6 @@ def picoAppTypeConfigField = "\"${project.findProperty('picoAppType') ?: '2d'}\"
 def picoHasPlatformIdentityConfigField = "${project.findProperty('picoPlatformIdentityEnabled') ?: 'false'}"
 def picoHasIapIdentityConfigField = "${project.findProperty('picoIapIdentityEnabled') ?: 'false'}"
 def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
-
-// Phase K — declared capability flags. Driven by the consumer app's
-// gradle.properties (written by withPicoCapabilities config plugin).
-// Default to false / empty when the property isn't set so the Kotlin
-// references resolve in both pico AND mobile flavors.
 def picoHandTrackingConfigField = "${project.findProperty('picoHandTracking') ?: 'false'}"
 def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: 'false'}"
 def picoSceneUnderstandingConfigField = "${project.findProperty('picoSceneUnderstanding') ?: 'false'}"
@@ -45,7 +62,11 @@ def picoTargetDevicesConfigField = "\"${project.findProperty('picoTargetDevices'
 
 android {
     namespace "expo.modules.pico"
+    compileSdk safeExtGet('compileSdkVersion', 36)
+    ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
+
     defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
         versionCode 1
         versionName "0.1.0"
         buildConfigField "String", "PICO_APP_ID", picoAppIdConfigField
@@ -81,11 +102,25 @@ android {
         buildConfigField "boolean", "PICO_ENTITLEMENT_CHECK", picoEntitlementCheckConfigField
         buildConfigField "String", "PICO_REFRESH_RATES", picoRefreshRatesConfigField
         buildConfigField "String", "PICO_TARGET_DEVICES", picoTargetDevicesConfigField
-    }
-    lint {
-        abortOnError false
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions", "-frtti", "-std=c++20"
+                arguments "-DANDROID_STL=c++_shared"
+                abiFilters(*reactNativeArchitectures())
+            }
+        }
     }
 
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    // expo-pico-core owns the `device` dimension. Every sibling package
+    // declares `missingDimensionStrategy "device", "pico", "mobile"` so it
+    // resolves against these two without duplicating the flavor block.
     flavorDimensions += "device"
     productFlavors {
         pico { dimension "device" }
@@ -94,13 +129,64 @@ android {
 
     buildFeatures {
         buildConfig true
+        prefab true
+    }
+
+    packagingOptions {
+        // ExpoPicoCore.so is uniquely named, so two @expo-pico packages can
+        // never collide. React Native's shared libraries, however, arrive
+        // from several prefabs at once and must not be packaged twice.
+        excludes += [
+            "META-INF/**",
+            "**/libc++_shared.so",
+            "**/libfbjni.so",
+            "**/libjsi.so",
+            "**/libreactnative.so",
+        ]
+    }
+
+    sourceSets {
+        main {
+            // Assignment, not `+=`, and that is the whole point: it drops
+            // AGP's default `src/main/java` from the build.
+            //
+            // `src/main/java` still holds the Expo Modules Kotlin this
+            // package used before the Nitro migration. Those classes extend
+            // `expo.modules.kotlin.modules.Module`, which is no longer on
+            // the classpath — expo-module-gradle-plugin is gone — so
+            // compiling them would fail. They stay on disk as the reference
+            // for porting each method across, and come out of the build the
+            // moment `src/nitro` has an equivalent.
+            //
+            // `../nitrogen/generated/android/kotlin` is appended by the
+            // autolinking script applied at the bottom of this file.
+            java.srcDirs = ["src/nitro"]
+        }
+    }
+
+    lint {
+        abortOnError false
     }
 }
 
+repositories {
+    mavenCentral()
+    google()
+}
+
 dependencies {
-    compileOnly "com.facebook.react:react-android"
-    // PICO Platform SDK AAR — compile-only for controller haptics.
-    // Consumers must place the AAR under vendor/pico-sdk/.
-    // See vendor/pico-sdk/README.md for download instructions.
+    implementation "com.facebook.react:react-android"
+    implementation "com.facebook.react:hermes-android"
+    implementation project(":react-native-nitro-modules")
+
+    // PICO Platform SDK AAR — compile-only for controller haptics, so it is
+    // never bundled into the published npm package. Consumers place the AAR
+    // under vendor/pico-sdk/. See vendor/pico-sdk/README.md.
     compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
 }
+
+// Adds the nitrogen-generated Kotlin to this module's source set. Run
+// `yarn nitrogen` in this package before syncing Gradle — the file below
+// does not exist until nitrogen has run, and Gradle fails fast if it is
+// missing rather than silently building a module with no bindings.
+apply from: '../nitrogen/generated/android/ExpoPicoCore+autolinking.gradle'

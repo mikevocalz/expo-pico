@@ -1,101 +1,70 @@
 import {
   guardService,
   wrapNativeCall,
-  DEFAULT_PAGE_SIZE,
-  type PicoPage,
+  resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import { NativeLeaderboards } from './ExpoPicoLeaderboardsModule';
 import type {
+  PicoLeaderboards,
+  GetEntriesOptions,
+  WriteScoreOptions,
+} from './PicoLeaderboards.nitro';
+
+export type {
   Leaderboard,
   LeaderboardEntry,
+  LeaderboardEntryPage,
+  LeaderboardSortOrder,
+  LeaderboardFilter,
+  LeaderboardStartAt,
+  GetEntriesOptions,
   WriteScoreOptions,
   WriteScoreResult,
-  GetEntriesOptions,
-  LeaderboardEntryPage,
-} from './types';
-
-export * from './types';
-export type { PicoPage };
+} from './PicoLeaderboards.nitro';
 
 const PKG = '@expo-pico/leaderboards';
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoLeaderboards | null {
+  return resolveHybridObject<PicoLeaderboards>('PicoLeaderboards');
+}
 
 export function isLeaderboardsAvailable(): boolean {
-  return NativeLeaderboards?.leaderboardsSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getLeaderboardsSdkVersion(): string {
-  return NativeLeaderboards?.leaderboardsSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
-
-export async function getAllLeaderboards(): Promise<Leaderboard[]> {
+export async function getAllLeaderboards() {
   guardService(isLeaderboardsAvailable(), PKG, 'getAllLeaderboards');
-  const raw = await wrapNativeCall(PKG, 'getAllLeaderboards', NativeLeaderboards!.getAllLeaderboards());
-  return raw as unknown as Leaderboard[];
+  return wrapNativeCall(PKG, 'getAllLeaderboards', native()!.getAllLeaderboards());
 }
 
-export async function getEntries(
-  apiName: string,
-  options?: GetEntriesOptions
-): Promise<LeaderboardEntryPage> {
+export async function getEntries(apiName: string, options?: GetEntriesOptions) {
   guardService(isLeaderboardsAvailable(), PKG, 'getEntries');
-  const raw = await wrapNativeCall(
-    PKG, 'getEntries',
-    NativeLeaderboards!.getEntries(
-      apiName,
-      options?.filter ?? 'none',
-      options?.startAt ?? 'top',
-      options?.pageSize ?? DEFAULT_PAGE_SIZE,
-      options?.pageToken ?? null
-    )
-  );
-  return raw as unknown as LeaderboardEntryPage;
+  return wrapNativeCall(PKG, 'getEntries', native()!.getEntries(apiName, options));
 }
 
 export async function getEntriesAfterRank(
   apiName: string,
   afterRank: number,
-  options?: Pick<GetEntriesOptions, 'pageSize' | 'pageToken'>
-): Promise<LeaderboardEntryPage> {
+  options?: GetEntriesOptions
+) {
   guardService(isLeaderboardsAvailable(), PKG, 'getEntriesAfterRank');
-  const raw = await wrapNativeCall(
-    PKG, 'getEntriesAfterRank',
-    NativeLeaderboards!.getEntriesAfterRank(
-      apiName,
-      afterRank,
-      options?.pageSize ?? DEFAULT_PAGE_SIZE,
-      options?.pageToken ?? null
-    )
+  return wrapNativeCall(
+    PKG,
+    'getEntriesAfterRank',
+    native()!.getEntriesAfterRank(apiName, afterRank, options)
   );
-  return raw as unknown as LeaderboardEntryPage;
 }
 
-export async function getUserEntry(apiName: string): Promise<LeaderboardEntry | null> {
+/** Emulated by scanning entries — PPS has no single-user lookup. */
+export async function getUserEntry(apiName: string) {
   guardService(isLeaderboardsAvailable(), PKG, 'getUserEntry');
-  const raw = await wrapNativeCall(PKG, 'getUserEntry', NativeLeaderboards!.getUserEntry(apiName));
-  return raw as unknown as LeaderboardEntry | null;
+  return wrapNativeCall(PKG, 'getUserEntry', native()!.getUserEntry(apiName));
 }
 
-// ─── Mutations ────────────────────────────────────────────────────────────────
-
-export async function writeScore(
-  apiName: string,
-  score: number,
-  options?: WriteScoreOptions
-): Promise<WriteScoreResult> {
+export async function writeScore(apiName: string, score: number, options?: WriteScoreOptions) {
   guardService(isLeaderboardsAvailable(), PKG, 'writeScore');
-  const raw = await wrapNativeCall(
-    PKG, 'writeScore',
-    NativeLeaderboards!.writeScore(
-      apiName,
-      score,
-      options?.extraData ?? null,
-      options?.supplementaryMetric ?? null,
-      options?.forceUpdate ?? false
-    )
-  );
-  return raw as unknown as WriteScoreResult;
+  return wrapNativeCall(PKG, 'writeScore', native()!.writeScore(apiName, score, options));
 }

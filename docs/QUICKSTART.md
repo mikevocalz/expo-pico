@@ -27,7 +27,7 @@ Two paths. Pick one.
 Shortcut: use the PICO template. Skips steps 2 and 3 entirely. `expo-pico-core` is already wired, `app.config.ts` is preconfigured, and `App.tsx` includes a live diagnostics HUD. Jump to step 4.
 
 ```bash
-npx create-expo-app@latest --template expo-pico-template my-pico-app
+npx create-expo-app@latest --template @expo-pico/template my-pico-app
 cd my-pico-app
 yarn install
 ```
@@ -51,7 +51,7 @@ Kill the dev server once you see the QR code. We're about to switch to the Andro
 ## 2. Install the `expo-pico-core` plugin
 
 ```bash
-yarn add expo-pico-core
+yarn add @expo-pico/core react-native-nitro-modules
 ```
 
 Only `expo-pico-core` is required for the base build wiring. Add sibling packages (`expo-pico-account`, `expo-pico-iap`, etc.) as you need their surfaces.

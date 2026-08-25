@@ -117,6 +117,16 @@ if (isStorageAvailable()) {
 | `'client-wins'` | Client value overwrites the server |
 | `'manual'` | Conflict is surfaced via `addStorageConflictListener` for app-level resolution |
 
+## Native artifacts
+
+This package declares no Maven coordinate of its own. It has no PICO
+Platform Service artifact behind it — see
+[docs/PPS-WIRING-GAPS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-WIRING-GAPS.md)
+— and reaches whatever native code it needs through
+`@expo-pico/core`. Installing it alongside other `@expo-pico/*`
+packages adds nothing to the Android classpath that is not already
+there.
+
 ## Limitations
 
 - Android only (PICO is an Android platform)

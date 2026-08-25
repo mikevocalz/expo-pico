@@ -4,6 +4,24 @@ PICO platform social APIs for Expo apps. Friends, presence, invites, and real-ti
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Requires a signed-in PICO account
+
+`@expo-pico/account` is a runtime prerequisite for this package — friends and presence are per-account. It is
+**not** a code-level import, so nothing here fails to compile without it; calls
+simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
+
+```bash
+yarn add @expo-pico/account react-native-nitro-modules
+```
+
+```ts
+import { login, isAccountAvailable } from '@expo-pico/account';
+
+if (isAccountAvailable()) {
+  await login();   // connect the PICO account before calling into this package
+}
+```
+
 ## Status
 
 - Maturity: alpha
@@ -109,6 +127,22 @@ if (isSocialAvailable()) {
 | `addFriendPresenceChangedListener(cb)` | Real-time presence change events; returns `Subscription` |
 | `addFriendRequestReceivedListener(cb)` | Real-time friend request events; returns `Subscription` |
 | `addInviteReceivedListener(cb)` | Real-time invite events; returns `Subscription` |
+
+## Native artifacts
+
+This package needs `com.pico.pps:platform-service-social`, `com.pico.pps:platform-service-friend` on the Android classpath.
+
+**It does not declare them.** `@expo-pico/core` declares every
+`com.pico.pps` coordinate once, in the app module, and this package
+reaches them through `implementation project(':expo-pico-core')`. So
+installing it next to other `@expo-pico/*` packages never produces a
+second declaration of the same artifact.
+
+`platform-service-friend` is shared with `@expo-pico/rooms`. Installing both emits one line, not two.
+
+See [docs/PPS-ARTIFACTS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-ARTIFACTS.md)
+for the full artifact list and the two cases that can still duplicate
+(a vendored AAR shadowing the Maven copy, and version skew).
 
 ## Limitations
 

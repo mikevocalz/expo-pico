@@ -1,102 +1,79 @@
 import {
   guardService,
   wrapNativeCall,
-  safeAddListener,
-  createNativeEventEmitter,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import { NativeAchievements } from './ExpoPicoAchievementsModule';
-import type {
+import type { PicoAchievements, AchievementUnlockedEvent } from './PicoAchievements.nitro';
+
+export type {
   Achievement,
+  AchievementType,
+  AchievementVisibility,
+  AchievementUnlockedEvent,
   UnlockAchievementResult,
   AddCountResult,
   AddBitfieldResult,
-  AchievementUnlockedEvent,
-} from './types';
-
-export * from './types';
-export type { Subscription };
+} from './PicoAchievements.nitro';
 
 const PKG = '@expo-pico/achievements';
 
-const emitter = createNativeEventEmitter(NativeAchievements);
-
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoAchievements | null {
+  return resolveHybridObject<PicoAchievements>('PicoAchievements');
+}
 
 export function isAchievementsAvailable(): boolean {
-  return NativeAchievements?.achievementsSdkAvailable ?? false;
+  return native()?.available ?? false;
 }
 
 export function getAchievementsSdkVersion(): string {
-  return NativeAchievements?.achievementsSdkVersion ?? 'unavailable';
+  return native()?.sdkVersion ?? 'unavailable';
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
-
-export async function getAllAchievements(): Promise<Achievement[]> {
+export async function getAllAchievements() {
   guardService(isAchievementsAvailable(), PKG, 'getAllAchievements');
-  const raw = await wrapNativeCall(PKG, 'getAllAchievements', NativeAchievements!.getAllAchievements());
-  return raw as unknown as Achievement[];
+  return wrapNativeCall(PKG, 'getAllAchievements', native()!.getAllAchievements());
+}
+
+export async function getUnlockedAchievements() {
+  guardService(isAchievementsAvailable(), PKG, 'getUnlockedAchievements');
+  return wrapNativeCall(PKG, 'getUnlockedAchievements', native()!.getUnlockedAchievements());
+}
+
+export async function getAchievementProgress(apiNames: string[]) {
+  guardService(isAchievementsAvailable(), PKG, 'getAchievementProgress');
+  return wrapNativeCall(PKG, 'getAchievementProgress', native()!.getAchievementProgress(apiNames));
+}
+
+export async function unlockAchievement(apiName: string) {
+  guardService(isAchievementsAvailable(), PKG, 'unlockAchievement');
+  return wrapNativeCall(PKG, 'unlockAchievement', native()!.unlockAchievement(apiName));
+}
+
+export async function addAchievementCount(apiName: string, count: number) {
+  guardService(isAchievementsAvailable(), PKG, 'addAchievementCount');
+  return wrapNativeCall(PKG, 'addAchievementCount', native()!.addAchievementCount(apiName, count));
+}
+
+export async function addAchievementBitfield(apiName: string, bits: string) {
+  guardService(isAchievementsAvailable(), PKG, 'addAchievementBitfield');
+  return wrapNativeCall(
+    PKG,
+    'addAchievementBitfield',
+    native()!.addAchievementBitfield(apiName, bits)
+  );
 }
 
 /**
- * Client-side filter over getAllAchievements() — not a separate SDK call.
- * Avoids a second round-trip for the common "show only unlocked" use case.
+ * Nitro listeners are id-based; the Subscription shape is preserved here so the
+ * public API is unchanged from the Expo Modules version.
  */
-export async function getUnlockedAchievements(): Promise<Achievement[]> {
-  guardService(isAchievementsAvailable(), PKG, 'getUnlockedAchievements');
-  const all = await getAllAchievements();
-  return all.filter((a) => a.isUnlocked);
-}
-
-export async function getAchievementProgress(apiNames: string[]): Promise<Achievement[]> {
-  guardService(isAchievementsAvailable(), PKG, 'getAchievementProgress');
-  const raw = await wrapNativeCall(
-    PKG, 'getAchievementProgress',
-    NativeAchievements!.getAchievementProgress(apiNames)
-  );
-  return raw as unknown as Achievement[];
-}
-
-// ─── Reporting ────────────────────────────────────────────────────────────────
-
-export async function unlockAchievement(apiName: string): Promise<UnlockAchievementResult> {
-  guardService(isAchievementsAvailable(), PKG, 'unlockAchievement');
-  const raw = await wrapNativeCall(
-    PKG, 'unlockAchievement',
-    NativeAchievements!.unlockAchievement(apiName)
-  );
-  return raw as unknown as UnlockAchievementResult;
-}
-
-export async function addAchievementCount(
-  apiName: string,
-  count: number
-): Promise<AddCountResult> {
-  guardService(isAchievementsAvailable(), PKG, 'addAchievementCount');
-  const raw = await wrapNativeCall(
-    PKG, 'addAchievementCount',
-    NativeAchievements!.addAchievementCount(apiName, count)
-  );
-  return raw as unknown as AddCountResult;
-}
-
-export async function addAchievementBitfield(
-  apiName: string,
-  bits: string
-): Promise<AddBitfieldResult> {
-  guardService(isAchievementsAvailable(), PKG, 'addAchievementBitfield');
-  const raw = await wrapNativeCall(
-    PKG, 'addAchievementBitfield',
-    NativeAchievements!.addAchievementBitfield(apiName, bits)
-  );
-  return raw as unknown as AddBitfieldResult;
-}
-
-// ─── Event listeners ──────────────────────────────────────────────────────────
-
 export function addAchievementUnlockedListener(
   listener: (event: AchievementUnlockedEvent) => void
 ): Subscription {
-  return safeAddListener<AchievementUnlockedEvent>(emitter, 'onAchievementUnlocked', listener);
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = hybrid.addAchievementUnlockedListener(listener);
+  return { remove: () => hybrid.removeAchievementUnlockedListener(id) };
 }

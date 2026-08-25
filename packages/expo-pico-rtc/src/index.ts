@@ -1,116 +1,99 @@
 import {
   guardService,
   wrapNativeCall,
-  safeAddListener,
-  createNativeEventEmitter,
+  resolveHybridObject,
+  NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import { NativeRtc } from './ExpoPicoRtcModule';
+
 import type {
+  PicoRtc,
   RtcServiceStatus,
   RtcInitOptions,
   RtcJoinOptions,
-  RtcJoinResult,
   RtcVolume,
   RtcUserJoinedEvent,
   RtcUserLeftEvent,
   RtcStateChangeEvent,
-} from './types';
+} from './PicoRtc.nitro';
 
 export type {
   RtcServiceStatus,
+  RtcAudioScenario,
+  RtcJoinStatus,
+  RtcLeaveReason,
+  RtcConnectionState,
+  RtcVolume,
   RtcInitOptions,
   RtcJoinOptions,
   RtcJoinResult,
-  RtcVolume,
   RtcUserJoinedEvent,
   RtcUserLeftEvent,
   RtcStateChangeEvent,
-} from './types';
+} from './PicoRtc.nitro';
 
 export type { Subscription };
 
 const PKG = '@expo-pico/rtc';
-const emitter = createNativeEventEmitter(NativeRtc);
 
-// ─── Availability ─────────────────────────────────────────────────────────────
+function native(): PicoRtc | null {
+  return resolveHybridObject<PicoRtc>('PicoRtc');
+}
+
+export function isRtcAvailable(): boolean {
+  return native()?.available ?? false;
+}
 
 export function getRtcServiceStatus(): RtcServiceStatus {
-  return NativeRtc?.rtcSdkAvailable ? 'available' : 'unavailable';
+  return native()?.status ?? 'unavailable';
 }
 
 export function getRtcSdkVersion(): string | null {
-  return NativeRtc?.rtcSdkVersion ?? null;
+  return native()?.sdkVersion ?? null;
 }
 
-// ─── Engine lifecycle ─────────────────────────────────────────────────────────
-
-/**
- * Initializes the PICO RTC engine.
- * Must be called before joinChannel(). Safe to call multiple times.
- * @see https://developer.picoxr.com/document/ue4/rtc/
- */
 export async function initRtcEngine(options?: RtcInitOptions): Promise<void> {
-  guardService(getRtcServiceStatus() === 'available', PKG, 'initRtcEngine');
-  await wrapNativeCall(
-    PKG, 'initRtcEngine',
-    NativeRtc!.initRtcEngine({
-      appId: options?.appId ?? null,
-      audioScenario: options?.audioScenario ?? 'default',
-    })
-  );
+  guardService(isRtcAvailable(), PKG, 'initRtcEngine');
+  await wrapNativeCall(PKG, 'initRtcEngine', native()!.initRtcEngine(options));
 }
 
-/**
- * Joins a PICO RTC voice channel. Requires initRtcEngine() first.
- * @see https://developer.picoxr.com/document/ue4/rtc/
- */
-export async function joinChannel(options: RtcJoinOptions): Promise<RtcJoinResult> {
-  guardService(getRtcServiceStatus() === 'available', PKG, 'joinChannel');
-  const raw = await wrapNativeCall(
-    PKG, 'joinChannel',
-    NativeRtc!.joinChannel(options.channelId, options.token, options.uid)
-  );
-  return raw as unknown as RtcJoinResult;
+export async function joinChannel(options: RtcJoinOptions) {
+  guardService(isRtcAvailable(), PKG, 'joinChannel');
+  return wrapNativeCall(PKG, 'joinChannel', native()!.joinChannel(options));
 }
 
-/** Leaves the current RTC channel. */
 export async function leaveChannel(): Promise<void> {
-  guardService(getRtcServiceStatus() === 'available', PKG, 'leaveChannel');
-  await wrapNativeCall(PKG, 'leaveChannel', NativeRtc!.leaveChannel());
+  guardService(isRtcAvailable(), PKG, 'leaveChannel');
+  await wrapNativeCall(PKG, 'leaveChannel', native()!.leaveChannel());
 }
 
-/** Mutes or unmutes the local microphone audio stream. */
 export async function muteLocalAudio(muted: boolean): Promise<void> {
-  guardService(getRtcServiceStatus() === 'available', PKG, 'muteLocalAudio');
-  await wrapNativeCall(PKG, 'muteLocalAudio', NativeRtc!.muteLocalAudio(muted));
+  guardService(isRtcAvailable(), PKG, 'muteLocalAudio');
+  await wrapNativeCall(PKG, 'muteLocalAudio', native()!.muteLocalAudio(muted));
 }
 
-/**
- * Sets the audio output volume for all remote participants.
- * @param volume 0 (silent) to 100 (max device volume)
- */
 export async function setAudioOutputVolume(volume: RtcVolume): Promise<void> {
-  guardService(getRtcServiceStatus() === 'available', PKG, 'setAudioOutputVolume');
-  await wrapNativeCall(PKG, 'setAudioOutputVolume', NativeRtc!.setAudioOutputVolume(volume));
+  guardService(isRtcAvailable(), PKG, 'setAudioOutputVolume');
+  await wrapNativeCall(PKG, 'setAudioOutputVolume', native()!.setAudioOutputVolume(volume));
 }
 
-// ─── Event Listeners ──────────────────────────────────────────────────────────
-
-export function addUserJoinedListener(
-  listener: (event: RtcUserJoinedEvent) => void
-): Subscription {
-  return safeAddListener<RtcUserJoinedEvent>(emitter, 'onRtcUserJoined', listener);
+function subscribe(register: (h: PicoRtc) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
 }
 
-export function addUserLeftListener(
-  listener: (event: RtcUserLeftEvent) => void
-): Subscription {
-  return safeAddListener<RtcUserLeftEvent>(emitter, 'onRtcUserLeft', listener);
+export function addUserJoinedListener(listener: (event: RtcUserJoinedEvent) => void): Subscription {
+  return subscribe((h) => h.addUserJoinedListener(listener));
+}
+
+export function addUserLeftListener(listener: (event: RtcUserLeftEvent) => void): Subscription {
+  return subscribe((h) => h.addUserLeftListener(listener));
 }
 
 export function addRtcStateChangeListener(
   listener: (event: RtcStateChangeEvent) => void
 ): Subscription {
-  return safeAddListener<RtcStateChangeEvent>(emitter, 'onRtcStateChange', listener);
+  return subscribe((h) => h.addRtcStateChangeListener(listener));
 }

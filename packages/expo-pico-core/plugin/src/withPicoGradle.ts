@@ -6,6 +6,13 @@ import {
   PICO_PLATFORM_SDK_GROUP,
   PICO_SDK_GROUP,
 } from './constants';
+import {
+  createPackageResolver,
+  renderLocalAarBlock,
+  renderPpsDependenciesBlock,
+  renderPpsResolutionPin,
+  resolvePpsServices,
+} from './ppsArtifacts';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
 import { gradleContains, insertAfterPattern } from './utils';
@@ -19,32 +26,7 @@ const PACKAGING_PICK_FIRST_MARKER = '// expo-pico-core: 16KB openxr loader overl
 const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
-
-/**
- * PICO Platform Service SDK (PPS) — public maven artifacts.
- *
- * Confirmed live at `https://artifact.bytedance.com/repository/Volcengine/`
- * (the maven repo this plugin already registers via withPicoProjectBuildGradle).
- * Direct file paths are publicly readable — browsing returns 403 but
- * resolving specific (group, artifact, version) tuples succeeds.
- *
- * Version `1.0.0` is the current stable line. Bump the constant when PICO
- * publishes a new stable; pinning here keeps consumer apps reproducible.
- */
-const PPS_PLATFORM_VERSION = '1.0.0';
-const PPS_SERVICES = [
-  'auth',          // expo-pico-account — PicoSignInClient
-  'iap',           // expo-pico-iap — PicoIapClient
-  'friend',        // expo-pico-rooms / -social shared
-  'social',        // expo-pico-social
-  'achievement',   // expo-pico-achievements
-  'leaderboard',   // expo-pico-leaderboards
-  'push',          // expo-pico-notifications
-  'entitlement',
-  'compliance',
-  'sport',
-  'speech',
-];
+const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
 
 const LEGACY_HERMES_PATH_PATTERN =
   /\n\s*hermesCommand\s*=.*\/sdks\/hermesc\/%OS-BIN%\/hermesc"\n/;
@@ -146,6 +128,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
   return withAppBuildGradle(config, (config) => {
     let contents = config.modResults.contents;
     const effectiveProfile = resolveTargetProfile(options);
+    const projectRoot = config.modRequest.projectRoot;
 
     if (LEGACY_HERMES_PATH_PATTERN.test(contents)) {
       contents = contents.replace(LEGACY_HERMES_PATH_PATTERN, HERMES_COMPAT_BLOCK);
@@ -191,40 +174,34 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // browsing the repo root returns 403, but resolving specific
     // group/artifact/version tuples succeeds.
     //
+    // Declared here, in the app module, and nowhere else: no sibling
+    // @expo-pico/* package carries a com.pico.pps coordinate, so adding
+    // more of them to an app never doubles a declaration. Which services
+    // land is derived from the packages actually installed.
+    //
     // Consumers don't need to drop any AAR files — Gradle pulls each
-    // service from maven on first build. The legacy AAR-drop fallback
+    // service from maven on first build. The bounded AAR-drop fallback
     // below stays in place for offline / air-gapped builds.
     if (
       options.xrMode !== 'mobile' &&
       !gradleContains(contents, PPS_DEPS_MARKER)
     ) {
-      const lines = PPS_SERVICES.map(
-        (svc) => `    implementation "com.pico.pps:platform-service-${svc}:${PPS_PLATFORM_VERSION}"`
-      ).join('\n');
-      const ppsDepsBlock = `
-${PPS_DEPS_MARKER}
-dependencies {
-${lines}
-}
-`;
-      contents = contents + '\n' + ppsDepsBlock;
+      const services = resolvePpsServices(
+        options.platformService.services,
+        createPackageResolver(projectRoot)
+      );
+      contents = contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER);
     }
 
     // PICO Platform SDK AAR drop-in (offline fallback). Consumers who
     // need to vendor the AARs into source control (air-gapped CI, etc.)
-    // can drop them into android/app/libs/. This block picks up anything
-    // there without further build.gradle edits.
+    // can drop them into android/app/libs/. Anything PPS already resolves
+    // from maven is excluded by name — see renderLocalAarBlock.
     if (
       options.xrMode !== 'mobile' &&
       !gradleContains(contents, APP_LIBS_AAR_MARKER)
     ) {
-      const libsBlock = `
-${APP_LIBS_AAR_MARKER}
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
-}
-`;
-      contents = contents + '\n' + libsBlock;
+      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER);
     }
 
     // 16KB ELF alignment for libopenxr_loader.so. Viro 2.56.0 ships a
@@ -360,6 +337,18 @@ subprojects { sub ->
     }
 }
 `;
+    }
+
+    // Single-version pin for the PPS artifacts. `constraints` in the app
+    // module only governs the app module; this reaches every other Gradle
+    // module in the build, so an autolinked library that requests a PPS
+    // coordinate resolves to the version the app actually packages
+    // instead of putting a second copy of the SDK on the classpath.
+    if (
+      options.xrMode !== 'mobile' &&
+      !gradleContains(contents, PPS_PIN_MARKER)
+    ) {
+      contents += renderPpsResolutionPin(PPS_PIN_MARKER);
     }
 
     config.modResults.contents = contents;

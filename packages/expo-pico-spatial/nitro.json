@@ -1,0 +1,31 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "expopico",
+    "spatial"
+  ],
+  "ios": {
+    "iosModuleName": "ExpoPicoSpatial"
+  },
+  "android": {
+    "androidNamespace": [
+      "expopico",
+      "spatial"
+    ],
+    "androidCxxLibName": "ExpoPicoSpatial"
+  },
+  "autolinking": {
+    "PicoSpatial": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridPicoSpatial"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules",
+    "build",
+    "lib",
+    "plugin"
+  ]
+}

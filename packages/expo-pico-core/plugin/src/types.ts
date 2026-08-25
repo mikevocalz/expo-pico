@@ -1,3 +1,5 @@
+import type { PicoPlatformServiceName } from './ppsArtifacts';
+
 /**
  * Configuration options for the expo-pico-core config plugin.
  */
@@ -318,6 +320,20 @@ export interface PicoPlatformServicePluginOptions {
     picoPayKey?: string;
   };
   /**
+   * Which `com.pico.pps:platform-service-*` artifacts to put on the
+   * classpath.
+   *
+   * Leave this unset and the plugin derives the set from the
+   * `@expo-pico/*` packages installed in the app, de-duplicated — two
+   * packages that share a service produce one declaration. Set it to
+   * reach a service no package wraps yet (`compliance`, `entitlement`,
+   * `sport`, `speech`) or to trim the set by hand.
+   *
+   * The artifacts are declared once, in the app module. No sibling
+   * package declares a `com.pico.pps` coordinate of its own.
+   */
+  services?: PicoPlatformServiceName[];
+  /**
    * Whether to declare `com.pico.loginpaysdk.UnityAuthInterface` and
    * `com.pico.loginpaysdk.component.PicoSDKBrowser` activities in the
    * PICO-flavor manifest. Required for the Platform SDK auth and
@@ -434,6 +450,11 @@ export interface ResolvedPicoPlatformServiceOptions {
     picoPayKey: string | null;
   };
   declareActivities: boolean;
+  /**
+   * Explicit service list, or `null` to derive it from the installed
+   * `@expo-pico/*` packages at prebuild time.
+   */
+  services: PicoPlatformServiceName[] | null;
   /** Derived: true iff at least one identity field is non-null. */
   hasIdentity: boolean;
   /** Derived: true iff both `picoMerchantId` and `picoPayKey` are non-null. */
@@ -504,6 +525,7 @@ export const PICO_PLATFORM_SERVICE_DEFAULTS: ResolvedPicoPlatformServiceOptions 
     picoPayKey: null,
   },
   declareActivities: false,
+  services: null,
   hasIdentity: false,
   hasIapIdentity: false,
 };
@@ -670,6 +692,10 @@ function resolvePlatformServiceOptions(
     picoPayKey,
     foreign,
     declareActivities: raw.declareActivities ?? hasIdentity,
+    services:
+      raw.services && raw.services.length > 0
+        ? ([...new Set(raw.services)].sort() as PicoPlatformServiceName[])
+        : null,
     hasIdentity,
     hasIapIdentity,
   };

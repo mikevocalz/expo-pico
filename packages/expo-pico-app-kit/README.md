@@ -117,3 +117,14 @@ No JS-side change required.
 - Other PPS sibling packages are optional peers. Install only the
   surfaces you use; the wrappers Proxy-reject cleanly when a
   package isn't installed
+
+## Native artifacts
+
+This package declares no Maven coordinate of its own. It has no PICO
+Platform Service artifact behind it — see
+[docs/PPS-WIRING-GAPS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-WIRING-GAPS.md)
+— and reaches whatever native code it needs through
+`@expo-pico/core`. Installing it alongside other `@expo-pico/*`
+packages adds nothing to the Android classpath that is not already
+there.
+

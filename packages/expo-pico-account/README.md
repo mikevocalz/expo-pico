@@ -4,6 +4,24 @@ PICO platform account, session, and identity APIs for Expo apps.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Other packages depend on this one
+
+PPS resolves account-scoped data from the signed-in session, so these packages
+need a connected PICO account at runtime even though none of them import this
+package:
+
+| Package | Why |
+| --- | --- |
+| `@expo-pico/iap` | purchases resolve against the signed-in account |
+| `@expo-pico/subscription` | entitlements are per-account |
+| `@expo-pico/achievements` | progress is written against the signed-in user |
+| `@expo-pico/leaderboards` | entries are written against the signed-in user |
+| `@expo-pico/social` | friends and presence are per-account |
+| `@expo-pico/notifications` | push registration binds the token to the signed-in user |
+
+Call `login()` once at boot before any of them. Without it those packages return
+empty results or `SERVICE_UNAVAILABLE` rather than throwing.
+
 ## Status
 
 - Maturity: alpha
@@ -14,7 +32,7 @@ PICO platform account, session, and identity APIs for Expo apps.
 ## Install
 
 ```bash
-yarn add expo-pico-core expo-pico-account
+yarn add @expo-pico/core @expo-pico/account react-native-nitro-modules
 ```
 
 `expo-pico-core` is a peer dependency. It must be listed before `expo-pico-account` in your `app.config.ts` plugins array so the flavor manifest, launcher categories, and BuildConfig fields land first.
@@ -99,6 +117,20 @@ if (isPlatformSdkPresent()) {
 ```
 
 Or run the CLI before building: `npx expo-pico-doctor --fail-on-warning`. It surfaces the `identity.missing` warning when `platformService.picoAppId` is absent.
+
+## Native artifacts
+
+This package needs `com.pico.pps:platform-service-auth` on the Android classpath.
+
+**It does not declare it.** `@expo-pico/core` declares every
+`com.pico.pps` coordinate once, in the app module, and this package
+reaches it through `implementation project(':expo-pico-core')`. So
+installing it next to other `@expo-pico/*` packages never produces a
+second declaration of the same artifact.
+
+See [docs/PPS-ARTIFACTS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-ARTIFACTS.md)
+for the full artifact list and the two cases that can still duplicate
+(a vendored AAR shadowing the Maven copy, and version skew).
 
 ## Limitations
 
