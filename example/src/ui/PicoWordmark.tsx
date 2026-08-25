@@ -1,22 +1,39 @@
 import React from 'react';
-
-import Wordmark from '../../assets/brand/pico-wordmark.svg';
+import Svg, { Path } from 'react-native-svg';
 
 /**
- * The PICO wordmark, white — a copy of `docs/assets/pico-wordmark-dark.svg`
- * ("dark" being the variant *for* dark backgrounds, filled #F5F6F7).
+ * The PICO wordmark, white.
  *
- * The fill is baked in rather than driven by `currentColor` on purpose: every
- * surface in this app is near-black, and a tintable mark that silently fails to
- * receive its colour renders black-on-black and disappears. One fixed white
- * mark cannot fail that way.
+ * Hand-written rather than importing the .svg through
+ * react-native-svg-transformer. Running that transformer over the asset shows
+ * why: svgr's SVGO step hoists `fill` off the individual paths and back onto a
+ * wrapping `<G>` with a `clipPath`, so the rendered fill depends on
+ * G-to-Path inheritance resolving. It was not resolving, and the SVG default
+ * fill is black — on a near-black header that reads as a missing logo.
  *
- * Imported as .svg through react-native-svg-transformer so it stays vector —
- * a headset panel renders at whatever scale the container dictates, and a
- * raster wordmark shows it.
+ * Two literal `fill` attributes on two `<Path>` elements cannot be hoisted,
+ * inherited, optimized away, or overridden by a spread prop. The clip path is
+ * dropped because it was only a bounding rect the size of the viewBox.
  *
- * Native aspect is 1005x293; give it a height and the width follows.
+ * Path data is the wordmark from `docs/assets/pico-wordmark-*.svg`; the
+ * transformer stays configured for any other .svg the app imports.
+ *
+ * Native aspect is 1005x293 — give it a height and the width follows.
  */
+const WHITE = '#F5F6F7';
+const RATIO = 1005 / 293;
+
 export function PicoWordmark({ height = 20 }: { height?: number }): React.JSX.Element {
-  return <Wordmark height={height} width={height * (1005 / 293)} />;
+  return (
+    <Svg width={height * RATIO} height={height} viewBox="0 0 1005 293">
+      <Path
+        fill={WHITE}
+        d="M594.06 234.12h38.25V58.58h-38.25v175.54ZM393.79 58.72v175.4h37.12v-40.51h68.18c22.36 0 63.39-21.84 63.39-67.53 0-42.6-36.96-67.37-63.34-67.37H393.79v.01Zm37.12 98.87V94.58h68.12c15.14 0 27.53 15.44 27.53 31.49 0 16.05-11.89 31.52-27.45 31.52h-68.2ZM700.4 146.32c.03-44.05 47.59-72.79 95.19-41.52l21.24-26.99c-62.84-49.11-152.92-9.76-153 68.45v.11c.08 78.21 90.16 117.56 153 68.45l-21.24-26.99c-47.59 31.24-95.13 2.53-95.19-41.52v.01ZM153.05.16C72.35-3.58 3.9 58.8.16 139.48c-3.74 80.71 58.64 149.16 139.32 152.9 80.71 3.74 149.16-58.64 152.89-139.32C296.13 72.35 233.73 3.9 153.05.16Zm-1.73 37.24c60.12 2.8 106.62 53.81 103.82 113.93-.77 16.35-5.08 31.68-12.17 45.29-21.54-27.37-70.84-89.97-71.03-90.22-19.92-24.13-49.98-39.6-83.65-39.85-5.36 0-12.2.44-17.67 1.29 20.83-20.06 49.54-31.88 80.71-30.42v-.03l-.01.01Zm-10.11 217.75c-60.12-2.8-106.62-53.81-103.82-113.93.49-10.58 2.47-20.75 5.74-30.28.36-.27.58-.41.58-.41 31.99-23.52 77.11-17.56 101.84 13.85l77.87 98.87c-20.94 20.97-50.29 33.39-82.22 31.9h.01Z"
+      />
+      <Path
+        fill={WHITE}
+        d="M87.38 163.139c9.33 0 16.899-7.57 16.899-16.9 0-9.33-7.57-16.9-16.9-16.9-9.33 0-16.9 7.57-16.9 16.9 0 9.33 7.57 16.9 16.9 16.9ZM914.78 56.2c-49.7 0-89.99 40.29-89.99 89.99 0 49.7 40.29 89.99 89.99 89.99 49.7 0 89.99-40.29 89.99-89.99 0-49.7-40.29-89.99-89.99-89.99Zm0 143.99c-29.83 0-54.01-24.18-54.01-54.01s24.18-54.01 54.01-54.01 54.01 24.18 54.01 54.01-24.18 54.01-54.01 54.01Z"
+      />
+    </Svg>
+  );
 }
