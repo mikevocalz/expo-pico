@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.margelo.nitro.core.Promise
 import expo.modules.pico.BuildConfig
+import expo.modules.pico.PicoActivityHolder
 
 /**
  * `PicoCore` — what this build declared, and what the device actually has.
@@ -164,6 +165,22 @@ class HybridPicoCore : HybridPicoCoreSpec() {
         .setClassName(context.packageName, match.activityInfo.name)
     }
     return null
+  }
+
+  /**
+   * Finish the immersive activity, returning the user to the 2D panel.
+   *
+   * Guarded on the resumed Activity actually being the immersive one: this is
+   * called from a back handler shared with the panel, and finishing whatever
+   * happens to be in front would close the app instead.
+   */
+  override fun exitImmersiveScene(): Promise<Boolean> {
+    val activity = PicoActivityHolder.currentActivity() ?: return Promise.resolved(false)
+    val immersive = resolveImmersiveActivity()?.component?.className
+      ?: return Promise.resolved(false)
+    if (activity.componentName.className != immersive) return Promise.resolved(false)
+    activity.finish()
+    return Promise.resolved(true)
   }
 
   override fun hasImmersiveActivity(): Promise<Boolean> =

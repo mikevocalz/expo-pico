@@ -10,6 +10,7 @@ module.exports = {
   testRegex: '__tests__/.*\\.test\\.tsx?$',
   moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts', 'tsx'],
   moduleNameMapper: {
+    '^react-native$': '<rootDir>/../__jest_stubs__/react-native.js',
     '^react-native-nitro-modules$': '<rootDir>/../__jest_stubs__/react-native-nitro-modules.js',
   },
 };

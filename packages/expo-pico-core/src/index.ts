@@ -7,6 +7,7 @@ import {
 import type { PicoRuntime } from './PicoRuntime.nitro';
 
 import ExpoPicoModule from './ExpoPicoModule';
+import { hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT } from './immersive';
 import type {
   PicoAppType,
   PicoRuntimeInfo,
@@ -317,6 +318,11 @@ export type {
 // PICO OS is Android-based, so stock expo-location works on device. Exposed
 // here so PICO apps get a permission-aware getPicoLocation() from the library.
 export { getPicoLocation, requestLocationPermission, isLocationAvailable } from './location';
+export {
+  registerImmersiveScene,
+  hasImmersiveSceneRegistered,
+  IMMERSIVE_ROOT_COMPONENT,
+} from './immersive';
 export type { PicoCoordinates } from './location';
 
 export default ExpoPicoModule;
@@ -339,10 +345,37 @@ export default ExpoPicoModule;
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
  */
 export async function enterImmersiveScene(): Promise<boolean> {
+  if (!hasImmersiveSceneRegistered()) {
+    // Launching anyway would hand the display to an activity with no root
+    // component: a blank loading screen, no error, nothing in logcat. Refusing
+    // keeps the user on the 2D panel and says exactly what is missing.
+    console.error(
+      `[@expo-pico/core] enterImmersiveScene(): no component registered as ` +
+        `"${IMMERSIVE_ROOT_COMPONENT}". Call registerImmersiveScene(YourScene) ` +
+        `at module scope in your app entry (index.js), before any navigation — ` +
+        `the immersive activity starts immediately and cannot wait for a route ` +
+        `to load. Staying on the 2D panel.`
+    );
+    return false;
+  }
   return ExpoPicoModule.enterImmersiveScene();
 }
 
 /** Whether this build declares an activity with PICO's VR intent category. */
 export async function hasImmersiveActivity(): Promise<boolean> {
   return ExpoPicoModule.hasImmersiveActivity();
+}
+
+/**
+ * Finish the immersive activity and return to the 2D panel.
+ *
+ * Prefer this to react-viro's `exitVRScene()`, which delegates to a
+ * `VRLauncher` native module the Viro plugin never generates and is a
+ * documented no-op without it.
+ *
+ * Resolves `false` when the immersive activity is not in front, so a shared
+ * back handler cannot close the panel by mistake.
+ */
+export async function exitImmersiveScene(): Promise<boolean> {
+  return ExpoPicoModule.exitImmersiveScene();
 }

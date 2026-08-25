@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { BackHandler, StyleSheet } from 'react-native';
-import { ViroVRSceneNavigator, exitVRScene } from '@reactvision/react-viro';
+import { ViroVRSceneNavigator } from '@reactvision/react-viro';
+
+import { exitImmersiveScene } from '@expo-pico/core';
 
 import { InteractiveCubeScene } from './InteractiveCubeScene';
 
@@ -21,16 +23,19 @@ import { InteractiveCubeScene } from './InteractiveCubeScene';
  * indirection, which only exists to ferry a scene across the panel/activity
  * split that PICO does not use.
  *
- * The hardware back button is wired to `exitVRScene()`, matching Viro's own
- * entry point: it finishes VRActivity and returns to the 2D panel, so exit is
- * never more than one press away.
+ * Hardware back calls `exitImmersiveScene()` from `@expo-pico/core`, which
+ * finishes this activity and returns to the 2D panel, so exit is never more
+ * than one press away.
  */
 export function VrSceneRoot(): React.JSX.Element {
   const initialScene = useMemo(() => ({ scene: InteractiveCubeScene }), []);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      exitVRScene();
+      // Not react-viro's exitVRScene(): it delegates to a VRLauncher native
+      // module the Viro plugin never generates, and is a documented no-op
+      // without it — which is why back did nothing here.
+      void exitImmersiveScene();
       return true;
     });
     return () => sub.remove();

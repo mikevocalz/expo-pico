@@ -1,19 +1,20 @@
 /**
  * App entry.
  *
- * `expo-router/entry` registers "main", which MainActivity mounts. VRActivity
- * mounts a *different* root — "VRQuestScene" — so that registration has to
- * happen at startup too, not when the /xr route is first visited: entering XR
- * launches VRActivity immediately, and a lazily-loaded route would register
- * the component after the activity had already gone looking for it.
+ * Two roots, because PICO runs the app as a flat 2D panel first and only hands
+ * the display to an immersive activity on demand:
  *
- * Registering after importing expo-router/entry deliberately overrides Viro's
- * own auto-registration. See VrSceneRoot for why its entry point cannot work
- * on PICO.
+ *   "main"          — MainActivity, the 2D panel. Always the launch target.
+ *   "VRQuestScene"  — VRActivity, entered only via enterImmersiveScene().
+ *
+ * Both are registered here at module scope. The immersive root cannot wait for
+ * a route to load it: entering XR starts VRActivity immediately, and a root
+ * registered afterwards arrives too late — the activity mounts a component
+ * that does not exist yet and sits on a blank loading screen.
  */
 import 'expo-router/entry';
-import { AppRegistry } from 'react-native';
+import { registerImmersiveScene } from '@expo-pico/core';
 
 import { VrSceneRoot } from './src/scene/VrSceneRoot';
 
-AppRegistry.registerComponent('VRQuestScene', () => VrSceneRoot);
+registerImmersiveScene(VrSceneRoot);

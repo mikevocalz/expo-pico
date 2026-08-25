@@ -156,6 +156,10 @@ const ExpoPicoModule = {
     return (await core()?.enterImmersiveScene()) ?? false;
   },
 
+  async exitImmersiveScene(): Promise<boolean> {
+    return (await core()?.exitImmersiveScene()) ?? false;
+  },
+
   async hasImmersiveActivity(): Promise<boolean> {
     return (await core()?.hasImmersiveActivity()) ?? false;
   },

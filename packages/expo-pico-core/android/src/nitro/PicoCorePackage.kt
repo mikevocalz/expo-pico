@@ -39,6 +39,8 @@ class PicoCorePackage @JvmOverloads constructor(
 
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         Log.i(TAG, "PicoCorePackage initialized with platform=$platform")
+        // Lets core reach the resumed Activity; see PicoActivityHolder.
+        PicoActivityHolder.attach(reactContext)
         loadNitroModules()
         when (platform) {
             PicoXRPlatform.PICO_SWAN -> PicoSwanRuntime.initialize(reactContext)

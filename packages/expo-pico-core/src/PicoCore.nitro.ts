@@ -129,6 +129,20 @@ export interface PicoCore extends HybridObject<{ android: 'kotlin' }> {
 
   /** Whether an activity declaring the PICO VR category exists in this app. */
   hasImmersiveActivity(): Promise<boolean>;
+
+  /**
+   * Finish the immersive activity and return to the 2D panel.
+   *
+   * `react-viro`'s `exitVRScene()` cannot do this here: it delegates to
+   * `NativeModules.VRLauncher`, a module the Viro plugin never generates, and
+   * is explicitly a no-op when that module is absent — so a back button wired
+   * to it does nothing on PICO.
+   *
+   * Resolves `false` when the immersive activity is not the one in front,
+   * which makes it safe to call from a shared back handler: it will not finish
+   * the panel by mistake.
+   */
+  exitImmersiveScene(): Promise<boolean>;
   /** Undefined when the capability has no system-feature key to check. */
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | undefined>;
 }
