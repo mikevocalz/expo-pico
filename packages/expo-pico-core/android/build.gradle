@@ -106,7 +106,12 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-fexceptions", "-frtti", "-std=c++20"
-                arguments "-DANDROID_STL=c++_shared"
+                // NDK r27 still defaults to 4KB page alignment; r28 flips it.
+                // PICO OS 5 / Android 14+ refuses to load a 4KB-aligned .so,
+                // which is the same failure the bundled OpenXR loader overlay
+                // exists to work around — these libraries had it too.
+                // Verify with scripts/verify-16kb-alignment.py on the APK.
+                arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 abiFilters(*reactNativeArchitectures())
             }
         }

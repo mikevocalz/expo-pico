@@ -260,8 +260,12 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
         runCatching {
           socialClient.setLaunchIntentChangeCallback(
             object : ILaunchIntentChangeCallback {
-              override fun onChange(launchDetails: PpsLaunchDetails) {
-                val mapped = toLaunchDetails(launchDetails)
+              // PPS declares this parameter nullable. A null carries no intent
+              // to report, so it is dropped rather than surfaced as an empty
+              // "normal launch", which would look like a real event.
+              override fun onChange(launchDetails: PpsLaunchDetails?) {
+                val details = launchDetails ?: return
+                val mapped = toLaunchDetails(details)
                 launchListeners.values.toList().forEach { it(mapped) }
               }
             }
@@ -415,7 +419,12 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
       ?: return Promise.rejected(PicoPps.unavailable("getInvitableUsers"))
     val cursor = pageToken?.let { decodeCursor(it) }
     val task = if (cursor == null) {
-      socialClient.getInvitableUsers(PpsInviteOptions(suggestedUserIds.orEmpty().toList()))
+      socialClient.getInvitableUsers(
+        // Constructor is private; PPS exposes a builder.
+        PpsInviteOptions.Builder()
+          .setSuggestedUser(suggestedUserIds.orEmpty().toList())
+          .build()
+      )
     } else {
       socialClient.getNextInvitableUsersList(cursor)
     }
@@ -467,11 +476,12 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
   override fun launchApp(options: LaunchAppOptions): Promise<String> {
     val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("launchApp"))
     val appId = options.targetAppId?.takeIf { it.isNotEmpty() }
-    val ppsOptions = PpsLaunchAppOptions(
-      appId.orEmpty(),
-      options.targetPackageName.orEmpty(),
-      options.deepLinkMessage.orEmpty(),
-    )
+    // Constructor is private; PPS exposes a builder.
+    val ppsOptions = PpsLaunchAppOptions.Builder()
+      .targetAppId(appId.orEmpty())
+      .targetPackageName(options.targetPackageName.orEmpty())
+      .deepLinkMessage(options.deepLinkMessage.orEmpty())
+      .build()
     val task = if (appId != null) {
       socialClient.launchAppByAppId(ppsOptions)
     } else {

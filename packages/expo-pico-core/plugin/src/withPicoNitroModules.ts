@@ -1,10 +1,11 @@
-import { ConfigPlugin, withSettingsGradle } from '@expo/config-plugins';
+import { ConfigPlugin, withAppBuildGradle, withSettingsGradle } from '@expo/config-plugins';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
 
 export const PICO_NITRO_INCLUDE_MARKER = '// expo-pico-core: @expo-pico/* Nitro module inclusion';
+export const PICO_NITRO_DEPS_MARKER = '// expo-pico-core: @expo-pico/* module dependencies';
 
 /**
  * Every package in the family that ships an Android Gradle module.
@@ -68,21 +69,49 @@ export interface PicoNativeModule {
  * A package that is not installed, or is installed without an `android`
  * directory, is skipped rather than guessed at.
  */
+/**
+ * Directory of an installed package, without depending on its `exports` map.
+ *
+ * `require.resolve('<pkg>/package.json')` is the obvious way to do this and it
+ * is what this used to do, but Node enforces `exports`: a package that does not
+ * explicitly export `./package.json` throws ERR_PACKAGE_PATH_NOT_EXPORTED. That
+ * failure was swallowed by the caller's `continue`, so every module silently
+ * dropped out of `settings.gradle` and the whole native layer went missing from
+ * the build with only a warning.
+ *
+ * These packages now export `./package.json`, but a consumer can be on an older
+ * version, so this falls back to resolving the entry point and walking up to the
+ * manifest rather than trusting the map.
+ */
+function resolvePackageDir(packageName: string, projectRoot: string): string | null {
+  try {
+    return path.dirname(require.resolve(`${packageName}/package.json`, { paths: [projectRoot] }));
+  } catch {
+    // Fall through to the entry-point walk.
+  }
+  try {
+    let dir = path.dirname(require.resolve(packageName, { paths: [projectRoot] }));
+    for (let i = 0; i < 10; i += 1) {
+      if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  } catch {
+    // Not installed, or no resolvable entry point.
+  }
+  return null;
+}
+
 export function findPicoNativeModules(
   projectRoot: string,
   packages: readonly string[] = PICO_NATIVE_PACKAGES
 ): PicoNativeModule[] {
   const found: PicoNativeModule[] = [];
   for (const packageName of packages) {
-    let packageJsonPath: string;
-    try {
-      packageJsonPath = require.resolve(`${packageName}/package.json`, {
-        paths: [projectRoot],
-      });
-    } catch {
-      continue;
-    }
-    const androidDir = path.join(path.dirname(packageJsonPath), 'android');
+    const packageDir = resolvePackageDir(packageName, projectRoot);
+    if (!packageDir) continue;
+    const androidDir = path.join(packageDir, 'android');
     if (!fs.existsSync(path.join(androidDir, 'build.gradle'))) continue;
     found.push({
       packageName,
@@ -147,8 +176,36 @@ ${lines.join('\n')}
  * So inclusion is done here, deterministically, rather than left to
  * whichever autolinker happens to run.
  */
+/**
+ * Add `implementation project(':expo-pico-*')` for each included module.
+ *
+ * `include` in settings.gradle only makes a directory a Gradle project. It does
+ * not put anything in the app. Without a dependency the modules configure and
+ * can even build on their own — `./gradlew assemblePicoDebug` runs that task in
+ * every project — while contributing no code, no JNI and no AAR to the APK, and
+ * their classes stay invisible to the app. That is how `PicoCorePackage` came to
+ * be imported by MainApplication and unresolvable at compile time.
+ *
+ * These packages are not React Native autolinking targets (`autolinking.json`
+ * lists none of them), so nothing else was going to add the dependency.
+ */
+function renderDependencyBlock(modules: PicoNativeModule[]): string {
+  // gradleProjectName has no leading colon; settings.gradle adds it at the
+  // include site, so the dependency has to add its own.
+  const lines = modules.map((m) => `    implementation project(':${m.projectName}')`);
+  return `${PICO_NITRO_DEPS_MARKER}\ndependencies {\n${lines.join('\n')}\n}\n`;
+}
+
 export const withPicoNitroModules: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   if (!options.enabled) return config;
+
+  config = withAppBuildGradle(config, (cfg) => {
+    const modules = findPicoNativeModules(cfg.modRequest.projectRoot);
+    if (modules.length === 0) return cfg;
+    if (cfg.modResults.contents.includes(PICO_NITRO_DEPS_MARKER)) return cfg;
+    cfg.modResults.contents = `${cfg.modResults.contents.trimEnd()}\n\n${renderDependencyBlock(modules)}`;
+    return cfg;
+  });
 
   return withSettingsGradle(config, (config) => {
     const modules = findPicoNativeModules(config.modRequest.projectRoot);

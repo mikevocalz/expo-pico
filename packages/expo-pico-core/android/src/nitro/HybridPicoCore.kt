@@ -1,6 +1,7 @@
 package com.margelo.nitro.expopico.picocore
 
 import android.content.pm.FeatureInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.margelo.nitro.core.Promise
 import expo.modules.pico.BuildConfig
@@ -178,8 +179,14 @@ class HybridPicoCore : HybridPicoCoreSpec() {
       val names = info.requestedPermissions.orEmpty()
       val flags = info.requestedPermissionsFlags
       names.mapIndexed { index, name ->
-        val granted = flags?.getOrNull(index)
-          ?.and(PackageManager.REQUESTED_PERMISSION_GRANTED) != 0
+        // REQUESTED_PERMISSION_GRANTED is on PackageInfo, not PackageManager.
+        //
+        // The null branch also has to default to 0 rather than ride the
+        // safe-call: `flags?.get(i)?.and(MASK) != 0` is `null != 0` when flags
+        // is absent, which is `true`, so every permission would report as
+        // granted on a device that returns no flags array.
+        val flag = flags?.getOrNull(index) ?: 0
+        val granted = (flag and PackageInfo.REQUESTED_PERMISSION_GRANTED) != 0
         PicoDeclaredPermission(name = name, granted = granted)
       }.toTypedArray()
     }

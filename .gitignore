@@ -40,6 +40,10 @@ vendor/pico-sdk/*.aar
 .vendor/
 
 packages/*/android/.gradle/
+packages/*/android/build/
+# CMake/NDK scratch. Committing this is how a 1MB "patch" of compiler-id
+# binaries and ninja logs got captured once already.
+packages/*/android/.cxx/
 patch-package-error.json
 patch-package-error.json.gz
 

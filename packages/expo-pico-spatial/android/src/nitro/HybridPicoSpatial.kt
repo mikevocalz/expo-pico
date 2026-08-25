@@ -1,7 +1,7 @@
 package com.margelo.nitro.expopico.spatial
 
 import com.margelo.nitro.core.Promise
-import expo.modules.pico.BuildConfig
+import expo.modules.pico.spatial.BuildConfig
 
 /**
  * `PicoSpatial` — spatial anchors, space transitions and scene data.

@@ -9,7 +9,8 @@
       "import": "./build/src/index.js",
       "require": "./build/src/index.js",
       "types": "./build/src/index.d.ts"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "nitrogen && tsc",

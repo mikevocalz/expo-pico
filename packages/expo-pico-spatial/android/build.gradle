@@ -25,12 +25,35 @@ def reactNativeArchitectures() {
     return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
+// expo-pico-core writes these `pico*` values into the consuming app's
+// gradle.properties. Core declares the same nine on its own BuildConfig; this
+// module needs its own copy because BuildConfig is generated per namespace and
+// `expo.modules.pico.spatial` cannot see `expo.modules.pico`'s.
+def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
+def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
+def picoHandTrackingConfigField = "${project.findProperty('picoHandTracking') ?: 'false'}"
+def picoEyeTrackingConfigField = "${project.findProperty('picoEyeTracking') ?: 'false'}"
+def picoFaceTrackingConfigField = "${project.findProperty('picoFaceTracking') ?: 'false'}"
+def picoBodyTrackingConfigField = "${project.findProperty('picoBodyTracking') ?: 'false'}"
+def picoSceneMeshConfigField = "${project.findProperty('picoSceneMesh') ?: 'false'}"
+def picoSceneUnderstandingConfigField = "${project.findProperty('picoSceneUnderstanding') ?: 'false'}"
+def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: 'false'}"
+
 android {
     namespace "expo.modules.pico.spatial"
     compileSdk safeExtGet('compileSdkVersion', 36)
     ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
 
     defaultConfig {
+        buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
+        buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
+        buildConfigField "boolean", "PICO_HAND_TRACKING", picoHandTrackingConfigField
+        buildConfigField "boolean", "PICO_EYE_TRACKING", picoEyeTrackingConfigField
+        buildConfigField "boolean", "PICO_FACE_TRACKING", picoFaceTrackingConfigField
+        buildConfigField "boolean", "PICO_BODY_TRACKING", picoBodyTrackingConfigField
+        buildConfigField "boolean", "PICO_SCENE_MESH", picoSceneMeshConfigField
+        buildConfigField "boolean", "PICO_SCENE_UNDERSTANDING", picoSceneUnderstandingConfigField
+        buildConfigField "boolean", "PICO_PASSTHROUGH", picoPassthroughConfigField
         minSdk safeExtGet('minSdkVersion', 24)
         // expo-pico-core declares the `device` dimension (pico / mobile).
         // This module has no flavor-specific code, so it falls back to the
@@ -42,7 +65,12 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-fexceptions", "-frtti", "-std=c++20"
-                arguments "-DANDROID_STL=c++_shared"
+                // NDK r27 still defaults to 4KB page alignment; r28 flips it.
+                // PICO OS 5 / Android 14+ refuses to load a 4KB-aligned .so,
+                // which is the same failure the bundled OpenXR loader overlay
+                // exists to work around — these libraries had it too.
+                // Verify with scripts/verify-16kb-alignment.py on the APK.
+                arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 abiFilters(*reactNativeArchitectures())
             }
         }

@@ -10,6 +10,7 @@
       "require": "./build/index.js",
       "types": "./build/index.d.ts"
     },
+    "./package.json": "./package.json",
     "./plugins/withPicoPostpatch": "./plugins/withPicoPostpatch.js",
     "./plugins/withPicoCompat": "./plugins/withPicoCompat.js"
   },

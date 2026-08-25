@@ -10,6 +10,7 @@
       "require": "./build/src/index.js",
       "types": "./build/src/index.d.ts"
     },
+    "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js",
     "./plugin": {
       "import": "./plugin/build/src/withPicoRooms.js",

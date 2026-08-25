@@ -10,6 +10,7 @@
       "require": "./build/index.js",
       "types": "./build/index.d.ts"
     },
+    "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js",
     "./plugin": {
       "import": "./plugin/build/index.js",
