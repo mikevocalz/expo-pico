@@ -54,7 +54,7 @@
     "expo": "~57.0.16",
     "@expo-pico/core": "*",
     "jest": "^29.7.0",
-    "react-native": "^0.86.2",
+    "react-native": "0.86.2",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
     "react-native-nitro-modules": "^0.37.0",

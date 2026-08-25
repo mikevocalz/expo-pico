@@ -31,47 +31,53 @@ Shared error codes. Every sibling throws only from this taxonomy:
 - `INITIALIZATION_FAILED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NETWORK_ERROR`, `TIMEOUT`, `UNKNOWN`.
 - `BILLING_UNAVAILABLE`, `PURCHASE_CANCELLED`, `PURCHASE_ALREADY_OWNED`, `PRODUCT_NOT_FOUND`: shared by `expo-pico-iap` and `expo-pico-subscription`.
 
-### Native module resolution
+### HybridObject resolution
 
 ```ts
-import {
-  resolveNativeModule,
-  type NativeModuleResolution,
-} from '@expo-pico/platform-service-common';
+import { resolveHybridObject, __resetHybridCache } from '@expo-pico/platform-service-common';
 ```
 
-Wraps `requireNativeModule` with a defensive resolver that returns `{ module: null, error }` rather than throwing when the native bridge isn't available (test env, missing autolinking, etc.). Siblings guard on the resolution before dispatching calls.
+Wraps `NitroModules.createHybridObject()` with a defensive resolver that returns
+`null` rather than throwing when the native library isn't in this build (mobile
+flavor, non-PICO hardware, Gradle offline at prebuild, test env). The result is
+cached either way, so a missing module costs one failed lookup rather than one
+per call. Siblings guard on `null` and raise `SERVICE_UNAVAILABLE` before
+dispatching. `__resetHybridCache()` is a test seam that drops the cache.
 
 ### Event helpers
 
 ```ts
-import {
-  createNativeEventEmitter,
-  safeAddListener,
-  NULL_SUBSCRIPTION,
-  type Subscription,
-} from '@expo-pico/platform-service-common';
+import { NULL_SUBSCRIPTION, type Subscription } from '@expo-pico/platform-service-common';
 ```
 
 A `{ remove(): void }` subscription shape used consistently across sibling packages (achievements, rooms, social, storage unlock listeners etc.). `NULL_SUBSCRIPTION` is a no-op handle returned when listeners attach on a build where the native module is absent.
 
+Nitro listeners are id-based rather than emitter-based: `addXListener()` returns
+a numeric id, and each sibling wraps that id in a `Subscription` whose `remove()`
+calls back into `removeListener(id)`. The old `createNativeEventEmitter` /
+`safeAddListener` helpers were removed with the `expo-modules-core` emitter.
+
 ### Pagination
 
-```ts
-import {
-  DEFAULT_PAGE_SIZE,
-  type PicoPage,
-  type PicoPageArgs,
-} from '@expo-pico/platform-service-common';
-```
+No longer exported. Nitro specs have no generics, so `PicoPage<T>` could not
+survive codegen; each package now declares its own concrete page type in its
+`*.nitro.ts` spec (for example `LeaderboardEntryPage` in
+`PicoLeaderboards.nitro.ts`). `DEFAULT_PAGE_SIZE`, `PicoPage` and `PicoPageArgs`
+were removed along with it.
 
-Standard `{ items, nextCursor, hasMore }` shape used by paginated PICO Platform APIs (leaderboards, friends list, etc.).
+How PPS `NextInfo(hasNext, nextId, bodyParams)` maps onto the family's
+`nextPageToken?: string` is still undecided — see
+[PPS-WIRING-GAPS.md](../../../docs/PPS-WIRING-GAPS.md).
 
 ## Why it's internal
 
 1. The surface is shaped for our own siblings, not as a general-purpose utility library.
 2. Coupling it to `@expo-pico/...` organization naming signals that the public API is the individual sibling packages. Consumers who want these error codes or subscription shapes get them transitively via their public imports.
-3. Keeping it `"private": true` prevents accidental npm publish churn whenever a sibling's internal contract widens.
+3. It is nonetheless **published**, not `"private": true` — siblings list it in
+   `dependencies` and import it at runtime, so npm has to be able to resolve it.
+   "Internal" here means the API is not intended for direct consumption, not
+   that the tarball is absent from the registry. It bumps in lockstep with the
+   family via the `linked` group in `.changeset/config.json`.
 
 If you want to import directly from here in application code, open an issue. The missing public export probably belongs on `expo-pico-core`.
 

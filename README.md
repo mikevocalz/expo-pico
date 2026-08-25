@@ -7,7 +7,7 @@
 
 Expo-native package family for PICO 4 / 4 Ultra (PICO OS 5) and Project Swan (PICO OS 6) XR devices.
 
-Config plugins and Expo Modules that teach an Expo Android project how to build, install, and enumerate on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
+Config plugins and Nitro Modules that teach an Expo Android project how to build, install, and enumerate on PICO 4 / 4 Ultra / Swan and Meta Quest 3 / 3S headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
 
 > OS note. PICO 4 and PICO 4 Ultra ship on PICO OS 5 (the legacy PVR / current XR runtime), so set `xrMode: 'pico-os5'`. The next-gen Project Swan hardware ships on PICO OS 6, so set `xrMode: 'pico-swan'`.
 

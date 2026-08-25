@@ -4,6 +4,21 @@ PICO platform leaderboard APIs for Expo apps. Query rankings, write scores, and 
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Installation
+
+```sh
+yarn add @expo-pico/leaderboards react-native-nitro-modules
+```
+
+Add to `app.config.ts` after `expo-pico-core`:
+
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/leaderboards',
+]
+```
+
 ## Requires a signed-in PICO account
 
 `@expo-pico/account` is a runtime prerequisite for this package — entries are written against the signed-in user. It is

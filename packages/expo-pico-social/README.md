@@ -4,6 +4,21 @@ PICO platform social APIs for Expo apps. Friends, presence, invites, and real-ti
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Installation
+
+```sh
+yarn add @expo-pico/social react-native-nitro-modules
+```
+
+Add to `app.config.ts` after `expo-pico-core`:
+
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/social',
+]
+```
+
 ## Requires a signed-in PICO account
 
 `@expo-pico/account` is a runtime prerequisite for this package — friends and presence are per-account. It is

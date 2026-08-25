@@ -15,7 +15,7 @@
     "prebuild:quest": "expo prebuild --clean && echo 'Run: cd android && ./gradlew assembleQuestDebug'",
     "demo:model": "node scripts/download-demo-model.js --force --verbose",
     "demo:model:clean": "node -e \"require('fs').rmSync(require('path').join('assets','models','pico-demo.glb'), { force: true }); console.log('removed')\"",
-    "postinstall": "patch-package && node scripts/download-demo-model.js --post-install",
+    "postinstall": "node scripts/download-demo-model.js --post-install",
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {
@@ -48,7 +48,6 @@
     "react-freeze": "^1.0.4"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.1",
-    "patch-package": "^8.0.1"
+    "@babel/core": "^8.0.1"
   }
 }

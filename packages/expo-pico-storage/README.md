@@ -4,6 +4,21 @@ PICO platform cloud storage APIs for Expo apps. Save, load, sync, and manage key
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Installation
+
+```sh
+yarn add @expo-pico/storage react-native-nitro-modules
+```
+
+Add to `app.config.ts` after `expo-pico-core`:
+
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/storage',
+]
+```
+
 ## Status
 
 - Maturity: alpha
@@ -62,7 +77,7 @@ import {
 
 if (isStorageAvailable()) {
   // Save a value (server-wins conflict policy by default)
-  const saved = await saveEntry('player_settings', JSON.stringify({ volume: 0.8 }));
+  const saved = await saveEntry('player_settings', JSON.stringify({ volume: 0.8 }), 'json');
   console.log('Saved at version:', saved.version);
 
   // Load a value
@@ -91,21 +106,21 @@ if (isStorageAvailable()) {
 
 ## API
 
-| Function                             | Description                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------ |
-| `isStorageAvailable()`               | Returns `true` on a PICO build with the Storage SDK linked                     |
-| `getStorageSdkVersion()`             | Returns the PICO Platform SDK version string                                   |
-| `getStorageStatus()`                 | Returns `StorageStatus`: `'available'` or `'unavailable'`                      |
-| `saveEntry(key, value, options?)`    | Saves a string value; returns version and conflict info                        |
-| `loadEntry(key)`                     | Loads a value by key; returns `found: false` if missing                        |
-| `deleteEntry(key)`                   | Deletes a key from local and cloud storage                                     |
-| `listKeys()`                         | Returns all stored keys                                                        |
-| `syncStorage()`                      | Forces a cloud sync; returns counts of synced, conflicted, and errored entries |
-| `getStorageQuota()`                  | Returns byte and entry counts for the current quota                            |
-| `clearLocalCache()`                  | Clears the local cache without deleting cloud data                             |
-| `addStorageConflictListener(cb)`     | Fires when a server/client conflict is detected; returns `Subscription`        |
-| `addStorageSyncProgressListener(cb)` | Fires during sync with phase and progress; returns `Subscription`              |
-| `addStorageSyncCompleteListener(cb)` | Fires when a sync cycle completes; returns `Subscription`                      |
+| Function                                | Description                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `isStorageAvailable()`                  | Returns `true` on a PICO build with the Storage SDK linked                                                       |
+| `getStorageSdkVersion()`                | Returns the PICO Platform SDK version string                                                                     |
+| `getStorageStatus()`                    | Returns `StorageStatus`: `'available'` or `'unavailable'`                                                        |
+| `saveEntry(key, value, type, options?)` | Saves a string value; `type` is `'string' \| 'number' \| 'boolean' \| 'json'`; returns version and conflict info |
+| `loadEntry(key)`                        | Loads a value by key; returns `found: false` if missing                                                          |
+| `deleteEntry(key)`                      | Deletes a key from local and cloud storage                                                                       |
+| `listKeys()`                            | Returns all stored keys                                                                                          |
+| `syncStorage()`                         | Forces a cloud sync; returns counts of synced, conflicted, and errored entries                                   |
+| `getStorageQuota()`                     | Returns byte and entry counts for the current quota                                                              |
+| `clearLocalCache()`                     | Clears the local cache without deleting cloud data                                                               |
+| `addStorageConflictListener(cb)`        | Fires when a server/client conflict is detected; returns `Subscription`                                          |
+| `addStorageSyncProgressListener(cb)`    | Fires during sync with phase and progress; returns `Subscription`                                                |
+| `addStorageSyncCompleteListener(cb)`    | Fires when a sync cycle completes; returns `Subscription`                                                        |
 
 ### Conflict policies
 

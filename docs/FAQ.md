@@ -6,7 +6,7 @@ Questions that keep coming up. If yours isn't here, open a [GitHub issue](https:
 
 Because PICO-specific support needs project-level mutations (product flavors, launcher categories, BuildConfig fields, PICO-flavor manifest, Platform SDK identity resources) that a runtime library can't do from JS. Config plugins are Expo's native path for making those mutations survive `expo prebuild --clean`.
 
-This works for projects on the managed workflow and on bare RN that still uses Expo Modules. The plugin runs at prebuild time, and the sibling runtime modules use the standard Expo Modules bridge.
+This works for projects on the managed workflow and on bare RN. The plugin runs at prebuild time; the sibling runtime modules are [Nitro Modules](https://nitro.margelo.com) HybridObjects, resolved at runtime through `resolveHybridObject()`. The two are complementary, not alternatives — a config plugin cannot expose native APIs to JS, and a native module cannot rewrite your Gradle files.
 
 ## 2. Why is this Android-only?
 
@@ -14,9 +14,9 @@ PICO hardware runs Android. There's no iOS PICO runtime. Every sibling's `androi
 
 ## 3. Why require the New Architecture?
 
-`PicoCorePackage`'s registration shape and several Expo Modules surfaces we rely on (`AsyncFunction` arity, `ModuleDefinition` DSL, the module auto-registration manifest) ship in the New Architecture code path. `expo-pico-core` emits a `WarningAggregator` notice when `newArchEnabled: true` is missing. Builds continue but you're on an unsupported path.
+Two reasons. `PicoCorePackage` uses the New Architecture package registration shape that ships with RN >= 0.74, and Nitro Modules are JSI/C++ and require the New Architecture outright. `expo-pico-core` emits a `WarningAggregator` notice when `newArchEnabled: true` is missing (see `withPicoNewArchCheck`). Builds continue but you're on an unsupported path.
 
-Concretely: Platform SDK integrations fail silently on Legacy Architecture because the bridge lookup doesn't find the modules at their expected names.
+Concretely: on Legacy Architecture the HybridObjects never register, so `resolveHybridObject()` returns `null` and every Platform SDK call degrades to `SERVICE_UNAVAILABLE` — the same path you'd see on non-PICO hardware, which makes the misconfiguration easy to mistake for missing hardware.
 
 ## 4. How is this different from [react-three/viro](https://github.com/ReactVision/viro) or other Quest / MR libraries?
 
@@ -38,7 +38,7 @@ For a step-by-step porting guide (including a JSX-component mapping table for th
 
 `@reactvision/react-viro`. That's what the example app uses, and the only renderer we run end-to-end CI against. The plugin touches only config / manifest / Gradle (never rendering code), so other OpenXR-loader renderers also work:
 
-- `@reactvision/react-viro` (example app; Khronos BrainStem glTF loads through `<Viro3DObject>`; ships immersive on PICO and Meta Quest from one APK via this repo's `mikevocalz/virocore` fork)
+- `@reactvision/react-viro` (example app; Khronos BrainStem glTF loads through `<Viro3DObject>`; ships immersive on PICO and Meta Quest from one APK). The example pins the stock npm release — no fork and no patches.
 - Unity-as-a-Library
 - Any custom renderer that binds to the system OpenXR loader
 

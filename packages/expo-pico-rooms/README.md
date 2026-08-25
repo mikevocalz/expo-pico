@@ -1,9 +1,15 @@
 # expo-pico-rooms
 
-PICO platform room lifecycle and matchmaking for Expo apps.
+PICO platform room lifecycle for Expo apps.
 
-Provides room creation, joining, membership management, and matchmaking
-on top of the PICO Platform SDK social interaction layer.
+Provides room creation, joining, and membership management on top of the PICO
+Platform SDK social interaction layer.
+
+> **Matchmaking is not available.** PPS 1.0.x ships no matchmaking surface, so
+> `requestMatchmaking()` and `cancelMatchmaking()` always throw
+> `NOT_IMPLEMENTED` — on device as well as off. They are kept as typed seams so
+> a future PPS release can wire them without an API break. See
+> [Matchmaking](#matchmaking) below for the supported alternative.
 
 ## Installation
 
@@ -51,18 +57,29 @@ if (result.status === 'success') {
 
 ### Matchmaking
 
+Not implemented — `requestMatchmaking()` and `cancelMatchmaking()` throw
+`NOT_IMPLEMENTED` unconditionally, and `addMatchmakingFoundListener()` never
+fires. PPS 1.0.x removed the matchmaking surface in the PVR->PPS rewrite.
+
+The supported path is to create a room and invite into it:
+
 ```ts
-const sub = addMatchmakingFoundListener((e) => {
-  console.log('matched into room:', e.roomId);
+import { createRoom } from '@expo-pico/rooms';
+import { sendInvites } from '@expo-pico/social';
+
+const room = await createRoom({ joinPolicy: 'invite-only' });
+
+// InviteOptions carries no roomId field — pass it through `data`.
+await sendInvites({
+  destinationApiName: 'my_destination',
+  userIds: [friendUserId], // up to 8
+  data: { roomId: room.roomId },
 });
-await requestMatchmaking({ poolName: 'ranked-4v4' });
-// cleanup
-sub.remove();
 ```
 
 ## Extension Seams
 
-PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0`, `…:social:1.0.0`) resolve automatically on `picoDebug` builds — no AAR drop is required. Some matchmaking endpoints may still surface `NOT_IMPLEMENTED` until they ship in a future PPS release.
+PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0`, `…:social:1.0.0`) resolve automatically on `picoDebug` builds — no AAR drop is required. Matchmaking is not a partially-wired endpoint: PPS 1.0.x has no matchmaking API at all, so both matchmaking calls throw `NOT_IMPLEMENTED` regardless of build flavor or hardware.
 
 ## Status
 

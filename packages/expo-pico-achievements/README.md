@@ -4,6 +4,21 @@ PICO platform achievements APIs for Expo apps. Unlock, track progress, and liste
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
+## Installation
+
+```sh
+yarn add @expo-pico/achievements react-native-nitro-modules
+```
+
+Add to `app.config.ts` after `expo-pico-core`:
+
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/achievements',
+]
+```
+
 ## Requires a signed-in PICO account
 
 `@expo-pico/account` is a runtime prerequisite for this package — progress is written against the signed-in user. It is
