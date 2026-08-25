@@ -22,11 +22,7 @@ export const withPicoGradleProperties: ConfigPlugin<ResolvedPicoOptions> = (conf
     const props = config.modResults;
     const effectiveProfile = resolveTargetProfile(options);
 
-    upsertProperty(
-      props,
-      'picoAppId',
-      options.platformService.picoAppId ?? options.picoAppId
-    );
+    upsertProperty(props, 'picoAppId', options.platformService.picoAppId ?? options.picoAppId);
     upsertProperty(props, 'picoAppKey', options.platformService.picoAppKey ?? '');
     upsertProperty(props, 'picoSpatialMode', options.spatialMode);
     upsertProperty(props, 'picoTargetProfile', effectiveProfile);
@@ -44,11 +40,7 @@ export const withPicoGradleProperties: ConfigPlugin<ResolvedPicoOptions> = (conf
       'picoPlatformIdentityEnabled',
       String(options.platformService.hasIdentity)
     );
-    upsertProperty(
-      props,
-      'picoIapIdentityEnabled',
-      String(options.platformService.hasIapIdentity)
-    );
+    upsertProperty(props, 'picoIapIdentityEnabled', String(options.platformService.hasIapIdentity));
 
     return config;
   });

@@ -47,9 +47,11 @@ function driver(): Driver | null {
   const tsClient = '@fishjam-cloud' + '/ts-client';
   const rnWebrtc = '@fishjam-cloud' + '/react-native-webrtc';
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // Indirect require keeps Metro's static analysis from bailing when this
+    // optional peer isn't installed.
+    // eslint-disable-next-line no-eval
     const tc = (eval('require') as (id: string) => any)(tsClient);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line no-eval -- see above.
     const wrtc = (eval('require') as (id: string) => any)(rnWebrtc);
     driverCache = {
       FishjamClient: tc.FishjamClient,
@@ -70,11 +72,11 @@ let warned = false;
 function warnOnce() {
   if (warned) return;
   warned = true;
-  // eslint-disable-next-line no-console
+
   console.warn(
     '[pico/rtc] Fishjam not loaded — voice chat is unavailable. ' +
       'Install with: bun add @fishjam-cloud/react-native-client ' +
-      '@fishjam-cloud/react-native-webrtc react-native-get-random-values',
+      '@fishjam-cloud/react-native-webrtc react-native-get-random-values'
   );
 }
 
@@ -238,14 +240,12 @@ export async function leaveChannel(): Promise<void> {
 export async function setLocalMuted(muted: boolean): Promise<void> {
   if (!localStream) return;
   try {
-    localStream
-      .getAudioTracks?.()
-      .forEach((t: any) => {
-        // track.enabled = false sends silence frames (keeps the track alive
-        // so SFU keying doesn't reset); track.stop() destroys it. We want
-        // the silence-frame semantic so unmute is instant.
-        t.enabled = !muted;
-      });
+    localStream.getAudioTracks?.().forEach((t: any) => {
+      // track.enabled = false sends silence frames (keeps the track alive
+      // so SFU keying doesn't reset); track.stop() destroys it. We want
+      // the silence-frame semantic so unmute is instant.
+      t.enabled = !muted;
+    });
   } catch {
     // ignore
   }
@@ -276,9 +276,7 @@ export function onUserLeft(cb: (uid: string) => void): Subscription {
 
 // ───────── React hook ─────────
 
-export function useRtcChannel(
-  options: RtcJoinOptions | null,
-): RtcChannelState {
+export function useRtcChannel(options: RtcJoinOptions | null): RtcChannelState {
   const [state, setState] = useState<RtcChannelState>({ status: 'idle' });
   const activeChannelRef = useRef<string | null>(null);
 
@@ -319,19 +317,16 @@ export function useRtcChannel(
         prev.status === 'connected'
           ? {
               ...prev,
-              users: [
-                ...prev.users.filter((u) => u.uid !== uid),
-                { uid, joinedAt: Date.now() },
-              ],
+              users: [...prev.users.filter((u) => u.uid !== uid), { uid, joinedAt: Date.now() }],
             }
-          : prev,
+          : prev
       );
     });
     const leftSub = onUserLeft((uid) => {
       setState((prev) =>
         prev.status === 'connected'
           ? { ...prev, users: prev.users.filter((u) => u.uid !== uid) }
-          : prev,
+          : prev
       );
     });
 

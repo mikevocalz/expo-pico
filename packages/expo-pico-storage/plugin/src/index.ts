@@ -4,10 +4,7 @@ export interface PicoStoragePluginOptions {
   enabled?: boolean;
 }
 
-const withPicoStorage: ConfigPlugin<PicoStoragePluginOptions | void> = (
-  config,
-  options
-) => {
+const withPicoStorage: ConfigPlugin<PicoStoragePluginOptions | void> = (config, options) => {
   const { enabled = true } = options ?? {};
   if (!enabled) return config;
 

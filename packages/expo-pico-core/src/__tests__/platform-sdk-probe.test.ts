@@ -158,7 +158,9 @@ describe('getPlatformSdkProbe', () => {
   });
 
   it('returns the all-false shape if native returns null (defensive)', async () => {
-    mockModule.getPlatformSdkProbe = jest.fn(async () => null as unknown as Record<string, boolean>);
+    mockModule.getPlatformSdkProbe = jest.fn(
+      async () => null as unknown as Record<string, boolean>
+    );
     const probe = await getPlatformSdkProbe();
     expect(Object.values(probe).every((v) => v === false)).toBe(true);
   });

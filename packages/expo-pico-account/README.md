@@ -10,13 +10,13 @@ PPS resolves account-scoped data from the signed-in session, so these packages
 need a connected PICO account at runtime even though none of them import this
 package:
 
-| Package | Why |
-| --- | --- |
-| `@expo-pico/iap` | purchases resolve against the signed-in account |
-| `@expo-pico/subscription` | entitlements are per-account |
-| `@expo-pico/achievements` | progress is written against the signed-in user |
-| `@expo-pico/leaderboards` | entries are written against the signed-in user |
-| `@expo-pico/social` | friends and presence are per-account |
+| Package                    | Why                                                     |
+| -------------------------- | ------------------------------------------------------- |
+| `@expo-pico/iap`           | purchases resolve against the signed-in account         |
+| `@expo-pico/subscription`  | entitlements are per-account                            |
+| `@expo-pico/achievements`  | progress is written against the signed-in user          |
+| `@expo-pico/leaderboards`  | entries are written against the signed-in user          |
+| `@expo-pico/social`        | friends and presence are per-account                    |
 | `@expo-pico/notifications` | push registration binds the token to the signed-in user |
 
 Call `login()` once at boot before any of them. Without it those packages return
@@ -81,25 +81,22 @@ async function loadUser() {
     return null;
   }
 
-  const [profile, linkStatus] = await Promise.all([
-    getUserProfile(),
-    getAccountLinkStatus(),
-  ]);
+  const [profile, linkStatus] = await Promise.all([getUserProfile(), getAccountLinkStatus()]);
   return { profile, linkStatus, sdk: getAccountSdkVersion() };
 }
 ```
 
 ## API
 
-| Function                   | Description                                                             |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `isAccountAvailable()`     | `true` on a `picoDebug` build with the PPS auth client resolved.        |
-| `getAccountSdkVersion()`   | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
-| `getUserProfile()`         | Fetches the logged-in PICO user profile.                                |
-| `getAccountLinkStatus()`   | Returns link status across external identity providers.                 |
-| `login()` *(seam)*         | PICO OS owns the account session. No programmatic login path. Throws `notImplementedError`. |
-| `getAccessToken()` *(seam)* | OAuth token exchange. Throws `notImplementedError` until wired.        |
-| `logout()` *(seam)*        | Managed by PICO OS. Throws `notImplementedError`.                       |
+| Function                    | Description                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `isAccountAvailable()`      | `true` on a `picoDebug` build with the PPS auth client resolved.                                      |
+| `getAccountSdkVersion()`    | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
+| `getUserProfile()`          | Fetches the logged-in PICO user profile.                                                              |
+| `getAccountLinkStatus()`    | Returns link status across external identity providers.                                               |
+| `login()` _(seam)_          | PICO OS owns the account session. No programmatic login path. Throws `notImplementedError`.           |
+| `getAccessToken()` _(seam)_ | OAuth token exchange. Throws `notImplementedError` until wired.                                       |
+| `logout()` _(seam)_         | Managed by PICO OS. Throws `notImplementedError`.                                                     |
 
 Types: `PicoUserProfile`, `PicoLoginResult`, `PicoAccountLinkStatus`.
 

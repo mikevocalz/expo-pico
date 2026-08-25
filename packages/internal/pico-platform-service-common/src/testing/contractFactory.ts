@@ -60,12 +60,16 @@ function getMethodEntry(entry: string | [string, ...unknown[]]): [string, unknow
 
 export function runPackageContractTests(opts: PackageContractOptions): void {
   const {
-    packageName, api, availabilityMethod, versionMethod,
-    asyncMethods, listenerMethods, seamMethods = [],
+    packageName,
+    api,
+    availabilityMethod,
+    versionMethod,
+    asyncMethods,
+    listenerMethods,
+    seamMethods = [],
   } = opts;
 
   describe(`${packageName} — SDK family contract`, () => {
-
     // ── Availability ──────────────────────────────────────────────────────────
     describe('availability contract', () => {
       it(`${availabilityMethod} is exported as a function`, () => {
@@ -109,7 +113,9 @@ export function runPackageContractTests(opts: PackageContractOptions): void {
         it(`${name}() rejects with PicoServiceError instance`, async () => {
           const fn = api[name] as (...a: unknown[]) => Promise<unknown>;
           await expect(fn(...args)).rejects.toBeInstanceOf(Error);
-          try { await fn(...args); } catch (e) {
+          try {
+            await fn(...args);
+          } catch (e) {
             expect(isPicoServiceError(e)).toBe(true);
           }
         });

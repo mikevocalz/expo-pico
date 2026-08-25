@@ -28,8 +28,7 @@ const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PIC
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
 const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
 
-const LEGACY_HERMES_PATH_PATTERN =
-  /\n\s*hermesCommand\s*=.*\/sdks\/hermesc\/%OS-BIN%\/hermesc"\n/;
+const LEGACY_HERMES_PATH_PATTERN = /\n\s*hermesCommand\s*=.*\/sdks\/hermesc\/%OS-BIN%\/hermesc"\n/;
 const HERMES_COMMENT_ONLY_PATTERN =
   /\n\s*\/\/ expo-pico-core: hermesc path compatibility\n\s*\/\/ Let the React Native Gradle plugin resolve hermesc for the installed RN version\.\n/;
 const ANY_HERMES_COMMAND_PATTERN = /^\s*hermesCommand\s*=.*$/m;
@@ -80,14 +79,15 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
     ? `\n            ndk { abiFilters ${PICO_FLAVOR_ABI_FILTERS.map((a) => `'${a}'`).join(', ')} }`
     : '';
 
-  const dualFlavor = options.buildVariant === 'dual'
-    ? `
+  const dualFlavor =
+    options.buildVariant === 'dual'
+      ? `
         dual {
             dimension "device"
             minSdkVersion ${options.minSdkVersion}
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
         }`
-    : '';
+      : '';
 
   // Quest flavor co-exists with pico when expo-horizon-core is installed
   // alongside us — it declares its own (mobile, quest) device variants and
@@ -95,20 +95,22 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
   // missingDimensionStrategy lets pico fall back to expo-horizon-core's
   // mobile variant (its Quest-specific bits are no-op on PICO by design).
   // Symmetric: quest falls back to our mobile flavor.
-  const questFlavor = options.buildVariant === 'pico' || options.buildVariant === 'dual'
-    ? `
+  const questFlavor =
+    options.buildVariant === 'pico' || options.buildVariant === 'dual'
+      ? `
         quest {
             dimension "device"
             minSdkVersion 29
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
             missingDimensionStrategy 'device', 'mobile'
         }`
-    : '';
+      : '';
 
-  const picoMissingDimensionLine = options.buildVariant === 'pico' || options.buildVariant === 'dual'
-    ? `
+  const picoMissingDimensionLine =
+    options.buildVariant === 'pico' || options.buildVariant === 'dual'
+      ? `
             missingDimensionStrategy 'device', 'mobile'`
-    : '';
+      : '';
 
   return `
     ${FLAVOR_MARKER}
@@ -134,7 +136,10 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
       contents = contents.replace(LEGACY_HERMES_PATH_PATTERN, HERMES_COMPAT_BLOCK);
     } else if (HERMES_COMMENT_ONLY_PATTERN.test(contents)) {
       contents = contents.replace(HERMES_COMMENT_ONLY_PATTERN, HERMES_COMPAT_BLOCK);
-    } else if (!gradleContains(contents, HERMES_PATH_MARKER) && !ANY_HERMES_COMMAND_PATTERN.test(contents)) {
+    } else if (
+      !gradleContains(contents, HERMES_PATH_MARKER) &&
+      !ANY_HERMES_COMMAND_PATTERN.test(contents)
+    ) {
       const result = insertAfterPattern(contents, /reactNativeDir\s*=.*\n/, HERMES_COMPAT_BLOCK);
       if (result) {
         contents = result;
@@ -182,10 +187,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // Consumers don't need to drop any AAR files — Gradle pulls each
     // service from maven on first build. The bounded AAR-drop fallback
     // below stays in place for offline / air-gapped builds.
-    if (
-      options.xrMode !== 'mobile' &&
-      !gradleContains(contents, PPS_DEPS_MARKER)
-    ) {
+    if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_DEPS_MARKER)) {
       const services = resolvePpsServices(
         options.platformService.services,
         createPackageResolver(projectRoot)
@@ -197,10 +199,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // need to vendor the AARs into source control (air-gapped CI, etc.)
     // can drop them into android/app/libs/. Anything PPS already resolves
     // from maven is excluded by name — see renderLocalAarBlock.
-    if (
-      options.xrMode !== 'mobile' &&
-      !gradleContains(contents, APP_LIBS_AAR_MARKER)
-    ) {
+    if (options.xrMode !== 'mobile' && !gradleContains(contents, APP_LIBS_AAR_MARKER)) {
       contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER);
     }
 
@@ -208,10 +207,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // 4KB-aligned Khronos loader (1.1.38); PICO OS 6 / Android 14+ rejects
     // it. withPicoOpenXrLoaderOverlay drops a 16KB-aligned copy into
     // app/src/main/jniLibs/; we pickFirst so it wins over the AAR's.
-    if (
-      options.xrMode !== 'mobile' &&
-      !gradleContains(contents, PACKAGING_PICK_FIRST_MARKER)
-    ) {
+    if (options.xrMode !== 'mobile' && !gradleContains(contents, PACKAGING_PICK_FIRST_MARKER)) {
       const pickFirstBlock = `
     ${PACKAGING_PICK_FIRST_MARKER}
     packagingOptions {
@@ -321,10 +317,7 @@ ${PICO_REPO_BLOCK}
     // (e.g. `:expo:questDebugCompileClasspath > Could not resolve project
     // :expo-pico-core`). The per-flavor strategy on the app module only
     // covers direct deps; this catches transitive autolinked modules.
-    if (
-      options.xrMode !== 'mobile' &&
-      !gradleContains(contents, SUBPROJECT_MISSING_DIM_MARKER)
-    ) {
+    if (options.xrMode !== 'mobile' && !gradleContains(contents, SUBPROJECT_MISSING_DIM_MARKER)) {
       contents += `
 ${SUBPROJECT_MISSING_DIM_MARKER}
 subprojects { sub ->
@@ -344,10 +337,7 @@ subprojects { sub ->
     // module in the build, so an autolinked library that requests a PPS
     // coordinate resolves to the version the app actually packages
     // instead of putting a second copy of the SDK on the classpath.
-    if (
-      options.xrMode !== 'mobile' &&
-      !gradleContains(contents, PPS_PIN_MARKER)
-    ) {
+    if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_PIN_MARKER)) {
       contents += renderPpsResolutionPin(PPS_PIN_MARKER);
     }
 

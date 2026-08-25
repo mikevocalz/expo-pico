@@ -27,16 +27,16 @@ of them can produce a duplicate declaration.
 Resolved from the public Volcengine Maven with a real Gradle run — 48
 artifacts for all eleven services:
 
-| Artifact | Version | Notes |
-| --- | --- | --- |
-| `com.pico.pps:platform-service-{achievement,auth,compliance,entitlement,friend,iap,leaderboard,push,social,speech,sport}` | 1.0.0 | The services |
-| `com.pico.pps:pps_sdk_base` | 1.0.0 | **Depended on by all eleven** |
-| `com.pico.pps:pps_platform_java_base` | 0.0.1-rc.0 | `achievement`, `leaderboard` only |
-| `com.pico.pps:matrix_psf_api` | 1.0.0 | `base`, `social` |
-| `com.pico.pps:sdk.lib.annotations` | 0.0.1-alpha.0 | Annotations |
-| `com.pico.pps:coreservice.library` | 2.1.0-alpha.13 | Transitive |
-| `com.squareup.wire:wire-runtime` | 2.3.0-RC1 | Payloads are Wire protobuf |
-| `io.reactivex.rxjava2:rxjava` / `rxandroid` | 2.2.6 / 2.1.1 | `Task.runTask` takes an RxJava `Maybe` |
+| Artifact                                                                                                                  | Version        | Notes                                  |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------- |
+| `com.pico.pps:platform-service-{achievement,auth,compliance,entitlement,friend,iap,leaderboard,push,social,speech,sport}` | 1.0.0          | The services                           |
+| `com.pico.pps:pps_sdk_base`                                                                                               | 1.0.0          | **Depended on by all eleven**          |
+| `com.pico.pps:pps_platform_java_base`                                                                                     | 0.0.1-rc.0     | `achievement`, `leaderboard` only      |
+| `com.pico.pps:matrix_psf_api`                                                                                             | 1.0.0          | `base`, `social`                       |
+| `com.pico.pps:sdk.lib.annotations`                                                                                        | 0.0.1-alpha.0  | Annotations                            |
+| `com.pico.pps:coreservice.library`                                                                                        | 2.1.0-alpha.13 | Transitive                             |
+| `com.squareup.wire:wire-runtime`                                                                                          | 2.3.0-RC1      | Payloads are Wire protobuf             |
+| `io.reactivex.rxjava2:rxjava` / `rxandroid`                                                                               | 2.2.6 / 2.1.1  | `Task.runTask` takes an RxJava `Maybe` |
 
 A duplicate-class scan across all 48 resolved artifacts finds **no
 collisions**. Declaring all eleven services together is safe; the SDK's own
@@ -67,7 +67,7 @@ EOF
 gradle -q copyAll && ls out
 ```
 
-## The two things that *can* duplicate
+## The two things that _can_ duplicate
 
 Neither comes from adding `@expo-pico/*` packages. Both are guarded.
 
@@ -76,7 +76,7 @@ Neither comes from adding `@expo-pico/*` packages. Both are guarded.
 PICO's integration docs tell you to drop SDK AARs into
 `android/app/libs/`, and the plugin emits a `fileTree` over that directory
 for offline and air-gapped builds. Left unbounded, a
-`platform-service-auth-1.0.0.aar` sitting there is packaged *alongside* the
+`platform-service-auth-1.0.0.aar` sitting there is packaged _alongside_ the
 Maven artifact, and the build dies on:
 
 ```
@@ -146,17 +146,17 @@ group would ask Gradle for versions that were never published.
 
 Derived from the packages actually installed, de-duplicated:
 
-| Package | Services |
-| --- | --- |
-| `@expo-pico/account` | `auth` |
-| `@expo-pico/achievements` | `achievement` |
-| `@expo-pico/iap` | `iap` |
-| `@expo-pico/leaderboards` | `leaderboard` |
-| `@expo-pico/notifications` | `push` |
-| `@expo-pico/rooms` | `friend` |
-| `@expo-pico/social` | `social`, `friend` |
-| `@expo-pico/subscription` | `iap` |
-| `@expo-pico/app-kit`, `@expo-pico/core`, `@expo-pico/rtc`, `@expo-pico/spatial`, `@expo-pico/storage` | none |
+| Package                                                                                               | Services           |
+| ----------------------------------------------------------------------------------------------------- | ------------------ |
+| `@expo-pico/account`                                                                                  | `auth`             |
+| `@expo-pico/achievements`                                                                             | `achievement`      |
+| `@expo-pico/iap`                                                                                      | `iap`              |
+| `@expo-pico/leaderboards`                                                                             | `leaderboard`      |
+| `@expo-pico/notifications`                                                                            | `push`             |
+| `@expo-pico/rooms`                                                                                    | `friend`           |
+| `@expo-pico/social`                                                                                   | `social`, `friend` |
+| `@expo-pico/subscription`                                                                             | `iap`              |
+| `@expo-pico/app-kit`, `@expo-pico/core`, `@expo-pico/rtc`, `@expo-pico/spatial`, `@expo-pico/storage` | none               |
 
 `social` and `rooms` both need `friend`; installing both emits one
 `friend` line. `iap` and `subscription` both need `iap`; same.
@@ -172,14 +172,17 @@ Override it when you need a service no package wraps yet:
 
 ```ts
 // app.config.ts
-['@expo-pico/core', {
-  platformService: {
-    picoAppId: process.env.PICO_APP_ID,
-    // entitlement, compliance, sport and speech have no @expo-pico
-    // package. Name them here to put them on the classpath.
-    services: ['auth', 'iap', 'entitlement'],
+[
+  '@expo-pico/core',
+  {
+    platformService: {
+      picoAppId: process.env.PICO_APP_ID,
+      // entitlement, compliance, sport and speech have no @expo-pico
+      // package. Name them here to put them on the classpath.
+      services: ['auth', 'iap', 'entitlement'],
+    },
   },
-}]
+];
 ```
 
 ## Checking a real project
@@ -190,11 +193,11 @@ npx expo-pico-doctor
 
 Three checks cover this file:
 
-| Check | Severity | Fires when |
-| --- | --- | --- |
-| `pps-artifact-shadowed-by-libs` | warning | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests. |
-| `pps-block-injected-twice` | error | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice. |
-| `pps-coordinate-version-skew` | warning | A `com.pico.pps` coordinate is requested at an unpinned version. The pin overrides it, so the version written there has no effect. |
+| Check                           | Severity | Fires when                                                                                                                                        |
+| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pps-artifact-shadowed-by-libs` | warning  | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests. |
+| `pps-block-injected-twice`      | error    | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice.                                     |
+| `pps-coordinate-version-skew`   | warning  | A `com.pico.pps` coordinate is requested at an unpinned version. The pin overrides it, so the version written there has no effect.                |
 
 ## Still open
 

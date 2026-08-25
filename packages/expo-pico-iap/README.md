@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -83,7 +83,9 @@ import { hasIapIdentity } from '@expo-pico/core';
 
 async function buyCurrency() {
   if (!hasIapIdentity() || !isIapAvailable()) {
-    throw new Error('IAP not wired. Check platformService.picoMerchantId / picoPayKey in app.config.');
+    throw new Error(
+      'IAP not wired. Check platformService.picoMerchantId / picoPayKey in app.config.'
+    );
   }
 
   const products = await getProducts(['gold_1000', 'gold_5000']);
@@ -100,14 +102,14 @@ async function buyCurrency() {
 
 ## API
 
-| Function                            | Description                                                                 |
-| ----------------------------------- | --------------------------------------------------------------------------- |
-| `isIapAvailable()`                  | `true` when the IAP SDK is linked at runtime.                               |
-| `getIapSdkVersion()`                | SDK version string or `'unavailable'`.                                      |
-| `getProducts(skus)`                 | Queries the PICO store for product details.                                 |
-| `purchase(sku)` *(seam)*            | Launches the store UI; returns a receipt. Throws `notImplementedError` until wired. PICO IAP has no headless purchase path. |
-| `consumePurchase(purchaseToken)`    | Marks a consumable purchase as consumed so the user can buy again.          |
-| `getPurchaseHistory()`              | Returns the user's prior purchases from the PICO store.                     |
+| Function                         | Description                                                                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `isIapAvailable()`               | `true` when the IAP SDK is linked at runtime.                                                                               |
+| `getIapSdkVersion()`             | SDK version string or `'unavailable'`.                                                                                      |
+| `getProducts(skus)`              | Queries the PICO store for product details.                                                                                 |
+| `purchase(sku)` _(seam)_         | Launches the store UI; returns a receipt. Throws `notImplementedError` until wired. PICO IAP has no headless purchase path. |
+| `consumePurchase(purchaseToken)` | Marks a consumable purchase as consumed so the user can buy again.                                                          |
+| `getPurchaseHistory()`           | Returns the user's prior purchases from the PICO store.                                                                     |
 
 Types: `IapProduct`, `IapPurchase`, `PurchaseResult`, `ConsumeResult`.
 

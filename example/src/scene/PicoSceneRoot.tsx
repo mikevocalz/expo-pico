@@ -78,10 +78,7 @@ export function PicoSceneRoot(): React.JSX.Element {
   return (
     <View style={styles.wrapper}>
       {info.isPicoDevice ? (
-        <ViroVRSceneNavigator
-          initialScene={{ scene: InitialScene }}
-          style={styles.canvas}
-        />
+        <ViroVRSceneNavigator initialScene={{ scene: InitialScene }} style={styles.canvas} />
       ) : (
         <ViroSceneNavigator
           // ponytail: Viro3DSceneNavigator's TS type declares scene as the
@@ -105,7 +102,9 @@ export function PicoSceneRoot(): React.JSX.Element {
                 ? 'pico-os6 (Swan)'
                 : info.xrMode
           }
-          accent={info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os5' ? 'info' : undefined}
+          accent={
+            info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os5' ? 'info' : undefined
+          }
         />
         <Row label="appType" value={info.appType} />
         <Row label="spatialMode" value={info.spatialMode} />
@@ -135,11 +134,7 @@ export function PicoSceneRoot(): React.JSX.Element {
         />
         <Row
           label="platform sdk"
-          value={
-            info.platformSdkPresent
-              ? info.platformSdkVersion ?? 'present'
-              : 'seam'
-          }
+          value={info.platformSdkPresent ? (info.platformSdkVersion ?? 'present') : 'seam'}
           accent={info.platformSdkPresent ? 'good' : 'info'}
         />
 

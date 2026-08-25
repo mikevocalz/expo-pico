@@ -184,7 +184,7 @@ export async function hydrateFromCloud(): Promise<{ pulled: number }> {
 // subscriber when the key changes. setValue writes through both tiers.
 export function useStorageEntry<T extends string | number | boolean>(
   key: string,
-  initialValue?: T,
+  initialValue?: T
 ): [T | undefined, (next: T) => void] {
   const [value, setValueLocal] = useState<T | undefined>(() => {
     const raw = mmkv.getString(key);

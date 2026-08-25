@@ -6,11 +6,6 @@
     "types": [],
     "rootDir": "src"
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "**/__tests__/*",
-    "build"
-  ]
+  "include": ["src"],
+  "exclude": ["**/__tests__/*", "build"]
 }

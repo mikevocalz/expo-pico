@@ -8,21 +8,21 @@ Viro is the renderer used by this repo's example app and is actively maintained 
 
 ## Conceptual mapping
 
-| Concern                               | Viro (Quest)                                                             | `expo-pico-core`                                                                                                    |
-| ------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| Top-level plugin                      | `withViro`                                                               | `expo-pico-core` (plugin registered in `plugins` array of `app.config.ts`)                                          |
-| Native package registration target    | `ReactViroPackage(ViroPlatform.OVR_MOBILE)`                             | `PicoCorePackage(PicoXRPlatform.PICO_OS5)` or `…PICO_SWAN`                                                         |
-| Platform-mode option                  | `android.xRMode: ['OVR_MOBILE']`                                        | `xrMode: 'pico-os5'` or `'pico-swan'`                                                                              |
-| New-Architecture check                | warning-only soft check                                                  | warning-only soft check (same pattern: `withPicoNewArchCheck`)                                                      |
-| Launcher contract                     | not emitted                                                              | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>`                              |
-| Platform SDK identity                 | not emitted                                                              | `pico_app_id` / `pico_app_key` string resources + login/browser activities                                          |
-| Hardware capability features          | `handTracking`, `passthrough` booleans                                   | Same flags plus eye / face / body / foveation / refresh rates / boundary / sceneMesh                                |
-| NDK ABI filter                        | none                                                                     | `ndk { abiFilters 'arm64-v8a' }` on pico flavor (default on)                                                        |
-| OpenXR loader declaration             | none (consumer responsibility)                                           | `<uses-native-library android:name="libopenxr_loader.so"/>` (default on)                                            |
-| Runtime SDK detection                 | none                                                                     | `PicoPlatformSdkDetector` reflection probes: `getPlatformSdkProbe()` returns per-surface presence                   |
-| Prebuild diagnostics                  | `WarningAggregator` soft new-arch check                                  | 7-check `withPicoDiagnostics` plus standalone `expo-pico-doctor` CLI                                                |
-| Runtime diagnostics                   | none                                                                     | `getPicoDiagnostics()` returns structured findings plus Platform SDK probe and `formatDiagnostics`                  |
-| Rendering                             | Viro's own native scene graph                                            | renderer-agnostic (plugin never touches rendering code)                                                             |
+| Concern                            | Viro (Quest)                                | `expo-pico-core`                                                                                   |
+| ---------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Top-level plugin                   | `withViro`                                  | `expo-pico-core` (plugin registered in `plugins` array of `app.config.ts`)                         |
+| Native package registration target | `ReactViroPackage(ViroPlatform.OVR_MOBILE)` | `PicoCorePackage(PicoXRPlatform.PICO_OS5)` or `…PICO_SWAN`                                         |
+| Platform-mode option               | `android.xRMode: ['OVR_MOBILE']`            | `xrMode: 'pico-os5'` or `'pico-swan'`                                                              |
+| New-Architecture check             | warning-only soft check                     | warning-only soft check (same pattern: `withPicoNewArchCheck`)                                     |
+| Launcher contract                  | not emitted                                 | `pvr.app.type` + OpenXR `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + `<queries>`              |
+| Platform SDK identity              | not emitted                                 | `pico_app_id` / `pico_app_key` string resources + login/browser activities                         |
+| Hardware capability features       | `handTracking`, `passthrough` booleans      | Same flags plus eye / face / body / foveation / refresh rates / boundary / sceneMesh               |
+| NDK ABI filter                     | none                                        | `ndk { abiFilters 'arm64-v8a' }` on pico flavor (default on)                                       |
+| OpenXR loader declaration          | none (consumer responsibility)              | `<uses-native-library android:name="libopenxr_loader.so"/>` (default on)                           |
+| Runtime SDK detection              | none                                        | `PicoPlatformSdkDetector` reflection probes: `getPlatformSdkProbe()` returns per-surface presence  |
+| Prebuild diagnostics               | `WarningAggregator` soft new-arch check     | 7-check `withPicoDiagnostics` plus standalone `expo-pico-doctor` CLI                               |
+| Runtime diagnostics                | none                                        | `getPicoDiagnostics()` returns structured findings plus Platform SDK probe and `formatDiagnostics` |
+| Rendering                          | Viro's own native scene graph               | renderer-agnostic (plugin never touches rendering code)                                            |
 
 ## Option A: keep Viro for rendering, add `expo-pico-core` for PICO plumbing
 
@@ -44,7 +44,10 @@ export default {
   expo: {
     name: 'my-xr-app',
     newArchEnabled: true,
-    orientation: 'landscape',
+    // 'default' — a locked orientation writes android:screenOrientation onto
+    // MainActivity and overrides the panel dimensions the plugin writes via
+    // defaultWidth/defaultHeight. `expo-pico-doctor` flags anything else.
+    orientation: 'default',
     plugins: [
       // NEW — add before viro
       [

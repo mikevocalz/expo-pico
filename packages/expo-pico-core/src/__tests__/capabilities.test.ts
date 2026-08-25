@@ -152,7 +152,11 @@ describe('getCapabilitySnapshot', () => {
 
   it('returns empty when native returns null', async () => {
     mockModule.getCapabilitySnapshot.mockResolvedValueOnce(
-      null as unknown as ReturnType<typeof mockModule.getCapabilitySnapshot> extends Promise<infer T> ? T : never
+      null as unknown as ReturnType<typeof mockModule.getCapabilitySnapshot> extends Promise<
+        infer T
+      >
+        ? T
+        : never
     );
     const snap = await getCapabilitySnapshot();
     expect(snap).toEqual([]);
@@ -161,16 +165,12 @@ describe('getCapabilitySnapshot', () => {
 
 describe('isCapabilityAvailable', () => {
   it('forwards the native boolean result', async () => {
-    mockModule.isCapabilityAvailable.mockResolvedValueOnce(
-      true as unknown as false
-    );
+    mockModule.isCapabilityAvailable.mockResolvedValueOnce(true as unknown as false);
     expect(await isCapabilityAvailable('handTracking')).toBe(true);
   });
 
   it('returns null when native returns null (unknown capability name)', async () => {
-    mockModule.isCapabilityAvailable.mockResolvedValueOnce(
-      null as unknown as false
-    );
+    mockModule.isCapabilityAvailable.mockResolvedValueOnce(null as unknown as false);
     expect(await isCapabilityAvailable('eyeTracking')).toBeNull();
   });
 });

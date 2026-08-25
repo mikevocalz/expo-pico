@@ -32,9 +32,9 @@ describe('@expo-pico/rtc', () => {
 
     it('joinChannel throws a descriptive error', async () => {
       const { joinChannel } = await import('../src/index');
-      await expect(
-        joinChannel({ channelId: 'test', token: 'tok', uid: 1 })
-      ).rejects.toThrow('@expo-pico/rtc: joinChannel()');
+      await expect(joinChannel({ channelId: 'test', token: 'tok', uid: 1 })).rejects.toThrow(
+        '@expo-pico/rtc: joinChannel()'
+      );
     });
 
     it('leaveChannel throws a descriptive error', async () => {

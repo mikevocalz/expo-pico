@@ -31,9 +31,7 @@ function getApplication(m: Manifest): any {
 }
 
 function getAppMeta(m: Manifest, name: string): any {
-  return (getApplication(m)['meta-data'] ?? []).find(
-    (md: any) => md.$?.['android:name'] === name
-  );
+  return (getApplication(m)['meta-data'] ?? []).find((md: any) => md.$?.['android:name'] === name);
 }
 
 function getImmersiveIntentFilters(m: Manifest): any[] {
@@ -45,8 +43,7 @@ function getImmersiveIntentFilters(m: Manifest): any[] {
     (f: any) =>
       Array.isArray(f.category) &&
       f.category.some(
-        (c: any) =>
-          c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
+        (c: any) => c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
       )
   );
 }
@@ -187,9 +184,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
       'intent-filter': [
         {
           action: [{ $: { 'android:name': 'android.intent.action.MAIN' } }],
-          category: [
-            { $: { 'android:name': 'android.intent.category.LAUNCHER' } },
-          ],
+          category: [{ $: { 'android:name': 'android.intent.category.LAUNCHER' } }],
         },
       ],
     });
@@ -205,8 +200,7 @@ describe('applyLauncherContract — launcher activity intent-filter', () => {
       (f: any) =>
         Array.isArray(f.category) &&
         !f.category.some(
-          (c: any) =>
-            c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
+          (c: any) => c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
         )
     );
     expect(original).toBeDefined();

@@ -52,9 +52,7 @@ describe('injectIntoKotlinMainApplication', () => {
     const options = resolveOptions({ xrMode: 'pico-os5' });
     const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
     const twice = injectIntoKotlinMainApplication(once, options)!;
-    const count = (
-      twice.match(/add\(PicoCorePackage\(PicoXRPlatform\.PICO_OS5\)\)/g) ?? []
-    ).length;
+    const count = (twice.match(/add\(PicoCorePackage\(PicoXRPlatform\.PICO_OS5\)\)/g) ?? []).length;
     expect(count).toBe(1);
   });
 
@@ -78,9 +76,7 @@ describe('injectIntoKotlinMainApplication', () => {
     const options = resolveOptions({ xrMode: 'pico-os5' });
     const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
     const twice = injectIntoKotlinMainApplication(once, options)!;
-    const count = (
-      twice.match(/import expo\.modules\.pico\.PicoCorePackage/g) ?? []
-    ).length;
+    const count = (twice.match(/import expo\.modules\.pico\.PicoCorePackage/g) ?? []).length;
     expect(count).toBe(1);
   });
 });
@@ -89,9 +85,7 @@ describe('injectIntoJavaMainApplication', () => {
   it('registers PicoCorePackage in Java MainApplication', () => {
     const options = resolveOptions({ xrMode: 'pico-swan' });
     const out = injectIntoJavaMainApplication(JAVA_TEMPLATE, options)!;
-    expect(out).toContain(
-      'packages.add(new PicoCorePackage(PicoXRPlatform.PICO_SWAN));'
-    );
+    expect(out).toContain('packages.add(new PicoCorePackage(PicoXRPlatform.PICO_SWAN));');
     expect(out).toContain('import expo.modules.pico.PicoCorePackage;');
     expect(out).toContain('import expo.modules.pico.PicoXRPlatform;');
   });

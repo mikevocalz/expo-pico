@@ -103,9 +103,7 @@ export async function getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEnt
  * device supports it, and the SDK class resolves; `false` when any
  * layer is missing; `null` when the capability name is unknown.
  */
-export async function isCapabilityAvailable(
-  name: PicoCapabilityName
-): Promise<boolean | null> {
+export async function isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | null> {
   return ExpoPicoModule.isCapabilityAvailable(name);
 }
 
@@ -254,11 +252,11 @@ export const controllers = {
    * >= 0. Silently no-ops when controllerHaptics is unavailable.
    */
   async triggerHaptic(
-    hand: 'left' | 'right',
+    side: 'left' | 'right',
     amplitude: number,
     durationMs: number
   ): Promise<boolean> {
-    return ExpoPicoModule.triggerHaptic(hand, amplitude, durationMs);
+    return ExpoPicoModule.triggerHaptic(side, amplitude, durationMs);
   },
 };
 

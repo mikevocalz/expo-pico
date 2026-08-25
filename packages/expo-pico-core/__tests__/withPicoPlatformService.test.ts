@@ -91,10 +91,7 @@ describe('applyPlatformServiceContract — activity attributes', () => {
     applyPlatformServiceContract(m, options);
 
     const app = m.manifest.application![0] as any;
-    for (const name of [
-      PLATFORM_SERVICE_ACTIVITIES.AUTH,
-      PLATFORM_SERVICE_ACTIVITIES.BROWSER,
-    ]) {
+    for (const name of [PLATFORM_SERVICE_ACTIVITIES.AUTH, PLATFORM_SERVICE_ACTIVITIES.BROWSER]) {
       const activity = app.activity.find((a: any) => a.$['android:name'] === name);
       expect(activity.$['android:exported']).toBe('false');
       expect(activity.$['tools:node']).toBe('merge');
@@ -158,19 +155,17 @@ describe('resolveOptions — platformService surface', () => {
 
   it('hasIdentity is true when only platformService.picoAppKey is set', () => {
     expect(
-      resolveOptions({ platformService: { picoAppKey: 'KEY' } }).platformService
-        .hasIdentity
+      resolveOptions({ platformService: { picoAppKey: 'KEY' } }).platformService.hasIdentity
     ).toBe(true);
   });
 
   it('hasIapIdentity requires both picoMerchantId and picoPayKey', () => {
     expect(
-      resolveOptions({ platformService: { picoMerchantId: 'M' } }).platformService
-        .hasIapIdentity
+      resolveOptions({ platformService: { picoMerchantId: 'M' } }).platformService.hasIapIdentity
     ).toBe(false);
     expect(
-      resolveOptions({ platformService: { picoMerchantId: 'M', picoPayKey: 'P' } })
-        .platformService.hasIapIdentity
+      resolveOptions({ platformService: { picoMerchantId: 'M', picoPayKey: 'P' } }).platformService
+        .hasIapIdentity
     ).toBe(true);
   });
 
@@ -204,8 +199,7 @@ describe('resolveOptions — platformService surface', () => {
   it('declareActivities defaults to true when identity present, false when absent', () => {
     expect(resolveOptions({}).platformService.declareActivities).toBe(false);
     expect(
-      resolveOptions({ platformService: { picoAppId: 'APP' } }).platformService
-        .declareActivities
+      resolveOptions({ platformService: { picoAppId: 'APP' } }).platformService.declareActivities
     ).toBe(true);
   });
 });

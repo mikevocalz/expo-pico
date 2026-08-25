@@ -1,10 +1,6 @@
 import type { AndroidConfig } from '@expo/config-plugins';
 
-import {
-  MANIFEST_META,
-  PICO_FEATURES,
-  PICO_PERMISSIONS,
-} from '../plugin/src/constants';
+import { MANIFEST_META, PICO_FEATURES, PICO_PERMISSIONS } from '../plugin/src/constants';
 import { resolveOptions } from '../plugin/src/types';
 import { applyCapabilityContract } from '../plugin/src/withPicoCapabilities';
 
@@ -26,22 +22,16 @@ function emptyManifest(): Manifest {
 }
 
 function featureNames(m: Manifest): string[] {
-  return ((m.manifest['uses-feature'] as any[]) ?? []).map(
-    (f: any) => f.$?.['android:name']
-  );
+  return ((m.manifest['uses-feature'] as any[]) ?? []).map((f: any) => f.$?.['android:name']);
 }
 
 function permissionNames(m: Manifest): string[] {
-  return ((m.manifest['uses-permission'] as any[]) ?? []).map(
-    (p: any) => p.$?.['android:name']
-  );
+  return ((m.manifest['uses-permission'] as any[]) ?? []).map((p: any) => p.$?.['android:name']);
 }
 
 function metaValue(m: Manifest, name: string): string | undefined {
   const meta = (m.manifest.application![0] as any)['meta-data'] as any[];
-  return meta.find((md: any) => md.$?.['android:name'] === name)?.$?.[
-    'android:value'
-  ];
+  return meta.find((md: any) => md.$?.['android:name'] === name)?.$?.['android:value'];
 }
 
 describe('applyCapabilityContract — no-op default', () => {
@@ -153,10 +143,7 @@ describe('applyCapabilityContract — refresh rates', () => {
 
   it('filters invalid entries (NaN, 0, negative) in the resolver', () => {
     const m = emptyManifest();
-    applyCapabilityContract(
-      m,
-      resolveOptions({ refreshRates: [72, 0, -90, Number.NaN, 120] })
-    );
+    applyCapabilityContract(m, resolveOptions({ refreshRates: [72, 0, -90, Number.NaN, 120] }));
     expect(metaValue(m, MANIFEST_META.REFRESH_RATES)).toBe('72,120');
   });
 
@@ -180,18 +167,14 @@ describe('applyCapabilityContract — idempotency and toggle-off cleanup', () =>
     applyCapabilityContract(m, options);
     applyCapabilityContract(m, options);
 
-    const eyeFeatures = featureNames(m).filter(
-      (n) => n === PICO_FEATURES.EYE_TRACKING
-    );
-    const eyePerms = permissionNames(m).filter(
-      (n) => n === PICO_PERMISSIONS.EYE_TRACKING
-    );
+    const eyeFeatures = featureNames(m).filter((n) => n === PICO_FEATURES.EYE_TRACKING);
+    const eyePerms = permissionNames(m).filter((n) => n === PICO_PERMISSIONS.EYE_TRACKING);
     expect(eyeFeatures).toHaveLength(1);
     expect(eyePerms).toHaveLength(1);
 
-    const rateMetas = (
-      (m.manifest.application![0] as any)['meta-data'] as any[]
-    ).filter((md: any) => md.$?.['android:name'] === MANIFEST_META.REFRESH_RATES);
+    const rateMetas = ((m.manifest.application![0] as any)['meta-data'] as any[]).filter(
+      (md: any) => md.$?.['android:name'] === MANIFEST_META.REFRESH_RATES
+    );
     expect(rateMetas).toHaveLength(1);
   });
 
@@ -251,10 +234,7 @@ describe('applyCapabilityContract — boundary + scene mesh', () => {
 
   it('scene mesh is independent of sceneUnderstanding', () => {
     const m = emptyManifest();
-    applyCapabilityContract(
-      m,
-      resolveOptions({ sceneMesh: true, sceneUnderstanding: false })
-    );
+    applyCapabilityContract(m, resolveOptions({ sceneMesh: true, sceneUnderstanding: false }));
     expect(featureNames(m)).toContain(PICO_FEATURES.SCENE_MESH);
     // sceneUnderstanding is handled by buildPicoManifest, not
     // applyCapabilityContract, so we don't assert on its feature here.

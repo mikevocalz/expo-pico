@@ -62,7 +62,7 @@ Set playback volume (0-100).
 ### Events
 
 ```ts
-const sub = addUserJoinedListener(e => console.log('joined:', e.uid));
+const sub = addUserJoinedListener((e) => console.log('joined:', e.uid));
 // cleanup:
 sub.remove();
 ```

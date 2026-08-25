@@ -26,13 +26,13 @@ let warned = false;
 function warnOnce() {
   if (warned) return;
   warned = true;
-  // eslint-disable-next-line no-console
+
   console.warn(
     '[pico] haptics: bridge unavailable (legacy PVR PXR_Plugin not on classpath). ' +
       'Haptics rides the legacy PICO Platform SDK 3.x AAR — distinct from the ' +
       'modern PPS Maven artifacts. Calls will no-op. Drop the legacy AAR ' +
       '(com.pvr.platform:platform-sdk:3.2.0) into vendor/pico-sdk/ or ' +
-      'android/app/libs/ and rebuild.',
+      'android/app/libs/ and rebuild.'
   );
 }
 

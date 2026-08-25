@@ -56,8 +56,6 @@ export interface PicoAchievements extends HybridObject<{ android: 'kotlin' }> {
   addAchievementBitfield(apiName: string, bitfield: string): Promise<AddBitfieldResult>;
 
   /** Returns a listener id for removeAchievementUnlockedListener. */
-  addAchievementUnlockedListener(
-    listener: (event: AchievementUnlockedEvent) => void
-  ): number;
+  addAchievementUnlockedListener(listener: (event: AchievementUnlockedEvent) => void): number;
   removeAchievementUnlockedListener(id: number): void;
 }

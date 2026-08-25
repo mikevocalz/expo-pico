@@ -91,31 +91,31 @@ if (isStorageAvailable()) {
 
 ## API
 
-| Function | Description |
-| --- | --- |
-| `isStorageAvailable()` | Returns `true` on a PICO build with the Storage SDK linked |
-| `getStorageSdkVersion()` | Returns the PICO Platform SDK version string |
-| `getStorageStatus()` | Returns `StorageStatus`: `'available'` or `'unavailable'` |
-| `saveEntry(key, value, options?)` | Saves a string value; returns version and conflict info |
-| `loadEntry(key)` | Loads a value by key; returns `found: false` if missing |
-| `deleteEntry(key)` | Deletes a key from local and cloud storage |
-| `listKeys()` | Returns all stored keys |
-| `syncStorage()` | Forces a cloud sync; returns counts of synced, conflicted, and errored entries |
-| `getStorageQuota()` | Returns byte and entry counts for the current quota |
-| `clearLocalCache()` | Clears the local cache without deleting cloud data |
-| `addStorageConflictListener(cb)` | Fires when a server/client conflict is detected; returns `Subscription` |
-| `addStorageSyncProgressListener(cb)` | Fires during sync with phase and progress; returns `Subscription` |
-| `addStorageSyncCompleteListener(cb)` | Fires when a sync cycle completes; returns `Subscription` |
+| Function                             | Description                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
+| `isStorageAvailable()`               | Returns `true` on a PICO build with the Storage SDK linked                     |
+| `getStorageSdkVersion()`             | Returns the PICO Platform SDK version string                                   |
+| `getStorageStatus()`                 | Returns `StorageStatus`: `'available'` or `'unavailable'`                      |
+| `saveEntry(key, value, options?)`    | Saves a string value; returns version and conflict info                        |
+| `loadEntry(key)`                     | Loads a value by key; returns `found: false` if missing                        |
+| `deleteEntry(key)`                   | Deletes a key from local and cloud storage                                     |
+| `listKeys()`                         | Returns all stored keys                                                        |
+| `syncStorage()`                      | Forces a cloud sync; returns counts of synced, conflicted, and errored entries |
+| `getStorageQuota()`                  | Returns byte and entry counts for the current quota                            |
+| `clearLocalCache()`                  | Clears the local cache without deleting cloud data                             |
+| `addStorageConflictListener(cb)`     | Fires when a server/client conflict is detected; returns `Subscription`        |
+| `addStorageSyncProgressListener(cb)` | Fires during sync with phase and progress; returns `Subscription`              |
+| `addStorageSyncCompleteListener(cb)` | Fires when a sync cycle completes; returns `Subscription`                      |
 
 ### Conflict policies
 
 `saveEntry` accepts a `conflictPolicy` option:
 
-| Policy | Behavior |
-| --- | --- |
-| `'server-wins'` (default) | Server value is kept when versions conflict |
-| `'client-wins'` | Client value overwrites the server |
-| `'manual'` | Conflict is surfaced via `addStorageConflictListener` for app-level resolution |
+| Policy                    | Behavior                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `'server-wins'` (default) | Server value is kept when versions conflict                                    |
+| `'client-wins'`           | Client value overwrites the server                                             |
+| `'manual'`                | Conflict is surfaced via `addStorageConflictListener` for app-level resolution |
 
 ## Native artifacts
 

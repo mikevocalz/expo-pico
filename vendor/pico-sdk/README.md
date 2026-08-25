@@ -2,7 +2,7 @@
 
 > **Heads up.** The modern **PICO Platform Service SDK (PPS)** —
 > `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,
-> leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` — is
+leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` — is
 > resolved automatically from the public Bytedance Maven repo
 > (`https://artifact.bytedance.com/repository/Volcengine/`) by
 > `expo-pico-core`'s `withPicoGradle` plugin. **You do NOT drop those
@@ -19,10 +19,10 @@
 
 ## Required Files (legacy PVR SDKs)
 
-| File | Source | Purpose |
-|------|--------|---------|
-| `pico-platform-sdk.aar` (legacy PVR Platform SDK 3.x) | PICO Developer Console → App Information → SDK Download | `PXR_Plugin` programmatic passthrough toggle + controller haptics |
-| `pico-spatial-sdk.aar`  (legacy PVR Spatial SDK 1.x) | PICO Developer Console → App Information → SDK Download | Spatial anchors, scene mesh, eye/face/body tracking, space transitions |
+| File                                                  | Source                                                  | Purpose                                                                |
+| ----------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `pico-platform-sdk.aar` (legacy PVR Platform SDK 3.x) | PICO Developer Console → App Information → SDK Download | `PXR_Plugin` programmatic passthrough toggle + controller haptics      |
+| `pico-spatial-sdk.aar` (legacy PVR Spatial SDK 1.x)   | PICO Developer Console → App Information → SDK Download | Spatial anchors, scene mesh, eye/face/body tracking, space transitions |
 
 ## Download Steps
 

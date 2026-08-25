@@ -40,10 +40,7 @@ export function insertLinesAfter(
  * Inserts an import statement near the top of a Kotlin/Java source file,
  * immediately after the `package …` declaration. Idempotent.
  */
-export function insertImportAfterPackage(
-  source: string,
-  importStatement: string
-): string {
+export function insertImportAfterPackage(source: string, importStatement: string): string {
   if (source.includes(importStatement)) {
     return source;
   }

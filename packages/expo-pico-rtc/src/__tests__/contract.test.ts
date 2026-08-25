@@ -12,7 +12,6 @@ import * as api from '../index';
 import { PicoErrorCode, isPicoServiceError } from '@expo-pico/platform-service-common';
 
 describe('expo-pico-rtc — SDK family contract', () => {
-
   // ── Service status / version ────────────────────────────────────────────────
   describe('service status contract', () => {
     it('getRtcServiceStatus is exported as a function', () => {
@@ -80,7 +79,9 @@ describe('expo-pico-rtc — SDK family contract', () => {
       });
 
       it(`${name}() remove() does not throw`, () => {
-        const fn = (api as unknown as Record<string, (cb: () => void) => { remove: () => void }>)[name];
+        const fn = (api as unknown as Record<string, (cb: () => void) => { remove: () => void }>)[
+          name
+        ];
         const sub = fn(() => {});
         expect(() => sub.remove()).not.toThrow();
       });
@@ -90,7 +91,7 @@ describe('expo-pico-rtc — SDK family contract', () => {
   // ── Export safety ────────────────────────────────────────────────────────────
   describe('export safety', () => {
     it('does not re-export raw Error constructor', () => {
-      expect((api as Record<string, unknown>)['Error']).toBeUndefined();
+      expect((api as Record<string, unknown>).Error).toBeUndefined();
     });
 
     it('exports getRtcServiceStatus and getRtcSdkVersion', () => {

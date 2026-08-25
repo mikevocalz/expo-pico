@@ -60,9 +60,7 @@ describe('withPicoDiagnostics — immersive without identity', () => {
 
   it('does not warn when legacy top-level picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
-    expect(
-      calls.some((c) => c.message.includes('picoAppId is empty'))
-    ).toBe(false);
+    expect(calls.some((c) => c.message.includes('picoAppId is empty'))).toBe(false);
   });
 });
 
@@ -73,9 +71,7 @@ describe('withPicoDiagnostics — 2d appType with pico xrMode', () => {
       appType: '2d',
       platformService: { picoAppId: 'APP' },
     });
-    expect(
-      calls.some((c) => c.message.includes("appType '2d'"))
-    ).toBe(true);
+    expect(calls.some((c) => c.message.includes("appType '2d'"))).toBe(true);
   });
 });
 
@@ -85,9 +81,7 @@ describe('withPicoDiagnostics — immersive appType with mobile buildVariant', (
       buildVariant: 'mobile',
       appType: 'vr',
     });
-    expect(
-      calls.some((c) => c.message.includes("buildVariant 'mobile'"))
-    ).toBe(true);
+    expect(calls.some((c) => c.message.includes("buildVariant 'mobile'"))).toBe(true);
   });
 });
 
@@ -100,9 +94,7 @@ describe('withPicoDiagnostics — XR capability toggles under mobile xrMode', ()
       eyeTracking: true,
       foveatedRendering: true,
     });
-    const toggleWarning = calls.find((c) =>
-      c.message.includes('have no effect')
-    );
+    const toggleWarning = calls.find((c) => c.message.includes('have no effect'));
     expect(toggleWarning).toBeDefined();
     expect(toggleWarning!.message).toContain('handTracking');
     expect(toggleWarning!.message).toContain('eyeTracking');
@@ -111,9 +103,7 @@ describe('withPicoDiagnostics — XR capability toggles under mobile xrMode', ()
 
   it('does not warn when no capability toggles are enabled', () => {
     const calls = runDiagnostics({ buildVariant: 'mobile', xrMode: 'mobile' });
-    expect(
-      calls.some((c) => c.message.includes('have no effect'))
-    ).toBe(false);
+    expect(calls.some((c) => c.message.includes('have no effect'))).toBe(false);
   });
 });
 
@@ -126,9 +116,7 @@ describe('withPicoDiagnostics — Swan subproject without Swan xrMode', () => {
         swanRuntimeProject: { name: 'pico_swan_runtime', path: '../swan' },
       },
     });
-    expect(
-      calls.some((c) => c.message.includes('picoSwan.swanRuntimeProject'))
-    ).toBe(true);
+    expect(calls.some((c) => c.message.includes('picoSwan.swanRuntimeProject'))).toBe(true);
   });
 
   it('does not warn when swanRuntimeProject is set and xrMode is pico-swan', () => {
@@ -139,9 +127,7 @@ describe('withPicoDiagnostics — Swan subproject without Swan xrMode', () => {
         swanRuntimeProject: { name: 'pico_swan_runtime', path: '../swan' },
       },
     });
-    expect(
-      calls.some((c) => c.message.includes('picoSwan.swanRuntimeProject'))
-    ).toBe(false);
+    expect(calls.some((c) => c.message.includes('picoSwan.swanRuntimeProject'))).toBe(false);
   });
 });
 
@@ -152,9 +138,7 @@ describe('withPicoDiagnostics — refreshRates under mobile xrMode', () => {
       xrMode: 'mobile',
       refreshRates: [72, 90],
     });
-    expect(
-      calls.some((c) => c.message.includes('com.pico.refreshRates'))
-    ).toBe(true);
+    expect(calls.some((c) => c.message.includes('com.pico.refreshRates'))).toBe(true);
   });
 });
 
@@ -164,9 +148,7 @@ describe('withPicoDiagnostics — partial IAP identity', () => {
       xrMode: 'pico-os5',
       platformService: { picoAppId: 'APP', picoMerchantId: 'M' },
     });
-    expect(
-      calls.some((c) => c.message.includes('IAP identity is partially populated'))
-    ).toBe(true);
+    expect(calls.some((c) => c.message.includes('IAP identity is partially populated'))).toBe(true);
   });
 
   it('warns when only foreign.picoPayKey is set', () => {
@@ -177,9 +159,7 @@ describe('withPicoDiagnostics — partial IAP identity', () => {
         foreign: { picoPayKey: 'FP' },
       },
     });
-    const partial = calls.find((c) =>
-      c.message.includes('IAP identity is partially populated')
-    );
+    const partial = calls.find((c) => c.message.includes('IAP identity is partially populated'));
     expect(partial).toBeDefined();
     expect(partial!.message).toContain('Global/foreign');
   });
@@ -193,8 +173,8 @@ describe('withPicoDiagnostics — partial IAP identity', () => {
         picoPayKey: 'P',
       },
     });
-    expect(
-      calls.some((c) => c.message.includes('IAP identity is partially populated'))
-    ).toBe(false);
+    expect(calls.some((c) => c.message.includes('IAP identity is partially populated'))).toBe(
+      false
+    );
   });
 });

@@ -1,15 +1,9 @@
 import { ConfigPlugin, withMainApplication } from '@expo/config-plugins';
 
-import {
-  PICO_MAIN_APP_IMPORT_MARKER,
-  PICO_MAIN_APP_MARKER,
-} from './constants';
+import { PICO_MAIN_APP_IMPORT_MARKER, PICO_MAIN_APP_MARKER } from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { xrModeToNativeEnum } from './types';
-import {
-  insertImportAfterPackage,
-  insertLinesAfter,
-} from './util/insertLinesHelper';
+import { insertImportAfterPackage, insertLinesAfter } from './util/insertLinesHelper';
 
 /**
  * Injects PICO core React Native package registration into MainApplication.
@@ -36,10 +30,7 @@ import {
  * Kotlin and Java MainApplication shapes are both supported, matching the
  * Viro dual-language path.
  */
-export const withPicoMainApplication: ConfigPlugin<ResolvedPicoOptions> = (
-  config,
-  options
-) => {
+export const withPicoMainApplication: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   if (options.xrMode === 'mobile') {
     return config;
   }

@@ -32,14 +32,15 @@ import { applyPlatformServiceContract } from './withPicoPlatformService';
  *
  * Idempotent via `tools:node="replace"` semantics on the meta-data tag.
  */
-export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptions> = (
+  config,
+  options
+) => {
   if (!options.picoAppId) return config;
   return withAndroidManifest(config, (config) => {
     const application = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
     const metaData = (application['meta-data'] ?? []) as Array<{ $: Record<string, string> }>;
-    const idx = metaData.findIndex(
-      (m) => m.$?.['android:name'] === MANIFEST_META.PICO_APP_ID
-    );
+    const idx = metaData.findIndex((m) => m.$?.['android:name'] === MANIFEST_META.PICO_APP_ID);
     // Reference a string resource (written by withPicoStrings from env)
     // instead of inlining — the ID is per-environment and shouldn't be
     // baked into the manifest at config time.
@@ -59,7 +60,9 @@ export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptio
 function detectExpoDevClient(projectRoot: string): boolean {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
-    return Boolean(pkg.dependencies?.['expo-dev-client'] || pkg.devDependencies?.['expo-dev-client']);
+    return Boolean(
+      pkg.dependencies?.['expo-dev-client'] || pkg.devDependencies?.['expo-dev-client']
+    );
   } catch {
     return false;
   }
@@ -143,9 +146,7 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
   };
 
   for (const permission of PICO_PROHIBITED_PERMISSIONS) {
-    const fullName = permission.includes('.')
-      ? permission
-      : `android.permission.${permission}`;
+    const fullName = permission.includes('.') ? permission : `android.permission.${permission}`;
     manifest.manifest['uses-permission']!.push({
       $: { 'android:name': fullName, 'tools:node': 'remove' },
     } as any);
@@ -218,13 +219,19 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
 
   if (options.defaultContainerMode !== 'none') {
     application['meta-data'].push({
-      $: { 'android:name': MANIFEST_META.CONTAINER_MODE, 'android:value': options.defaultContainerMode },
+      $: {
+        'android:name': MANIFEST_META.CONTAINER_MODE,
+        'android:value': options.defaultContainerMode,
+      },
     });
   }
 
   // Always write target profile (resolved)
   application['meta-data'].push({
-    $: { 'android:name': MANIFEST_META.TARGET_PROFILE, 'android:value': TARGET_PROFILE_MAP[effectiveProfile] ?? effectiveProfile },
+    $: {
+      'android:name': MANIFEST_META.TARGET_PROFILE,
+      'android:value': TARGET_PROFILE_MAP[effectiveProfile] ?? effectiveProfile,
+    },
   });
 
   // Always write xrMode so PICO OS launchers / entitlement checks can read it
@@ -241,9 +248,10 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
       application['meta-data'].push({
         $: {
           'android:name': MANIFEST_META.SWAN_SPATIAL_CONTAINER,
-          'android:value': options.defaultContainerMode === 'none'
-            ? 'window-container'
-            : options.defaultContainerMode,
+          'android:value':
+            options.defaultContainerMode === 'none'
+              ? 'window-container'
+              : options.defaultContainerMode,
         },
       });
     }

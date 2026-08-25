@@ -1,6 +1,7 @@
 import {
   guardService,
   wrapNativeCall,
+  notImplementedError,
   resolveHybridObject,
   NULL_SUBSCRIPTION,
   type Subscription,
@@ -86,14 +87,25 @@ export async function updateRoomData(data: Record<string, string>): Promise<void
   await wrapNativeCall(PKG, 'updateRoomData', native()!.updateRoomData(data));
 }
 
-export async function requestMatchmaking(options: MatchmakingOptions): Promise<void> {
-  guardService(isRoomsAvailable(), PKG, 'requestMatchmaking');
-  await wrapNativeCall(PKG, 'requestMatchmaking', native()!.requestMatchmaking(options));
+// Unbacked seams: PPS 1.0.x has no matchmaking surface, so these throw
+// NOT_IMPLEMENTED regardless of whether the native library is present.
+// HybridPicoRooms rejects with the same code on the Kotlin side.
+export async function requestMatchmaking(_options: MatchmakingOptions): Promise<void> {
+  throw notImplementedError(
+    PKG,
+    'requestMatchmaking',
+    'PPS 1.0.x has no matchmaking surface — use createRoom() + social.sendInvites() ' +
+      '(or social.launchInviteUserJoinRoomFlow). Matchmaking was removed during the ' +
+      'PVR→PPS SDK rewrite.'
+  );
 }
 
 export async function cancelMatchmaking(): Promise<void> {
-  guardService(isRoomsAvailable(), PKG, 'cancelMatchmaking');
-  await wrapNativeCall(PKG, 'cancelMatchmaking', native()!.cancelMatchmaking());
+  throw notImplementedError(
+    PKG,
+    'cancelMatchmaking',
+    'PPS 1.0.x has no matchmaking surface (matchmaking not supported).'
+  );
 }
 
 function subscribe(register: (h: PicoRooms) => number): Subscription {

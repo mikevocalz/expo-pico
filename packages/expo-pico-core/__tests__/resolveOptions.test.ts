@@ -103,14 +103,8 @@ describe('spatialMode volume', () => {
   });
 
   it('accepts every documented spatial mode', () => {
-    const modes: Array<'2d' | 'windowed' | 'shared-space' | 'full-space' | 'immersive' | 'volume'> = [
-      '2d',
-      'windowed',
-      'shared-space',
-      'full-space',
-      'immersive',
-      'volume',
-    ];
+    const modes: Array<'2d' | 'windowed' | 'shared-space' | 'full-space' | 'immersive' | 'volume'> =
+      ['2d', 'windowed', 'shared-space', 'full-space', 'immersive', 'volume'];
     for (const m of modes) {
       expect(resolveOptions({ spatialMode: m }).spatialMode).toBe(m);
     }

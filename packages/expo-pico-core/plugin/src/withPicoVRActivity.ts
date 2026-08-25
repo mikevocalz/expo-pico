@@ -52,9 +52,7 @@ export function applyVRActivityContract(
   const application = ensureApplication(manifest);
   application.activity = application.activity ?? [];
 
-  let activity = application.activity.find(
-    (a: any) => a.$?.['android:name'] === VR_ACTIVITY_NAME
-  );
+  let activity = application.activity.find((a: any) => a.$?.['android:name'] === VR_ACTIVITY_NAME);
   if (!activity) {
     activity = {
       $: { 'android:name': VR_ACTIVITY_NAME, 'tools:node': 'merge' },
@@ -85,8 +83,7 @@ function addPicoIntentCategories(activity: any): void {
   const marker = LAUNCHER_CATEGORIES.PICO_VR;
   const existingIdx = (activity['intent-filter'] as any[]).findIndex(
     (f: any) =>
-      Array.isArray(f.category) &&
-      f.category.some((c: any) => c.$?.['android:name'] === marker)
+      Array.isArray(f.category) && f.category.some((c: any) => c.$?.['android:name'] === marker)
   );
   const filter = {
     action: [{ $: { 'android:name': 'android.intent.action.MAIN' } }],
@@ -105,9 +102,7 @@ function addPicoIntentCategories(activity: any): void {
 
 function upsertActivityMeta(activity: any, name: string, value: string): void {
   activity['meta-data'] = activity['meta-data'] ?? [];
-  const existing = activity['meta-data'].find(
-    (m: any) => m.$?.['android:name'] === name
-  );
+  const existing = activity['meta-data'].find((m: any) => m.$?.['android:name'] === name);
   if (existing) {
     existing.$['android:value'] = value;
   } else {
@@ -137,9 +132,7 @@ export function applyPanelSize(
   const application = ensureApplication(manifest);
   application.activity = application.activity ?? [];
 
-  let activity = application.activity.find(
-    (a: any) => a.$?.['android:name'] === '.MainActivity'
-  );
+  let activity = application.activity.find((a: any) => a.$?.['android:name'] === '.MainActivity');
   if (!activity) {
     activity = {
       $: { 'android:name': '.MainActivity', 'tools:node': 'merge' },
@@ -169,9 +162,7 @@ function ensureToolsNamespace(manifest: AndroidConfig.Manifest.AndroidManifest):
   }
 }
 
-function ensureApplication(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): any {
+function ensureApplication(manifest: AndroidConfig.Manifest.AndroidManifest): any {
   manifest.manifest.application = manifest.manifest.application ?? [];
   if (manifest.manifest.application.length === 0) {
     manifest.manifest.application.push({ $: {} } as any);

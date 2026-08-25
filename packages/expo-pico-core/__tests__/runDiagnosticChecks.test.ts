@@ -54,15 +54,11 @@ describe('runDiagnosticChecks — each finding has the expected stable id', () =
       })
     );
     expect(ids(f)).toContain('appType.hidden-launcher');
-    expect(
-      f.find((x) => x.id === 'appType.hidden-launcher')!.severity
-    ).toBe('info');
+    expect(f.find((x) => x.id === 'appType.hidden-launcher')!.severity).toBe('info');
   });
 
   it('build-variant.ignored-apptype fires on mobile buildVariant + immersive appType', () => {
-    const f = runDiagnosticChecks(
-      resolveOptions({ buildVariant: 'mobile', appType: 'vr' })
-    );
+    const f = runDiagnosticChecks(resolveOptions({ buildVariant: 'mobile', appType: 'vr' }));
     expect(ids(f)).toContain('build-variant.ignored-apptype');
   });
 
@@ -161,10 +157,7 @@ describe('runDiagnosticChecks — dev-client environment signal', () => {
   });
 
   it('does not fire under mobile xrMode (no immersive surface to clash with)', () => {
-    const f = runDiagnosticChecks(
-      resolveOptions({ xrMode: 'mobile' }),
-      { hasDevClient: true }
-    );
+    const f = runDiagnosticChecks(resolveOptions({ xrMode: 'mobile' }), { hasDevClient: true });
     expect(ids(f)).not.toContain('dev-client.immersive-clash');
   });
 

@@ -17,11 +17,12 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.ts', '*.tsx'],
+      // app-kit probes optional peer SDKs by reflection, so `any` is the
+      // honest type at that boundary; the typed surface is re-established
+      // immediately after. Everywhere else `any` stays an error.
+      files: ['packages/expo-pico-app-kit/src/**/*.ts'],
       rules: {
-        // Reflection-based SDK probing legitimately needs `any` at the
-        // boundary; the typed surface is re-established immediately after.
-        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-explicit-any': 'off',
       },
     },
     {

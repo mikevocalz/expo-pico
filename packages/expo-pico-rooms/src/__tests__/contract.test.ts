@@ -33,19 +33,18 @@ runPackageContractTests({
     'addRoomUserLeftListener',
     'addMatchmakingFoundListener',
   ],
-  seamMethods: [
-    ['requestMatchmaking', { poolName: 'default' }],
-    'cancelMatchmaking',
-  ],
+  seamMethods: [['requestMatchmaking', { poolName: 'default' }], 'cancelMatchmaking'],
 });
 
 describe('getRoomSessionState default state', () => {
   it('returns typed default when native is unavailable', () => {
     const state = api.getRoomSessionState();
+    // Nitro specs have no null — roomId/role are optional, so an absent
+    // value is undefined rather than the null the pre-Nitro API returned.
     expect(state.connectionState).toBe('disconnected');
-    expect(state.roomId).toBeNull();
+    expect(state.roomId).toBeUndefined();
     expect(state.memberCount).toBe(0);
-    expect(state.role).toBeNull();
+    expect(state.role).toBeUndefined();
   });
 
   it('does not throw when native is unavailable', () => {

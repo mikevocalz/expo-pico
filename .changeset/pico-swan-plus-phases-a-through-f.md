@@ -1,8 +1,10 @@
 ---
-"@expo-pico/core": major
+'@expo-pico/core': major
+'@expo-pico/platform-service-common': major
 ---
 
-Adds PICO Swan OS native runtime support plus a stack of platform hardening.
+Migrates the whole family to Nitro Modules, and adds PICO Swan OS native
+runtime support plus a stack of platform hardening.
 
 All packages in the `expo-pico-*` family bump to 1.0.0 together — they are configured as `linked` in `.changeset/config.json`. The major bump reflects two realities:
 
@@ -55,3 +57,46 @@ All sibling packages (`expo-pico-spatial`, `expo-pico-account`, `expo-pico-iap`,
 
 - Package metadata hardening: `repository` URL now points to `github.com/mikevocalz/expo-pico`, `files` array restricted to the published surface (`build`, `android`, `plugin/build`, `app.plugin.js`, `expo-module.config.json`), `homepage` and `bugs` populated.
 - No code changes.
+
+## Nitro Modules migration (breaking)
+
+The native surface moves off `expo-modules-core`'s module bridge onto
+[Nitro Modules](https://nitro.margelo.com). Every package now ships a
+`nitro.json`, a `*.nitro.ts` spec, a Kotlin `Hybrid*` implementation, a C++
+registration TU, and a `CMakeLists.txt`; `nitrogen/generated` is part of the
+published `files` because `android/build.gradle` and `android/CMakeLists.txt`
+both `apply from:` / `include()` it.
+
+**Consumers must install `react-native-nitro-modules` (>= 0.37.0)** — it is a
+declared peer dependency, not a transitive one.
+
+Build scripts change from `expo-module build` to `nitrogen && tsc`.
+`expo-module-scripts` is gone entirely; per-package `.eslintrc.js` and the
+plugin `tsconfig.json` files that extended it now inherit from the repo root
+`.eslintrc.js` and `tsconfig.base.json`.
+
+### API breaks beyond the native swap
+
+- **`@expo-pico/platform-service-common`** drops `createNativeEventEmitter`,
+  `safeAddListener`, `resolveNativeModule`, `PicoPage` and `DEFAULT_PAGE_SIZE`.
+  Nitro listeners are id-based, so listener registration returns a numeric id
+  wrapped in a `Subscription`; use `resolveHybridObject` in place of
+  `resolveNativeModule`.
+- **`@expo-pico/storage`** — `saveEntry(key, value, type, options?)` takes a
+  required `StorageEntryType` as its third argument. Previously
+  `saveEntry(key, value, options?)`.
+- **`@expo-pico/rooms`** — `RoomSessionState.roomId` and `.role` are now
+  optional (`undefined` when absent) rather than `null`. Nitro specs have no
+  null, so the absent case crosses the bridge as `undefined`. Check with
+  `== null` or `?.` if you need to accept both.
+- **`@expo-pico/core`** — `capabilities.hand.triggerHaptic()` renames its first
+  parameter `hand` to `side`. Positional, so callers are unaffected; named-
+  argument or `.length`-style reflection is not.
+
+### Docs
+
+`orientation` in the QUICKSTART, migration guide and `@expo-pico/core` README
+examples was `'landscape'`, which contradicts `expo-pico-doctor` — a locked
+orientation writes `android:screenOrientation` onto MainActivity and overrides
+the `defaultWidth`/`defaultHeight` the plugin writes. All three now show
+`orientation: 'default'` with the rationale inline.

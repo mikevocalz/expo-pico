@@ -32,11 +32,7 @@ import {
   runDiagnosticChecks,
   type DiagnosticCheckFinding,
 } from '../../plugin/build/withPicoDiagnostics';
-import {
-  PPS_GROUP,
-  PPS_LOCAL_AAR_EXCLUDES,
-  PPS_VERSION,
-} from '../../plugin/build/ppsArtifacts';
+import { PPS_GROUP, PPS_LOCAL_AAR_EXCLUDES, PPS_VERSION } from '../../plugin/build/ppsArtifacts';
 
 interface CliArgs {
   projectRoot: string;
@@ -213,8 +209,7 @@ function checkOrientation(
   if (typeof orientation !== 'string' || orientation === 'default') return [];
 
   const panelSized = Boolean(resolved.defaultWidth || resolved.defaultHeight);
-  const picoFlavor =
-    resolved.buildVariant === 'pico' || resolved.buildVariant === 'dual';
+  const picoFlavor = resolved.buildVariant === 'pico' || resolved.buildVariant === 'dual';
   if (!picoFlavor) return [];
 
   return [
@@ -291,7 +286,7 @@ function checkDuplicatePicoArtifacts(
         `already supplies from Maven: ${shadowed.join(', ')}. They are excluded ` +
         'from the generated fileTree so the build still succeeds, but nothing ' +
         'loads them — delete them, or pin a different version through the ' +
-        'plugin\'s platformService.services option instead of vendoring.',
+        "plugin's platformService.services option instead of vendoring.",
     });
   }
 
@@ -303,8 +298,7 @@ function checkDuplicatePicoArtifacts(
     return findings;
   }
 
-  const DEPS_MARKER =
-    '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
+  const DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
   const markerCount = appGradle.split(DEPS_MARKER).length - 1;
   if (markerCount > 1) {
     findings.push({
@@ -389,8 +383,7 @@ function main(): void {
         fsLocal.readFileSync(pathLocal.join(args.projectRoot, 'package.json'), 'utf8')
       );
       return Boolean(
-        pkg.dependencies?.['expo-dev-client'] ||
-          pkg.devDependencies?.['expo-dev-client']
+        pkg.dependencies?.['expo-dev-client'] || pkg.devDependencies?.['expo-dev-client']
       );
     } catch {
       return false;

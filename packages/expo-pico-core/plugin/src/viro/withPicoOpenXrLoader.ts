@@ -1,8 +1,4 @@
-import {
-  ConfigPlugin,
-  withAndroidManifest,
-  AndroidConfig,
-} from '@expo/config-plugins';
+import { ConfigPlugin, withAndroidManifest, AndroidConfig } from '@expo/config-plugins';
 
 /**
  * Opt-in config plugin that adds the OpenXR loader manifest declarations to
@@ -87,8 +83,8 @@ function applyOpenXrLoader(
   const queries = queriesArr[0] ?? {};
   queriesArr[0] = queries;
   const providers = ((queries as any).provider ??= []) as Array<{ $: Record<string, string> }>;
-  const hasBroker = providers.some(
-    (p) => p.$?.['android:authorities']?.includes('org.khronos.openxr.runtime_broker')
+  const hasBroker = providers.some((p) =>
+    p.$?.['android:authorities']?.includes('org.khronos.openxr.runtime_broker')
   );
   if (!hasBroker) {
     providers.push({
@@ -102,9 +98,7 @@ function applyOpenXrLoader(
     const usesNative = ((application as any)['uses-native-library'] ??= []) as Array<{
       $: Record<string, string>;
     }>;
-    const found = usesNative.some(
-      (entry) => entry.$?.['android:name'] === 'libopenxr_loader.so'
-    );
+    const found = usesNative.some((entry) => entry.$?.['android:name'] === 'libopenxr_loader.so');
     if (!found) {
       usesNative.push({
         $: {
@@ -121,9 +115,7 @@ function applyOpenXrLoader(
     const metaData = ((application as any)['meta-data'] ??= []) as Array<{
       $: Record<string, string>;
     }>;
-    const hasPvrAppType = metaData.some(
-      (m) => m.$?.['android:name'] === 'pvr.app.type'
-    );
+    const hasPvrAppType = metaData.some((m) => m.$?.['android:name'] === 'pvr.app.type');
     if (!hasPvrAppType) {
       metaData.push({
         $: { 'android:name': 'pvr.app.type', 'android:value': 'vr' },

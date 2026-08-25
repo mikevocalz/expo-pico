@@ -121,9 +121,7 @@ function upsertAppType(
   }
 }
 
-function addLauncherIntentFilter(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): void {
+function addLauncherIntentFilter(manifest: AndroidConfig.Manifest.AndroidManifest): void {
   const application = ensureApplication(manifest);
   application.activity = application.activity ?? [];
 
@@ -148,8 +146,7 @@ function addLauncherIntentFilter(
     (f: any) =>
       Array.isArray(f.category) &&
       f.category.some(
-        (c: any) =>
-          c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
+        (c: any) => c.$?.['android:name'] === LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD
       )
   );
 
@@ -173,9 +170,7 @@ function buildImmersiveIntentFilter(): any {
   };
 }
 
-function addPicoSystemQueries(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): void {
+function addPicoSystemQueries(manifest: AndroidConfig.Manifest.AndroidManifest): void {
   const root = manifest.manifest;
   // The xml2js shape for <queries> is an array of query nodes; each query
   // node has a `package` array. We treat the first entry as the canonical
@@ -192,18 +187,14 @@ function addPicoSystemQueries(
   }
 
   for (const pkg of PICO_QUERY_PACKAGES) {
-    const exists = queryNode.package.some(
-      (p: any) => p.$?.['android:name'] === pkg
-    );
+    const exists = queryNode.package.some((p: any) => p.$?.['android:name'] === pkg);
     if (!exists) {
       queryNode.package.push({ $: { 'android:name': pkg } });
     }
   }
 }
 
-function ensureApplication(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): any {
+function ensureApplication(manifest: AndroidConfig.Manifest.AndroidManifest): any {
   manifest.manifest.application = manifest.manifest.application ?? [];
   if (manifest.manifest.application.length === 0) {
     manifest.manifest.application.push({ $: {} } as any);

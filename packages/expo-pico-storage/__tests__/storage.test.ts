@@ -40,7 +40,9 @@ describe('@expo-pico/storage', () => {
   });
 
   it('saveEntry throws extension seam error', async () => {
-    await expect(saveEntry('key', 'value')).rejects.toThrow('@expo-pico/storage: saveEntry()');
+    await expect(saveEntry('key', 'value', 'string')).rejects.toThrow(
+      '@expo-pico/storage: saveEntry()'
+    );
   });
 
   it('loadEntry throws extension seam error', async () => {

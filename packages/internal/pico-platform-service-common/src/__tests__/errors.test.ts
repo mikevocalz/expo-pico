@@ -76,7 +76,9 @@ describe('error factories', () => {
 
   describe('notImplementedError', () => {
     it('produces NOT_IMPLEMENTED code', () => {
-      expect(notImplementedError('pkg', 'method', 'https://docs.example.com').code).toBe('NOT_IMPLEMENTED');
+      expect(notImplementedError('pkg', 'method', 'https://docs.example.com').code).toBe(
+        'NOT_IMPLEMENTED'
+      );
     });
     it('includes docUrl in message', () => {
       const e = notImplementedError('pkg', 'method', 'https://docs.picoxr.com');
@@ -96,7 +98,9 @@ describe('error factories', () => {
 
   describe('invalidArgumentError', () => {
     it('produces INVALID_ARGUMENT code', () => {
-      expect(invalidArgumentError('pkg', 'method', 'score must be >= 0').code).toBe('INVALID_ARGUMENT');
+      expect(invalidArgumentError('pkg', 'method', 'score must be >= 0').code).toBe(
+        'INVALID_ARGUMENT'
+      );
     });
   });
 
@@ -153,7 +157,9 @@ describe('wrapNativeCall', () => {
     await expect(wrapNativeCall('pkg', 'method', rejection)).rejects.toMatchObject({
       code: 'NETWORK_ERROR',
     });
-    await expect(wrapNativeCall('pkg', 'method', Promise.reject({ code: 'NETWORK_ERROR', message: '' }))).rejects.toBeInstanceOf(PicoServiceError);
+    await expect(
+      wrapNativeCall('pkg', 'method', Promise.reject({ code: 'NETWORK_ERROR', message: '' }))
+    ).rejects.toBeInstanceOf(PicoServiceError);
   });
 
   it('wraps rejection without code as UNKNOWN', async () => {

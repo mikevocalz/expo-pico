@@ -180,9 +180,7 @@ function DiagnosticsBody({
         <View style={styles.probeTable}>
           {(Object.keys(probe) as Array<keyof PicoPlatformSdkProbe>).map((k) => (
             <View key={k} style={styles.probeRow}>
-              <Text
-                style={[styles.probeDot, probe[k] ? styles.probeDotLive : styles.probeDotStub]}
-              >
+              <Text style={[styles.probeDot, probe[k] ? styles.probeDotLive : styles.probeDotStub]}>
                 ●
               </Text>
               <Text style={styles.probeKey}>{k}</Text>
@@ -227,9 +225,7 @@ function DiagnosticsBody({
                 <Text style={[styles.capCell, entry.sdkAvailable ? styles.good : styles.info]}>
                   {entry.sdkAvailable ? 'sdk' : '—'}
                 </Text>
-                <Text
-                  style={[styles.capCell, entry.fullyAvailable ? styles.good : styles.info]}
-                >
+                <Text style={[styles.capCell, entry.fullyAvailable ? styles.good : styles.info]}>
                   {entry.fullyAvailable ? '✓' : '·'}
                 </Text>
               </View>
@@ -247,9 +243,7 @@ function DiagnosticsBody({
       </Text>
       {findings.length === 0 ? (
         <Text style={styles.cleanText}>
-          {report.findings.length === 0
-            ? 'No issues detected.'
-            : 'No non-info findings.'}
+          {report.findings.length === 0 ? 'No issues detected.' : 'No non-info findings.'}
         </Text>
       ) : (
         findings.map((f) => (

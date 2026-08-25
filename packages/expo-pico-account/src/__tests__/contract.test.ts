@@ -13,13 +13,7 @@ runPackageContractTests({
   api: api as unknown as Record<string, unknown>,
   availabilityMethod: 'isAccountAvailable',
   versionMethod: 'getAccountSdkVersion',
-  asyncMethods: [
-    'getUserProfile',
-    'getAccountLinkStatus',
-    'login',
-    'getAccessToken',
-    'logout',
-  ],
+  asyncMethods: ['getUserProfile', 'getAccountLinkStatus', 'login', 'getAccessToken', 'logout'],
   listenerMethods: [],
   seamMethods: [],
 });

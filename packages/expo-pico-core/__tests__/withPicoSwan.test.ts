@@ -66,12 +66,8 @@ describe('applySwanGradleTransform', () => {
     });
     const first = applySwanGradleTransform(BASE_GRADLE, options);
     const second = applySwanGradleTransform(first, options);
-    const beginCount = (
-      second.match(/\/\/ expo-pico-core: swan dependencies/g) ?? []
-    ).length;
-    const implCount = (
-      second.match(/implementation 'com\.pvr\.swan/g) ?? []
-    ).length;
+    const beginCount = (second.match(/\/\/ expo-pico-core: swan dependencies/g) ?? []).length;
+    const implCount = (second.match(/implementation 'com\.pvr\.swan/g) ?? []).length;
     expect(beginCount).toBe(1);
     expect(implCount).toBe(1);
   });

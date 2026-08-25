@@ -85,13 +85,8 @@ export function runDiagnosticChecks(
   // PPS SDK rejects every call with 100008 "appkey is empty" when the
   // `pvr.app.id` meta-data is missing/blank.
   const hasAnyIdentity =
-    options.platformService.hasIdentity ||
-    (options.picoAppId?.trim().length ?? 0) > 0;
-  if (
-    options.xrMode !== 'mobile' &&
-    options.appType !== '2d' &&
-    !hasAnyIdentity
-  ) {
+    options.platformService.hasIdentity || (options.picoAppId?.trim().length ?? 0) > 0;
+  if (options.xrMode !== 'mobile' && options.appType !== '2d' && !hasAnyIdentity) {
     const envHint = process.env.PICO_APP_ID
       ? 'PICO_APP_ID env var is set but picoAppId resolved to empty — check that app.config reads it (e.g. `picoAppId: process.env.PICO_APP_ID`).'
       : 'PICO_APP_ID env var is NOT set in this shell. Either: (a) export PICO_APP_ID=<your-app-id> from .env.local before prebuild, or (b) hardcode picoAppId in the plugin config (NOT recommended — secrets in source).';
@@ -155,10 +150,7 @@ export function runDiagnosticChecks(
   }
 
   // 5. Swan subproject with non-Swan xrMode
-  if (
-    options.xrMode !== 'pico-swan' &&
-    options.picoSwan.swanRuntimeProject !== null
-  ) {
+  if (options.xrMode !== 'pico-swan' && options.picoSwan.swanRuntimeProject !== null) {
     findings.push({
       id: 'swan.subproject-without-mode',
       severity: 'warning',
@@ -188,11 +180,7 @@ export function runDiagnosticChecks(
   // ships zero dev-client in its example app for the same reason; the
   // documented workflow is `expo run:android --variant picoDebug` + Metro,
   // which gives you live JS reload without inserting a 2D launcher root.
-  if (
-    env.hasDevClient &&
-    options.xrMode !== 'mobile' &&
-    options.appType !== '2d'
-  ) {
+  if (env.hasDevClient && options.xrMode !== 'mobile' && options.appType !== '2d') {
     findings.push({
       id: 'dev-client.immersive-clash',
       severity: 'warning',
@@ -207,8 +195,7 @@ export function runDiagnosticChecks(
   // 8. Partial IAP identity
   const ps = options.platformService;
   const cnPartial = Boolean(ps.picoMerchantId) !== Boolean(ps.picoPayKey);
-  const foreignPartial =
-    Boolean(ps.foreign.picoMerchantId) !== Boolean(ps.foreign.picoPayKey);
+  const foreignPartial = Boolean(ps.foreign.picoMerchantId) !== Boolean(ps.foreign.picoPayKey);
   if (cnPartial || foreignPartial) {
     const regions: string[] = [];
     if (cnPartial) regions.push('CN');
@@ -236,23 +223,18 @@ export function runDiagnosticChecks(
  */
 function detectDevClient(projectRoot: string): boolean {
   try {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8')
-    );
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
     return Boolean(
-      pkg.dependencies?.['expo-dev-client'] ||
-        pkg.devDependencies?.['expo-dev-client']
+      pkg.dependencies?.['expo-dev-client'] || pkg.devDependencies?.['expo-dev-client']
     );
   } catch {
     return false;
   }
 }
 
-export const withPicoDiagnostics: ConfigPlugin<ResolvedPicoOptions> = (
-  config,
-  options
-) => {
-  const projectRoot = (config as { _internal?: { projectRoot?: string } })._internal?.projectRoot ?? process.cwd();
+export const withPicoDiagnostics: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+  const projectRoot =
+    (config as { _internal?: { projectRoot?: string } })._internal?.projectRoot ?? process.cwd();
   const env: DiagnosticEnv = { hasDevClient: detectDevClient(projectRoot) };
   for (const finding of runDiagnosticChecks(options, env)) {
     WarningAggregator.addWarningAndroid(TAG, finding.message);

@@ -18,10 +18,7 @@ const BIN_EXISTS = fs.existsSync(DOCTOR_BIN);
 
 function writeFixture(config: unknown): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'expo-pico-doctor-'));
-  fs.writeFileSync(
-    path.join(dir, 'app.config.json'),
-    JSON.stringify(config, null, 2)
-  );
+  fs.writeFileSync(path.join(dir, 'app.config.json'), JSON.stringify(config, null, 2));
   return dir;
 }
 
@@ -29,14 +26,10 @@ function runDoctor(
   projectRoot: string,
   extraArgs: string[] = []
 ): { stdout: string; stderr: string; status: number | null } {
-  const result = spawnSync(
-    process.execPath,
-    [DOCTOR_BIN, '--project', projectRoot, ...extraArgs],
-    {
-      encoding: 'utf8',
-      env: { ...process.env, NO_COLOR: '1' },
-    }
-  );
+  const result = spawnSync(process.execPath, [DOCTOR_BIN, '--project', projectRoot, ...extraArgs], {
+    encoding: 'utf8',
+    env: { ...process.env, NO_COLOR: '1' },
+  });
   return {
     stdout: result.stdout ?? '',
     stderr: result.stderr ?? '',

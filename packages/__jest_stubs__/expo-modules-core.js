@@ -1,6 +1,8 @@
 'use strict';
 function EventEmitter() {}
-EventEmitter.prototype.addListener = function () { return { remove: function () {} }; };
+EventEmitter.prototype.addListener = function () {
+  return { remove: function () {} };
+};
 EventEmitter.prototype.removeAllListeners = function () {};
 EventEmitter.prototype.emit = function () {};
 

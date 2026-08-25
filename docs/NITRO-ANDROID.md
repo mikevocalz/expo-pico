@@ -16,8 +16,8 @@ entries were written as:
 Nitro's `autolinkingAllImplementationSchema` declares
 `language: z.literal('c++')` — `"all"` accepts C++ and nothing else.
 Kotlin has to go under `"android"`. Running nitrogen against the old files
-exits 1 on all twelve packages with *"`autolinking.PicoAccount` is not a
-valid & safe string"*, which is a misleading message for a shape error.
+exits 1 on all twelve packages with _"`autolinking.PicoAccount` is not a
+valid & safe string"_, which is a misleading message for a shape error.
 Fixed to:
 
 ```json
@@ -39,13 +39,13 @@ packages: 13 HybridObjects, ~180 members.
 
 ## What each package's `android/` now contains
 
-| File | Role |
-| --- | --- |
-| `build.gradle` | AGP library + Kotlin, CMake external build, Nitro autolinking |
-| `CMakeLists.txt` | Declares the `SHARED` library, includes the generated `+autolinking.cmake` |
+| File                     | Role                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `build.gradle`           | AGP library + Kotlin, CMake external build, Nitro autolinking                            |
+| `CMakeLists.txt`         | Declares the `SHARED` library, includes the generated `+autolinking.cmake`               |
 | `src/main/cpp/<Lib>.cpp` | Anchor TU so CMake can create the target before the generated sources are appended to it |
-| `src/nitro/` | Hand-written Kotlin HybridObject implementations |
-| `src/main/java/` | The old Expo Modules Kotlin — **on disk, not in the build** |
+| `src/nitro/`             | Hand-written Kotlin HybridObject implementations                                         |
+| `src/main/java/`         | The old Expo Modules Kotlin — **on disk, not in the build**                              |
 
 `expo-module-gradle-plugin` is gone from all twelve.
 
@@ -107,8 +107,8 @@ is still on disk, so leaving the config in place would have put a reference
 to an uncompiled class into the app and broken the build.
 
 Nitro has no autolinker that writes `settings.gradle` — it only generates
-the per-module Gradle and CMake fragments a project applies *once it is
-included*. So `withPicoNitroModules` does the inclusion:
+the per-module Gradle and CMake fragments a project applies _once it is
+included_. So `withPicoNitroModules` does the inclusion:
 
 - Resolves each `@expo-pico/*` package from the app root, so hoisting,
   pnpm and workspace links all work.
@@ -157,20 +157,20 @@ published tarballs carry the bindings and consumers never run nitrogen.
 
 ## Per-package identifiers
 
-| Package | `androidCxxLibName` | Generated Kotlin package | HybridObjects |
-| --- | --- | --- | --- |
-| core | `ExpoPicoCore` | `…expopico.picocore` | `PicoCore`, `PicoRuntime` |
-| account | `ExpoPicoAccount` | `…expopico.account` | `PicoAccount` |
-| achievements | `ExpoPicoAchievements` | `…expopico.achievements` | `PicoAchievements` |
-| iap | `ExpoPicoIap` | `…expopico.iap` | `PicoIap` |
-| leaderboards | `ExpoPicoLeaderboards` | `…expopico.leaderboards` | `PicoLeaderboards` |
-| notifications | `ExpoPicoNotifications` | `…expopico.notifications` | `PicoNotifications` |
-| rooms | `ExpoPicoRooms` | `…expopico.rooms` | `PicoRooms` |
-| rtc | `ExpoPicoRtc` | `…expopico.rtc` | `PicoRtc` |
-| social | `ExpoPicoSocial` | `…expopico.social` | `PicoSocial` |
-| spatial | `ExpoPicoSpatial` | `…expopico.spatial` | `PicoSpatial` |
-| storage | `ExpoPicoStorage` | `…expopico.storage` | `PicoStorage` |
-| subscription | `ExpoPicoSubscription` | `…expopico.subscription` | `PicoSubscription` |
+| Package       | `androidCxxLibName`     | Generated Kotlin package  | HybridObjects             |
+| ------------- | ----------------------- | ------------------------- | ------------------------- |
+| core          | `ExpoPicoCore`          | `…expopico.picocore`      | `PicoCore`, `PicoRuntime` |
+| account       | `ExpoPicoAccount`       | `…expopico.account`       | `PicoAccount`             |
+| achievements  | `ExpoPicoAchievements`  | `…expopico.achievements`  | `PicoAchievements`        |
+| iap           | `ExpoPicoIap`           | `…expopico.iap`           | `PicoIap`                 |
+| leaderboards  | `ExpoPicoLeaderboards`  | `…expopico.leaderboards`  | `PicoLeaderboards`        |
+| notifications | `ExpoPicoNotifications` | `…expopico.notifications` | `PicoNotifications`       |
+| rooms         | `ExpoPicoRooms`         | `…expopico.rooms`         | `PicoRooms`               |
+| rtc           | `ExpoPicoRtc`           | `…expopico.rtc`           | `PicoRtc`                 |
+| social        | `ExpoPicoSocial`        | `…expopico.social`        | `PicoSocial`              |
+| spatial       | `ExpoPicoSpatial`       | `…expopico.spatial`       | `PicoSpatial`             |
+| storage       | `ExpoPicoStorage`       | `…expopico.storage`       | `PicoStorage`             |
+| subscription  | `ExpoPicoSubscription`  | `…expopico.subscription`  | `PicoSubscription`        |
 
 Generated Kotlin packages are prefixed `com.margelo.nitro.`. The library
 names are distinct, so several `@expo-pico/*` packages in one APK produce

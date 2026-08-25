@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -95,17 +95,17 @@ if (isAchievementsAvailable()) {
 
 ## API
 
-| Function | Description |
-| --- | --- |
-| `isAchievementsAvailable()` | Returns `true` on a PICO build with the Achievements SDK linked |
-| `getAchievementsSdkVersion()` | Returns the PICO Platform SDK version string |
-| `getAllAchievements()` | Fetches all achievement definitions and current progress |
-| `getUnlockedAchievements()` | Client-side filter; returns only unlocked achievements |
-| `getAchievementProgress(apiNames)` | Fetches progress for a subset of achievements by API name |
-| `unlockAchievement(apiName)` | Unlocks a simple achievement; returns `justUnlocked` flag |
-| `addAchievementCount(apiName, count)` | Increments a count achievement |
-| `addAchievementBitfield(apiName, bits)` | Sets bits on a bitfield achievement |
-| `addAchievementUnlockedListener(cb)` | Subscribes to real-time unlock events; returns `Subscription` |
+| Function                                | Description                                                     |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `isAchievementsAvailable()`             | Returns `true` on a PICO build with the Achievements SDK linked |
+| `getAchievementsSdkVersion()`           | Returns the PICO Platform SDK version string                    |
+| `getAllAchievements()`                  | Fetches all achievement definitions and current progress        |
+| `getUnlockedAchievements()`             | Client-side filter; returns only unlocked achievements          |
+| `getAchievementProgress(apiNames)`      | Fetches progress for a subset of achievements by API name       |
+| `unlockAchievement(apiName)`            | Unlocks a simple achievement; returns `justUnlocked` flag       |
+| `addAchievementCount(apiName, count)`   | Increments a count achievement                                  |
+| `addAchievementBitfield(apiName, bits)` | Sets bits on a bitfield achievement                             |
+| `addAchievementUnlockedListener(cb)`    | Subscribes to real-time unlock events; returns `Subscription`   |
 
 ## Native artifacts
 

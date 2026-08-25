@@ -10,24 +10,24 @@
  */
 export const PicoErrorCode = {
   // ─── Service availability ──────────────────────────────────────────────────
-  SERVICE_UNAVAILABLE:    'SERVICE_UNAVAILABLE',
-  NOT_IMPLEMENTED:        'NOT_IMPLEMENTED',
-  NOT_SUPPORTED:          'NOT_SUPPORTED',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+  NOT_IMPLEMENTED: 'NOT_IMPLEMENTED',
+  NOT_SUPPORTED: 'NOT_SUPPORTED',
   // ─── SDK lifecycle ────────────────────────────────────────────────────────
-  INITIALIZATION_FAILED:  'INITIALIZATION_FAILED',
+  INITIALIZATION_FAILED: 'INITIALIZATION_FAILED',
   // ─── Caller errors ────────────────────────────────────────────────────────
-  INVALID_ARGUMENT:       'INVALID_ARGUMENT',
-  PERMISSION_DENIED:      'PERMISSION_DENIED',
+  INVALID_ARGUMENT: 'INVALID_ARGUMENT',
+  PERMISSION_DENIED: 'PERMISSION_DENIED',
   // ─── Transport ────────────────────────────────────────────────────────────
-  NETWORK_ERROR:          'NETWORK_ERROR',
-  TIMEOUT:                'TIMEOUT',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  TIMEOUT: 'TIMEOUT',
   // ─── Billing (shared: expo-pico-iap + expo-pico-subscription) ─────────────
-  BILLING_UNAVAILABLE:    'BILLING_UNAVAILABLE',
-  PURCHASE_CANCELLED:     'PURCHASE_CANCELLED',
+  BILLING_UNAVAILABLE: 'BILLING_UNAVAILABLE',
+  PURCHASE_CANCELLED: 'PURCHASE_CANCELLED',
   PURCHASE_ALREADY_OWNED: 'PURCHASE_ALREADY_OWNED',
-  PRODUCT_NOT_FOUND:      'PRODUCT_NOT_FOUND',
+  PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
   // ─── Fallback ─────────────────────────────────────────────────────────────
-  UNKNOWN:                'UNKNOWN',
+  UNKNOWN: 'UNKNOWN',
 } as const;
 
 export type PicoErrorCode = (typeof PicoErrorCode)[keyof typeof PicoErrorCode];
@@ -106,7 +106,11 @@ export function notSupportedError(pkg: string, method: string, reason: string): 
 }
 
 /** Caller passed an invalid argument. */
-export function invalidArgumentError(pkg: string, method: string, detail: string): PicoServiceError {
+export function invalidArgumentError(
+  pkg: string,
+  method: string,
+  detail: string
+): PicoServiceError {
   return new PicoServiceError({
     code: PicoErrorCode.INVALID_ARGUMENT,
     packageName: pkg,
@@ -125,7 +129,8 @@ export function nativeRejectionError(
   nativeCode: string,
   nativeMessage: string
 ): PicoServiceError {
-  const code = (PicoErrorCode as Record<string, PicoErrorCode>)[nativeCode] ?? PicoErrorCode.UNKNOWN;
+  const code =
+    (PicoErrorCode as Record<string, PicoErrorCode>)[nativeCode] ?? PicoErrorCode.UNKNOWN;
   return new PicoServiceError({
     code,
     packageName: pkg,
@@ -149,11 +154,7 @@ export function guardService(isAvailable: boolean, pkg: string, method: string):
  * Every async method that calls into native must use this wrapper — never
  * catch native rejections inline.
  */
-export function wrapNativeCall<T>(
-  pkg: string,
-  method: string,
-  call: Promise<T>
-): Promise<T> {
+export function wrapNativeCall<T>(pkg: string, method: string, call: Promise<T>): Promise<T> {
   return call.catch((err: { code?: string; message?: string }) => {
     throw nativeRejectionError(
       pkg,

@@ -1,17 +1,11 @@
-import {
-  ConfigPlugin,
-  withSettingsGradle,
-} from '@expo/config-plugins';
+import { ConfigPlugin, withSettingsGradle } from '@expo/config-plugins';
 // withFinalizedMod runs AFTER all other mods. Imported via the deep path
 // because some older @expo/config-plugins releases don't re-export it.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const finalizedModExports = require('@expo/config-plugins/build/plugins/withFinalizedMod');
 const withFinalizedMod = finalizedModExports.withFinalizedMod as (
   config: unknown,
-  args: [
-    'android' | 'ios',
-    (cfg: { modRequest: { platformProjectRoot: string } }) => unknown,
-  ]
+  args: ['android' | 'ios', (cfg: { modRequest: { platformProjectRoot: string } }) => unknown]
 ) => unknown;
 import * as fs from 'fs';
 import * as path from 'path';
@@ -41,12 +35,8 @@ import type { ResolvedPicoOptions } from './types';
  *   - `xrMode !== 'pico-swan'`, OR
  *   - `picoSwan.swanRuntimeProject` is unset.
  */
-export const withPicoSettingsGradle: ConfigPlugin<ResolvedPicoOptions> = (
-  config,
-  options
-) => {
-  const needsSwan =
-    options.xrMode === 'pico-swan' && !!options.picoSwan.swanRuntimeProject;
+export const withPicoSettingsGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+  const needsSwan = options.xrMode === 'pico-swan' && !!options.picoSwan.swanRuntimeProject;
   // Viro path rewrite always applies on PICO/Quest because bun/pnpm hoist
   // `@reactvision/react-viro` out of `example/node_modules`, breaking the
   // `../node_modules/...` relative paths that Viro's plugin writes.
@@ -85,10 +75,7 @@ export const withPicoSettingsGradle: ConfigPlugin<ResolvedPicoOptions> = (
     config = withFinalizedMod(config, [
       'android',
       (cfg) => {
-        const settingsPath = path.join(
-          cfg.modRequest.platformProjectRoot,
-          'settings.gradle'
-        );
+        const settingsPath = path.join(cfg.modRequest.platformProjectRoot, 'settings.gradle');
         if (!fs.existsSync(settingsPath)) return cfg;
         const before = fs.readFileSync(settingsPath, 'utf8');
         const after = applyViroPathRewrite(before);
@@ -108,10 +95,7 @@ export const withPicoSettingsGradle: ConfigPlugin<ResolvedPicoOptions> = (
  * full @expo/config-plugins mod pipeline. Returns the source unchanged when
  * Swan inclusion is not active.
  */
-export function applySettingsGradleTransform(
-  source: string,
-  options: ResolvedPicoOptions
-): string {
+export function applySettingsGradleTransform(source: string, options: ResolvedPicoOptions): string {
   if (options.xrMode !== 'pico-swan') return source;
   const project = options.picoSwan.swanRuntimeProject;
   if (!project) return source;
@@ -168,13 +152,10 @@ def viroAndroidDir = new File(
 )
 `;
 
-  let contents = source.replace(
-    viroRelativePattern,
-    (_, projectName: string) => {
-      const subdir = projectName;
-      return `project(':${projectName}').projectDir = new File(viroAndroidDir, '${subdir}')`;
-    }
-  );
+  let contents = source.replace(viroRelativePattern, (_, projectName: string) => {
+    const subdir = projectName;
+    return `project(':${projectName}').projectDir = new File(viroAndroidDir, '${subdir}')`;
+  });
 
   // Inject the viroAndroidDir definition BEFORE the first
   // `project(':<viroSubproject>').projectDir = ...` line so all uses see

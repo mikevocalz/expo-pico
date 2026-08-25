@@ -127,4 +127,3 @@ Platform Service artifact behind it — see
 `@expo-pico/core`. Installing it alongside other `@expo-pico/*`
 packages adds nothing to the Android classpath that is not already
 there.
-

@@ -26,7 +26,6 @@ import {
 import type { PicoRuntimeInfo } from '../index';
 
 describe('expo-pico-core — runtime JS API', () => {
-
   describe('isPicoBuild()', () => {
     it('returns boolean', () => {
       expect(typeof isPicoBuild()).toBe('boolean');
@@ -132,7 +131,7 @@ describe('expo-pico-core — runtime JS API', () => {
   describe('export safety', () => {
     it('does not export a raw Error constructor', () => {
       const mod = require('../index');
-      expect(mod['Error']).toBeUndefined();
+      expect(mod.Error).toBeUndefined();
     });
 
     it('exports all documented runtime functions', () => {

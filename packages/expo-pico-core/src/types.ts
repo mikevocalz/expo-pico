@@ -236,12 +236,7 @@ export interface PicoCapabilitySnapshotEntry {
   fullyAvailable: boolean;
 }
 
-export type PicoFoveationLevel =
-  | 'off'
-  | 'low'
-  | 'medium'
-  | 'high'
-  | 'dynamic';
+export type PicoFoveationLevel = 'off' | 'low' | 'medium' | 'high' | 'dynamic';
 
 export interface PicoEyePose {
   leftGazeOrigin: [number, number, number] | null;

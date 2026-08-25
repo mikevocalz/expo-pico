@@ -2,45 +2,26 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "nitrogen/generated/**",
-        "build/**",
-        "plugin/build/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["nitrogen/generated/**", "build/**", "plugin/build/**"]
     },
     "build:plugin": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "plugin/build/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["plugin/build/**"]
     },
     "build:cli": {
-      "dependsOn": [
-        "^build",
-        "build:plugin"
-      ],
-      "outputs": [
-        "cli/build/**"
-      ]
+      "dependsOn": ["^build", "build:plugin"],
+      "outputs": ["cli/build/**"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "lint": {
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "clean": {

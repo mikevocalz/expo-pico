@@ -1,8 +1,4 @@
-import {
-  ConfigPlugin,
-  withAppBuildGradle,
-  withDangerousMod,
-} from '@expo/config-plugins';
+import { ConfigPlugin, withAppBuildGradle, withDangerousMod } from '@expo/config-plugins';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -46,10 +42,7 @@ export const withPicoSwan: ConfigPlugin<ResolvedPicoOptions> = (config, options)
 
 const withSwanAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   return withAppBuildGradle(config, (config) => {
-    config.modResults.contents = applySwanGradleTransform(
-      config.modResults.contents,
-      options
-    );
+    config.modResults.contents = applySwanGradleTransform(config.modResults.contents, options);
     return config;
   });
 };
@@ -62,10 +55,7 @@ const withSwanAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, optio
  * swanRuntimeProject between prebuilds doesn't accumulate stale lines.
  * Returns the source unchanged when there is no Swan content to write.
  */
-export function applySwanGradleTransform(
-  source: string,
-  options: ResolvedPicoOptions
-): string {
+export function applySwanGradleTransform(source: string, options: ResolvedPicoOptions): string {
   if (options.xrMode !== 'pico-swan') return source;
 
   // Strip any prior block we wrote (begin/end markers wrap the entire
@@ -74,9 +64,7 @@ export function applySwanGradleTransform(
 
   const innerLines: string[] = [];
   if (options.picoSwan.swanRuntimeProject) {
-    innerLines.push(
-      `    implementation project(':${options.picoSwan.swanRuntimeProject.name}')`
-    );
+    innerLines.push(`    implementation project(':${options.picoSwan.swanRuntimeProject.name}')`);
   }
   if (options.picoSwan.swanSdkArtifact) {
     innerLines.push(`    implementation '${options.picoSwan.swanSdkArtifact}'`);
@@ -86,13 +74,7 @@ export function applySwanGradleTransform(
     return contents;
   }
 
-  const block = [
-    SWAN_DEP_MARKER,
-    'dependencies {',
-    ...innerLines,
-    '}',
-    SWAN_DEP_END,
-  ].join('\n');
+  const block = [SWAN_DEP_MARKER, 'dependencies {', ...innerLines, '}', SWAN_DEP_END].join('\n');
 
   return contents.trimEnd() + '\n\n' + block + '\n';
 }

@@ -585,11 +585,11 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     ...(options.picoSwan ?? {}),
     swanRuntimeProject:
       options.picoSwan?.swanRuntimeProject !== undefined
-        ? options.picoSwan.swanRuntimeProject ?? null
+        ? (options.picoSwan.swanRuntimeProject ?? null)
         : PICO_SWAN_DEFAULTS.swanRuntimeProject,
     swanSdkArtifact:
       options.picoSwan?.swanSdkArtifact !== undefined
-        ? options.picoSwan.swanSdkArtifact ?? null
+        ? (options.picoSwan.swanSdkArtifact ?? null)
         : PICO_SWAN_DEFAULTS.swanSdkArtifact,
   };
 
@@ -598,8 +598,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   // appType default tracks xrMode. Mobile builds default to 2d (no immersive
   // launcher categories injected); PICO modes default to vr. The user can
   // override with 'mr' for passthrough-first apps.
-  const appType: PicoAppType =
-    options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
+  const appType: PicoAppType = options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
 
   const platformService = resolvePlatformServiceOptions(
     options.platformService,
@@ -616,10 +615,8 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   // immersive PICO build, default to ABI-filtered arm64 and declare the
   // OpenXR loader. Mobile builds keep both off to stay ABI-flexible and
   // avoid an unused loader declaration.
-  const ndkAbiFilters =
-    options.ndkAbiFilters ?? xrMode !== 'mobile';
-  const openXrLoaderDeclaration =
-    options.openXrLoaderDeclaration ?? xrMode !== 'mobile';
+  const ndkAbiFilters = options.ndkAbiFilters ?? xrMode !== 'mobile';
+  const openXrLoaderDeclaration = options.openXrLoaderDeclaration ?? xrMode !== 'mobile';
 
   return {
     ...PICO_OPTION_DEFAULTS,
@@ -671,18 +668,17 @@ function resolvePlatformServiceOptions(
 
   const hasIdentity = Boolean(
     picoAppId ||
-      picoAppKey ||
-      foreign.picoAppId ||
-      foreign.picoAppKey ||
-      picoMerchantId ||
-      picoPayKey ||
-      foreign.picoMerchantId ||
-      foreign.picoPayKey
+    picoAppKey ||
+    foreign.picoAppId ||
+    foreign.picoAppKey ||
+    picoMerchantId ||
+    picoPayKey ||
+    foreign.picoMerchantId ||
+    foreign.picoPayKey
   );
 
   const hasIapIdentity = Boolean(
-    (picoMerchantId && picoPayKey) ||
-      (foreign.picoMerchantId && foreign.picoPayKey)
+    (picoMerchantId && picoPayKey) || (foreign.picoMerchantId && foreign.picoPayKey)
   );
 
   return {

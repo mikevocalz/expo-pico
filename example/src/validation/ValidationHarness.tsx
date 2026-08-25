@@ -144,11 +144,7 @@ import {
   writeScore,
 } from '@expo-pico/leaderboards';
 
-import {
-  packageCatalog,
-  validationEnvironmentLabels,
-  type ValidationEnvironment,
-} from './catalog';
+import { packageCatalog, validationEnvironmentLabels, type ValidationEnvironment } from './catalog';
 
 type EvidenceStatus = 'pass' | 'block' | 'deferred';
 
@@ -371,9 +367,7 @@ export function ValidationHarness() {
   const [evidenceLog, setEvidenceLog] = React.useState<EvidenceEntry[]>([]);
   const nextEvidenceId = React.useRef(0);
 
-  const appendEvidenceRef = React.useRef(
-    (_entry: Omit<EvidenceEntry, 'id' | 'at'>) => undefined
-  );
+  const appendEvidenceRef = React.useRef((_entry: Omit<EvidenceEntry, 'id' | 'at'>) => undefined);
 
   appendEvidenceRef.current = (entry) => {
     setEvidenceLog((current) => {
@@ -637,17 +631,33 @@ export function ValidationHarness() {
         <Text style={styles.eyebrow}>Validation</Text>
         <Text style={styles.title}>expo-pico validation harness</Text>
         <Text style={styles.subtitle}>
-          Action-driven proving UI for device validation, negative-path capture, and prerelease evidence.
+          Action-driven proving UI for device validation, negative-path capture, and prerelease
+          evidence.
         </Text>
         <View style={styles.heroMetaRow}>
-          <Badge label={isPicoBuild() ? 'PICO build' : 'mobile build'} tone={isPicoBuild() ? 'success' : 'neutral'} />
-          <Badge label={isPicoDevice() ? 'PICO device' : 'non-PICO runtime'} tone={isPicoDevice() ? 'success' : 'neutral'} />
-          <Badge label={`RTC ${environment.rtcServiceStatus}`} tone={environment.rtcServiceStatus === 'available' ? 'success' : 'warn'} />
-          <Badge label={`Storage ${environment.storageStatus}`} tone={environment.storageStatus === 'available' ? 'success' : 'warn'} />
+          <Badge
+            label={isPicoBuild() ? 'PICO build' : 'mobile build'}
+            tone={isPicoBuild() ? 'success' : 'neutral'}
+          />
+          <Badge
+            label={isPicoDevice() ? 'PICO device' : 'non-PICO runtime'}
+            tone={isPicoDevice() ? 'success' : 'neutral'}
+          />
+          <Badge
+            label={`RTC ${environment.rtcServiceStatus}`}
+            tone={environment.rtcServiceStatus === 'available' ? 'success' : 'warn'}
+          />
+          <Badge
+            label={`Storage ${environment.storageStatus}`}
+            tone={environment.storageStatus === 'available' ? 'success' : 'warn'}
+          />
         </View>
       </View>
 
-      <Section title="Overview" description="Current environment, runtime snapshot, and evidence export controls.">
+      <Section
+        title="Overview"
+        description="Current environment, runtime snapshot, and evidence export controls."
+      >
         <PackageCard
           packageName="environment"
           maturity="session"
@@ -688,7 +698,10 @@ export function ValidationHarness() {
         </PackageCard>
       </Section>
 
-      <Section title="Core / Spatial" description="Build flavoring, spatial snapshot, and explicit seam proof.">
+      <Section
+        title="Core / Spatial"
+        description="Build flavoring, spatial snapshot, and explicit seam proof."
+      >
         <PackageCardFromCatalog id="core" lastEvidence={latestPackageEvidence('core')}>
           <View style={styles.buttonRow}>
             <ActionButton
@@ -783,7 +796,10 @@ export function ValidationHarness() {
         </PackageCardFromCatalog>
       </Section>
 
-      <Section title="Account / Commerce" description="Identity, billing, subscriptions, and notification proving flows.">
+      <Section
+        title="Account / Commerce"
+        description="Identity, billing, subscriptions, and notification proving flows."
+      >
         <PackageCardFromCatalog id="account" lastEvidence={latestPackageEvidence('account')}>
           <UserAvatarBadge detail={actionStates['account.profile']?.detail} />
           <View style={styles.buttonRow}>
@@ -938,7 +954,10 @@ export function ValidationHarness() {
           </View>
         </PackageCardFromCatalog>
 
-        <PackageCardFromCatalog id="notifications" lastEvidence={latestPackageEvidence('notifications')}>
+        <PackageCardFromCatalog
+          id="notifications"
+          lastEvidence={latestPackageEvidence('notifications')}
+        >
           <View style={styles.buttonRow}>
             <ActionButton
               label="Request permission"
@@ -972,7 +991,10 @@ export function ValidationHarness() {
           <MetaText>Permission status: {environment.notificationPermission}</MetaText>
         </PackageCardFromCatalog>
 
-        <PackageCardFromCatalog id="subscription" lastEvidence={latestPackageEvidence('subscription')}>
+        <PackageCardFromCatalog
+          id="subscription"
+          lastEvidence={latestPackageEvidence('subscription')}
+        >
           <View style={styles.inputGrid}>
             <Field
               label="Subscription SKUs"
@@ -1060,7 +1082,10 @@ export function ValidationHarness() {
         </PackageCardFromCatalog>
       </Section>
 
-      <Section title="Comms" description="RTC and rooms flows that eventually require two-device proving.">
+      <Section
+        title="Comms"
+        description="RTC and rooms flows that eventually require two-device proving."
+      >
         <PackageCardFromCatalog id="rtc" lastEvidence={latestPackageEvidence('rtc')}>
           <View style={styles.inputGrid}>
             <Field
@@ -1315,7 +1340,10 @@ export function ValidationHarness() {
         </PackageCardFromCatalog>
       </Section>
 
-      <Section title="Social / Game Services" description="Storage, social, achievements, and leaderboard validation flows.">
+      <Section
+        title="Social / Game Services"
+        description="Storage, social, achievements, and leaderboard validation flows."
+      >
         <PackageCardFromCatalog id="storage" lastEvidence={latestPackageEvidence('storage')}>
           <View style={styles.inputGrid}>
             <Field
@@ -1655,7 +1683,10 @@ export function ValidationHarness() {
           </View>
         </PackageCardFromCatalog>
 
-        <PackageCardFromCatalog id="achievements" lastEvidence={latestPackageEvidence('achievements')}>
+        <PackageCardFromCatalog
+          id="achievements"
+          lastEvidence={latestPackageEvidence('achievements')}
+        >
           <View style={styles.inputGrid}>
             <Field
               label="Achievement ids"
@@ -1762,7 +1793,8 @@ export function ValidationHarness() {
                   packageId: 'achievements',
                   action: 'addAchievementBitfield',
                   runtime: 'device',
-                  fn: () => addAchievementBitfield(inputs.achievementApiName, inputs.achievementBits),
+                  fn: () =>
+                    addAchievementBitfield(inputs.achievementApiName, inputs.achievementBits),
                   onSuccess: () => 'Achievement bitfield updated',
                 })
               }
@@ -1770,7 +1802,10 @@ export function ValidationHarness() {
           </View>
         </PackageCardFromCatalog>
 
-        <PackageCardFromCatalog id="leaderboards" lastEvidence={latestPackageEvidence('leaderboards')}>
+        <PackageCardFromCatalog
+          id="leaderboards"
+          lastEvidence={latestPackageEvidence('leaderboards')}
+        >
           <View style={styles.inputGrid}>
             <Field
               label="Leaderboard api name"
@@ -1859,10 +1894,7 @@ export function ValidationHarness() {
                   action: 'writeScore',
                   runtime: 'multi-user',
                   fn: () =>
-                    writeScore(
-                      inputs.leaderboardApiName,
-                      Number(inputs.leaderboardScore) || 0
-                    ),
+                    writeScore(inputs.leaderboardApiName, Number(inputs.leaderboardScore) || 0),
                   onSuccess: () => 'Leaderboard score written',
                 })
               }
@@ -1877,7 +1909,8 @@ export function ValidationHarness() {
           return (
             <PackageCardFromCatalog key={entry.id} id={entry.id} lastEvidence={latest}>
               <MetaText>
-                Latest status: {latest ? `${latest.status} at ${latest.at}` : 'No evidence recorded yet'}
+                Latest status:{' '}
+                {latest ? `${latest.status} at ${latest.at}` : 'No evidence recorded yet'}
               </MetaText>
               {latest ? <JsonBlock value={latest} /> : null}
             </PackageCardFromCatalog>
@@ -1953,10 +1986,7 @@ function PackageCard({
       {lastEvidence ? (
         <View style={styles.lastEvidenceRow}>
           <View
-            style={[
-              styles.statusDot,
-              { backgroundColor: getStatusColor(lastEvidence.status) },
-            ]}
+            style={[styles.statusDot, { backgroundColor: getStatusColor(lastEvidence.status) }]}
           />
           <Text style={styles.lastEvidenceText}>{lastEvidence.summary}</Text>
           {lastEvidence.at ? <Text style={styles.lastEvidenceAt}>{lastEvidence.at}</Text> : null}
@@ -1970,16 +2000,23 @@ function PackageCard({
 function UserAvatarBadge({ detail }: { detail: string | undefined }) {
   if (!detail) return null;
   let profile: Record<string, unknown>;
-  try { profile = JSON.parse(detail) as Record<string, unknown>; }
-  catch { return null; }
-  const avatar = (profile.avatarUrl ?? profile.headImage ?? profile.smallImageUrl) as string | undefined;
+  try {
+    profile = JSON.parse(detail) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  const avatar = (profile.avatarUrl ?? profile.headImage ?? profile.smallImageUrl) as
+    | string
+    | undefined;
   const name = (profile.displayName ?? profile.userId) as string | undefined;
   if (!avatar && !name) return null;
   return (
     <View style={avatarStyles.row}>
-      {avatar
-        ? <Image source={{ uri: avatar }} style={avatarStyles.avatar} />
-        : <View style={[avatarStyles.avatar, avatarStyles.avatarFallback]} />}
+      {avatar ? (
+        <Image source={{ uri: avatar }} style={avatarStyles.avatar} />
+      ) : (
+        <View style={[avatarStyles.avatar, avatarStyles.avatarFallback]} />
+      )}
       <View style={avatarStyles.text}>
         {name ? <Text style={avatarStyles.name}>{name}</Text> : null}
         {profile.userId ? <Text style={avatarStyles.id}>{String(profile.userId)}</Text> : null}
@@ -2062,7 +2099,11 @@ function Field({
       <TextInput
         editable={editable}
         multiline={multiline}
-        style={[styles.input, multiline ? styles.inputMultiline : null, !editable ? styles.inputDisabled : null]}
+        style={[
+          styles.input,
+          multiline ? styles.inputMultiline : null,
+          !editable ? styles.inputDisabled : null,
+        ]}
         value={value}
         onChangeText={onChangeText}
         placeholderTextColor="#667085"
@@ -2072,8 +2113,7 @@ function Field({
 }
 
 function Badge({ label, tone }: { label: string; tone: 'neutral' | 'warn' | 'success' }) {
-  const backgroundColor =
-    tone === 'success' ? '#163f2f' : tone === 'warn' ? '#422e15' : '#1a2532';
+  const backgroundColor = tone === 'success' ? '#163f2f' : tone === 'warn' ? '#422e15' : '#1a2532';
   const textColor = tone === 'success' ? '#84f1bc' : tone === 'warn' ? '#ffc977' : '#95b8ff';
 
   return (

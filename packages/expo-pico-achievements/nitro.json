@@ -1,17 +1,11 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
-  "cxxNamespace": [
-    "expopico",
-    "achievements"
-  ],
+  "cxxNamespace": ["expopico", "achievements"],
   "ios": {
     "iosModuleName": "ExpoPicoAchievements"
   },
   "android": {
-    "androidNamespace": [
-      "expopico",
-      "achievements"
-    ],
+    "androidNamespace": ["expopico", "achievements"],
     "androidCxxLibName": "ExpoPicoAchievements"
   },
   "autolinking": {
@@ -22,10 +16,5 @@
       }
     }
   },
-  "ignorePaths": [
-    "**/node_modules",
-    "build",
-    "lib",
-    "plugin"
-  ]
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

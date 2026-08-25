@@ -48,13 +48,7 @@ const SOURCE_URL =
 // Relative to this script (example/scripts/…) so the resolution stays
 // correct whether invoked from the example dir, the monorepo root, or
 // via yarn workspace scripts.
-const TARGET_PATH = path.resolve(
-  __dirname,
-  '..',
-  'assets',
-  'models',
-  'pico-demo.glb'
-);
+const TARGET_PATH = path.resolve(__dirname, '..', 'assets', 'models', 'pico-demo.glb');
 
 // GitHub raw content serves up to ~10 redirects normally; cap defensively.
 const MAX_REDIRECTS = 6;
@@ -197,9 +191,7 @@ async function main() {
 
   fs.mkdirSync(path.dirname(TARGET_PATH), { recursive: true });
   fs.writeFileSync(TARGET_PATH, buf);
-  log(
-    `wrote ${buf.length.toLocaleString()} bytes to ${path.relative(process.cwd(), TARGET_PATH)}`
-  );
+  log(`wrote ${buf.length.toLocaleString()} bytes to ${path.relative(process.cwd(), TARGET_PATH)}`);
 }
 
 main().catch((err) => failOrWarn(`unexpected error: ${err.message}`));

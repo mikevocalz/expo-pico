@@ -71,16 +71,12 @@ export default function App(): JSX.Element {
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.title}>expo-pico starter</Text>
         <Text style={styles.subtitle}>
-          Everything in this screen is a signal that the plugin is wired. Delete `App.tsx` and replace with your real app once you've confirmed the numbers below look right.
+          Everything in this screen is a signal that the plugin is wired. Delete `App.tsx` and
+          replace with your real app once you've confirmed the numbers below look right.
         </Text>
 
         <RuntimeCard info={runtime} />
-        <DiagnosticsCard
-          report={diagnostics}
-          loading={loading}
-          error={error}
-          onRefresh={refresh}
-        />
+        <DiagnosticsCard report={diagnostics} loading={loading} error={error} onRefresh={refresh} />
         <PlatformSdkCard probe={probe} present={isPlatformSdkPresent()} />
       </ScrollView>
     </View>
@@ -122,7 +118,7 @@ function RuntimeCard({ info }: { info: PicoRuntimeInfo }): JSX.Element {
         label="platformSdk"
         value={
           info.platformSdkPresent
-            ? info.platformSdkVersion ?? 'present'
+            ? (info.platformSdkVersion ?? 'present')
             : 'unavailable (build picoDebug on PICO hardware)'
         }
         accent={info.platformSdkPresent ? 'good' : 'info'}
@@ -170,13 +166,7 @@ function DiagnosticsCard({
                     ? `${report.findings.length} info-only`
                     : 'all clean'
             }
-            accent={
-              report.summary.hasError
-                ? 'bad'
-                : report.summary.hasWarning
-                  ? 'warn'
-                  : 'good'
-            }
+            accent={report.summary.hasError ? 'bad' : report.summary.hasWarning ? 'warn' : 'good'}
           />
           <Text style={styles.mono}>{formatDiagnostics(report)}</Text>
         </View>
@@ -195,11 +185,7 @@ function PlatformSdkCard({
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Platform SDK probe</Text>
-      <Row
-        label="core"
-        value={present ? 'live' : 'seam'}
-        accent={present ? 'good' : 'info'}
-      />
+      <Row label="core" value={present ? 'live' : 'seam'} accent={present ? 'good' : 'info'} />
       {probe ? (
         (Object.keys(probe) as Array<keyof PicoPlatformSdkProbe>).map((k) => (
           <Row
@@ -230,9 +216,7 @@ function Row({
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={[styles.rowValue, accent ? accents[accent] : undefined]}>
-        {String(value)}
-      </Text>
+      <Text style={[styles.rowValue, accent ? accents[accent] : undefined]}>{String(value)}</Text>
     </View>
   );
 }

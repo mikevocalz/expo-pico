@@ -28,10 +28,7 @@ import type { ResolvedPicoOptions } from './types';
  * Idempotent: skips the copy when the destination already exists and has
  * the same size as the staged loader.
  */
-export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (
-  config,
-  options
-) => {
+export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   if (options.xrMode === 'mobile') {
     return config;
   }

@@ -13,10 +13,7 @@ runPackageContractTests({
   api: api as unknown as Record<string, unknown>,
   availabilityMethod: 'isNotificationsAvailable',
   versionMethod: 'getNotificationsSdkVersion',
-  asyncMethods: [
-    'requestPermissions',
-    'registerForPushNotifications',
-  ],
+  asyncMethods: ['requestPermissions', 'registerForPushNotifications'],
   listenerMethods: [],
   seamMethods: [],
 });

@@ -6,10 +6,7 @@
 // — you can write app code unconditionally and let the boot-time
 // capability table decide what UI to render.
 
-export {
-  bootPico,
-  type BootOptions,
-} from './picoBoot';
+export { bootPico, type BootOptions } from './picoBoot';
 
 export {
   getPicoCapabilities,

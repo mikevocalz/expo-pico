@@ -269,9 +269,11 @@ export async function getPicoDiagnostics(): Promise<PicoDiagnosticsReport> {
  */
 export function formatDiagnostics(report: PicoDiagnosticsReport): string {
   if (report.findings.length === 0) {
-    return 'PICO diagnostics: no issues.\n' +
+    return (
+      'PICO diagnostics: no issues.\n' +
       `  declared features: ${report.summary.declaredFeatureCount}\n` +
-      `  declared permissions: ${report.summary.declaredPermissionCount}`;
+      `  declared permissions: ${report.summary.declaredPermissionCount}`
+    );
   }
   const lines = ['PICO diagnostics:'];
   for (const f of report.findings) {

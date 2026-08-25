@@ -87,10 +87,7 @@ export const LAUNCHER_CATEGORIES = {
  * Sibling packages (account, IAP, RTC) may add more queries via their own
  * config plugins as their native SDKs are wired.
  */
-export const PICO_QUERY_PACKAGES = [
-  'com.pico.os.systemui',
-  'com.pico.platform',
-] as const;
+export const PICO_QUERY_PACKAGES = ['com.pico.os.systemui', 'com.pico.platform'] as const;
 
 /**
  * Plugin-facing xrMode string → manifest meta-data value rendered into
@@ -233,16 +230,16 @@ export const PICO_PERMISSIONS = {
 export const DEVICE_TARGET_MAP: Record<string, string> = {
   'pico-4': 'PICO 4',
   'pico-4-ultra': 'PICO 4 Ultra',
-  'neo3': 'PICO Neo3',
-  'swan': 'PICO Swan',
+  neo3: 'PICO Neo3',
+  swan: 'PICO Swan',
 } as const;
 
 /** Target profile → manifest value */
 export const TARGET_PROFILE_MAP: Record<string, string> = {
-  'legacy': 'legacy',
-  'pico4': 'pico4',
-  'pico4ultra': 'pico4ultra',
-  'swan': 'swan',
+  legacy: 'legacy',
+  pico4: 'pico4',
+  pico4ultra: 'pico4ultra',
+  swan: 'swan',
 } as const;
 
 /** Minimum SDK per target profile */

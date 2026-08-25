@@ -1,7 +1,4 @@
-import {
-  ConfigPlugin,
-  AndroidConfig,
-} from '@expo/config-plugins';
+import { ConfigPlugin, AndroidConfig } from '@expo/config-plugins';
 
 const { withPermissions } = AndroidConfig.Permissions;
 

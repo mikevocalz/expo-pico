@@ -115,9 +115,7 @@ describe('renderFlavorBlock — NDK ABI filter', () => {
     const out: string = renderFlavorBlock(
       resolveOptions({ xrMode: 'pico-os5', ndkAbiFilters: true })
     );
-    expect(out).toMatch(
-      /pico \{[\s\S]+?ndk \{ abiFilters 'arm64-v8a' \}[\s\S]+?\}/
-    );
+    expect(out).toMatch(/pico \{[\s\S]+?ndk \{ abiFilters 'arm64-v8a' \}[\s\S]+?\}/);
   });
 
   it('omits ndk abiFilters when disabled', () => {
@@ -255,7 +253,9 @@ describe('capability BuildConfig fields', () => {
     // Because the real withAppBuildGradle requires a full @expo/config-plugins
     // context we can only smoke test the factory contract here — that it
     // returns without throwing for a valid options bag.
-    expect(() => withPicoAppBuildGradle({ modResults: { contents: '' } } as never, resolveOptions({}) as never)).not.toThrow();
+    expect(() =>
+      withPicoAppBuildGradle({ modResults: { contents: '' } } as never, resolveOptions({}) as never)
+    ).not.toThrow();
   });
 
   // Suppress unused-import warning — runPluginOn is wired for future

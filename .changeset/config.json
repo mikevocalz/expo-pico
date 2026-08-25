@@ -24,7 +24,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "expo-pico-example"
-  ]
+  "ignore": ["expo-pico-example"]
 }

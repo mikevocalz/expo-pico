@@ -7,11 +7,11 @@ regenerates it.
 
 ## Automation
 
-| Command                    | Behavior                                                                 |
-| -------------------------- | ------------------------------------------------------------------------ |
+| Command                             | Behavior                                                                                                                                             |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `yarn install` (in root or example) | Runs `example/scripts/download-demo-model.js --post-install`. Network failures degrade gracefully — the install never breaks because of a flaky CDN. |
-| `yarn demo:model`          | Manual re-download (always refreshes, verbose logging). Non-zero exit on failure so you can gate CI on it. |
-| `yarn demo:model:clean`    | Removes the file locally. Useful to verify the procedural fallback still renders correctly. |
+| `yarn demo:model`                   | Manual re-download (always refreshes, verbose logging). Non-zero exit on failure so you can gate CI on it.                                           |
+| `yarn demo:model:clean`             | Removes the file locally. Useful to verify the procedural fallback still renders correctly.                                                          |
 
 ### Skipping the download
 

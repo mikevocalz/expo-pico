@@ -68,10 +68,7 @@ describe('buildDiagnosticsReport — clean baseline', () => {
 
 describe('buildDiagnosticsReport — identity', () => {
   it('errors on immersive build without platform identity', () => {
-    const report = buildDiagnosticsReport(
-      build({ hasPlatformIdentity: false }),
-      runtime()
-    );
+    const report = buildDiagnosticsReport(build({ hasPlatformIdentity: false }), runtime());
     const f = report.findings.find((x) => x.id === 'identity.missing');
     expect(f).toBeDefined();
     expect(f!.severity).toBe('error');
@@ -166,9 +163,7 @@ describe('buildDiagnosticsReport — feature hit/miss', () => {
         systemFeatureHits: { 'pico.hardware.eyetracking': false },
       })
     );
-    const f = report.findings.find(
-      (x) => x.id === 'feature.missing:pico.hardware.eyetracking'
-    );
+    const f = report.findings.find((x) => x.id === 'feature.missing:pico.hardware.eyetracking');
     expect(f?.severity).toBe('error');
     expect(report.summary.missingSystemFeatureCount).toBe(1);
   });
@@ -196,9 +191,7 @@ describe('buildDiagnosticsReport — feature hit/miss', () => {
         systemFeatureHits: { 'pico.hardware.handtracking': true },
       })
     );
-    expect(
-      report.findings.some((x) => x.id.startsWith('feature.'))
-    ).toBe(false);
+    expect(report.findings.some((x) => x.id.startsWith('feature.'))).toBe(false);
   });
 });
 
@@ -207,9 +200,7 @@ describe('buildDiagnosticsReport — permission grants', () => {
     const report = buildDiagnosticsReport(
       build(),
       runtime({
-        declaredPermissions: [
-          { name: 'android.permission.RECORD_AUDIO', granted: false },
-        ],
+        declaredPermissions: [{ name: 'android.permission.RECORD_AUDIO', granted: false }],
       })
     );
     const f = report.findings.find(
@@ -228,9 +219,7 @@ describe('buildDiagnosticsReport — permission grants', () => {
         ],
       })
     );
-    expect(
-      report.findings.some((x) => x.id.startsWith('permission.ungranted:'))
-    ).toBe(false);
+    expect(report.findings.some((x) => x.id.startsWith('permission.ungranted:'))).toBe(false);
   });
 });
 
@@ -270,10 +259,7 @@ describe('formatDiagnostics', () => {
   });
 
   it('renders each finding with severity prefix and hint', () => {
-    const report = buildDiagnosticsReport(
-      build({ hasPlatformIdentity: false }),
-      runtime()
-    );
+    const report = buildDiagnosticsReport(build({ hasPlatformIdentity: false }), runtime());
     const out = formatDiagnostics(report);
     expect(out).toContain('[ERROR]');
     expect(out).toContain('identity.missing');

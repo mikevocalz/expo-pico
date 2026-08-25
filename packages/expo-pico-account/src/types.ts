@@ -23,12 +23,7 @@ export type PicoLoginResult =
  * Account linking status.
  * @see https://developer.picoxr.com/document/platform_service/account-linking/
  */
-export type PicoAccountLinkStatus =
-  | 'linked'
-  | 'not-linked'
-  | 'pending'
-  | 'error'
-  | 'unsupported';
+export type PicoAccountLinkStatus = 'linked' | 'not-linked' | 'pending' | 'error' | 'unsupported';
 
 /**
  * Module interface — constants exposed at init time.

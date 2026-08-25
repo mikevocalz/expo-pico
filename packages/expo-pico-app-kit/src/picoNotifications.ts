@@ -8,10 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getPicoCapabilities } from './picoCapabilities';
 
-export type NotificationPermissionStatus =
-  | 'granted'
-  | 'denied'
-  | 'not-determined';
+export type NotificationPermissionStatus = 'granted' | 'denied' | 'not-determined';
 
 export type Subscription = { remove: () => void };
 const NULL_SUB: Subscription = { remove: () => {} };
@@ -31,11 +28,11 @@ let warned = false;
 function warnOnce() {
   if (warned) return;
   warned = true;
-  // eslint-disable-next-line no-console
+
   console.warn(
     '[pico/notifications] bridge unavailable — PPS Push SDK not on ' +
       'classpath. Verify com.pico.pps:platform-service-push is resolving on ' +
-      'Bytedance maven (or that the AAR is in android/app/libs/).',
+      'Bytedance maven (or that the AAR is in android/app/libs/).'
   );
 }
 
@@ -73,28 +70,21 @@ export async function registerForPush(): Promise<string | null> {
   }
 }
 
-export function onNotificationReceived(
-  cb: (payload: unknown) => void,
-): Subscription {
+export function onNotificationReceived(cb: (payload: unknown) => void): Subscription {
   if (!getPicoCapabilities().push) return NULL_SUB;
   try {
     const sub =
-      notif()?.addNotificationReceivedListener?.(cb) ??
-      notif()?.addReceivedListener?.(cb);
+      notif()?.addNotificationReceivedListener?.(cb) ?? notif()?.addReceivedListener?.(cb);
     return sub && typeof sub.remove === 'function' ? sub : NULL_SUB;
   } catch {
     return NULL_SUB;
   }
 }
 
-export function onNotificationOpened(
-  cb: (payload: unknown) => void,
-): Subscription {
+export function onNotificationOpened(cb: (payload: unknown) => void): Subscription {
   if (!getPicoCapabilities().push) return NULL_SUB;
   try {
-    const sub =
-      notif()?.addNotificationOpenedListener?.(cb) ??
-      notif()?.addOpenedListener?.(cb);
+    const sub = notif()?.addNotificationOpenedListener?.(cb) ?? notif()?.addOpenedListener?.(cb);
     return sub && typeof sub.remove === 'function' ? sub : NULL_SUB;
   } catch {
     return NULL_SUB;
@@ -109,9 +99,7 @@ export function useNotificationPermission(): {
   status: NotificationPermissionStatus;
   request: () => Promise<NotificationPermissionStatus>;
 } {
-  const [status, setStatus] = useState<NotificationPermissionStatus>(() =>
-    getPermissionStatus(),
-  );
+  const [status, setStatus] = useState<NotificationPermissionStatus>(() => getPermissionStatus());
 
   useEffect(() => {
     setStatus(getPermissionStatus());

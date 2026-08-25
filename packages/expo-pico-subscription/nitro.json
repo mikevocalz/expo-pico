@@ -1,17 +1,11 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
-  "cxxNamespace": [
-    "expopico",
-    "subscription"
-  ],
+  "cxxNamespace": ["expopico", "subscription"],
   "ios": {
     "iosModuleName": "ExpoPicoSubscription"
   },
   "android": {
-    "androidNamespace": [
-      "expopico",
-      "subscription"
-    ],
+    "androidNamespace": ["expopico", "subscription"],
     "androidCxxLibName": "ExpoPicoSubscription"
   },
   "autolinking": {
@@ -22,10 +16,5 @@
       }
     }
   },
-  "ignorePaths": [
-    "**/node_modules",
-    "build",
-    "lib",
-    "plugin"
-  ]
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

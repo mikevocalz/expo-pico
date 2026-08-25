@@ -48,13 +48,9 @@ export function Tabs({ tabs, initialId }: TabsProps): JSX.Element {
               accessibilityState={{ selected: isActive }}
               accessibilityLabel={t.label}
             >
-              <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-                {t.label}
-              </Text>
+              <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>{t.label}</Text>
               {t.badge ? (
-                <Text style={[styles.badge, isActive && styles.badgeActive]}>
-                  {t.badge}
-                </Text>
+                <Text style={[styles.badge, isActive && styles.badgeActive]}>{t.badge}</Text>
               ) : null}
             </Pressable>
           );

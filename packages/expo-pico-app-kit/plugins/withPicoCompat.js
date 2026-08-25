@@ -87,7 +87,7 @@ module.exports = function withPicoCompat(config, props = {}) {
         'app',
         'src',
         'main',
-        'AndroidManifest.xml',
+        'AndroidManifest.xml'
       );
       if (!fs.existsSync(manifestPath)) return config;
 
@@ -110,10 +110,7 @@ function patch(xml, opts) {
   //
   //    First, remove any stale <application>-level pvr.app.type from previous
   //    runs of this plugin (idempotent migration).
-  xml = xml.replace(
-    /\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g,
-    '',
-  );
+  xml = xml.replace(/\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g, '');
   // Then inject it inside .VRActivity (Pico's runtime reads activity-scope
   // meta-data when xrCreateInstance is called from that activity).
   xml = ensureActivityMeta(xml, '.VRActivity', 'pvr.app.type', 'vr');
@@ -127,17 +124,13 @@ function patch(xml, opts) {
   if (!xml.includes('libopenxr_loader.so')) {
     xml = xml.replace(
       /(<application[^>]*>)/,
-      '$1\n    <uses-native-library android:name="libopenxr_loader.so" android:required="false"/>',
+      '$1\n    <uses-native-library android:name="libopenxr_loader.so" android:required="false"/>'
     );
   }
 
   // 4. com.pico.intent.category.VR on MainActivity (and ONLY MainActivity —
   //    adding to VRActivity makes Pico's launcher prefer it over MainActivity).
-  xml = ensureActivityIntentFilter(
-    xml,
-    '.MainActivity',
-    'com.pico.intent.category.VR',
-  );
+  xml = ensureActivityIntentFilter(xml, '.MainActivity', 'com.pico.intent.category.VR');
 
   // 5. Pico spatial window-container meta-data on MainActivity.
   //
@@ -160,14 +153,14 @@ function patch(xml, opts) {
   if (opts.disableVrHeadtracking) {
     xml = xml.replace(
       /\s*<uses-feature[^>]*android:name="android\.hardware\.vr\.headtracking"[^/]*\/>/g,
-      '',
+      ''
     );
   }
 
   // 8. allowBackup on <application>
   xml = xml.replace(
     /(<application\b[^>]*\bandroid:allowBackup=")(true|false)(")/,
-    `$1${opts.allowBackup ? 'true' : 'false'}$3`,
+    `$1${opts.allowBackup ? 'true' : 'false'}$3`
   );
 
   return xml;
@@ -179,16 +172,14 @@ function patch(xml, opts) {
 function ensureAppMeta(xml, name, value) {
   const tag = `<meta-data android:name="${name}" android:value="${value}"/>`;
   // Match any existing <meta-data android:name="<name>" ... /> and replace
-  const existing = new RegExp(
-    `<meta-data android:name="${name.replace(/\./g, '\\.')}"[^/]*\\/>`,
-  );
+  const existing = new RegExp(`<meta-data android:name="${name.replace(/\./g, '\\.')}"[^/]*\\/>`);
   if (xml.match(existing)) return xml.replace(existing, tag);
   return xml.replace(/(<application[^>]*>)/, `$1\n    ${tag}`);
 }
 
 function ensureActivityIntentFilter(xml, activityName, categoryName) {
   const activityRe = new RegExp(
-    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`,
+    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`
   );
   const m = xml.match(activityRe);
   if (!m) return xml;
@@ -204,7 +195,7 @@ function ensureActivityIntentFilter(xml, activityName, categoryName) {
 
 function ensureActivityMeta(xml, activityName, name, value) {
   const activityRe = new RegExp(
-    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`,
+    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`
   );
   const m = xml.match(activityRe);
   if (!m) return xml;
@@ -262,13 +253,11 @@ function stripUnit(value) {
 // the new value (ensureActivityMeta is no-op when the name already exists).
 function upsertActivityMeta(xml, activityName, name, value) {
   const activityRe = new RegExp(
-    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`,
+    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`
   );
   const m = xml.match(activityRe);
   if (!m) return xml;
-  const metaRe = new RegExp(
-    `\\s*<meta-data android:name="${name.replace(/\./g, '\\.')}"[^/]*\\/>`,
-  );
+  const metaRe = new RegExp(`\\s*<meta-data android:name="${name.replace(/\./g, '\\.')}"[^/]*\\/>`);
   const tag = `\n      <meta-data android:name="${name}" android:value="${value}"/>`;
   let patchedActivity;
   if (metaRe.test(m[0])) {
@@ -281,7 +270,7 @@ function upsertActivityMeta(xml, activityName, name, value) {
 
 function ensureLayout(xml, activityName, opts) {
   const activityRe = new RegExp(
-    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`,
+    `<activity[^>]*\\bandroid:name="${activityName.replace(/\./g, '\\.')}"[\\s\\S]*?<\\/activity>`
   );
   const m = xml.match(activityRe);
   if (!m) return xml;

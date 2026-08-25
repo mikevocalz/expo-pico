@@ -71,17 +71,14 @@ module.exports = function withPicoPostpatch(config) {
 function patchMainManifest(xml) {
   // Strip any application-level pvr.app.type left behind by prior plugins.
   // The only allowed location is INSIDE .VRActivity (added below).
-  xml = xml.replace(
-    /\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g,
-    '',
-  );
+  xml = xml.replace(/\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g, '');
 
   // Ensure each Pico capability uses-feature is present (idempotent).
   for (const name of PICO_FEATURES) {
     if (xml.includes(`android:name="${name}"`)) continue;
     xml = xml.replace(
       /(<application\b)/,
-      `<uses-feature android:name="${name}" android:required="false"/>\n  $1`,
+      `<uses-feature android:name="${name}" android:required="false"/>\n  $1`
     );
   }
 
@@ -94,19 +91,16 @@ function patchMainManifest(xml) {
     if (!block.includes('android:name="pvr.app.type"')) {
       block = block.replace(
         /<\/activity>/,
-        '\n      <meta-data android:name="pvr.app.type" android:value="vr"/>\n    </activity>',
+        '\n      <meta-data android:name="pvr.app.type" android:value="vr"/>\n    </activity>'
       );
     }
     if (!/android:taskAffinity="[^"]*"/.test(block.match(/<activity[^>]*>/)[0])) {
-      block = block.replace(
-        /<activity\b([^>]*)>/,
-        '<activity$1 android:taskAffinity="">',
-      );
+      block = block.replace(/<activity\b([^>]*)>/, '<activity$1 android:taskAffinity="">');
     }
     if (!/android:excludeFromRecents="[^"]*"/.test(block.match(/<activity[^>]*>/)[0])) {
       block = block.replace(
         /<activity\b([^>]*)>/,
-        '<activity$1 android:excludeFromRecents="true">',
+        '<activity$1 android:excludeFromRecents="true">'
       );
     }
     xml = xml.replace(m[0], block);
@@ -117,18 +111,12 @@ function patchMainManifest(xml) {
 
 function patchPicoFlavorManifest(xml) {
   // Strip application-scope pvr.app.type that @expo-pico/core writes.
-  xml = xml.replace(
-    /\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g,
-    '',
-  );
+  xml = xml.replace(/\s*<meta-data android:name="pvr\.app\.type"[^/]*\/>/g, '');
   // Strip the entire MainActivity merge block written by @expo-pico/core.
   // It adds IMMERSIVE_HMD + com.pico.intent.category.VR launcher categories
   // that route Pico's launcher to spawn MainActivity in the XR container.
   // The base manifest already declares MainActivity with a plain LAUNCHER
   // filter; the merge result keeps that.
-  xml = xml.replace(
-    /\s*<activity android:name="\.MainActivity"[\s\S]*?<\/activity>/g,
-    '',
-  );
+  xml = xml.replace(/\s*<activity android:name="\.MainActivity"[\s\S]*?<\/activity>/g, '');
   return xml;
 }

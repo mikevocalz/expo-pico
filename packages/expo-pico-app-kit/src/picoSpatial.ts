@@ -28,28 +28,26 @@ let warnedTable: Record<string, boolean> = {};
 function warnOnce(feature: string, reason: string) {
   if (warnedTable[feature]) return;
   warnedTable[feature] = true;
-  // eslint-disable-next-line no-console
+
   console.warn(`[pico/spatial] ${feature}: ${reason}`);
 }
 
 // ───────── Window container ─────────
 
 export type WindowProperties = {
-  width?: number;       // dp
-  height?: number;      // dp
+  width?: number; // dp
+  height?: number; // dp
   minWidth?: number;
   minHeight?: number;
   distanceM?: number;
   userResizable?: boolean;
 };
 
-export async function setWindowContainerProperties(
-  props: WindowProperties,
-): Promise<boolean> {
+export async function setWindowContainerProperties(props: WindowProperties): Promise<boolean> {
   if (!getPicoCapabilities().windowContainer) {
     warnOnce(
       'windowContainer',
-      'Spatial SDK AAR not on classpath. Manifest <layout> defaults apply on first install; subsequent launches use Pico spatial-container cache. Drop pico-spatial-sdk-*.aar into android/app/libs/ to enable runtime resize.',
+      'Spatial SDK AAR not on classpath. Manifest <layout> defaults apply on first install; subsequent launches use Pico spatial-container cache. Drop pico-spatial-sdk-*.aar into android/app/libs/ to enable runtime resize.'
     );
     return false;
   }
@@ -72,10 +70,7 @@ export type GazePose = {
 
 export function onGaze(cb: (g: GazePose) => void): Subscription {
   if (!getPicoCapabilities().eyeGaze) {
-    warnOnce(
-      'eyeGaze',
-      'Spatial SDK AAR not on classpath — no gaze data will arrive.',
-    );
+    warnOnce('eyeGaze', 'Spatial SDK AAR not on classpath — no gaze data will arrive.');
     return NULL_SUB;
   }
   try {
@@ -106,10 +101,7 @@ export type SceneMesh = {
 
 export async function getSceneMesh(): Promise<SceneMesh | null> {
   if (!getPicoCapabilities().sceneMesh) {
-    warnOnce(
-      'sceneMesh',
-      'Spatial SDK AAR not on classpath — room mesh unavailable.',
-    );
+    warnOnce('sceneMesh', 'Spatial SDK AAR not on classpath — room mesh unavailable.');
     return null;
   }
   try {
@@ -135,10 +127,7 @@ export type FaceBlendShapes = Record<string, number>;
 
 export function onFace(cb: (b: FaceBlendShapes) => void): Subscription {
   if (!getPicoCapabilities().faceTracking) {
-    warnOnce(
-      'faceTracking',
-      'Spatial SDK AAR not on classpath — face blendshapes unavailable.',
-    );
+    warnOnce('faceTracking', 'Spatial SDK AAR not on classpath — face blendshapes unavailable.');
     return NULL_SUB;
   }
   try {
@@ -159,10 +148,7 @@ export type BodyJoint = {
 
 export function onBody(cb: (joints: BodyJoint[]) => void): Subscription {
   if (!getPicoCapabilities().bodyTracking) {
-    warnOnce(
-      'bodyTracking',
-      'Spatial SDK AAR not on classpath — body pose unavailable.',
-    );
+    warnOnce('bodyTracking', 'Spatial SDK AAR not on classpath — body pose unavailable.');
     return NULL_SUB;
   }
   try {

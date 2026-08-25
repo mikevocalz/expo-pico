@@ -43,7 +43,11 @@ export const withPicoStrings: ConfigPlugin<ResolvedPicoOptions> = (config, optio
     const strings = config.modResults;
 
     // Legacy / core resources — always written.
-    upsertStringResource(strings, 'pico_app_id', options.platformService.picoAppId ?? options.picoAppId);
+    upsertStringResource(
+      strings,
+      'pico_app_id',
+      options.platformService.picoAppId ?? options.picoAppId
+    );
     upsertStringResource(strings, 'pico_spatial_mode', options.spatialMode);
 
     const ps = options.platformService;

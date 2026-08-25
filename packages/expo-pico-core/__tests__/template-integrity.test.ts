@@ -41,9 +41,7 @@ describe('expo-pico-template integrity', () => {
   });
 
   it('package.json is valid JSON and lists expo-pico-core as a dependency', () => {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(TEMPLATE_ROOT, 'package.json'), 'utf8')
-    );
+    const pkg = JSON.parse(fs.readFileSync(path.join(TEMPLATE_ROOT, 'package.json'), 'utf8'));
     expect(pkg.name).toBe('@expo-pico/template');
     expect(pkg.dependencies['@expo-pico/core']).toBeDefined();
     expect(pkg.dependencies.expo).toBeDefined();
@@ -70,10 +68,15 @@ describe('expo-pico-template integrity', () => {
   });
 
   it('files whitelist covers everything the template needs at bootstrap', () => {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(TEMPLATE_ROOT, 'package.json'), 'utf8')
-    );
-    const needed = ['App.tsx', 'app.config.ts', 'babel.config.js', 'tsconfig.json', 'index.js', '.gitignore'];
+    const pkg = JSON.parse(fs.readFileSync(path.join(TEMPLATE_ROOT, 'package.json'), 'utf8'));
+    const needed = [
+      'App.tsx',
+      'app.config.ts',
+      'babel.config.js',
+      'tsconfig.json',
+      'index.js',
+      '.gitignore',
+    ];
     for (const f of needed) {
       expect(pkg.files).toContain(f);
     }

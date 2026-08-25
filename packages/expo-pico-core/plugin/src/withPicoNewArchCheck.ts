@@ -22,10 +22,7 @@ const TAG = '@expo-pico/core';
  *
  * No-op when `xrMode === 'mobile'`.
  */
-export const withPicoNewArchCheck: ConfigPlugin<ResolvedPicoOptions> = (
-  config,
-  options
-) => {
+export const withPicoNewArchCheck: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   if (options.xrMode === 'mobile') return config;
 
   const newArchEnabled =

@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -107,26 +107,26 @@ if (isSocialAvailable()) {
 
 ## API
 
-| Function | Description |
-| --- | --- |
-| `isSocialAvailable()` | Returns `true` on a PICO build with the Social SDK linked |
-| `getSocialSdkVersion()` | Returns the PICO Platform SDK version string |
-| `getCurrentUser()` | Returns the authenticated user's `PicoUser` profile |
-| `getFriendList(pageToken?, pageSize?)` | Returns a paginated `FriendListResult` |
-| `getFriendshipStatus(userId)` | Returns the `FriendshipStatus` with a given user |
-| `sendFriendRequest(userId)` | Sends a friend request; returns the `FriendRequest` record |
-| `acceptFriendRequest(requestId)` | Accepts an incoming friend request |
-| `declineFriendRequest(requestId)` | Declines an incoming friend request |
-| `removeFriend(userId)` | Removes a friend |
-| `blockUser(userId)` | Blocks a user |
-| `unblockUser(userId)` | Unblocks a user |
-| `setPresence(options)` | Updates the current user's presence status |
-| `clearPresence()` | Clears the current user's presence |
-| `sendInvites(options)` | Sends invites to a destination; returns `SentInvite[]` |
-| `getPendingFriendRequests()` | Returns all pending incoming `FriendRequest[]` |
-| `addFriendPresenceChangedListener(cb)` | Real-time presence change events; returns `Subscription` |
-| `addFriendRequestReceivedListener(cb)` | Real-time friend request events; returns `Subscription` |
-| `addInviteReceivedListener(cb)` | Real-time invite events; returns `Subscription` |
+| Function                               | Description                                                |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `isSocialAvailable()`                  | Returns `true` on a PICO build with the Social SDK linked  |
+| `getSocialSdkVersion()`                | Returns the PICO Platform SDK version string               |
+| `getCurrentUser()`                     | Returns the authenticated user's `PicoUser` profile        |
+| `getFriendList(pageToken?, pageSize?)` | Returns a paginated `FriendListResult`                     |
+| `getFriendshipStatus(userId)`          | Returns the `FriendshipStatus` with a given user           |
+| `sendFriendRequest(userId)`            | Sends a friend request; returns the `FriendRequest` record |
+| `acceptFriendRequest(requestId)`       | Accepts an incoming friend request                         |
+| `declineFriendRequest(requestId)`      | Declines an incoming friend request                        |
+| `removeFriend(userId)`                 | Removes a friend                                           |
+| `blockUser(userId)`                    | Blocks a user                                              |
+| `unblockUser(userId)`                  | Unblocks a user                                            |
+| `setPresence(options)`                 | Updates the current user's presence status                 |
+| `clearPresence()`                      | Clears the current user's presence                         |
+| `sendInvites(options)`                 | Sends invites to a destination; returns `SentInvite[]`     |
+| `getPendingFriendRequests()`           | Returns all pending incoming `FriendRequest[]`             |
+| `addFriendPresenceChangedListener(cb)` | Real-time presence change events; returns `Subscription`   |
+| `addFriendRequestReceivedListener(cb)` | Real-time friend request events; returns `Subscription`    |
+| `addInviteReceivedListener(cb)`        | Real-time invite events; returns `Subscription`            |
 
 ## Native artifacts
 

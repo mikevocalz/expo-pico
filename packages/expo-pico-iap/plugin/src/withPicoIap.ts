@@ -1,7 +1,4 @@
-import {
-  ConfigPlugin,
-  withAndroidManifest,
-} from '@expo/config-plugins';
+import { ConfigPlugin, withAndroidManifest } from '@expo/config-plugins';
 
 const PICO_BILLING_PERMISSION = 'com.picovr.payment.BILLING';
 

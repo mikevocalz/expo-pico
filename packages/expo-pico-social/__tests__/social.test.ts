@@ -42,18 +42,26 @@ describe('@expo-pico/social', () => {
   });
 
   it('getFriendshipStatus throws extension seam error', async () => {
-    await expect(getFriendshipStatus('user-123')).rejects.toThrow('@expo-pico/social: getFriendshipStatus()');
+    await expect(getFriendshipStatus('user-123')).rejects.toThrow(
+      '@expo-pico/social: getFriendshipStatus()'
+    );
   });
 
   it('sendFriendRequest throws extension seam error', async () => {
-    await expect(sendFriendRequest('user-123')).rejects.toThrow('@expo-pico/social: sendFriendRequest()');
+    await expect(sendFriendRequest('user-123')).rejects.toThrow(
+      '@expo-pico/social: sendFriendRequest()'
+    );
   });
 
   it('sendInvites throws extension seam error', async () => {
-    await expect(sendInvites({ destinationApiName: 'lobby', userIds: ['u1'] })).rejects.toThrow('@expo-pico/social: sendInvites()');
+    await expect(sendInvites({ destinationApiName: 'lobby', userIds: ['u1'] })).rejects.toThrow(
+      '@expo-pico/social: sendInvites()'
+    );
   });
 
   it('setPresence throws extension seam error', async () => {
-    await expect(setPresence({ status: 'online' })).rejects.toThrow('@expo-pico/social: setPresence()');
+    await expect(setPresence({ status: 'online' })).rejects.toThrow(
+      '@expo-pico/social: setPresence()'
+    );
   });
 });

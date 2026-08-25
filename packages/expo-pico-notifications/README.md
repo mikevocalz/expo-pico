@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -99,13 +99,13 @@ async function setupPush() {
 
 ## API
 
-| Function                              | Description                                                             |
-| ------------------------------------- | ----------------------------------------------------------------------- |
-| `isNotificationsAvailable()`          | `true` when the PICO Push SDK is linked.                                |
-| `getNotificationsSdkVersion()`        | SDK version string or `'unavailable'`.                                  |
-| `getNotificationPermissionStatus()`   | Sync snapshot of the current runtime permission grant state.            |
-| `requestPermissions()`                | Prompts the user for `POST_NOTIFICATIONS` (Android 13+ / API 33+).      |
-| `registerForPushNotifications()`      | Returns a PICO push token to forward to your backend.                   |
+| Function                            | Description                                                        |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `isNotificationsAvailable()`        | `true` when the PICO Push SDK is linked.                           |
+| `getNotificationsSdkVersion()`      | SDK version string or `'unavailable'`.                             |
+| `getNotificationPermissionStatus()` | Sync snapshot of the current runtime permission grant state.       |
+| `requestPermissions()`              | Prompts the user for `POST_NOTIFICATIONS` (Android 13+ / API 33+). |
+| `registerForPushNotifications()`    | Returns a PICO push token to forward to your backend.              |
 
 Types: `NotificationToken`, `NotificationPermissionStatus`, `NotificationPermissionResult`.
 

@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -100,9 +100,9 @@ if (result.status === 'subscribed') {
 
 ## Subscription vs IAP
 
-| Concern | Package |
-|---------|---------|
-| Consumable/durable one-time purchase | `expo-pico-iap` |
+| Concern                                | Package                  |
+| -------------------------------------- | ------------------------ |
+| Consumable/durable one-time purchase   | `expo-pico-iap`          |
 | Recurring billing + entitlement period | `expo-pico-subscription` |
 
 ## Extension Seams

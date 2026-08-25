@@ -49,13 +49,7 @@ export function GltfModel(props: GltfModelProps): React.JSX.Element {
     <ViroNode position={[0, 0, -1.5]} scale={[0.4, 0.4, 0.4]}>
       <ViroAmbientLight color="#6c79ff" intensity={140} />
       <ViroDirectionalLight color="#ffffff" direction={[-0.5, -1, -0.5]} intensity={900} />
-      <ViroBox
-        position={[0, 0, 0]}
-        width={1}
-        height={1}
-        length={1}
-        materials={['picoDemoCube']}
-      />
+      <ViroBox position={[0, 0, 0]} width={1} height={1} length={1} materials={['picoDemoCube']} />
     </ViroNode>
   );
 }

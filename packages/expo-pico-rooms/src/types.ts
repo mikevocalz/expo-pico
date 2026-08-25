@@ -1,9 +1,4 @@
-export type RoomConnectionState =
-  | 'disconnected'
-  | 'connecting'
-  | 'joined'
-  | 'leaving'
-  | 'error';
+export type RoomConnectionState = 'disconnected' | 'connecting' | 'joined' | 'leaving' | 'error';
 
 export type RoomJoinPolicy = 'everyone' | 'friends-only' | 'invite-only';
 

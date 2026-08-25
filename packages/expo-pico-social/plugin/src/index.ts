@@ -6,10 +6,7 @@ export interface PicoSocialPluginOptions {
   enabled?: boolean;
 }
 
-const withPicoSocial: ConfigPlugin<PicoSocialPluginOptions | void> = (
-  config,
-  options
-) => {
+const withPicoSocial: ConfigPlugin<PicoSocialPluginOptions | void> = (config, options) => {
   const { enabled = true } = options ?? {};
   if (!enabled) return config;
 

@@ -61,11 +61,7 @@ export function applyPlatformServiceContract(
   return manifest;
 }
 
-function upsertActivity(
-  activities: any[],
-  name: string,
-  attributes: Record<string, string>
-): void {
+function upsertActivity(activities: any[], name: string, attributes: Record<string, string>): void {
   const existing = activities.find((a: any) => a.$?.['android:name'] === name);
   if (existing) {
     existing.$ = { ...existing.$, ...attributes };
@@ -74,9 +70,7 @@ function upsertActivity(
   activities.push({ $: { ...attributes } });
 }
 
-function removePlatformActivities(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): void {
+function removePlatformActivities(manifest: AndroidConfig.Manifest.AndroidManifest): void {
   const app = manifest.manifest.application?.[0];
   if (!app || !(app as any).activity) return;
   (app as any).activity = (app as any).activity.filter(
@@ -86,9 +80,7 @@ function removePlatformActivities(
   );
 }
 
-function ensureApplication(
-  manifest: AndroidConfig.Manifest.AndroidManifest
-): any {
+function ensureApplication(manifest: AndroidConfig.Manifest.AndroidManifest): any {
   manifest.manifest.application = manifest.manifest.application ?? [];
   if (manifest.manifest.application.length === 0) {
     manifest.manifest.application.push({ $: {} } as any);

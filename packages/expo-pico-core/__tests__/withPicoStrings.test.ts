@@ -8,10 +8,7 @@ type FakeConfig = {
   mods?: Record<string, Record<string, (...args: any[]) => any>>;
 };
 
-function run(
-  config: FakeConfig,
-  options: ReturnType<typeof resolveOptions>
-): FakeConfig {
+function run(config: FakeConfig, options: ReturnType<typeof resolveOptions>): FakeConfig {
   const result: any = withPicoStrings(config as any, options);
   const modFn = result.mods?.android?.strings as ((c: any) => any) | undefined;
   if (!modFn || !config.modResults) return result;
@@ -136,10 +133,7 @@ describe('withPicoStrings — idempotency and cleanup', () => {
 
   it('removes pico_app_key when identity is cleared between prebuilds', () => {
     const config = seedEmpty();
-    run(
-      config,
-      resolveOptions({ platformService: { picoAppId: 'APP', picoAppKey: 'KEY' } })
-    );
+    run(config, resolveOptions({ platformService: { picoAppId: 'APP', picoAppKey: 'KEY' } }));
     expect(getStringResource(config, 'pico_app_key')).toBeDefined();
 
     run(config, resolveOptions({}));
@@ -174,10 +168,7 @@ describe('withPicoStrings — idempotency and cleanup', () => {
     (config.modResults as any).resources.string = [
       { $: { name: 'app_name', translatable: 'false' }, _: 'MyApp' },
     ];
-    run(
-      config,
-      resolveOptions({ platformService: { picoAppId: 'APP', picoAppKey: 'KEY' } })
-    );
+    run(config, resolveOptions({ platformService: { picoAppId: 'APP', picoAppKey: 'KEY' } }));
     const names = getAllStringResources(config);
     expect(names).toContain('app_name');
     expect(names).toContain('pico_app_id');

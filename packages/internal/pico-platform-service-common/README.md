@@ -34,7 +34,10 @@ Shared error codes. Every sibling throws only from this taxonomy:
 ### Native module resolution
 
 ```ts
-import { resolveNativeModule, type NativeModuleResolution } from '@expo-pico/platform-service-common';
+import {
+  resolveNativeModule,
+  type NativeModuleResolution,
+} from '@expo-pico/platform-service-common';
 ```
 
 Wraps `requireNativeModule` with a defensive resolver that returns `{ module: null, error }` rather than throwing when the native bridge isn't available (test env, missing autolinking, etc.). Siblings guard on the resolution before dispatching calls.
@@ -55,7 +58,11 @@ A `{ remove(): void }` subscription shape used consistently across sibling packa
 ### Pagination
 
 ```ts
-import { DEFAULT_PAGE_SIZE, type PicoPage, type PicoPageArgs } from '@expo-pico/platform-service-common';
+import {
+  DEFAULT_PAGE_SIZE,
+  type PicoPage,
+  type PicoPageArgs,
+} from '@expo-pico/platform-service-common';
 ```
 
 Standard `{ items, nextCursor, hasMore }` shape used by paginated PICO Platform APIs (leaderboards, friends list, etc.).

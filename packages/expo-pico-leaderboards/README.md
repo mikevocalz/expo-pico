@@ -18,7 +18,7 @@ yarn add @expo-pico/account react-native-nitro-modules
 import { login, isAccountAvailable } from '@expo-pico/account';
 
 if (isAccountAvailable()) {
-  await login();   // connect the PICO account before calling into this package
+  await login(); // connect the PICO account before calling into this package
 }
 ```
 
@@ -100,15 +100,15 @@ if (isLeaderboardsAvailable()) {
 
 ## API
 
-| Function | Description |
-| --- | --- |
-| `isLeaderboardsAvailable()` | Returns `true` on a PICO build with the Leaderboards SDK linked |
-| `getLeaderboardsSdkVersion()` | Returns the PICO Platform SDK version string |
-| `getAllLeaderboards()` | Lists all leaderboard definitions for the app |
-| `getEntries(apiName, options?)` | Returns a paginated page of leaderboard entries |
-| `getEntriesAfterRank(apiName, afterRank, options?)` | Returns entries starting after the given rank |
-| `getUserEntry(apiName)` | Returns the current user's entry, or `null` if not on the board |
-| `writeScore(apiName, score, options?)` | Writes a score; returns `didUpdate`, `previousScore`, and `newRank` |
+| Function                                            | Description                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| `isLeaderboardsAvailable()`                         | Returns `true` on a PICO build with the Leaderboards SDK linked     |
+| `getLeaderboardsSdkVersion()`                       | Returns the PICO Platform SDK version string                        |
+| `getAllLeaderboards()`                              | Lists all leaderboard definitions for the app                       |
+| `getEntries(apiName, options?)`                     | Returns a paginated page of leaderboard entries                     |
+| `getEntriesAfterRank(apiName, afterRank, options?)` | Returns entries starting after the given rank                       |
+| `getUserEntry(apiName)`                             | Returns the current user's entry, or `null` if not on the board     |
+| `writeScore(apiName, score, options?)`              | Writes a score; returns `didUpdate`, `previousScore`, and `newRank` |
 
 ### Pagination
 

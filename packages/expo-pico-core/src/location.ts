@@ -38,7 +38,6 @@ let _loc: ExpoLocationLike | null | undefined;
 function loadLocation(): ExpoLocationLike | null {
   if (_loc !== undefined) return _loc;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     _loc = require('expo-location') as ExpoLocationLike;
   } catch {
     _loc = null;
@@ -76,9 +75,7 @@ export async function getPicoLocation(): Promise<PicoCoordinates | null> {
   if (!(await requestLocationPermission())) return null;
 
   const last = await loc.getLastKnownPositionAsync();
-  const pos =
-    last ??
-    (await loc.getCurrentPositionAsync({ accuracy: loc.Accuracy.Low }));
+  const pos = last ?? (await loc.getCurrentPositionAsync({ accuracy: loc.Accuracy.Low }));
   if (!pos) return null;
   return { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
 }

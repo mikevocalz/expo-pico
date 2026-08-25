@@ -60,7 +60,8 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'on-device verification of IAP query/purchase round-trip with real product catalog',
+    stableBlocker:
+      'on-device verification of IAP query/purchase round-trip with real product catalog',
   },
   {
     id: 'notifications',
@@ -92,7 +93,8 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'PPS 1.0.x removed dedicated rooms — use Fishjam/Colyseus or wait for next-gen PPS',
+    stableBlocker:
+      'PPS 1.0.x removed dedicated rooms — use Fishjam/Colyseus or wait for next-gen PPS',
   },
   {
     id: 'storage',
@@ -100,7 +102,8 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'PPS 1.0.x removed cloud storage — use own backend keyed off openUid, or expo-secure-store',
+    stableBlocker:
+      'PPS 1.0.x removed cloud storage — use own backend keyed off openUid, or expo-secure-store',
   },
   {
     id: 'social',

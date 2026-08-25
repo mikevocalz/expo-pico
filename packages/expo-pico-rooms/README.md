@@ -52,7 +52,7 @@ if (result.status === 'success') {
 ### Matchmaking
 
 ```ts
-const sub = addMatchmakingFoundListener(e => {
+const sub = addMatchmakingFoundListener((e) => {
   console.log('matched into room:', e.roomId);
 });
 await requestMatchmaking({ poolName: 'ranked-4v4' });

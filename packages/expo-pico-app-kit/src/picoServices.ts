@@ -20,20 +20,21 @@ function loadModule(loader: () => any): any | null {
 function makeWrapper<T extends keyof PicoCapabilities>(
   loader: () => any,
   capability: T,
-  label: string,
+  label: string
 ): any {
   return new Proxy({} as any, {
     get(_target, prop) {
       if (!getPicoCapabilities()[capability]) {
         return () =>
           Promise.reject(
-            new Error(`[pico/${label}] bridge unavailable — required PICO SDK class not on classpath`),
+            new Error(
+              `[pico/${label}] bridge unavailable — required PICO SDK class not on classpath`
+            )
           );
       }
       const mod = loadModule(loader);
       if (!mod) {
-        return () =>
-          Promise.reject(new Error(`[pico/${label}] module failed to load`));
+        return () => Promise.reject(new Error(`[pico/${label}] module failed to load`));
       }
       const value = (mod as any)[prop as string];
       return typeof value === 'function' ? value.bind(mod) : value;
@@ -43,11 +44,23 @@ function makeWrapper<T extends keyof PicoCapabilities>(
 
 export const account = makeWrapper(() => require('@expo-pico/account'), 'account', 'account');
 export const iap = makeWrapper(() => require('@expo-pico/iap'), 'iap', 'iap');
-export const achievement = makeWrapper(() => require('@expo-pico/achievements'), 'achievement', 'achievement');
-export const leaderboard = makeWrapper(() => require('@expo-pico/leaderboards'), 'leaderboard', 'leaderboard');
+export const achievement = makeWrapper(
+  () => require('@expo-pico/achievements'),
+  'achievement',
+  'achievement'
+);
+export const leaderboard = makeWrapper(
+  () => require('@expo-pico/leaderboards'),
+  'leaderboard',
+  'leaderboard'
+);
 export const friend = makeWrapper(() => require('@expo-pico/rooms'), 'friend', 'friend');
 export const push = makeWrapper(() => require('@expo-pico/notifications'), 'push', 'push');
 export const social = makeWrapper(() => require('@expo-pico/social'), 'social', 'social');
 export const rtc = makeWrapper(() => require('@expo-pico/rtc'), 'rtc', 'rtc');
 export const storage = makeWrapper(() => require('@expo-pico/storage'), 'storage', 'storage');
-export const subscription = makeWrapper(() => require('@expo-pico/subscription'), 'subscription', 'subscription');
+export const subscription = makeWrapper(
+  () => require('@expo-pico/subscription'),
+  'subscription',
+  'subscription'
+);

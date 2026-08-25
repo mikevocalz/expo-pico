@@ -58,8 +58,8 @@ const NONE: PicoCapabilities = {
   bodyTracking: false,
   spatialAudio: true, // Viro always supports ViroSpatialSound
   handTracking: true, // Viro onHandUpdate works on Pico via OpenXR
-  passthrough: true,  // Viro passthroughEnabled prop
-  controllers: true,  // Viro ViroController
+  passthrough: true, // Viro passthroughEnabled prop
+  controllers: true, // Viro ViroController
 };
 
 let cached: PicoCapabilities | null = null;
@@ -72,7 +72,7 @@ let cached: PicoCapabilities | null = null;
 function probeOne<T extends keyof PicoCapabilities>(
   key: T,
   loadModule: () => any,
-  predicate: (m: any) => boolean,
+  predicate: (m: any) => boolean
 ): boolean {
   try {
     const m = loadModule();
@@ -98,37 +98,37 @@ function buildCapabilities(): PicoCapabilities {
     account: probeOne(
       'account',
       () => require('@expo-pico/account'),
-      (m) => safeBoolean(m.isAccountAvailable),
+      (m) => safeBoolean(m.isAccountAvailable)
     ),
     iap: probeOne(
       'iap',
       () => require('@expo-pico/iap'),
-      (m) => safeBoolean(m.isIapAvailable),
+      (m) => safeBoolean(m.isIapAvailable)
     ),
     achievement: probeOne(
       'achievement',
       () => require('@expo-pico/achievements'),
-      (m) => safeBoolean(m.isAchievementsAvailable),
+      (m) => safeBoolean(m.isAchievementsAvailable)
     ),
     leaderboard: probeOne(
       'leaderboard',
       () => require('@expo-pico/leaderboards'),
-      (m) => safeBoolean(m.isLeaderboardsAvailable),
+      (m) => safeBoolean(m.isLeaderboardsAvailable)
     ),
     friend: probeOne(
       'friend',
       () => require('@expo-pico/rooms'),
-      (m) => safeBoolean(m.isRoomsAvailable),
+      (m) => safeBoolean(m.isRoomsAvailable)
     ),
     push: probeOne(
       'push',
       () => require('@expo-pico/notifications'),
-      (m) => safeBoolean(m.isNotificationsAvailable),
+      (m) => safeBoolean(m.isNotificationsAvailable)
     ),
     social: probeOne(
       'social',
       () => require('@expo-pico/social'),
-      (m) => safeBoolean(m.isSocialAvailable),
+      (m) => safeBoolean(m.isSocialAvailable)
     ),
     // RTC is backed by Fishjam (Software Mansion's open-source RTC,
     // public Maven Central deps, no auth gate). Pico's PPS RTC AAR is
@@ -145,52 +145,53 @@ function buildCapabilities(): PicoCapabilities {
         const pkg = '@fishjam-cloud' + '/ts-client';
         // Indirect-name require so Metro static analysis doesn't bail
         // when the package isn't installed yet.
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        // eslint-disable-next-line no-eval
         return (eval('require') as (id: string) => unknown)(pkg);
       },
-      (m) => typeof m?.FishjamClient === 'function',
+      (m) => typeof m?.FishjamClient === 'function'
     ),
     storage: probeOne(
       'storage',
       () => require('@expo-pico/storage'),
-      (m) => safeBoolean(m.isStorageAvailable),
+      (m) => safeBoolean(m.isStorageAvailable)
     ),
     subscription: probeOne(
       'subscription',
       () => require('@expo-pico/subscription'),
-      (m) => safeBoolean(m.isSubscriptionAvailable),
+      (m) => safeBoolean(m.isSubscriptionAvailable)
     ),
     haptics: probeOne(
       'haptics',
       () => require('@expo-pico/core'),
-      (m) => safeBoolean(m.isHapticsAvailable),
+      (m) => safeBoolean(m.isHapticsAvailable)
     ),
     windowContainer: probeOne(
       'windowContainer',
       () => require('@expo-pico/spatial'),
-      (m) => safeBoolean(m.getSpatialCapabilities)
-        ? Boolean(m.getSpatialCapabilities?.()?.spatialSdkAvailable)
-        : false,
+      (m) =>
+        safeBoolean(m.getSpatialCapabilities)
+          ? Boolean(m.getSpatialCapabilities?.()?.spatialSdkAvailable)
+          : false
     ),
     eyeGaze: probeOne(
       'eyeGaze',
       () => require('@expo-pico/spatial'),
-      (m) => safeBoolean(m.isEyeGazeAvailable),
+      (m) => safeBoolean(m.isEyeGazeAvailable)
     ),
     sceneMesh: probeOne(
       'sceneMesh',
       () => require('@expo-pico/spatial'),
-      (m) => safeBoolean(m.isSceneMeshAvailable),
+      (m) => safeBoolean(m.isSceneMeshAvailable)
     ),
     faceTracking: probeOne(
       'faceTracking',
       () => require('@expo-pico/spatial'),
-      (m) => safeBoolean(m.isFaceTrackingAvailable),
+      (m) => safeBoolean(m.isFaceTrackingAvailable)
     ),
     bodyTracking: probeOne(
       'bodyTracking',
       () => require('@expo-pico/spatial'),
-      (m) => safeBoolean(m.isBodyTrackingAvailable),
+      (m) => safeBoolean(m.isBodyTrackingAvailable)
     ),
   };
 }
@@ -207,11 +208,11 @@ export function refreshPicoCapabilities(): PicoCapabilities {
 
 export function logPicoCapabilities() {
   const caps = getPicoCapabilities();
-  // eslint-disable-next-line no-console
+
   console.log(
     '[pico] runtime capabilities:\n' +
       (Object.keys(caps) as (keyof PicoCapabilities)[])
         .map((k) => `  ${caps[k] ? '✅' : '❌'} ${k}`)
-        .join('\n'),
+        .join('\n')
   );
 }

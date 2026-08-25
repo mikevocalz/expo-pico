@@ -215,7 +215,7 @@ describe('expo-pico-spatial — SDK family contract', () => {
     }
 
     it('does not re-export raw Error constructor', () => {
-      expect((api as Record<string, unknown>)['Error']).toBeUndefined();
+      expect((api as Record<string, unknown>).Error).toBeUndefined();
     });
   });
 });

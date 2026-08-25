@@ -56,10 +56,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         buildVariant: 'pico',
         // PICO 4 / PICO 4 Ultra → 'pico-os5' (legacy PVR XR runtime).
         // PICO Swan             → 'pico-swan' (next-gen, ships on PICO OS 6).
-        xrMode: (process.env.PICO_XR_MODE ?? 'pico-os5') as
-          | 'mobile'
-          | 'pico-os5'
-          | 'pico-swan',
+        xrMode: (process.env.PICO_XR_MODE ?? 'pico-os5') as 'mobile' | 'pico-os5' | 'pico-swan',
         // Launcher contract app type. Drives `pvr.app.type` meta-data.
         //
         // 'mr' = Mixed Reality / passthrough — PICO renders the camera feed

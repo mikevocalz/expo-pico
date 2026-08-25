@@ -78,15 +78,15 @@ try {
 
 ## API
 
-| Function                            | Description                                                              |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| `getSpaceState()`                   | Reports `shared-space` / `full-space` / `unknown`.                       |
-| `getContainerType()`                | Reports the app's active container (`window-container` / `stage` / `none`). |
-| `getSpatialCapabilities()`          | Flags for anchors, scene understanding, passthrough, hand-tracking, Spatial SDK availability. |
-| `getSpatialSdkVersion()`            | Spatial SDK version, or `null` when not linked.                          |
-| `createSpatialAnchor(pose)` *(seam)*       | Place a persistent spatial anchor at a pose. Throws until wired.    |
-| `setWindowContainerProperties(props)` *(seam)* | Configure a floating WindowContainer's size / pinning. Throws until wired. |
-| `requestFullSpace()` *(seam)*       | Transition from shared-space to full-space. Throws until wired.          |
+| Function                                       | Description                                                                                   |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `getSpaceState()`                              | Reports `shared-space` / `full-space` / `unknown`.                                            |
+| `getContainerType()`                           | Reports the app's active container (`window-container` / `stage` / `none`).                   |
+| `getSpatialCapabilities()`                     | Flags for anchors, scene understanding, passthrough, hand-tracking, Spatial SDK availability. |
+| `getSpatialSdkVersion()`                       | Spatial SDK version, or `null` when not linked.                                               |
+| `createSpatialAnchor(pose)` _(seam)_           | Place a persistent spatial anchor at a pose. Throws until wired.                              |
+| `setWindowContainerProperties(props)` _(seam)_ | Configure a floating WindowContainer's size / pinning. Throws until wired.                    |
+| `requestFullSpace()` _(seam)_                  | Transition from shared-space to full-space. Throws until wired.                               |
 
 Types: `PicoSpaceState`, `PicoContainerType`, `SpatialCapabilities`, `SpatialAnchorHandle`, `Pose3D`, `WindowContainerProperties`.
 
