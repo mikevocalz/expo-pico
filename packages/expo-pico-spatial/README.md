@@ -1,6 +1,6 @@
 # expo-pico-spatial
 
-[![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
+[![seam](https://img.shields.io/badge/PPS_1.0.x-seam-6B7280?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.
@@ -10,7 +10,15 @@ Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SD
 ## Status
 
 - Maturity: alpha
-- PICO Spatial SDK linkage: extension seam. Spatial anchor / container runtime methods throw `notImplementedError` until the PICO Spatial SDK AAR ships and is linked. The detection surface (`getSpaceState`, `getContainerType`, `getSpatialCapabilities`) reads BuildConfig mirror fields set by `expo-pico-core` and works today.
+- PICO Spatial SDK linkage: **none.** Eight of the eleven native methods reject
+  with `SPATIAL_SDK_NOT_LINKED`, and dropping `pico-spatial-sdk.aar` into
+  `vendor/pico-sdk/` does **not** change that — `needsSpatialSdk()` rejects
+  unconditionally and no code path calls the SDK. Wiring it is outstanding work,
+  not a packaging step.
+- What works today: the three detection methods (`getSpaceState`,
+  `getContainerType`, `getSpatialCapabilities`) plus `getSpatialSdkProbe()`,
+  which read `BuildConfig` mirror fields set by `expo-pico-core` and
+  `Class.forName` probes. Those need no AAR.
 - Platform: Android only.
 - Runtime target: PICO OS 6 in shared-space, full-space, or volume modes.
 

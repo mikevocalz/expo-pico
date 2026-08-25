@@ -25,7 +25,7 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 
 | Package                                                         | Status      | PPS 1.0.x backing                                                                                                                                                                                                                      |
 | --------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`expo-pico-core`](./packages/expo-pico-core)                   | stable      | Build config, flavors, launcher contract, runtime, `expo-pico-doctor` CLI                                                                                                                                                              |
+| [`expo-pico-core`](./packages/expo-pico-core)                   | stable      | Build config, flavors, launcher contract, `expo-pico-doctor` CLI. The **XR runtime surface** (hand / eye / body / trackers / boundary) is a seam — see below                                                                           |
 | [`expo-pico-account`](./packages/expo-pico-account)             | live        | `PicoSignInClient.getSignInClient` → `getUserInfo / signIn / signOut / getAccessToken`                                                                                                                                                 |
 | [`expo-pico-iap`](./packages/expo-pico-iap)                     | live        | `PicoIapClient.getIapClient` → `getProductList / purchaseProduct / consumeProduct / getPurchasedProductList`                                                                                                                           |
 | [`expo-pico-subscription`](./packages/expo-pico-subscription)   | partial     | routed through `IapClient` (PPS has no separate sub client); `cancelSubscription()` is `NOT_IN_PPS_1_0` — cancelling happens in the PICO Store                                                                                         |
@@ -33,7 +33,7 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 | [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)   | live        | `LeaderboardClient.getLeaderboardClient`: `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry`                                                                                               |
 | [`expo-pico-social`](./packages/expo-pico-social)               | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) plus `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.0.x |
 | [`expo-pico-notifications`](./packages/expo-pico-notifications) | live        | `PPSPushClient.getClientImpl` → `register(appId, fcmToken, IRegisterPPSPushCallback)` via reflection Proxy                                                                                                                             |
-| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | live        | Native sensor SDK (eye, scene mesh, face, body), independent of PPS; needs `pico-spatial-sdk.aar` for anchors/full-space                                                                                                               |
+| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | seam        | Eye / face / body / scene-mesh / anchors. Independent of PPS, and **not yet wired**: 8 of 11 methods reject with `XR_SDK_NOT_LINKED`, and no code path calls the XR SDK even when `pico-spatial-sdk.aar` is present                    |
 | [`expo-pico-rooms`](./packages/expo-pico-rooms)                 | partial     | PPS 1.0.x removed dedicated rooms. `getFriendsAndRooms()` / `getRoomInfo()` read the friend discovery feed; every mutating call is `NOT_IN_PPS_1_0`. For create/join run state on Fishjam / Colyseus                                   |
 | [`expo-pico-rtc`](./packages/expo-pico-rtc)                     | unavailable | PPS 1.0.x removed RTC. Use `@fishjam-cloud/react-native-webrtc`                                                                                                                                                                        |
 | [`expo-pico-storage`](./packages/expo-pico-storage)             | unavailable | PPS 1.0.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local                                                                                                  |
@@ -42,12 +42,31 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 
 Every package README carries the same chip, so status travels with the package.
 
-| Chip                                                                                        | Meaning                                                                                                                                                                |
-| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)               | The bridge calls the real PPS 1.0.x SDK and returns real data.                                                                                                         |
-| ![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)         | Some methods wired; the rest return `NOT_IN_PPS_1_0` with a hint naming what PPS does offer.                                                                           |
-| ![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square) | PPS 1.0.x publishes no artifact for this service, so every method returns `NOT_IN_PPS_1_0`. Kept as a typed seam so a future release can wire it without an API break. |
-| ![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)               | Calls no PPS service directly, so the axis does not apply.                                                                                                             |
+| Chip                                                                                        | Meaning                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)               | The bridge calls the real PPS 1.0.x SDK and returns real data.                                                                                                                              |
+| ![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)         | Some methods wired; the rest return `NOT_IN_PPS_1_0` with a hint naming what PPS does offer.                                                                                                |
+| ![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square) | PPS 1.0.x publishes no artifact for this service, so every method returns `NOT_IN_PPS_1_0`. Kept as a typed seam so a future release can wire it without an API break.                      |
+| ![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)               | Calls no PPS service directly, so the axis does not apply.                                                                                                                                  |
+| ![seam](https://img.shields.io/badge/PPS_1.0.x-seam-6B7280?style=flat-square)               | The TypeScript and Kotlin surface exists and is typed, but nothing is wired behind it yet. Distinct from `unavailable`: the platform API is real, this project just has not implemented it. |
+
+> ### The XR runtime is not implemented
+>
+> `expo-pico-core`'s hand, eye, face, body, motion-tracker, controller,
+> boundary and scene-mesh methods — 37 of them on `HybridPicoRuntime` — all
+> route to a helper that rejects with `CAPABILITY_NOT_DECLARED` or
+> `XR_SDK_NOT_LINKED`. There is **no branch that calls the PICO XR SDK**, so
+> obtaining the licensed AAR and dropping it into `vendor/pico-sdk/` does not
+> switch them on. `expo-pico-spatial` is the same for 8 of its 11 methods.
+>
+> What does work today is everything PPS-backed (account, IAP, subscription,
+> achievements, leaderboards, social, notifications, rooms discovery), plus
+> build configuration, the launcher contract, flavors, capability declaration
+> and `getPicoRuntimeInfo()` / `getPicoDiagnostics()`, which read `BuildConfig`
+> and `PackageManager` rather than the XR SDK.
+>
+> The seams are typed and documented so wiring them is additive rather than an
+> API break. Until then, treat the XR runtime as unavailable.
 
 `unavailable` is grey rather than red on purpose — a seam that reports its own
 absence is behaving correctly. Nothing is broken; the platform simply does not
