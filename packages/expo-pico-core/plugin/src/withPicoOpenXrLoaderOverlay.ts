@@ -16,7 +16,7 @@ import type { ResolvedPicoOptions } from './types';
  *   not 16KB-aligned. The legacy Khronos `openxr_loader_for_android` 1.1.38
  *   that Viro bundles is 4KB-aligned and causes a silent native-load
  *   failure on PICO 4 Ultra / Quest 3S devices. We carry an in-tree copy
- *   of Khronos 1.1.49 (which IS 16KB-aligned) and Gradle's `pickFirst`
+ *   of Khronos 1.1.62 (which IS 16KB-aligned) and Gradle's `pickFirst`
  *   strategy (added by `withPicoQuestFlavor`) ensures the app's own
  *   `jniLibs` copy wins over the AAR's.
  *

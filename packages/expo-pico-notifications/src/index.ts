@@ -1,15 +1,24 @@
 import {
   guardService,
   wrapNativeCall,
+  NULL_SUBSCRIPTION,
+  type Subscription,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoNotifications, NotificationPermissionStatus } from './PicoNotifications.nitro';
+import type {
+  PicoNotifications,
+  NotificationPermissionStatus,
+  PicoPushMessage,
+  PicoPushRevocation,
+} from './PicoNotifications.nitro';
 
 export type {
   NotificationPermissionStatus,
   NotificationPermissionResult,
   NotificationProvider,
   NotificationToken,
+  PicoPushMessage,
+  PicoPushRevocation,
 } from './PicoNotifications.nitro';
 
 const PKG = '@expo-pico/notifications';
@@ -42,4 +51,35 @@ export async function registerForPushNotifications() {
     'registerForPushNotifications',
     native()!.registerForPushNotifications()
   );
+}
+
+export async function unregisterForPushNotifications(): Promise<void> {
+  guardService(isNotificationsAvailable(), PKG, 'unregisterForPushNotifications');
+  await wrapNativeCall(
+    PKG,
+    'unregisterForPushNotifications',
+    native()!.unregisterForPushNotifications()
+  );
+}
+
+function subscribe(register: (h: PicoNotifications) => number): Subscription {
+  const hybrid = native();
+  if (!hybrid?.available) return NULL_SUBSCRIPTION;
+  const id = register(hybrid);
+  return { remove: () => hybrid.removeListener(id) };
+}
+
+/**
+ * Fires for each incoming push. Registration alone only obtains a token — an
+ * app with no listener can be addressed but never hears anything.
+ */
+export function addPushMessageListener(listener: (message: PicoPushMessage) => void): Subscription {
+  return subscribe((h) => h.addPushMessageListener(listener));
+}
+
+/** Fires when the server revokes a previously delivered push. */
+export function addPushRevocationListener(
+  listener: (revocation: PicoPushRevocation) => void
+): Subscription {
+  return subscribe((h) => h.addPushRevocationListener(listener));
 }

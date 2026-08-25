@@ -105,6 +105,26 @@ Verified against `javap` on the published AARs, not inferred.
 - **`@expo-pico/iap`** — `isProductPurchased(sku)`, a per-SKU ownership check
   that avoids pulling the whole purchase list.
 
+### `@expo-pico/notifications` — push can now actually be received
+
+`register()` only ever yielded a token, so an app could be addressed but never
+hear anything. Wired the rest of `IPPSPushClient`:
+
+- `addPushMessageListener()` / `addPushRevocationListener()` — PPS accepts one
+  receiver per client, so the first listener installs it and the last one
+  removed uninstalls it; listeners are multiplexed in Kotlin.
+- `unregisterForPushNotifications()` — releases the token.
+
+### OpenXR loader 1.1.49 -> 1.1.62
+
+`expo-pico-core` overlays a 16KB-page-aligned Khronos `libopenxr_loader.so`
+over the 4KB-aligned copy renderers bundle, because PICO OS 6 / Android 14+
+silently refuse to load the latter. Bumped to Khronos 1.1.62 and confirmed
+every PT_LOAD segment is still `0x4000`-aligned — the property the overlay
+exists for. `scripts/verify-16kb-alignment.py` now exists and checks it (the
+plugin had referenced that script since it was written; it had never been
+added).
+
 ### `@expo-pico/rooms` — new export
 
 `getFriendsAndRooms()` surfaces the read-only friends-and-rooms discovery feed

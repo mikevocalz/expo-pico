@@ -125,7 +125,7 @@ npx expo run:android --variant picoDebug
   - PICO 4 / PICO 4 Ultra: PICO OS 5 (legacy PVR XR runtime); `xrMode: 'pico-os5'`
   - PICO Swan: PICO OS 6 (next-gen runtime); `xrMode: 'pico-swan'`
   - Meta Quest 3 / Quest 3S via the `quest` build flavor; OpenXR loader composes with the `<uses-native-library>` declaration the plugin writes
-- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.49 to satisfy the system loader on PICO OS 5.
+- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.62 to satisfy the system loader on PICO OS 5.
 
 ## Doctor
 
