@@ -273,6 +273,27 @@ export interface PicoPluginOptions {
    * @default true when xrMode !== 'mobile', false otherwise
    */
   openXrLoaderDeclaration?: boolean;
+
+  /**
+   * Overlay a PICO-capable `libviro_renderer.so` over the one
+   * `@reactvision/react-viro` ships.
+   *
+   * Stock Viro's OpenXR input binds only
+   * `/interaction_profiles/oculus/touch_controller`. PICO Sense controllers
+   * advertise `/interaction_profiles/bytedance/pico4_controller` (and
+   * `…/pico_neo3_controller`), which the runtime will not surface unless the
+   * app binds them — so on PICO there is no controller, no pointer ray, and no
+   * controller-driven input at all, whatever the scene declares. The overlaid
+   * build binds all three, so one binary covers PICO and Quest.
+   *
+   * Interim measure. Remove this option once ReactVision ships PICO interaction
+   * profiles upstream; nothing else in the family depends on it.
+   *
+   * arm64-v8a only — PICO ships no 32-bit device. Defaults to `false`: it
+   * replaces a renderer the app did not ask this package to touch, so it is
+   * opt-in.
+   */
+  viroRendererOverlay?: boolean;
   /**
    * Enable PICO developer tools overlay (OS 6 dev builds only).
    * @default false
@@ -501,6 +522,7 @@ export interface ResolvedPicoOptions {
   controllerHaptics: boolean;
   ndkAbiFilters: boolean;
   openXrLoaderDeclaration: boolean;
+  viroRendererOverlay: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
@@ -570,6 +592,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   controllerHaptics: false,
   ndkAbiFilters: true,
   openXrLoaderDeclaration: true,
+  viroRendererOverlay: false,
   developerTools: false,
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,
@@ -617,6 +640,9 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   // avoid an unused loader declaration.
   const ndkAbiFilters = options.ndkAbiFilters ?? xrMode !== 'mobile';
   const openXrLoaderDeclaration = options.openXrLoaderDeclaration ?? xrMode !== 'mobile';
+  // Opt-in, and never on the mobile flavor: it replaces a library the app got
+  // from another package, so it should not happen because someone set xrMode.
+  const viroRendererOverlay = (options.viroRendererOverlay ?? false) && xrMode !== 'mobile';
 
   return {
     ...PICO_OPTION_DEFAULTS,
@@ -629,6 +655,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     minSdkVersion,
     ndkAbiFilters,
     openXrLoaderDeclaration,
+    viroRendererOverlay,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,

@@ -40,24 +40,32 @@ export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (c
       const platformRoot = cfg.modRequest.platformProjectRoot;
       const stagedRoot = path.resolve(__dirname, '../assets/jniLibs');
 
-      for (const abi of ['arm64-v8a', 'armeabi-v7a'] as const) {
-        const src = path.join(stagedRoot, abi, 'libopenxr_loader.so');
-        if (!fs.existsSync(src)) {
-          // Plugin was not built with assets present (e.g. running from source
-          // without the staged loader). Skip silently — the alignment gate
-          // catches this downstream.
-          continue;
-        }
-        const destDir = path.join(platformRoot, 'app/src/main/jniLibs', abi);
-        const dest = path.join(destDir, 'libopenxr_loader.so');
-        fs.mkdirSync(destDir, { recursive: true });
+      const libraries: string[] = ['libopenxr_loader.so'];
+      if (options.viroRendererOverlay) {
+        libraries.push('libviro_renderer.so');
+      }
 
-        if (fs.existsSync(dest)) {
-          const a = fs.statSync(src).size;
-          const b = fs.statSync(dest).size;
-          if (a === b) continue;
+      for (const abi of ['arm64-v8a', 'armeabi-v7a'] as const) {
+        for (const library of libraries) {
+          const src = path.join(stagedRoot, abi, library);
+          if (!fs.existsSync(src)) {
+            // Not staged for this ABI. Expected for libviro_renderer.so, which
+            // is only carried for arm64-v8a — PICO ships no 32-bit device — and
+            // for a source checkout with no staged assets at all. Silent: the
+            // alignment gate catches a genuinely missing loader downstream.
+            continue;
+          }
+          const destDir = path.join(platformRoot, 'app/src/main/jniLibs', abi);
+          const dest = path.join(destDir, library);
+          fs.mkdirSync(destDir, { recursive: true });
+
+          if (fs.existsSync(dest)) {
+            const a = fs.statSync(src).size;
+            const b = fs.statSync(dest).size;
+            if (a === b) continue;
+          }
+          fs.copyFileSync(src, dest);
         }
-        fs.copyFileSync(src, dest);
       }
 
       void projectRoot;
