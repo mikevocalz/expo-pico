@@ -41,11 +41,10 @@ import { bootPico, getPicoCapabilities, haptics, onGaze, account } from '@expo-p
   [developer.picoxr.com](https://developer.picoxr.com) and dropped
   into your app's `android/app/libs/`.
 - Doesn't change capability detection logic. That lives in
-  `expo-pico-core`'s `PicoPlatformSdkDetector` and each sibling's
-  `*Utils.kt`. This package just composes their JS surfaces.
-- Doesn't render any UI. For the in-XR diagnostic HUD pattern, look
-  at the digivision app's `components/PicoXRFeatures.tsx` and
-  `components/PicoSdkStatus.tsx`.
+  `expo-pico-core`'s `PicoDevice.classPresent()`, which each package's
+  HybridObject calls. This package just composes their JS surfaces.
+- Doesn't render any UI. The example app's `DiagnosticsPanel` shows the
+  in-XR diagnostic HUD pattern.
 
 ## Boot wiring
 

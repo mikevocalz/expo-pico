@@ -28,7 +28,7 @@ Viro's Quest support uses an `xRMode` axis (`AR | GVR | OVR_MOBILE`) that select
 | Immersive launcher category | not emitted                                 | `IMMERSIVE_HMD` + `com.pico.intent.category.VR` + legacy PICO VR |
 | ABI filter                  | none                                        | `arm64-v8a` on pico flavor only                                  |
 | Platform SDK identity       | none                                        | `pico_app_id` / `pico_app_key` / IAP + foreign-region siblings   |
-| Runtime SDK detection       | none                                        | `PicoPlatformSdkDetector` reflection probes                      |
+| Runtime SDK detection       | none                                        | `PicoDevice.classPresent()` reflection probes                    |
 | Prebuild diagnostics        | limited `WarningAggregator` on new-arch     | 7-check `withPicoDiagnostics` + standalone `expo-pico-doctor`    |
 | Renderer                    | bundles its own OpenGL scene graph          | renderer-agnostic                                                |
 

@@ -43,7 +43,7 @@ All `expo-pico-*` packages reference these AARs via:
 compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
 ```
 
-The consumer app (`digivision/`) may alternatively place the AARs under
+A consuming app may alternatively place the AARs under its own
 `android/app/libs/` and reference them there — whichever path is used,
 ensure the AARs are present before running `./gradlew assemblePicoDebug`.
 

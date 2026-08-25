@@ -81,8 +81,8 @@ Every sibling used to carry:
 implementation project(':expo-pico-core')
 ```
 
-That existed so sibling Kotlin could import `PicoPlatformSdkDetector` from
-core, and it was the one place the build depended on an autolinker
+That existed so sibling Kotlin could import core's SDK-detection helper
+(then `PicoPlatformSdkDetector`, now `PicoDevice.classPresent()`), and it was the one place the build depended on an autolinker
 choosing a particular Gradle project name.
 
 **It has been removed.** Under Nitro each package is a self-contained

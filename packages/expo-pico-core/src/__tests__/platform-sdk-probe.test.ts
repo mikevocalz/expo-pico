@@ -1,7 +1,7 @@
 /**
  * Reflection-based PICO Platform SDK detection.
  *
- * The Kotlin detector (`PicoPlatformSdkDetector`) wraps `Class.forName`;
+ * The Kotlin detector (`PicoDevice.classPresent()`) wraps `Class.forName`;
  * it can only be exercised on a real or emulated device. These tests
  * cover the JS-side layer: the normalizer in `getPlatformSdkProbe`, the
  * boolean / string coercions in `isPlatformSdkPresent` /

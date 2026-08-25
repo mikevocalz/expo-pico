@@ -129,7 +129,7 @@ if (isSocialAvailable()) {
 | -------------------------------------- | ---------------------------------------------------------- |
 | `isSocialAvailable()`                  | Returns `true` on a PICO build with the Social SDK linked  |
 | `getSocialSdkVersion()`                | Returns the PICO Platform SDK version string               |
-| `getCurrentUser()`                     | Returns the authenticated user's `PicoUser` profile        |
+| `getCurrentUser()`                     | Returns the authenticated user's `SocialUser` profile      |
 | `getFriendList(pageToken?, pageSize?)` | Returns a paginated `FriendListResult`                     |
 | `getFriendshipStatus(userId)`          | Returns the `FriendshipStatus` with a given user           |
 | `sendFriendRequest(userId)`            | Sends a friend request; returns the `FriendRequest` record |
