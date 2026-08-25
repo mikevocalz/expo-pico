@@ -126,6 +126,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // non-system OpenXR loader (rare — Viro uses the system loader).
         ndkAbiFilters: true,
         openXrLoaderDeclaration: true,
+        viroRendererOverlay: true,
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
