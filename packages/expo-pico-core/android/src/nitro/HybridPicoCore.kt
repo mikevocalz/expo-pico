@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.picocore
 
+import android.content.Intent
 import android.content.pm.FeatureInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -139,6 +140,44 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   override val declaredTargetDevices: Array<String>
     get() = PicoDevice.splitList(BuildConfig.PICO_TARGET_DEVICES).toTypedArray()
 
+  /**
+   * Resolve this app's immersive activity, if it declares one.
+   *
+   * Matched on PICO's VR intent category rather than a class name, so it finds
+   * whatever the renderer's config plugin generated — Viro's `.VRActivity`, or
+   * an app's own. Restricted to this package: `queryIntentActivities` would
+   * otherwise happily return the system launcher's VR entries.
+   *
+   * The legacy `com.picovr.` category is checked too, because devices still on
+   * PICO OS 5 filter on that one.
+   */
+  private fun resolveImmersiveActivity(): Intent? {
+    val context = PicoDevice.context() ?: return null
+    val pm = context.packageManager
+    for (category in IMMERSIVE_CATEGORIES) {
+      val probe = Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(context.packageName)
+      val match = runCatching { pm.queryIntentActivities(probe, 0) }
+        .getOrDefault(emptyList())
+        .firstOrNull() ?: continue
+      return Intent(Intent.ACTION_MAIN)
+        .addCategory(category)
+        .setClassName(context.packageName, match.activityInfo.name)
+    }
+    return null
+  }
+
+  override fun hasImmersiveActivity(): Promise<Boolean> =
+    Promise.resolved(resolveImmersiveActivity() != null)
+
+  override fun enterImmersiveScene(): Promise<Boolean> {
+    val context = PicoDevice.context() ?: return Promise.resolved(false)
+    val intent = resolveImmersiveActivity() ?: return Promise.resolved(false)
+    // Core holds an application Context, not an Activity, so NEW_TASK is
+    // required. SINGLE_TOP keeps a re-entry from stacking a second copy.
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+    return Promise.resolved(runCatching { context.startActivity(intent) }.isSuccess)
+  }
+
   override fun hasSystemFeature(name: String): Promise<Boolean> {
     val pm = PicoDevice.context()?.packageManager
       ?: return Promise.resolved(false)
@@ -246,6 +285,12 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     get() = (flags and FeatureInfo.FLAG_REQUIRED) != 0
 
   private companion object {
+    /** PICO's VR intent categories, current first then the OS 5 legacy name. */
+    private val IMMERSIVE_CATEGORIES = listOf(
+      "com.pico.intent.category.VR",
+      "com.picovr.intent.category.VR",
+    )
+
     const val SWAN_RUNTIME_CLASS = "expo.modules.pico.swan.PicoSwanRuntime"
     const val OS5_RUNTIME_CLASS = "expo.modules.pico.os5.PicoOs5Runtime"
 

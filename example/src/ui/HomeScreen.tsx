@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
-import { getPicoRuntimeInfo } from '@expo-pico/core';
+import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
 
+import { AccountHeader } from './AccountHeader';
 import { IsoCube } from './IsoCube';
 import { useLayout } from './useLayout';
 import { palette, radius, space } from './theme';
@@ -64,8 +65,18 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const L = useLayout();
   const onHeadset = info.xrMode !== 'mobile';
 
+  // Prefer the immersive activity. Rendering the scene inline leaves the 2D
+  // panel in the environment, because the panel is what the renderer draws
+  // into. enterImmersiveScene() resolves false when no VR-category activity is
+  // declared, and then the inline route is the only thing available.
+  const onEnterXr = useCallback(async () => {
+    if (await enterImmersiveScene()) return;
+    onNavigate('xr');
+  }, [onNavigate]);
+
   const hero = (
     <View style={[styles.heroCol, L.twoColumn && styles.heroColWide]}>
+      <AccountHeader />
       <IsoCube size={L.heroSize} />
       <Text style={[styles.title, { fontSize: L.titleSize }, L.twoColumn && styles.textLeft]}>
         expo-pico
@@ -95,7 +106,7 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
       </View>
 
       <Pressable
-        onPress={() => onNavigate('xr')}
+        onPress={onEnterXr}
         style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
         accessibilityRole="button"
         accessibilityLabel="Enter the XR scene"

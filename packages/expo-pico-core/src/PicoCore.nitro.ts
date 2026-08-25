@@ -110,6 +110,25 @@ export interface PicoCore extends HybridObject<{ android: 'kotlin' }> {
   getPlatformSdkProbe(): Promise<Record<string, boolean>>;
 
   getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]>;
+
+  /**
+   * Start this app's immersive activity — the one declaring PICO's VR intent
+   * category — so it takes over the display.
+   *
+   * PICO launches an app as a flat 2D panel. An OpenXR renderer drawing inside
+   * that panel stays inside it: the panel is still there, floating in the
+   * scene, because the scene *is* the panel. Exclusive display needs a separate
+   * Activity carrying `com.pico.intent.category.VR`, which is what
+   * `withPicoLauncherActivity` writes onto `.VRActivity`.
+   *
+   * The activity is discovered through `PackageManager` rather than named, so
+   * this works whatever the renderer's plugin generated. Resolves `false` when
+   * no such activity is declared.
+   */
+  enterImmersiveScene(): Promise<boolean>;
+
+  /** Whether an activity declaring the PICO VR category exists in this app. */
+  hasImmersiveActivity(): Promise<boolean>;
   /** Undefined when the capability has no system-feature key to check. */
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | undefined>;
 }

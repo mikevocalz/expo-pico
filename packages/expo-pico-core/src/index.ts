@@ -320,3 +320,29 @@ export { getPicoLocation, requestLocationPermission, isLocationAvailable } from 
 export type { PicoCoordinates } from './location';
 
 export default ExpoPicoModule;
+
+/**
+ * Hand the display to this app's immersive activity.
+ *
+ * PICO starts every app as a flat 2D panel. A renderer drawing inside that
+ * panel stays inside it — which is why an "XR scene" rendered inline still
+ * shows the panel floating in the environment. Exclusive display requires a
+ * separate Activity carrying PICO's VR intent category; `@expo-pico/core`'s
+ * plugin writes that onto `.VRActivity`.
+ *
+ * Resolves `false` when no such activity is declared, so a 2D-only build can
+ * call this unconditionally.
+ *
+ * Note this is not something the renderer will do for you: `@reactvision/
+ * react-viro` gates its equivalent (`VRLauncher.launchVRScene()`) behind a
+ * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
+ * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
+ */
+export async function enterImmersiveScene(): Promise<boolean> {
+  return ExpoPicoModule.enterImmersiveScene();
+}
+
+/** Whether this build declares an activity with PICO's VR intent category. */
+export async function hasImmersiveActivity(): Promise<boolean> {
+  return ExpoPicoModule.hasImmersiveActivity();
+}

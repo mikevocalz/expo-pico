@@ -152,6 +152,14 @@ const ExpoPicoModule = {
   async getPlatformSdkProbe(): Promise<Record<string, boolean>> {
     return (await core()?.getPlatformSdkProbe()) ?? {};
   },
+  async enterImmersiveScene(): Promise<boolean> {
+    return (await core()?.enterImmersiveScene()) ?? false;
+  },
+
+  async hasImmersiveActivity(): Promise<boolean> {
+    return (await core()?.hasImmersiveActivity()) ?? false;
+  },
+
   async getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]> {
     const entries = (await core()?.getCapabilitySnapshot()) ?? [];
     // The spec uses optionals; types.ts uses nulls. Normalise per entry —
