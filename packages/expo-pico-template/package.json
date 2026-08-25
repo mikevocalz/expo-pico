@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/template",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Expo app starter template preconfigured for PICO OS 6 / Project Swan. Consume via `npx create-expo-app --template expo-pico-template`.",
   "main": "index.js",
   "private": false,
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "expo": "~57.0.16",
-    "@expo-pico/core": "^0.2.0",
+    "@expo-pico/core": "^1.0.0",
     "expo-status-bar": "~57.0.1",
     "react": "^19.2.7",
     "react-native": "0.86.2",

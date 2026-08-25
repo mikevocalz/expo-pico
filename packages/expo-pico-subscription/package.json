@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/subscription",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "PICO platform subscription billing and entitlement APIs for Expo apps.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -46,7 +46,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@expo-pico/platform-service-common": "^0.1.0"
+    "@expo-pico/platform-service-common": "^1.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
@@ -62,7 +62,7 @@
   },
   "peerDependencies": {
     "expo": "~57.0.16",
-    "@expo-pico/core": ">=0.2.0",
+    "@expo-pico/core": ">=1.0.0",
     "react": "*",
     "react-native": "*",
     "react-native-nitro-modules": ">=0.37.0"

@@ -28,7 +28,7 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 | [`expo-pico-core`](./packages/expo-pico-core)                   | stable      | Build config, flavors, launcher contract, runtime, `expo-pico-doctor` CLI                                                                                                                                                              |
 | [`expo-pico-account`](./packages/expo-pico-account)             | live        | `PicoSignInClient.getSignInClient` → `getUserInfo / signIn / signOut / getAccessToken`                                                                                                                                                 |
 | [`expo-pico-iap`](./packages/expo-pico-iap)                     | live        | `PicoIapClient.getIapClient` → `getProductList / purchaseProduct / consumeProduct / getPurchasedProductList`                                                                                                                           |
-| [`expo-pico-subscription`](./packages/expo-pico-subscription)   | live        | routed through `IapClient` (PPS has no separate sub client); cancel returns `REQUIRES_OS_UI`                                                                                                                                           |
+| [`expo-pico-subscription`](./packages/expo-pico-subscription)   | partial     | routed through `IapClient` (PPS has no separate sub client); `cancelSubscription()` is `NOT_IN_PPS_1_0` — cancelling happens in the PICO Store                                                                                         |
 | [`expo-pico-achievements`](./packages/expo-pico-achievements)   | live        | `AchievementClient.getArchievementClient` (PICO typo intentional): `unlock / addCount / addFields / getAllDefinitions / getProgressByName`                                                                                             |
 | [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)   | live        | `LeaderboardClient.getLeaderboardClient`: `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry`                                                                                               |
 | [`expo-pico-social`](./packages/expo-pico-social)               | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) plus `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.0.x |
@@ -119,15 +119,78 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
+## Supported devices
+
+<table>
+<tr>
+<td width="200" valign="top">
+<img src="./docs/assets/pico-4-ultra.jpg" alt="PICO 4 Ultra headset with two controllers" width="180">
+</td>
+<td valign="top">
+
+### PICO 4 / PICO 4 Ultra
+
+Ships on **PICO OS 5**, the legacy PVR / current XR runtime.
+
+```ts
+xrMode: 'pico-os5';
+```
+
+The 16KB-alignment overlay matters most here — PICO OS 5 on Android 14+ refuses
+a 4KB-aligned `libopenxr_loader.so`, which is why `expo-pico-core` ships its
+own. Verify a build with `./scripts/verify-16kb-alignment.py path/to/app.apk`.
+
+</td>
+</tr>
+<tr>
+<td width="200" valign="top">
+<img src="./docs/assets/pico-space-pro-concept.jpg" alt="Concept render of a PICO Space Pro style headset" width="180">
+</td>
+<td valign="top">
+
+### PICO Space Pro / Project Swan
+
+Ships on **PICO OS 6**, the next-gen runtime.
+
+```ts
+xrMode: 'pico-swan';
+```
+
+Opt into the Swan runtime subproject with `picoSwan.swanRuntimeProject`, or the
+Swan Maven dependency with `picoSwan.swanSdkArtifact`. `isSwanRuntime()` reports
+which runtime initialised at runtime.
+
+> The image above is a **concept render, not the shipping device** — it is an
+> AI-generated illustration from a blog, kept only as a visual placeholder.
+> Do not treat it as a reference for industrial design or optics.
+
+</td>
+</tr>
+<tr>
+<td width="200" valign="top">
+</td>
+<td valign="top">
+
+### Meta Quest 3 / Quest 3S
+
+Built from the same source through the `quest` build flavor. The plugin is
+renderer-agnostic, and the `<uses-native-library>` declaration it writes
+composes with Quest's OpenXR loader, so one APK can ship to both ecosystems.
+
+</td>
+</tr>
+</table>
+
+Not supported: iOS (there is no iOS PICO runtime), PICO Neo 3, and PICO 4
+Enterprise on PVR 2.x without the legacy AAR drop-in — see
+[vendor/pico-sdk/README.md](./vendor/pico-sdk/README.md).
+
 ## Compatibility
 
 - Expo SDK 57 (current baseline). React Native 0.86.2. React 19.2. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
-- Devices:
-  - PICO 4 / PICO 4 Ultra: PICO OS 5 (legacy PVR XR runtime); `xrMode: 'pico-os5'`
-  - PICO Swan: PICO OS 6 (next-gen runtime); `xrMode: 'pico-swan'`
-  - Meta Quest 3 / Quest 3S via the `quest` build flavor; OpenXR loader composes with the `<uses-native-library>` declaration the plugin writes
+- Devices: see [Supported devices](#supported-devices).
 - 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.62 to satisfy the system loader on PICO OS 5.
 
 ## Doctor

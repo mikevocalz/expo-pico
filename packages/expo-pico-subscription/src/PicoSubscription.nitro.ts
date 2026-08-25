@@ -53,6 +53,6 @@ export interface PicoSubscription extends HybridObject<{ android: 'kotlin' }> {
   getSubscriptionEntitlement(sku: string): Promise<SubscriptionEntitlement>;
   /** Seam — PICO requires OS storefront UI. */
   subscribe(options: SubscribeOptions): Promise<void>;
-  /** Returns REQUIRES_OS_UI; cancellation happens in the PICO settings app. */
+  /** Rejects with `NOT_IN_PPS_1_0`; cancelling happens in the PICO Store. */
   cancelSubscription(sku: string): Promise<void>;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/core",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Expo config plugin and runtime module for PICO OS 6 XR devices.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",

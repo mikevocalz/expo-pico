@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/platform-service-common",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Shared error types, native-module resolution, and pagination helpers used by the @expo-pico/* packages. Published so those packages install standalone; not a stable public API.",
   "main": "build/index.js",
   "types": "build/index.d.ts",

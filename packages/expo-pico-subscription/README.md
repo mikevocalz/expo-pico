@@ -1,6 +1,6 @@
 # expo-pico-subscription
 
-[![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
+[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform subscription billing and entitlement for Expo apps.

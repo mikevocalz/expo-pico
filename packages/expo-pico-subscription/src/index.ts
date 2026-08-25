@@ -53,7 +53,7 @@ export async function subscribe(options: SubscribeOptions): Promise<void> {
   await wrapNativeCall(PKG, 'subscribe', native()!.subscribe(options));
 }
 
-/** Returns REQUIRES_OS_UI — cancellation happens in the PICO settings app. */
+/** Rejects with `NOT_IN_PPS_1_0` — cancelling happens in the PICO Store. */
 export async function cancelSubscription(sku: string): Promise<void> {
   guardService(isSubscriptionAvailable(), PKG, 'cancelSubscription');
   await wrapNativeCall(PKG, 'cancelSubscription', native()!.cancelSubscription(sku));
