@@ -1,9 +1,17 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/pico-wordmark-dark.svg">
+  <img src="./docs/assets/pico-wordmark-light.svg" alt="PICO" height="34">
+</picture>
+
 # expo-pico
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-57-000020.svg?logo=expo)](https://docs.expo.dev/)
-[![New Architecture](https://img.shields.io/badge/React%20Native-New%20Architecture-20232A.svg?logo=react)](https://reactnative.dev/architecture/landing-page)
-[![Android only](https://img.shields.io/badge/platform-Android-3DDC84.svg?logo=android&logoColor=white)]()
+**Ship an Expo app to a PICO headset without ejecting to the bare workflow.**
+
+[![Expo SDK 57](https://img.shields.io/badge/Expo_SDK-57-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
+[![New Architecture](https://img.shields.io/badge/React_Native-New_Architecture-0B0B0C?style=flat-square&logo=react&logoColor=61DAFB)](https://reactnative.dev/architecture/landing-page)
+[![Nitro Modules](https://img.shields.io/badge/Nitro_Modules-0.37-0B0B0C?style=flat-square)](https://nitro.margelo.com)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](./docs/FAQ.md#2-why-is-this-android-only)
+[![MIT](https://img.shields.io/badge/license-MIT-6B7280?style=flat-square)](./LICENSE)
 
 Expo-native package family for PICO 4 / 4 Ultra (PICO OS 5) and Project Swan (PICO OS 6) XR devices.
 
@@ -30,13 +38,23 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 | [`expo-pico-rtc`](./packages/expo-pico-rtc)                     | unavailable | PPS 1.0.x removed RTC. Use `@fishjam-cloud/react-native-webrtc`                                                                                                                                                                        |
 | [`expo-pico-storage`](./packages/expo-pico-storage)             | unavailable | PPS 1.0.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local                                                                                                  |
 
-`live` = bridge calls the real PPS 1.0.x SDK and returns real data. `partial` = some methods wired; others return `NOT_IN_PPS_1_0` with a hint. `unavailable` = every method returns `NOT_IN_PPS_1_0` (kept as a typed seam so future PPS releases can wire without an API break).
+Every package README carries the same chip, so status travels with the package.
+
+| Chip                                                                                        | Meaning                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)               | The bridge calls the real PPS 1.0.x SDK and returns real data.                                                                                                         |
+| ![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)         | Some methods wired; the rest return `NOT_IN_PPS_1_0` with a hint naming what PPS does offer.                                                                           |
+| ![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square) | PPS 1.0.x publishes no artifact for this service, so every method returns `NOT_IN_PPS_1_0`. Kept as a typed seam so a future release can wire it without an API break. |
+
+`unavailable` is grey rather than red on purpose — a seam that reports its own
+absence is behaving correctly. Nothing is broken; the platform simply does not
+ship that service.
 
 ### Activating the platform-service bridges
 
 PICO ships PPS 1.0.x on the public Volcengine maven (`https://artifact.bytedance.com/repository/Volcengine/`). `expo-pico-core`'s Gradle plugin adds the repo and the 11 `com.pico.pps:platform-service-{auth,iap,achievement,...}:1.0.0` coords automatically. No AAR drop-in, no developer-console login required. Install `@expo-pico/core`, prebuild, and the bridges are live on first launch.
 
-The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [docs/PLATFORM-SDK.md](./docs/PLATFORM-SDK.md).
+The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [vendor/pico-sdk/README.md](./vendor/pico-sdk/README.md). (`docs/PLATFORM-SDK.md`, linked here previously, never existed.)
 
 ## Quick start
 

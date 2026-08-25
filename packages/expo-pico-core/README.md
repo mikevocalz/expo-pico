@@ -1,5 +1,8 @@
 # expo-pico-core
 
+[![stable](https://img.shields.io/badge/PPS_1.0.x-stable-0B0B0C?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project Swan XR devices.
 
 `expo-pico-core` is the foundation of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. It configures your Expo Android project to build and run on PICO headsets (PICO 4, PICO 4 Ultra, Swan) via Continuous Native Generation. No manual Android project editing required.

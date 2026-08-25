@@ -1,9 +1,12 @@
 # expo-pico-rooms
 
+[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 PICO platform room lifecycle for Expo apps.
 
-Provides room creation, joining, and membership management on top of the PICO
-Platform SDK social interaction layer.
+Read-only room discovery on top of the PICO Platform SDK friend service.
+Creation, joining and membership management are **not** available — see below.
 
 > ## Read-only on PPS 1.0.x
 >

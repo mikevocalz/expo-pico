@@ -1,5 +1,8 @@
 # expo-pico-social
 
+[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 PICO platform social APIs for Expo apps. Friends, presence, invites, and real-time social events on PICO OS 6 devices.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.

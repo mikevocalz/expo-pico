@@ -1,5 +1,8 @@
 # expo-pico-storage
 
+[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 Typed seam for PICO platform cloud storage on PICO OS 6.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.

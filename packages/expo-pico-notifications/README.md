@@ -1,5 +1,8 @@
 # expo-pico-notifications
 
+[![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 PICO push notification registration and token APIs for Expo apps.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
