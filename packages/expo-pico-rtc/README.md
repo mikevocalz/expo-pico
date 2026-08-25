@@ -1,8 +1,22 @@
 # expo-pico-rtc
 
-Real-time voice communication (RTC) for PICO OS 6 apps built with Expo.
+Typed seam for real-time voice communication (RTC) on PICO OS 6.
 
-Wraps the PICO RTC SDK to provide channel-based voice comms.
+> ## Unavailable on PPS 1.0.x
+>
+> **PPS 1.0.x removed RTC.** There is no `platform-service-rtc` artifact on
+> the PICO repo, so nothing here can be wired — this is not a missing
+> integration that can be reverse-engineered, the service does not exist.
+> Every async method rejects with `NOT_IN_PPS_1_0`, on device and off.
+>
+> `ppsArtifacts.ts` maps `@expo-pico/rtc` to an empty service list, which is
+> the machine-readable form of the same fact.
+>
+> **Use [`@fishjam-cloud/react-native-webrtc`](https://www.npmjs.com/package/@fishjam-cloud/react-native-webrtc)
+> instead.** `@expo-pico/app-kit` already probes for it at runtime.
+>
+> The package is kept as a typed seam so a future PPS release can be wired
+> without an API break. Do not build against it today.
 
 ## Installation
 
@@ -69,17 +83,17 @@ sub.remove();
 
 ## Extension Seams
 
-The PPS Maven artifacts that back voice / channels resolve from public
-Maven on `picoDebug` builds — `expo-pico-core`'s `withPicoGradle` plugin
-registers the Bytedance repo and the dependencies automatically, so no
-AAR drop is required. A handful of channel-management endpoints may
-still surface `NOT_IMPLEMENTED` until the matching PPS endpoint ships in
-a future PPS release.
+There are none to activate. Unlike `account` or `iap`, no PPS Maven artifact
+backs this package — `expo-pico-core`'s Gradle plugin adds no RTC dependency
+because none is published. No build flavor, hardware, or AAR drop changes the
+result.
 
 ## Status
 
-- `getRtcServiceStatus()`: implemented (SDK presence check, reflection-based)
-- Most async APIs: live on `picoDebug` builds via PPS Maven. Some advanced channel-management endpoints are extension seams pending a future PPS release.
+- `getRtcServiceStatus()`: implemented — always reports unavailable, since no
+  RTC service exists to detect.
+- **Every async API: `NOT_IN_PPS_1_0`.** Not "pending a future release" in any
+  scheduled sense; PPS 1.0.x deleted the surface.
 
 ## Requirements
 

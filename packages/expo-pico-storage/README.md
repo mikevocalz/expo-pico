@@ -1,8 +1,27 @@
 # expo-pico-storage
 
-PICO platform cloud storage APIs for Expo apps. Save, load, sync, and manage key-value data on PICO OS 6 devices.
+Typed seam for PICO platform cloud storage on PICO OS 6.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
+
+> ## Unavailable on PPS 1.0.x
+>
+> **PPS 1.0.x removed cloud storage.** No `platform-service-storage` artifact
+> exists on the PICO repo, so there is nothing to reverse-engineer or wire up.
+> Every async method rejects with `NOT_IN_PPS_1_0` regardless of build flavor
+> or hardware. `ppsArtifacts.ts` maps `@expo-pico/storage` to an empty service
+> list.
+>
+> **Alternatives:**
+>
+> - **Cross-device / per-player state** — run your own backend keyed off
+>   `getUserProfile().userId` from `@expo-pico/account`. That user id is stable
+>   and is the same key PPS cloud saves were scoped to.
+> - **Device-local only** — [`expo-secure-store`](https://docs.expo.dev/versions/latest/sdk/securestore/)
+>   (or `@react-native-async-storage/async-storage` if the data isn't sensitive).
+>
+> The package is kept as a typed seam so a future PPS release can be wired
+> without an API break. Do not build against it today.
 
 ## Installation
 
@@ -21,8 +40,12 @@ plugins: [
 
 ## Status
 
-- Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. Storage routes through the same PPS Maven artifacts (`com.pico.pps:*:1.0.0`) that `expo-pico-core` resolves from public Maven automatically, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
+- Maturity: typed seam, not a working integration.
+- PICO Platform Service SDK (PPS) linkage: **none.** PPS 1.0.x ships no storage
+  artifact, so `expo-pico-core`'s Gradle plugin adds no storage dependency and
+  every method rejects with `NOT_IN_PPS_1_0`. This is unaffected by build
+  flavor, hardware, or Gradle connectivity — the earlier claim that it was
+  "live on `picoDebug` builds" was wrong.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
