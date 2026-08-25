@@ -83,6 +83,14 @@ export interface PicoRooms extends HybridObject<{ android: 'kotlin' }> {
   joinRoom(roomId: string): Promise<JoinRoomResult>;
   leaveRoom(): Promise<void>;
   getRoomInfo(roomId: string): Promise<RoomInfo>;
+  /**
+   * Every room currently visible in the friends-and-rooms feed.
+   *
+   * This is a discovery feed ("join Alice's game"), not a room directory: it
+   * only ever contains rooms a friend of the signed-in user is in. Returns an
+   * empty array when no friend is in a room.
+   */
+  getFriendsAndRooms(): Promise<RoomInfo[]>;
   kickUser(userId: string): Promise<void>;
   updateRoomData(data: Record<string, string>): Promise<void>;
   requestMatchmaking(options: MatchmakingOptions): Promise<void>;

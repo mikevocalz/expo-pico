@@ -60,9 +60,10 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
    * Looks the room up in the friends-and-rooms feed.
    *
    * Member lists are not in the payload — PPS returns one friend per room
-   * entry, being a "who can I join" feed rather than a roster — so
-   * `members` is the friends seen in that room and `memberCount` is the
-   * room's own count, which may be larger.
+   * entry, being a "who can I join" feed rather than a roster — so `members`
+   * is the friends seen in that room and `memberCount` counts exactly those
+   * same entries. Neither reflects the room's true occupancy, which PPS does
+   * not report; `maxMembers` is the only real capacity figure.
    */
   override fun getRoomInfo(roomId: String): Promise<RoomInfo> {
     val friend = friends ?: return Promise.rejected(PicoPps.unavailable("getRoomInfo"))
@@ -93,6 +94,49 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
           )
         }.toTypedArray(),
       )
+    }
+  }
+
+  /**
+   * The whole feed, one [RoomInfo] per distinct room.
+   *
+   * Same source as [getRoomInfo]; that one filters to a single id, this one
+   * groups the lot. Returns an empty array rather than failing when no friend
+   * is in a room — "nobody is playing right now" is an ordinary state.
+   *
+   * The mapping is duplicated from [getRoomInfo] on purpose. Factoring it into
+   * a helper means naming the PPS bean types in a signature, and those names
+   * are not in `docs/PPS-API-SURFACE.md`; inside the `bridge` lambda they stay
+   * inferred, which is how the existing read path already works.
+   */
+  override fun getFriendsAndRooms(): Promise<Array<RoomInfo>> {
+    val friend = friends
+      ?: return Promise.rejected(PicoPps.unavailable("getFriendsAndRooms"))
+    return friend.getFriendsAndRooms().bridge("getFriendsAndRooms") { response ->
+      response.userAndRoomList.orEmpty()
+        .filter { it.roomInfo != null }
+        .groupBy { it.roomInfo?.id?.toString().orEmpty() }
+        .mapNotNull { (roomId, entries) ->
+          val room = entries.firstOrNull()?.roomInfo ?: return@mapNotNull null
+          RoomInfo(
+            roomId = roomId,
+            name = room.name,
+            joinPolicy = room.joinPolicy.toJoinPolicy(),
+            memberCount = entries.size.toDouble(),
+            maxMembers = room.maxUser?.toDouble() ?: 0.0,
+            data = emptyMap(),
+            members = entries.mapNotNull { entry ->
+              val user = entry.userInfo ?: return@mapNotNull null
+              RoomMember(
+                userId = user.openUid.orEmpty(),
+                displayName = user.displayName.orEmpty(),
+                role = RoomMemberRole.MEMBER,
+                isPresent = true,
+              )
+            }.toTypedArray(),
+          )
+        }
+        .toTypedArray()
     }
   }
 

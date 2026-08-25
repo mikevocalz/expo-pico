@@ -37,6 +37,8 @@ means the family exposes it and PPS has no such call.
 
 ## Confirmed correct
 
+- **rooms** — `getFriendsAndRooms()` is now exported (read-only discovery
+  feed); every mutating call remains a correct `NOT_IN_PPS_1_0` seam.
 - **rooms, rtc, storage** — no such artifacts exist on the repo. The
   `NOT_IN_PPS_1_0` seams are accurate, and read-only rooms via
   `friend.getFriendsAndRooms()` is the only real path.

@@ -93,6 +93,14 @@ plugin `tsconfig.json` files that extended it now inherit from the repo root
   parameter `hand` to `side`. Positional, so callers are unaffected; named-
   argument or `.length`-style reflection is not.
 
+### `@expo-pico/rooms` — new export
+
+`getFriendsAndRooms()` surfaces the read-only friends-and-rooms discovery feed
+that previously existed only inside `getRoomInfo()`. Returns one `RoomInfo` per
+distinct room, `[]` when no friend is in one. `memberCount` counts the friends
+visible in that room, not the room's true occupancy, which PPS does not report.
+PPS marks the underlying call `@Deprecated("Legacy")` with no replacement.
+
 ### Docs
 
 `orientation` in the QUICKSTART, migration guide and `@expo-pico/core` README

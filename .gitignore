@@ -14,6 +14,11 @@ cli/build/
 # even though git ignores it.
 packages/*/nitrogen/generated/
 
+# yarn is the package manager (see `packageManager` + .github/workflows).
+# A second lockfile drifts silently and is never the one CI resolves from.
+bun.lock
+package-lock.json
+
 # tsc emit that lands next to sources when a tsconfig outDir is misrooted
 packages/*/plugin/src/**/*.js
 packages/*/plugin/src/**/*.d.ts

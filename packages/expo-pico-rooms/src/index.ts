@@ -77,6 +77,18 @@ export async function getRoomInfo(roomId: string) {
   return wrapNativeCall(PKG, 'getRoomInfo', native()!.getRoomInfo(roomId));
 }
 
+/**
+ * Every room currently visible in the friends-and-rooms feed.
+ *
+ * Discovery feed, not a directory: only rooms a friend is in. Empty array when
+ * none are. `memberCount` counts the friends visible in that room, not the
+ * room's true occupancy, which PPS does not report.
+ */
+export async function getFriendsAndRooms() {
+  guardService(isRoomsAvailable(), PKG, 'getFriendsAndRooms');
+  return wrapNativeCall(PKG, 'getFriendsAndRooms', native()!.getFriendsAndRooms());
+}
+
 export async function kickUser(userId: string): Promise<void> {
   guardService(isRoomsAvailable(), PKG, 'kickUser');
   await wrapNativeCall(PKG, 'kickUser', native()!.kickUser(userId));

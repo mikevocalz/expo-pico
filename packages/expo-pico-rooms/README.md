@@ -11,15 +11,18 @@ Platform SDK social interaction layer.
 > _read-only_ and comes from the `friend` service, which is why
 > `ppsArtifacts.ts` maps this package to `['friend']` and nothing else.
 >
-> In practice that means exactly one working method: `getRoomInfo(roomId)`,
-> which filters `friend.getFriendsAndRooms()` under the hood. It therefore only
-> resolves rooms **a friend is currently in**, and it throws `ROOM_NOT_FOUND`
-> otherwise. `memberCount` is the room's own count while `members` lists only
-> the friends visible in that feed, so the two legitimately disagree. PPS
-> attaches no key/value payload to a room, so `data` is always empty.
+> In practice that means two working methods, both reading the same feed:
+> `getFriendsAndRooms()` for the whole feed and `getRoomInfo(roomId)` for one
+> entry. Both only see rooms **a friend is currently in**; `getRoomInfo` throws
+> `ROOM_NOT_FOUND` otherwise, while `getFriendsAndRooms` returns `[]`.
 >
-> There is no "list rooms" export — PPS's `getFriendsAndRooms()` is not
-> surfaced directly. See [PPS-WIRING-GAPS.md](../../docs/PPS-WIRING-GAPS.md).
+> Read `memberCount` carefully: it counts the friends visible in that room —
+> the same entries as `members` — not the room's true occupancy, which PPS does
+> not report. `maxMembers` is the only real capacity figure, and `data` is
+> always empty because PPS attaches no key/value payload to a room.
+>
+> Note that PPS marks `getFriendsAndRooms` `@Deprecated("Legacy")` in the 1.0.0
+> artifact with no named replacement, so even this read path is on notice.
 >
 > Everything that mutates room state — `createRoom`, `joinRoom`, `leaveRoom`,
 > `kickUser`, `updateRoomData`, `requestMatchmaking`, `cancelMatchmaking` —
@@ -110,8 +113,10 @@ PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0
 ## Status
 
 - `isRoomsAvailable()`: implemented (SDK presence check)
-- `getRoomInfo(roomId)`: backed by the `friend` service; resolves only rooms a
-  friend is currently in.
+- `getFriendsAndRooms()`: backed by the `friend` service; the whole discovery
+  feed, `[]` when no friend is in a room.
+- `getRoomInfo(roomId)`: same feed filtered to one id; throws `ROOM_NOT_FOUND`
+  when no friend is in that room.
 - Every mutating API (`createRoom`, `joinRoom`, `leaveRoom`, `kickUser`,
   `updateRoomData`, matchmaking): `NOT_IN_PPS_1_0`.
 
