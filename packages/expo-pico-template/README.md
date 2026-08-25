@@ -1,5 +1,8 @@
 # Your new PICO app
 
+[![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 Welcome. This project was bootstrapped from [`expo-pico-template`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-template) and ships with everything wired to build and install on PICO 4 / 4 Ultra / Swan.
 
 ## What's already wired

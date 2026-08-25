@@ -1,6 +1,6 @@
 # expo-pico-rooms
 
-[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform room lifecycle for Expo apps.
@@ -100,12 +100,14 @@ import { sendInvites } from '@expo-pico/social';
 const { userId } = await getUserProfile();
 const roomId = await myBackend.createRoom({ hostUserId: userId });
 
-// PICO social still delivers the invite. InviteOptions has no roomId field,
-// so carry it in `data`.
+// PICO social delivers the invite, but it carries no payload: the real PPS
+// call is sendInvites(userIds, destinationApiName) and the `data` map on the
+// TS options is dropped on the floor (see HybridPicoSocial.sendInvites). The
+// room id has to travel out of band — encode it into the destination, or let
+// the invitee ask your backend which room the inviter is in.
 await sendInvites({
-  destinationApiName: 'my_destination',
+  destinationApiName: destinationForRoom(roomId),
   userIds: [friendUserId], // up to 8
-  data: { roomId },
 });
 ```
 

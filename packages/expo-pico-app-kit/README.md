@@ -1,5 +1,8 @@
 # expo-pico-app-kit
 
+[![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
 App-side orchestration layer for the `expo-pico-*` family. One import,
 typed wrappers, capability cache, no-op-safe everywhere.
 
