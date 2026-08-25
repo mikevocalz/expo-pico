@@ -52,7 +52,7 @@ plugins: [
 
 ```ts
 import {
-  isRoomsSdkAvailable,
+  isRoomsAvailable,
   createRoom,
   joinRoom,
   leaveRoom,
@@ -109,7 +109,7 @@ PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0
 
 ## Status
 
-- `isRoomsSdkAvailable()`: implemented (SDK presence check)
+- `isRoomsAvailable()`: implemented (SDK presence check)
 - `getRoomInfo(roomId)`: backed by the `friend` service; resolves only rooms a
   friend is currently in.
 - Every mutating API (`createRoom`, `joinRoom`, `leaveRoom`, `kickUser`,
