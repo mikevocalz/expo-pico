@@ -585,11 +585,11 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     ...(options.picoSwan ?? {}),
     swanRuntimeProject:
       options.picoSwan?.swanRuntimeProject !== undefined
-        ? (options.picoSwan.swanRuntimeProject ?? null)
+        ? options.picoSwan.swanRuntimeProject ?? null
         : PICO_SWAN_DEFAULTS.swanRuntimeProject,
     swanSdkArtifact:
       options.picoSwan?.swanSdkArtifact !== undefined
-        ? (options.picoSwan.swanSdkArtifact ?? null)
+        ? options.picoSwan.swanSdkArtifact ?? null
         : PICO_SWAN_DEFAULTS.swanSdkArtifact,
   };
 
@@ -668,13 +668,13 @@ function resolvePlatformServiceOptions(
 
   const hasIdentity = Boolean(
     picoAppId ||
-    picoAppKey ||
-    foreign.picoAppId ||
-    foreign.picoAppKey ||
-    picoMerchantId ||
-    picoPayKey ||
-    foreign.picoMerchantId ||
-    foreign.picoPayKey
+      picoAppKey ||
+      foreign.picoAppId ||
+      foreign.picoAppKey ||
+      picoMerchantId ||
+      picoPayKey ||
+      foreign.picoMerchantId ||
+      foreign.picoPayKey
   );
 
   const hasIapIdentity = Boolean(

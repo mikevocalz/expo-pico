@@ -2,7 +2,7 @@
   "name": "expo-pico-example",
   "version": "1.0.0",
   "private": true,
-  "main": "./index.js",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android --variant mobileDebug",
@@ -19,15 +19,6 @@
     "prepare": "echo 'No prepare needed for example app'"
   },
   "dependencies": {
-    "@reactvision/react-viro": "2.58.1",
-    "expo-horizon-core": "file:../.vendor/expo-horizon/expo-horizon-core",
-    "@fishjam-cloud/react-native-client": "0.28.1",
-    "@fishjam-cloud/ts-client": "0.28.1",
-    "@fishjam-cloud/react-native-webrtc": "0.28.0",
-    "react-native-get-random-values": "2.0.0",
-    "expo": "~57.0.16",
-    "expo-asset": "~57.0.14",
-    "expo-file-system": "~57.0.5",
     "@expo-pico/account": "*",
     "@expo-pico/achievements": "*",
     "@expo-pico/app-kit": "*",
@@ -41,13 +32,29 @@
     "@expo-pico/spatial": "*",
     "@expo-pico/storage": "*",
     "@expo-pico/subscription": "*",
+    "@fishjam-cloud/react-native-client": "0.28.1",
+    "@fishjam-cloud/react-native-webrtc": "0.28.0",
+    "@fishjam-cloud/ts-client": "0.28.1",
+    "@reactvision/react-viro": "2.58.1",
+    "expo": "~57.0.16",
+    "expo-asset": "~57.0.14",
+    "expo-constants": "~57.0.14",
+    "expo-file-system": "~57.0.5",
+    "expo-horizon-core": "file:../.vendor/expo-horizon/expo-horizon-core",
+    "expo-linking": "~57.0.7",
+    "expo-router": "~57.0.16",
     "react": "19.2.8",
+    "react-freeze": "^1.0.4",
     "react-native": "0.86.2",
-    "react-native-permissions": "^5.6.0",
+    "react-native-get-random-values": "2.0.0",
     "react-native-nitro-modules": "0.37.0",
-    "react-freeze": "^1.0.4"
+    "react-native-permissions": "^5.6.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.1"
+    "@babel/core": "^8.0.1",
+    "react-native-svg-transformer": "^1.5.3"
   }
 }

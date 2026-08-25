@@ -23,6 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'com.example.expopico',
   },
   plugins: [
+    'expo-router',
     // Meta Horizon / Quest build flavor + manifest (Software Mansion).
     // Creates the `quest` Android build flavor with the right
     // <uses-feature> + panel sizing + supportedDevices entries for the

@@ -61,8 +61,8 @@ export function PicoSceneRoot(): React.JSX.Element {
   const xrStatusRaw: XrSessionStatus = !info.isPicoDevice
     ? 'unsupported'
     : sceneStatus === 'booting'
-      ? 'requesting'
-      : 'active';
+    ? 'requesting'
+    : 'active';
   // Widen for the value-row switch below; control-flow narrowing on a literal
   // ternary would otherwise exclude `'idle'` / `'failed'` from the union.
   const xrStatus = xrStatusRaw as XrSessionStatus;
@@ -99,8 +99,8 @@ export function PicoSceneRoot(): React.JSX.Element {
             info.xrMode === 'pico-os5'
               ? 'pico-os5 (PICO 4 / Ultra)'
               : info.xrMode === 'pico-swan'
-                ? 'pico-os6 (Swan)'
-                : info.xrMode
+              ? 'pico-os6 (Swan)'
+              : info.xrMode
           }
           accent={
             info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os5' ? 'info' : undefined
@@ -134,7 +134,7 @@ export function PicoSceneRoot(): React.JSX.Element {
         />
         <Row
           label="platform sdk"
-          value={info.platformSdkPresent ? (info.platformSdkVersion ?? 'present') : 'seam'}
+          value={info.platformSdkPresent ? info.platformSdkVersion ?? 'present' : 'seam'}
           accent={info.platformSdkPresent ? 'good' : 'info'}
         />
 
@@ -147,8 +147,8 @@ export function PicoSceneRoot(): React.JSX.Element {
             sceneStatus === 'booting'
               ? 'loading…'
               : sceneStatus === 'glb'
-                ? 'gltf loaded'
-                : 'fallback primitive'
+              ? 'gltf loaded'
+              : 'fallback primitive'
           }
           accent={sceneStatus === 'glb' ? 'good' : sceneStatus === 'fallback' ? 'warn' : 'info'}
         />
@@ -158,21 +158,21 @@ export function PicoSceneRoot(): React.JSX.Element {
             xrStatus === 'idle'
               ? 'idle'
               : xrStatus === 'requesting'
-                ? 'requesting…'
-                : xrStatus === 'active'
-                  ? 'active'
-                  : xrStatus === 'unsupported'
-                    ? 'unsupported'
-                    : 'failed'
+              ? 'requesting…'
+              : xrStatus === 'active'
+              ? 'active'
+              : xrStatus === 'unsupported'
+              ? 'unsupported'
+              : 'failed'
           }
           accent={
             xrStatus === 'active'
               ? 'good'
               : xrStatus === 'failed'
-                ? 'bad'
-                : xrStatus === 'requesting'
-                  ? 'info'
-                  : undefined
+              ? 'bad'
+              : xrStatus === 'requesting'
+              ? 'info'
+              : undefined
           }
         />
         {xrDetail ? (

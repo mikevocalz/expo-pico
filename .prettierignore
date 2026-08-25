@@ -1,0 +1,30 @@
+# Generated output. None of this is authored, and whether prettier:check passes
+# should not depend on which build artifacts happen to exist on the machine —
+# the check went from green to 328 failures purely because `yarn build` had run.
+
+# tsc / nitrogen / turbo output
+packages/*/build/
+packages/internal/*/build/
+packages/*/plugin/build/
+packages/*/cli/build/
+packages/*/nitrogen/generated/
+.turbo/
+**/.turbo/
+
+# Android + native build output
+packages/*/android/build/
+packages/*/android/.cxx/
+example/android/
+example/ios/
+example/.expo/
+
+# Dependencies and lockfiles
+node_modules/
+yarn.lock
+bun.lock
+package-lock.json
+
+# Vendored / third-party
+vendor/
+.vendor/
+patches/

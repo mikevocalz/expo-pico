@@ -25,11 +25,11 @@ into consumers on the next prebuild. This skill keeps that fork honest:
 
 ## What to compare
 
-| Local                                              | Upstream (`software-mansion-labs/expo-horizon`)  |
-| -------------------------------------------------- | ------------------------------------------------ |
-| `.vendor/expo-horizon/expo-horizon-core`           | `expo-horizon-core`                              |
-| `.vendor/expo-horizon/expo-horizon-location`      | `expo-horizon-location`                          |
-| `.vendor/expo-horizon/expo-horizon-notifications` | `expo-horizon-notifications`                     |
+| Local                                             | Upstream (`software-mansion-labs/expo-horizon`) |
+| ------------------------------------------------- | ----------------------------------------------- |
+| `.vendor/expo-horizon/expo-horizon-core`          | `expo-horizon-core`                             |
+| `.vendor/expo-horizon/expo-horizon-location`      | `expo-horizon-location`                         |
+| `.vendor/expo-horizon/expo-horizon-notifications` | `expo-horizon-notifications`                    |
 
 Ignored: `build/`, `package.json`, lockfiles, `README`, `CHANGELOG`, `plugin/`,
 `example/`, `.github/`.
@@ -51,6 +51,7 @@ git -C ~/expo-horizon-upstream fetch origin main && git -C ~/expo-horizon-upstre
 ```
 
 3. Read the output:
+
    - **Native section (Android `src/main` + iOS):** empty = PASS. Any hunk is
      either an intentional Horizon-only patch that should be moved to
      `src/quest`, or accidental drift to fix.

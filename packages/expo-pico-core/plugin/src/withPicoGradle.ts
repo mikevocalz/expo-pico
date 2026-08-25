@@ -261,7 +261,9 @@ android.defaultConfig {
     buildConfigField "boolean", "PICO_BODY_TRACKING", "${options.bodyTracking}"
     buildConfigField "boolean", "PICO_SPATIAL_AUDIO", "${options.spatialAudio}"
     buildConfigField "boolean", "PICO_FOVEATED_RENDERING", "${options.foveatedRendering}"
-    buildConfigField "boolean", "PICO_HIGH_SAMPLING_RATE_SENSORS", "${options.highSamplingRateSensors}"
+    buildConfigField "boolean", "PICO_HIGH_SAMPLING_RATE_SENSORS", "${
+      options.highSamplingRateSensors
+    }"
     buildConfigField "boolean", "PICO_BOUNDARY", "${options.boundary}"
     buildConfigField "boolean", "PICO_SCENE_MESH", "${options.sceneMesh}"
     buildConfigField "boolean", "PICO_SENSE_CONTROLLER", "${options.picoSenseController}"

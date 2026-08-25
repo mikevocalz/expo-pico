@@ -118,7 +118,7 @@ function RuntimeCard({ info }: { info: PicoRuntimeInfo }): JSX.Element {
         label="platformSdk"
         value={
           info.platformSdkPresent
-            ? (info.platformSdkVersion ?? 'present')
+            ? info.platformSdkVersion ?? 'present'
             : 'unavailable (build picoDebug on PICO hardware)'
         }
         accent={info.platformSdkPresent ? 'good' : 'info'}
@@ -161,10 +161,10 @@ function DiagnosticsCard({
               report.summary.hasError
                 ? `${report.findings.length} findings incl. errors`
                 : report.summary.hasWarning
-                  ? `${report.findings.length} findings, warnings only`
-                  : report.findings.length > 0
-                    ? `${report.findings.length} info-only`
-                    : 'all clean'
+                ? `${report.findings.length} findings, warnings only`
+                : report.findings.length > 0
+                ? `${report.findings.length} info-only`
+                : 'all clean'
             }
             accent={report.summary.hasError ? 'bad' : report.summary.hasWarning ? 'warn' : 'good'}
           />

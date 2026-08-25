@@ -20,4 +20,14 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// SVG as components. react-native-svg-transformer compiles .svg imports into
+// react-native-svg elements, so brand assets stay vector at any panel scale
+// instead of shipping a raster per density.
+//
+// .svg has to move out of assetExts as well as into sourceExts — leaving it in
+// both makes Metro treat it as a binary asset and the transformer never runs.
+config.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer');
+config.resolver.assetExts = config.resolver.assetExts.filter((ext) => ext !== 'svg');
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'svg'];
+
 module.exports = config;

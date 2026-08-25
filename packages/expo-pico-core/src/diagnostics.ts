@@ -281,10 +281,10 @@ export function formatDiagnostics(report: PicoDiagnosticsReport): string {
       f.severity === 'error'
         ? 'ERROR'
         : f.severity === 'warning'
-          ? 'WARN '
-          : f.severity === 'info'
-            ? 'info '
-            : 'ok   ';
+        ? 'WARN '
+        : f.severity === 'info'
+        ? 'info '
+        : 'ok   ';
     lines.push(`  [${prefix}] ${f.id} — ${f.message}`);
     if (f.hint) lines.push(`           ${f.hint}`);
   }

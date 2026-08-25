@@ -212,15 +212,15 @@ function DiagnosticsBody({
                     entry.systemFeatureAvailable == null
                       ? styles.info
                       : entry.systemFeatureAvailable
-                        ? styles.good
-                        : styles.warn,
+                      ? styles.good
+                      : styles.warn,
                   ]}
                 >
                   {entry.systemFeatureAvailable == null
                     ? 'n/a'
                     : entry.systemFeatureAvailable
-                      ? 'feat'
-                      : 'feat✗'}
+                    ? 'feat'
+                    : 'feat✗'}
                 </Text>
                 <Text style={[styles.capCell, entry.sdkAvailable ? styles.good : styles.info]}>
                   {entry.sdkAvailable ? 'sdk' : '—'}

@@ -203,7 +203,9 @@ export const withPicoNitroModules: ConfigPlugin<ResolvedPicoOptions> = (config, 
     const modules = findPicoNativeModules(cfg.modRequest.projectRoot);
     if (modules.length === 0) return cfg;
     if (cfg.modResults.contents.includes(PICO_NITRO_DEPS_MARKER)) return cfg;
-    cfg.modResults.contents = `${cfg.modResults.contents.trimEnd()}\n\n${renderDependencyBlock(modules)}`;
+    cfg.modResults.contents = `${cfg.modResults.contents.trimEnd()}\n\n${renderDependencyBlock(
+      modules
+    )}`;
     return cfg;
   });
 

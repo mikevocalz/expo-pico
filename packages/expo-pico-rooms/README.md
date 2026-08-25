@@ -32,8 +32,7 @@ Creation, joining and membership management are **not** available — see below.
 > rejects with `NOT_IN_PPS_1_0` on device and off. There is no PICO API left to
 > wire them to.
 >
-> **For create/join/run state, use a real-time backend:**
-> [Fishjam](https://fishjam.io) or [Colyseus](https://colyseus.io), keyed off
+> **For create/join/run state, use a real-time backend:** > [Fishjam](https://fishjam.io) or [Colyseus](https://colyseus.io), keyed off
 > `getUserProfile().userId` from `@expo-pico/account`.
 >
 > The mutating methods are kept as typed seams so a future PPS release can wire

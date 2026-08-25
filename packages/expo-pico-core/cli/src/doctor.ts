@@ -103,8 +103,8 @@ function loadPluginOptions(projectRoot: string): PicoPluginOptions | null {
   const plugins: unknown[] = Array.isArray(raw.plugins)
     ? (raw.plugins as unknown[])
     : Array.isArray(raw.expo?.plugins)
-      ? (raw.expo!.plugins as unknown[])
-      : [];
+    ? (raw.expo!.plugins as unknown[])
+    : [];
 
   for (const entry of plugins) {
     if (typeof entry === 'string' && entry === '@expo-pico/core') {
@@ -182,8 +182,8 @@ function renderFinding(f: DiagnosticCheckFinding): string {
     f.severity === 'error'
       ? colorize('ERROR  ', 'red')
       : f.severity === 'warning'
-        ? colorize('WARN   ', 'yellow')
-        : colorize('info   ', 'blue');
+      ? colorize('WARN   ', 'yellow')
+      : colorize('info   ', 'blue');
   const id = colorize(f.id, 'dim');
   return `${tag} ${id}\n        ${f.message}`;
 }
@@ -437,8 +437,8 @@ function main(): void {
         errorCount > 0
           ? colorize(summary + '\n', 'red')
           : warnCount > 0
-            ? colorize(summary + '\n', 'yellow')
-            : colorize(summary + '\n', 'blue')
+          ? colorize(summary + '\n', 'yellow')
+          : colorize(summary + '\n', 'blue')
       );
     }
   }

@@ -104,8 +104,8 @@ export function InteractiveCubeScene(): React.JSX.Element {
   const scale: Viro3DPoint = pressed
     ? [0.97, 0.97, 0.97]
     : hovered
-      ? [1.04, 1.04, 1.04]
-      : [1, 1, 1];
+    ? [1.04, 1.04, 1.04]
+    : [1, 1, 1];
 
   return (
     <ViroScene>

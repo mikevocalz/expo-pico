@@ -143,8 +143,9 @@ export function runDiagnosticChecks(
         id: 'capabilities.ignored-under-mobile',
         severity: 'warning',
         message:
-          `xrMode 'mobile' does not write a PICO flavor manifest, so the following toggles have no effect: ${enabled.join(', ')}. ` +
-          "Flip xrMode to 'pico-os5' or 'pico-swan' if you want these declared.",
+          `xrMode 'mobile' does not write a PICO flavor manifest, so the following toggles have no effect: ${enabled.join(
+            ', '
+          )}. ` + "Flip xrMode to 'pico-os5' or 'pico-swan' if you want these declared.",
       });
     }
   }

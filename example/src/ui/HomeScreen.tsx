@@ -1,9 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
 
-import { AccountHeader } from './AccountHeader';
 import { IsoCube } from './IsoCube';
 import { useLayout } from './useLayout';
 import { palette, radius, space } from './theme';
@@ -76,10 +75,9 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
 
   const hero = (
     <View style={[styles.heroCol, L.twoColumn && styles.heroColWide]}>
-      <AccountHeader />
       <IsoCube size={L.heroSize} />
       <Text style={[styles.title, { fontSize: L.titleSize }, L.twoColumn && styles.textLeft]}>
-        expo-pico
+        XR Sample
       </Text>
       <Text
         style={[
@@ -88,7 +86,8 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
           L.twoColumn && styles.textLeft,
         ]}
       >
-        Expo-native XR for PICO 4, 4 Ultra, Swan and Meta Quest 3.
+        Platform services, runtime capabilities and an immersive scene, running on PICO OS from an
+        Expo app.
       </Text>
     </View>
   );
@@ -137,7 +136,6 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={palette.bg} />
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
