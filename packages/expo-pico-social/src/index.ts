@@ -12,6 +12,7 @@ import type {
   FriendRequest,
   FriendPresenceChangedEvent,
   InviteReceivedEvent,
+  PicoLaunchDetails,
 } from './PicoSocial.nitro';
 
 export type {
@@ -25,6 +26,7 @@ export type {
   PresenceOptions,
   FriendPresenceChangedEvent,
   InviteReceivedEvent,
+  PicoLaunchDetails,
 } from './PicoSocial.nitro';
 
 const PKG = '@expo-pico/social';
@@ -131,4 +133,62 @@ export function addInviteReceivedListener(
   listener: (event: InviteReceivedEvent) => void
 ): Subscription {
   return subscribe((h) => h.addInviteReceivedListener(listener));
+}
+
+/**
+ * Why this app instance was launched — an invite, a deep link, or a normal
+ * open. Synchronous and never throws: when PPS is absent it reports a normal
+ * launch, so startup code can read it without guarding on availability.
+ */
+export function getLaunchDetails(): PicoLaunchDetails {
+  return (
+    native()?.getLaunchDetails() ?? {
+      launchType: 'normal',
+      launchResult: 'unknown',
+      launchSource: '',
+      deepLinkMessage: '',
+      destinationApiName: '',
+      trackingId: '',
+      lobbySessionId: '',
+      matchSessionId: '',
+      extra: '',
+      clientAction: '',
+    }
+  );
+}
+
+/** Destinations declared in the developer console. First page only. */
+export async function getDestinations() {
+  guardService(isSocialAvailable(), PKG, 'getDestinations');
+  return wrapNativeCall(PKG, 'getDestinations', native()!.getDestinations());
+}
+
+export async function launchPresenceInvitePanel() {
+  guardService(isSocialAvailable(), PKG, 'launchPresenceInvitePanel');
+  return wrapNativeCall(PKG, 'launchPresenceInvitePanel', native()!.launchPresenceInvitePanel());
+}
+
+/** Opens the system flow for inviting friends into `roomId`. */
+export async function launchInviteUserJoinRoomFlow(roomId: string) {
+  guardService(isSocialAvailable(), PKG, 'launchInviteUserJoinRoomFlow');
+  return wrapNativeCall(
+    PKG,
+    'launchInviteUserJoinRoomFlow',
+    native()!.launchInviteUserJoinRoomFlow(roomId)
+  );
+}
+
+export async function launchStore() {
+  guardService(isSocialAvailable(), PKG, 'launchStore');
+  return wrapNativeCall(PKG, 'launchStore', native()!.launchStore());
+}
+
+export async function shareVideo(videoPath: string, description: string) {
+  guardService(isSocialAvailable(), PKG, 'shareVideo');
+  return wrapNativeCall(PKG, 'shareVideo', native()!.shareVideo(videoPath, description));
+}
+
+export async function shareImages(imagePaths: string[]) {
+  guardService(isSocialAvailable(), PKG, 'shareImages');
+  return wrapNativeCall(PKG, 'shareImages', native()!.shareImages(imagePaths));
 }

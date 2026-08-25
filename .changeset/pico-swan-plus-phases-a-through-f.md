@@ -105,6 +105,32 @@ Verified against `javap` on the published AARs, not inferred.
 - **`@expo-pico/iap`** — `isProductPurchased(sku)`, a per-SKU ownership check
   that avoids pulling the whole purchase list.
 
+### `@expo-pico/social` — launch intent, destinations, share, invite flows
+
+Verified against `javap` on `platform-service-social`.
+
+- `getLaunchDetails()` — **synchronous**, because PPS returns it from a getter
+  rather than a `Task`: the launch intent is resolved before the app runs. It
+  is how an app learns it was opened from an invite or deep link rather than
+  normally. Never throws; reports a normal launch when PPS is absent, so
+  startup code can read it without guarding.
+- `getDestinations()`, `launchPresenceInvitePanel()`,
+  `launchInviteUserJoinRoomFlow(roomId)`, `launchStore()`, `shareVideo()`,
+  `shareImages()`.
+
+`getDestinations()` returns the first page only. `DestinationsListResult` also
+carries a `NextInfo` cursor, but how `NextInfo(hasNext, nextId, bodyParams)`
+encodes into the family's opaque `nextPageToken` is still undecided — see
+PPS-WIRING-GAPS.md. Inventing a token format now would be an API break to undo.
+
+### Removed `expo-module.config.json`
+
+All twelve were `{"platforms":[]}` — no module to autolink, and not listed in
+any package's `files`, so they were never published. `withPicoNitroModules`
+already documented the Nitro migration as having removed them; the files had
+been emptied rather than deleted. Config plugins are unaffected: they resolve
+through `app.plugin.js`, which every plugin-bearing package does ship.
+
 ### `@expo-pico/notifications` — push can now actually be received
 
 `register()` only ever yielded a token, so an app could be addressed but never

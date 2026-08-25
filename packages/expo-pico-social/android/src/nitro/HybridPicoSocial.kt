@@ -6,6 +6,8 @@ import com.pico.pps.sdk.base.common.NextInfo
 import com.pico.pps.sdk.friend.IFriendClient
 import com.pico.pps.sdk.friend.PicoFriendClient
 import com.pico.pps.sdk.social.ISocialClient
+import com.pico.pps.sdk.social.LaunchResult
+import com.pico.pps.sdk.social.LaunchType
 import com.pico.pps.sdk.social.PicoSocialClient
 
 /**
@@ -274,6 +276,109 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
         "changed by the user through the PICO system UI — a title can open that flow " +
         "with sendFriendRequest(), but cannot alter the social graph directly."
     )
+
+  /**
+   * Synchronous by design: PPS returns `LaunchDetails` from a getter, not a
+   * `Task`, because the launch intent is resolved before the app runs.
+   *
+   * Falls back to an all-empty `normal`/`unknown` record when PPS is absent,
+   * so a caller can read it unconditionally at startup without a guard. That
+   * is the honest default — an app with no launch intent was opened normally.
+   */
+  override fun getLaunchDetails(): PicoLaunchDetails {
+    val socialClient = social ?: return emptyLaunchDetails()
+    val details = runCatching { socialClient.getLaunchDetails() }.getOrNull()
+      ?: return emptyLaunchDetails()
+    return PicoLaunchDetails(
+      launchType = when (details.launchType) {
+        LaunchType.NORMAL -> PicoLaunchType.NORMAL
+        LaunchType.INVITE -> PicoLaunchType.INVITE
+        LaunchType.COORDINATED -> PicoLaunchType.COORDINATED
+        LaunchType.DEEPLINK -> PicoLaunchType.DEEPLINK
+        else -> PicoLaunchType.UNKNOWN
+      },
+      launchResult = when (details.launchResult) {
+        LaunchResult.SUCCESS -> PicoLaunchResult.SUCCESS
+        LaunchResult.FAILED_ROOM_FULL -> PicoLaunchResult.FAILED_ROOM_FULL
+        LaunchResult.FAILED_GAME_ALREADY_STARTED ->
+          PicoLaunchResult.FAILED_GAME_ALREADY_STARTED
+        LaunchResult.FAILED_ROOM_NOT_FOUND -> PicoLaunchResult.FAILED_ROOM_NOT_FOUND
+        LaunchResult.FAILED_USER_DECLINED -> PicoLaunchResult.FAILED_USER_DECLINED
+        LaunchResult.FAILED_OTHER_REASON -> PicoLaunchResult.FAILED_OTHER
+        else -> PicoLaunchResult.UNKNOWN
+      },
+      launchSource = details.launchSource.orEmpty(),
+      deepLinkMessage = details.deepLinkMessage.orEmpty(),
+      destinationApiName = details.destinationApiName.orEmpty(),
+      trackingId = details.trackingID.orEmpty(),
+      lobbySessionId = details.lobbySessionID.orEmpty(),
+      matchSessionId = details.matchSessionID.orEmpty(),
+      extra = details.extra.orEmpty(),
+      clientAction = details.clientAction.orEmpty(),
+    )
+  }
+
+  private fun emptyLaunchDetails() = PicoLaunchDetails(
+    launchType = PicoLaunchType.NORMAL,
+    launchResult = PicoLaunchResult.UNKNOWN,
+    launchSource = "",
+    deepLinkMessage = "",
+    destinationApiName = "",
+    trackingId = "",
+    lobbySessionId = "",
+    matchSessionId = "",
+    extra = "",
+    clientAction = "",
+  )
+
+  /**
+   * First page only. `DestinationsListResult` also carries a `NextInfo`
+   * cursor, but the family models pagination as an opaque `nextPageToken`
+   * string and how NextInfo(hasNext, nextId, bodyParams) encodes into one is
+   * still undecided — see docs/PPS-WIRING-GAPS.md. Returning the first page is
+   * honest; inventing a token format now would be an API break to undo later.
+   */
+  override fun getDestinations(): Promise<Array<PicoDestination>> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("getDestinations"))
+    return socialClient.getDestinations().bridge("getDestinations") { result ->
+      result.destinationList.orEmpty().map { destination ->
+        PicoDestination(
+          apiName = destination.apiName.orEmpty(),
+          displayName = destination.displayName.orEmpty(),
+          deepLinkMessage = destination.deepLinkMessage.orEmpty(),
+        )
+      }.toTypedArray()
+    }
+  }
+
+  override fun launchPresenceInvitePanel(): Promise<Boolean> {
+    val socialClient = social
+      ?: return Promise.rejected(PicoPps.unavailable("launchPresenceInvitePanel"))
+    return socialClient.launchPresenceInvitePanel()
+      .bridge("launchPresenceInvitePanel") { it ?: false }
+  }
+
+  override fun launchInviteUserJoinRoomFlow(roomId: String): Promise<Boolean> {
+    val socialClient = social
+      ?: return Promise.rejected(PicoPps.unavailable("launchInviteUserJoinRoomFlow"))
+    return socialClient.launchInviteUserJoinRoomFlow(roomId)
+      .bridge("launchInviteUserJoinRoomFlow") { it ?: false }
+  }
+
+  override fun launchStore(): Promise<String> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("launchStore"))
+    return socialClient.launchStore().bridge("launchStore") { it.orEmpty() }
+  }
+
+  override fun shareVideo(videoPath: String, description: String): Promise<Boolean> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("shareVideo"))
+    return socialClient.shareVideo(videoPath, description).bridge("shareVideo") { it ?: false }
+  }
+
+  override fun shareImages(imagePaths: Array<String>): Promise<Boolean> {
+    val socialClient = social ?: return Promise.rejected(PicoPps.unavailable("shareImages"))
+    return socialClient.shareImages(imagePaths.toList()).bridge("shareImages") { it ?: false }
+  }
 
   private companion object {
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */

@@ -138,7 +138,7 @@ ${lines.join('\n')}
  *
  * These packages used to rely on Expo Modules autolinking, which included
  * them because each shipped an `expo-module.config.json` listing Android
- * modules. The Nitro migration removes that config — the Kotlin no longer
+ * modules. The Nitro migration dropped those files — the Kotlin no longer
  * extends Expo's `Module`, so the generated Expo package list would
  * reference classes that are not compiled. Nitro itself has no autolinker
  * that writes `settings.gradle`; it only generates the per-module Gradle
