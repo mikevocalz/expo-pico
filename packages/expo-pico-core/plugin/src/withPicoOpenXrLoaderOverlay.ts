@@ -68,6 +68,28 @@ export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (c
         }
       }
 
+      // Overlay bundled Android assets the native renderer loads at runtime but
+      // that the stock @reactvision/react-viro AAR does not carry — currently
+      // `controller_neutral.glb`, which libviro_renderer.so reads via
+      // VROPlatformCopyAssetToFile() to draw the OpenXR controller mesh. Without
+      // this the mesh code runs but finds no asset. Only staged when the viro
+      // renderer overlay is active (the .so that needs it).
+      if (options.viroRendererOverlay) {
+        const assetSrcDir = path.resolve(__dirname, '../assets/androidAssets');
+        if (fs.existsSync(assetSrcDir)) {
+          const destDir = path.join(platformRoot, 'app/src/main/assets');
+          fs.mkdirSync(destDir, { recursive: true });
+          for (const name of fs.readdirSync(assetSrcDir)) {
+            const src = path.join(assetSrcDir, name);
+            const dest = path.join(destDir, name);
+            if (fs.existsSync(dest) && fs.statSync(dest).size === fs.statSync(src).size) {
+              continue;
+            }
+            fs.copyFileSync(src, dest);
+          }
+        }
+      }
+
       void projectRoot;
       return cfg;
     },
