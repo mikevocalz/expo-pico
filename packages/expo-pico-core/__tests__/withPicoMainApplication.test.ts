@@ -15,6 +15,11 @@ class MainApplication : Application() {
         // add(MyReactNativePackage())
         return packages
     }
+
+    override fun onCreate() {
+        super.onCreate()
+        loadReactNative(this)
+    }
 }
 `;
 
@@ -94,5 +99,53 @@ describe('injectIntoJavaMainApplication', () => {
     const broken = `package com.example.app;\npublic class MainApplication {}\n`;
     const options = resolveOptions({ xrMode: 'pico-os5' });
     expect(injectIntoJavaMainApplication(broken, options)).toBeNull();
+  });
+});
+
+describe('New Architecture flag guard', () => {
+  it('extends the new-arch defaults, never the plain defaults', () => {
+    const options = resolveOptions({ xrMode: 'pico-os5' });
+    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+
+    expect(out).toContain('object : ReactNativeNewArchitectureFeatureFlagsDefaults()');
+    expect(out).toContain(
+      'import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlagsDefaults'
+    );
+    // The regression this pins: overriding the plain defaults reports
+    // enableBridgelessArchitecture as false, which silently reverts the app to the
+    // bridge. ReactHost then never starts — blank screen, no bundle request, and no
+    // exception anywhere in logcat.
+    expect(out).not.toMatch(/object\s*:\s*ReactNativeFeatureFlagsDefaults\(\)/);
+  });
+
+  it('places the guard after loadReactNative, which maps the JNI it needs', () => {
+    const options = resolveOptions({ xrMode: 'pico-os5' });
+    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+
+    // Before loadReactNative, ReactNativeFeatureFlagsCxxInterop.<clinit> throws.
+    expect(out.indexOf('loadReactNative(this)')).toBeLessThan(
+      out.indexOf('dangerouslyForceOverride')
+    );
+  });
+
+  it('does not duplicate the guard on repeat runs', () => {
+    const options = resolveOptions({ xrMode: 'pico-os5' });
+    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+    const twice = injectIntoKotlinMainApplication(once, options)!;
+
+    expect((twice.match(/dangerouslyForceOverride/g) ?? []).length).toBe(1);
+  });
+
+  it('warns and leaves the file usable when loadReactNative is absent', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const noOnCreate = KT_TEMPLATE.replace(/    override fun onCreate[\s\S]*?\n    }\n/, '');
+    const options = resolveOptions({ xrMode: 'pico-os5' });
+
+    const out = injectIntoKotlinMainApplication(noOnCreate, options)!;
+
+    expect(out).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_OS5))');
+    expect(out).not.toContain('dangerouslyForceOverride');
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

@@ -1,6 +1,11 @@
 import { ConfigPlugin, withMainApplication } from '@expo/config-plugins';
 
-import { PICO_MAIN_APP_IMPORT_MARKER, PICO_MAIN_APP_MARKER } from './constants';
+import {
+  PICO_MAIN_APP_FLAGS_IMPORT_MARKER,
+  PICO_MAIN_APP_FLAGS_MARKER,
+  PICO_MAIN_APP_IMPORT_MARKER,
+  PICO_MAIN_APP_MARKER,
+} from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { xrModeToNativeEnum } from './types';
 import { insertImportAfterPackage, insertLinesAfter } from './util/insertLinesHelper';
@@ -93,7 +98,67 @@ export function injectIntoKotlinMainApplication(
   // 3. Add the import (idempotent — helper checks for existing string).
   contents = insertImportAfterPackage(contents, importBlock);
 
+  // 4. Guard the New Architecture flags across the VR activity hop.
+  contents = injectNewArchFlagGuard(contents);
+
   return contents;
+}
+
+/**
+ * Keeps `skipActivityIdentityAssertionOnHostPause` on for the whole process,
+ * without dropping the app back to the old architecture.
+ *
+ * react-viro launches its immersive `VRActivity` in a separate task, so
+ * `MainActivity.onPause` is delivered late — after `VRActivity.onResume` has
+ * already promoted the shared ReactHost. `ReactHostImpl.onHostPause` then sees a
+ * different current activity. react-viro's `VRLauncherModule` sets the flag that
+ * downgrades that assertion just before `startActivity`, but under Expo the pause
+ * runs in a coroutine, so a per-launch set can land too late. Setting it once at
+ * startup makes the ordering irrelevant.
+ *
+ * The trap this exists to prevent: `dangerouslyForceOverride` REPLACES the flag
+ * provider wholesale, so overriding
+ * `ReactNativeFeatureFlagsDefaults` — which reports `enableBridgelessArchitecture`
+ * as false — silently reverts the app to the bridge. `ReactHost` then never
+ * starts: a blank screen, Metro never asked for the bundle, and not one exception
+ * in logcat. Extending `ReactNativeNewArchitectureFeatureFlagsDefaults` keeps
+ * every new-arch flag at the value `DefaultNewArchitectureEntryPoint` chose, and
+ * picks up flags added by future React Native releases that a hand-written list
+ * would miss.
+ *
+ * Placement is load-bearing in both directions: it must come AFTER
+ * `loadReactNative`, which maps the JNI the C++ flag accessor needs (before it,
+ * `ReactNativeFeatureFlagsCxxInterop.<clinit>` throws), and it must use the
+ * forcing variant, since `loadReactNative` has already registered a provider and
+ * plain `override()` rejects a second one.
+ */
+function injectNewArchFlagGuard(source: string): string {
+  let contents = stripLineWithMarker(source, PICO_MAIN_APP_FLAGS_MARKER);
+
+  const guardBlock =
+    `    ${PICO_MAIN_APP_FLAGS_MARKER}\n` +
+    `    ReactNativeFeatureFlags.dangerouslyForceOverride(\n` +
+    `        object : ReactNativeNewArchitectureFeatureFlagsDefaults() {\n` +
+    `          override fun skipActivityIdentityAssertionOnHostPause(): Boolean = true\n` +
+    `        })`;
+
+  const inserted = insertLinesAfter(contents, guardBlock, 'loadReactNative(this)');
+  if (!inserted) {
+    console.warn(
+      '[expo-pico-core] Could not find `loadReactNative(this)` in MainApplication.kt; ' +
+        'skipped the New Architecture flag guard. Entering the Viro VR activity may ' +
+        'stop timers and Fast Refresh.'
+    );
+    return contents;
+  }
+  contents = inserted;
+
+  return insertImportAfterPackage(
+    contents,
+    `${PICO_MAIN_APP_FLAGS_IMPORT_MARKER}\n` +
+      'import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags\n' +
+      'import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlagsDefaults'
+  );
 }
 
 export function injectIntoJavaMainApplication(

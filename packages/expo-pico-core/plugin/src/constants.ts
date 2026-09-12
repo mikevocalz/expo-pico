@@ -108,6 +108,10 @@ export const XR_MODE_MANIFEST_VALUE: Record<string, string> = {
  */
 export const PICO_MAIN_APP_MARKER = '// expo-pico-core: PicoCorePackage registration';
 export const PICO_MAIN_APP_IMPORT_MARKER = '// expo-pico-core: PicoCorePackage import';
+export const PICO_MAIN_APP_FLAGS_MARKER =
+  '// expo-pico-core: New Architecture flag guard for the Viro VR activity hop';
+export const PICO_MAIN_APP_FLAGS_IMPORT_MARKER =
+  '// expo-pico-core: New Architecture flag guard imports';
 export const PICO_SETTINGS_MARKER = '// expo-pico-core: pico subprojects';
 
 export const PICO_FEATURES = {
