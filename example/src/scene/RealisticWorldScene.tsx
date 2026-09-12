@@ -39,6 +39,11 @@ const GROUND_SIZE = 24;
 // FLOOR_FROM_HEADSET_Y = -1.65 offset is gone; the content node sits at 0.
 const FLOOR_FROM_HEADSET_Y = 0;
 const GROUND_Y = -0.01;
+// eslint-disable-next-line no-console
+console.warn(
+  `[FLOOR-DIAG] running bundle: FLOOR_FROM_HEADSET_Y=${FLOOR_FROM_HEADSET_Y} ` +
+    `GROUND_Y=${GROUND_Y} → grass world Y=${FLOOR_FROM_HEADSET_Y + GROUND_Y}`
+);
 const LAKE_WIDTH = 8;
 const LAKE_LENGTH = 5;
 const LAKE_Y = 0.0;
@@ -213,40 +218,54 @@ ViroMaterials.createMaterials({
   },
 });
 
+// Flight and drift are out-and-back CHAINS, not single relative moves. A relative
+// animation (positionX: '+=14') under loop:true re-applies its delta from the node's
+// current position every cycle, so a one-way move marches the node off in one direction
+// forever — birds and clouds drift out of view after a loop or two and never return
+// (the fast sparrow, 9 s, leaves first). Each cycle here goes out then back for a net
+// displacement of zero, so everything stays on screen indefinitely; the return leg
+// varies Y/Z from the outbound so it reads as a circuit rather than a straight retrace,
+// and EaseInEaseOut softens the turn.
 ViroAnimations.registerAnimations({
-  cloudDrift: {
-    duration: 40000,
-    easing: 'Linear',
-    properties: {
-      positionX: '-=22',
-    },
-  },
-  birdFly: {
+  cloudDriftOut: { duration: 40000, easing: 'EaseInEaseOut', properties: { positionX: '-=22' } },
+  cloudDriftBack: { duration: 40000, easing: 'EaseInEaseOut', properties: { positionX: '+=22' } },
+  cloudDrift: [['cloudDriftOut', 'cloudDriftBack']],
+
+  birdFlyOut: {
     duration: 12000,
-    easing: 'Linear',
-    properties: {
-      positionX: '+=14',
-      positionZ: '-=3',
-    },
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '+=14', positionY: '+=0.6', positionZ: '-=3' },
   },
-  gullFly: {
+  birdFlyBack: {
+    duration: 12000,
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '-=14', positionY: '-=0.6', positionZ: '+=3' },
+  },
+  birdFly: [['birdFlyOut', 'birdFlyBack']],
+
+  gullFlyOut: {
     duration: 17000,
-    easing: 'Linear',
-    properties: {
-      positionX: '+=18',
-      positionY: '+=1.2',
-      positionZ: '+=5',
-    },
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '+=18', positionY: '+=1.2', positionZ: '+=5' },
   },
-  sparrowFly: {
+  gullFlyBack: {
+    duration: 17000,
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '-=18', positionY: '-=1.2', positionZ: '-=5' },
+  },
+  gullFly: [['gullFlyOut', 'gullFlyBack']],
+
+  sparrowFlyOut: {
     duration: 9000,
-    easing: 'Linear',
-    properties: {
-      positionX: '+=10',
-      positionY: '-=0.4',
-      positionZ: '-=2',
-    },
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '+=10', positionY: '+=0.5', positionZ: '-=2' },
   },
+  sparrowFlyBack: {
+    duration: 9000,
+    easing: 'EaseInEaseOut',
+    properties: { positionX: '-=10', positionY: '-=0.5', positionZ: '+=2' },
+  },
+  sparrowFly: [['sparrowFlyOut', 'sparrowFlyBack']],
 });
 
 const TREES: Viro3DPoint[] = [
