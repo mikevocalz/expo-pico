@@ -128,7 +128,72 @@ Your app's `package.json` should declare:
 
 The plugin option API is additive, so minor and patch updates are safe. We signal any breaking change with a major bump and call it out in the CHANGELOG.
 
-## 14. Contributing?
+## 14. My app opens straight into XR, and I want it to start as a 2D panel.
+
+Set `appType: '2d'` and put the immersive categories on your VR activity instead
+of the launcher.
+
+`appType` drives two different things that are easy to conflate:
+
+- the `pvr.app.type` meta-data, which PICO's runtime reads **inside
+  `xrCreateInstance`** — a runtime check, nothing to do with launching
+- the immersive launcher categories (`com.pico.intent.category.VR`,
+  `com.picovr.intent.category.VR`, `org.khronos.openxr.intent.category.IMMERSIVE_HMD`),
+  which is what makes PICO OS enumerate the APK as an immersive app and start it
+  in XR
+
+An app that is 2D first and immersive on demand — a tutoring app, a store, a
+media browser where XR is one screen — wants the first and not the second. Use
+`appType: '2d'`, then add the categories to the activity that hosts the
+immersive session (Viro's generated `VRActivity`, or your own) in your own config
+plugin. Keep `pvr.app.type` reading `vr` or the session will not open when the
+user does enter XR.
+
+If you write both, mind the order: config plugin mods compose as a stack, so the
+plugin that writes `pvr.app.type=vr` must be listed BEFORE `@expo-pico/core` in
+order to run AFTER it.
+
+## 15. I paired this with `@reactvision/react-viro` and the OpenXR broker
+`<queries>` entry vanished from my manifest.
+
+`withViroAndroid` does `contents.manifest.queries = [...]` — an assignment, not
+a push — so whatever wrote a `<queries>` child earlier is discarded.
+
+List `withPicoOpenXrLoader` (and any plugin of your own that writes `<queries>`)
+BEFORE `@reactvision/react-viro` in the `plugins` array. Expo composes mods as a
+stack: each runs its action then calls the previously registered mod, so **the
+last plugin listed edits the file first and the first plugin listed edits it
+last**. Listed after Viro, your entry is written and then thrown away.
+
+The tell is a manifest that has `pvr.app.type`, both
+`org.khronos.openxr.permission.*` lines and the `uses-native-library` line — all
+of which Viro does not touch — while `<queries>` holds only ARCore.
+
+## 16. Nothing renders in the headset, but the session looks fine.
+
+Work down this list before suspecting your scene. Each of these fails silently
+and the symptom is identical: a black or near-black eye buffer.
+
+1. **`pvr.app.type` missing** → `xrCreateInstance` returns
+   `XR_ERROR_VALIDATION_FAILURE` with nothing in logcat. With no instance, a
+   Viro `VRActivity` falls back to drawing its React root as a flat 2D window —
+   so "my 2D app is floating in the XR scene" is this, not a layout bug.
+2. **4KB-aligned `libopenxr_loader.so`** → PICO OS 5 on Android 14+ refuses it.
+   `expo-pico-core` ships a 16KB-aligned overlay; confirm one is in `jniLibs`
+   and check with `scripts/verify-16kb-alignment.py <apk>`.
+3. **Wrong scene root** → a fully-virtual scene uses `ViroScene`. `ViroARScene`
+   is the mixed-reality root and its plane/anchor path is Meta's `XR_FB_scene`,
+   which PICO does not have.
+4. **You are looking at the wrong Activity.** `am start -n <pkg>/.MainActivity`
+   restores the 2D route; it does not open your immersive screen. Deep-link the
+   route instead, then confirm with
+   `adb shell dumpsys activity activities | grep topResumedActivity`.
+
+And one discipline worth stating outright: `topResumedActivity` tells you WHICH
+activity you are looking at. It does not tell you that anything rendered. Only
+the frame does.
+
+## 17. Contributing?
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md). Short version:
 
