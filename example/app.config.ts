@@ -126,6 +126,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // non-system OpenXR loader (rare — Viro uses the system loader).
         ndkAbiFilters: true,
         openXrLoaderDeclaration: true,
+        // This example still pins the published Viro package. After installing
+        // the paired fork build, set both overrides false; see the integration guide.
+        openXrLoaderOverlay: true,
+        viroRendererOverlay: false,
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,

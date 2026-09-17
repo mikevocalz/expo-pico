@@ -1,4 +1,7 @@
 <picture>
+
+For native Viro rendering on PICO, see the [Viro + Expo-PICO integration guide](docs/VIRO-PICO-INTEGRATION.md), including the PICO flavor and PICO CLI workflows.
+
   <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/pico-wordmark-dark.svg">
   <img src="./docs/assets/pico-wordmark-light.svg" alt="PICO" height="34">
 </picture>

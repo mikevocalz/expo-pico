@@ -295,6 +295,13 @@ export interface PicoPluginOptions {
    */
   viroRendererOverlay?: boolean;
   /**
+   * Use the bundled legacy OpenXR loader override in PICO flavors only.
+   * Set false when consuming a rebuilt ViroCore AAR with a verified loader.
+   * This is separate from declaring the OpenXR runtime in the manifest.
+   * @default true for immersive PICO builds; false for mobile builds
+   */
+  openXrLoaderOverlay?: boolean;
+  /**
    * Enable PICO developer tools overlay (OS 6 dev builds only).
    * @default false
    */
@@ -523,6 +530,7 @@ export interface ResolvedPicoOptions {
   ndkAbiFilters: boolean;
   openXrLoaderDeclaration: boolean;
   viroRendererOverlay: boolean;
+  openXrLoaderOverlay: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
@@ -593,6 +601,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   ndkAbiFilters: true,
   openXrLoaderDeclaration: true,
   viroRendererOverlay: false,
+  openXrLoaderOverlay: true,
   developerTools: false,
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,
@@ -642,7 +651,9 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   const openXrLoaderDeclaration = options.openXrLoaderDeclaration ?? xrMode !== 'mobile';
   // Opt-in, and never on the mobile flavor: it replaces a library the app got
   // from another package, so it should not happen because someone set xrMode.
-  const viroRendererOverlay = (options.viroRendererOverlay ?? false) && xrMode !== 'mobile';
+  const canOverlay = xrMode !== 'mobile' && buildVariant !== 'mobile';
+  const viroRendererOverlay = (options.viroRendererOverlay ?? false) && canOverlay;
+  const openXrLoaderOverlay = (options.openXrLoaderOverlay ?? true) && canOverlay;
 
   return {
     ...PICO_OPTION_DEFAULTS,
@@ -656,6 +667,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     ndkAbiFilters,
     openXrLoaderDeclaration,
     viroRendererOverlay,
+    openXrLoaderOverlay,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,

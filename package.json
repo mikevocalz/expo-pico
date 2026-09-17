@@ -43,7 +43,13 @@
     "validate:device:no-adb": "bash scripts/validate-device.sh --skip-adb",
     "studio": "open -a 'Android Studio' example/android",
     "example:clean:cache": "rm -rf example/.expo/cache example/node_modules/.cache \"${TMPDIR:-/tmp}\"/metro-* \"${TMPDIR:-/tmp}\"/haste-map-* 2>/dev/null || true",
-    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1"
+    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1",
+    "pico:doctor": "node scripts/pico-cli.mjs doctor",
+    "pico:devices": "node scripts/pico-cli.mjs devices",
+    "pico:install": "node scripts/pico-cli.mjs install",
+    "pico:launch": "node scripts/pico-cli.mjs launch",
+    "pico:capture": "node scripts/pico-cli.mjs capture",
+    "test:pico-cli": "node --test scripts/pico-cli.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
