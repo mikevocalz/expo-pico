@@ -3,7 +3,11 @@ import os from 'os';
 import path from 'path';
 import { resolveOptions } from '../plugin/src/types';
 import { syncPicoOverlays } from '../plugin/src/withPicoOpenXrLoaderOverlay';
-import { renderFlavorBlock, updateOverlayPackaging } from '../plugin/src/withPicoGradle';
+import {
+  renderFlavorBlock,
+  updateOverlayPackaging,
+  withPicoProjectBuildGradle,
+} from '../plugin/src/withPicoGradle';
 
 let root: string;
 let platform: string;
@@ -80,6 +84,44 @@ test('PICO resolves Horizon mobile, and dual resolves PICO before mobile', () =>
   const block = renderFlavorBlock(resolveOptions({ buildVariant: 'dual' }));
   expect(block).toMatch(/pico \{[\s\S]*?matchingFallbacks = \['mobile'\]/);
   expect(block).toContain("matchingFallbacks = ['pico', 'mobile']");
+});
+
+// Drive the real `projectBuildGradle` mod. `withProjectBuildGradle` only parks
+// the callback on `config.mods.android`, so we can invoke it against an
+// in-memory build.gradle without the rest of the @expo/config-plugins pipeline.
+type ProjectMod = (config: unknown) => Promise<{ modResults: { contents: string } }>;
+const BARE_PROJECT_GRADLE =
+  'buildscript {\n    ext {\n        minSdkVersion = 24\n    }\n}\n\nallprojects {\n    repositories {\n    }\n}\n';
+async function renderProjectGradle(options: unknown, contents = BARE_PROJECT_GRADLE) {
+  const config = withPicoProjectBuildGradle(
+    { name: 'pico', slug: 'pico' } as never,
+    options as never
+  ) as unknown as { mods: { android: { projectBuildGradle: ProjectMod } } };
+  const applied = await config.mods.android.projectBuildGradle({
+    modRequest: { nextMod: (result: unknown) => result },
+    modResults: { contents, language: 'groovy' },
+  });
+  return applied.modResults.contents;
+}
+
+test('subprojects fallback declares the missing device dimension, never a flavor fallback', async () => {
+  const generated = await renderProjectGradle(resolveOptions({ xrMode: 'pico-os5' }));
+  const block = generated.slice(generated.indexOf('subprojects { sub ->'));
+  expect(block).toContain("missingDimensionStrategy 'device', 'mobile'");
+  // `matchingFallbacks` is declared on AGP's ProductFlavor, not on
+  // DefaultConfig/BaseFlavor — emitting it here fails every autolinked
+  // com.android.library at configuration time.
+  expect(block).not.toContain('matchingFallbacks');
+  expect(generated).toContain('// expo-pico-core: subprojects missing-dim fallback');
+});
+
+test('subprojects fallback is skipped for mobile and re-runs idempotently', async () => {
+  expect(await renderProjectGradle(resolveOptions({ xrMode: 'mobile' }))).not.toContain(
+    'subprojects { sub ->'
+  );
+  const options = resolveOptions({ xrMode: 'pico-os5' });
+  const once = await renderProjectGradle(options);
+  expect(await renderProjectGradle(options, once)).toBe(once);
 });
 
 test('packaging migrates global override, is idempotent, and removes disabled overrides', () => {

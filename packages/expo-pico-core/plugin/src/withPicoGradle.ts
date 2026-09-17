@@ -335,7 +335,7 @@ ${PICO_REPO_BLOCK}
       }
     }
 
-    // Global `subprojects { matchingFallbacks = ['mobile'] }`
+    // Global `subprojects { missingDimensionStrategy 'device', 'mobile' }`
     // fallback. Without this, every autolinked module that doesn't declare
     // the `device` dimension fails to resolve under picoDebug/questDebug
     // (e.g. `:expo:questDebugCompileClasspath > Could not resolve project
@@ -348,7 +348,7 @@ subprojects { sub ->
     sub.plugins.withId("com.android.library") {
         sub.android {
             defaultConfig {
-                matchingFallbacks = ['mobile']
+                missingDimensionStrategy 'device', 'mobile'
             }
         }
     }
