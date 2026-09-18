@@ -11,6 +11,7 @@ import {
   renderLocalAarBlock,
   renderPpsDependenciesBlock,
   renderPpsResolutionPin,
+  resolvePpsConfigurations,
   resolvePpsServices,
 } from './ppsArtifacts';
 import type { ResolvedPicoOptions } from './types';
@@ -211,12 +212,19 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // Consumers don't need to drop any AAR files — Gradle pulls each
     // service from maven on first build. The bounded AAR-drop fallback
     // below stays in place for offline / air-gapped builds.
+    //
+    // Declared per flavor, not on the bare `implementation` configuration:
+    // `xrMode` and `buildVariant` are independent, so a `pico-os5` app
+    // built as `dual` also produces mobile* and quest* variants that must
+    // not carry the PICO SDK.
+    const ppsConfigurations = resolvePpsConfigurations(options.buildVariant);
     if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_DEPS_MARKER)) {
       const services = resolvePpsServices(
         options.platformService.services,
         createPackageResolver(projectRoot)
       );
-      contents = contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER);
+      contents =
+        contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER, ppsConfigurations);
     }
 
     // PICO Platform SDK AAR drop-in (offline fallback). Consumers who
@@ -224,7 +232,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // can drop them into android/app/libs/. Anything PPS already resolves
     // from maven is excluded by name — see renderLocalAarBlock.
     if (options.xrMode !== 'mobile' && !gradleContains(contents, APP_LIBS_AAR_MARKER)) {
-      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER);
+      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER, ppsConfigurations);
     }
 
     // Upgrade the old generated global pickFirst block, including when users
