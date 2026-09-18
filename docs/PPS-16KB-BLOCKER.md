@@ -60,12 +60,22 @@ artifact coordinate and version, and the measured `PT_LOAD` alignment above.
 
 ## In the meantime
 
-`scripts/verify-16kb-alignment.py` fails on both by default, which is the
-correct behaviour: a build containing them must not look clean.
+`example:assemble:pico` runs the check with both loaders named:
 
-`--allow libpxrplatformloader.so --allow libpxrplatformloader4j.so` suppresses
-exactly those two and nothing else. Use it only for a build that will not
-exercise PPS — the device runbook's plane, lifecycle and passthrough cases do
-not touch it. An allowance is a deferral with a real cost on this hardware, not
-an acceptance, and the flag fails if an entry ever stops matching, so the list
-cannot quietly outlive the problem.
+```
+--allow libpxrplatformloader.so --allow libpxrplatformloader4j.so
+```
+
+Failing the build on them would block every build here on a fix only PICO can
+publish, which is not a trade worth making. Naming them keeps the check on for
+everything else: a library this repo does build that regresses to 4KB still
+fails, because the allowance covers exactly two basenames.
+
+The allowance also reports itself when it stops being needed. An `--allow` that
+matches no under-aligned library is a failure, so the day PICO republishes
+`pps_platform_java_base` with aligned loaders, the next build fails with
+`unused --allow` and names the entry to delete. Nobody has to remember to check.
+
+Do not add to this list casually. Two entries with a written reason and an
+upstream owner is a deferral; a growing list is how a check stops meaning
+anything.
