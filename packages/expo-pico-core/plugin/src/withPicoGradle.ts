@@ -11,6 +11,7 @@ import {
   renderLocalAarBlock,
   renderPpsDependenciesBlock,
   renderPpsResolutionPin,
+  resolvePpsConfigurations,
   resolvePpsServices,
 } from './ppsArtifacts';
 import type { ResolvedPicoOptions } from './types';
@@ -22,7 +23,6 @@ const MISSING_DIM_MARKER = '// expo-pico-core: missing dimension strategy';
 const PICO_SDK_MARKER = '// expo-pico-core: pico sdk config';
 const PICO_REPO_MARKER = '// expo-pico-core: pico maven repo';
 const HERMES_PATH_MARKER = '// expo-pico-core: hermesc path compatibility';
-const PACKAGING_PICK_FIRST_MARKER = '// expo-pico-core: 16KB openxr loader overlay';
 const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
@@ -84,17 +84,14 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
       ? `
         dual {
             dimension "device"
+            matchingFallbacks = ['pico', 'mobile']
             minSdkVersion ${options.minSdkVersion}
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
         }`
       : '';
 
-  // Quest flavor co-exists with pico when expo-horizon-core is installed
-  // alongside us — it declares its own (mobile, quest) device variants and
-  // would otherwise fail to resolve under the picoDebug build. The
-  // missingDimensionStrategy lets pico fall back to expo-horizon-core's
-  // mobile variant (its Quest-specific bits are no-op on PICO by design).
-  // Symmetric: quest falls back to our mobile flavor.
+  // Horizon and Expo-PICO share the device dimension. A missing flavor in
+  // that dimension needs matchingFallbacks, not missingDimensionStrategy.
   const questFlavor =
     options.buildVariant === 'pico' || options.buildVariant === 'dual'
       ? `
@@ -102,14 +99,14 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
             dimension "device"
             minSdkVersion 29
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
-            missingDimensionStrategy 'device', 'mobile'
+            matchingFallbacks = ['mobile']
         }`
       : '';
 
   const picoMissingDimensionLine =
     options.buildVariant === 'pico' || options.buildVariant === 'dual'
       ? `
-            missingDimensionStrategy 'device', 'mobile'`
+            matchingFallbacks = ['mobile']`
       : '';
 
   return `
@@ -123,6 +120,34 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}${picoMissingDimensionLine}
         }${dualFlavor}${questFlavor}
     }
+`;
+}
+
+/** Keep overrides out of Quest/mobile variants and remove our old global rule. */
+export function updateOverlayPackaging(contents: string, options: ResolvedPicoOptions): string {
+  contents = contents.replace(
+    /\n[ \t]*\/\/ expo-pico-core: 16KB openxr loader overlay\s+packagingOptions\s*\{\s*jniLibs\s*\{\s*pickFirsts \+= \["\*\*\/libopenxr_loader\.so"\]\s*\}\s*\}/g,
+    ''
+  );
+  contents = contents.replace(
+    /\n\/\/ expo-pico-core: begin flavor overlays[\s\S]*?\/\/ expo-pico-core: end flavor overlays\n?/g,
+    ''
+  );
+  const libraries = [
+    ...(options.openXrLoaderOverlay ? ['**/libopenxr_loader.so'] : []),
+    ...(options.viroRendererOverlay ? ['**/libviro_renderer.so'] : []),
+  ];
+  if (libraries.length === 0 || options.buildVariant === 'mobile') return contents;
+  return contents + `
+// expo-pico-core: begin flavor overlays
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        if (variant.productFlavors.any { it.first == "device" && it.second in ["pico", "dual"] }) {
+            variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(libraries)})
+        }
+    }
+}
+// expo-pico-core: end flavor overlays
 `;
 }
 
@@ -187,12 +212,19 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // Consumers don't need to drop any AAR files — Gradle pulls each
     // service from maven on first build. The bounded AAR-drop fallback
     // below stays in place for offline / air-gapped builds.
+    //
+    // Declared per flavor, not on the bare `implementation` configuration:
+    // `xrMode` and `buildVariant` are independent, so a `pico-os5` app
+    // built as `dual` also produces mobile* and quest* variants that must
+    // not carry the PICO SDK.
+    const ppsConfigurations = resolvePpsConfigurations(options.buildVariant);
     if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_DEPS_MARKER)) {
       const services = resolvePpsServices(
         options.platformService.services,
         createPackageResolver(projectRoot)
       );
-      contents = contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER);
+      contents =
+        contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER, ppsConfigurations);
     }
 
     // PICO Platform SDK AAR drop-in (offline fallback). Consumers who
@@ -200,26 +232,24 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // can drop them into android/app/libs/. Anything PPS already resolves
     // from maven is excluded by name — see renderLocalAarBlock.
     if (options.xrMode !== 'mobile' && !gradleContains(contents, APP_LIBS_AAR_MARKER)) {
-      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER);
+      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER, ppsConfigurations);
     }
 
-    // 16KB ELF alignment for libopenxr_loader.so. Viro 2.56.0 ships a
-    // 4KB-aligned Khronos loader (1.1.38); PICO OS 6 / Android 14+ rejects
-    // it. withPicoOpenXrLoaderOverlay drops a 16KB-aligned copy into
-    // app/src/main/jniLibs/; we pickFirst so it wins over the AAR's.
-    if (options.xrMode !== 'mobile' && !gradleContains(contents, PACKAGING_PICK_FIRST_MARKER)) {
-      const pickFirstBlock = `
-    ${PACKAGING_PICK_FIRST_MARKER}
-    packagingOptions {
-        jniLibs {
-            pickFirsts += ["**/libopenxr_loader.so"]
-        }
-    }
+    // Upgrade the old generated global pickFirst block, including when users
+    // turn an overlay off without a clean prebuild. Other packaging stays intact.
+    contents = updateOverlayPackaging(contents, options);
+
+    // Also repair already-generated flavor blocks during incremental prebuild.
+    const fallbackMarker = '// expo-pico-core: device flavor fallbacks';
+    if (options.buildVariant !== 'mobile' && !contents.includes(fallbackMarker)) {
+      contents += `
+${fallbackMarker}
+android.productFlavors.configureEach { flavor ->
+    def fallbacks = flavor.name == "dual" ? ["pico", "mobile"] :
+        (flavor.name in ["pico", "quest"] ? ["mobile"] : [])
+    flavor.matchingFallbacks.addAll(fallbacks.findAll { !flavor.matchingFallbacks.contains(it) })
+}
 `;
-      const result = insertAfterPattern(contents, /android\s*\{/, pickFirstBlock);
-      if (result) {
-        contents = result;
-      }
     }
 
     if (!gradleContains(contents, PICO_SDK_MARKER)) {

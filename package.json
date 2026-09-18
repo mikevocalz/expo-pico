@@ -38,12 +38,19 @@
     "test:pack": "for dir in packages/expo-pico-*; do (cd \"$dir\" && npm pack --dry-run >/dev/null); done",
     "example:prebuild:android": "cd example && npx expo prebuild --platform android --no-install",
     "example:assemble:mobile": "cd example/android && rm -rf app/build/outputs/apk/mobile && ./gradlew assembleMobileDebug",
-    "example:assemble:pico": "yarn example:clean:cache && cd example/android && rm -rf app/build/outputs/apk/pico && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a",
+    "example:assemble:pico": "yarn example:clean:cache && cd example/android && rm -rf app/build/outputs/apk/pico && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a && cd ../.. && yarn verify:apk:pico",
+    "verify:apk:pico": "python3 scripts/verify-16kb-alignment.py example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk --allow libpxrplatformloader.so --allow libpxrplatformloader4j.so",
     "validate:device": "bash scripts/validate-device.sh",
     "validate:device:no-adb": "bash scripts/validate-device.sh --skip-adb",
     "studio": "open -a 'Android Studio' example/android",
     "example:clean:cache": "rm -rf example/.expo/cache example/node_modules/.cache \"${TMPDIR:-/tmp}\"/metro-* \"${TMPDIR:-/tmp}\"/haste-map-* 2>/dev/null || true",
-    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1"
+    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1",
+    "pico:doctor": "node scripts/pico-cli.mjs doctor",
+    "pico:devices": "node scripts/pico-cli.mjs devices",
+    "pico:install": "node scripts/pico-cli.mjs install",
+    "pico:launch": "node scripts/pico-cli.mjs launch",
+    "pico:capture": "node scripts/pico-cli.mjs capture",
+    "test:pico-cli": "node --test scripts/pico-cli.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

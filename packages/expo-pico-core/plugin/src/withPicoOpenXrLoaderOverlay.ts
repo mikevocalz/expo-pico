@@ -1,97 +1,122 @@
 import { ConfigPlugin, withDangerousMod } from '@expo/config-plugins';
+import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
 
-/**
- * Overlay a 16KB-page-aligned `libopenxr_loader.so` into the app's
- * `android/app/src/main/jniLibs/{arm64-v8a,armeabi-v7a}/` so it wins over the
- * legacy 4KB-aligned copy that `@reactvision/react-viro@2.56.0` (and any
- * other consumer of an old Khronos OpenXR loader AAR) ships in its native
- * libraries.
- *
- * Why:
- *   PICO OS 6 / Android 14+ rejects .so files whose PT_LOAD segments are
- *   not 16KB-aligned. The legacy Khronos `openxr_loader_for_android` 1.1.38
- *   that Viro bundles is 4KB-aligned and causes a silent native-load
- *   failure on PICO 4 Ultra / Quest 3S devices. We carry an in-tree copy
- *   of Khronos 1.1.62 (which IS 16KB-aligned) and Gradle's `pickFirst`
- *   strategy (added by `withPicoQuestFlavor`) ensures the app's own
- *   `jniLibs` copy wins over the AAR's.
- *
- * Sources:
- *   `plugin/assets/jniLibs/{abi}/libopenxr_loader.so` (committed in this package).
- *
- * Verified with `scripts/verify-16kb-alignment.py` against the built APK.
- *
- * Idempotent: skips the copy when the destination already exists and has
- * the same size as the staged loader.
- */
-export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
-  if (options.xrMode === 'mobile') {
-    return config;
-  }
+const digest = (file: string): string =>
+  createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
-  return withDangerousMod(config, [
+/**
+ * The only ABI these overlays are staged for.
+ *
+ * PICO ships no 32-bit device, and `scripts/verify-16kb-alignment.py` — the
+ * one thing in this repo that can vouch for a staged binary — reads 64-bit
+ * ELF only. Staging `armeabi-v7a` would put a library nothing here can check
+ * into the source set, and `ndkAbiFilters: false` is a supported option, so
+ * the Gradle ABI filter is not a guarantee it stays out of the APK.
+ *
+ * A copy an earlier plugin version staged is still removed: cleanup walks the
+ * recorded `.expo-pico-overlays.json` state, not just the current ABI list.
+ */
+const OVERLAY_ABI = 'arm64-v8a';
+
+/**
+ * Compatibility overlays for older AARs. The native ViroCore renderer remains
+ * authoritative; modern paired AAR builds can disable both overlays. ELF page
+ * alignment must be checked in the resulting artifact, independent of OS name.
+ * Record hashes so incremental prebuild updates and removals preserve user files.
+ */
+export function syncPicoOverlays(
+  platformRoot: string,
+  options: ResolvedPicoOptions,
+  stagedRoot = path.resolve(__dirname, '../assets')
+): void {
+  const sourceRoot = path.join(platformRoot, 'app/src');
+  const statePath = path.join(sourceRoot, '.expo-pico-overlays.json');
+  const previous: Record<string, string> = fs.existsSync(statePath)
+    ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
+    : {};
+  const next: Record<string, string> = {};
+  const active = options.xrMode !== 'mobile' && options.buildVariant !== 'mobile';
+  const flavors = active ? (options.buildVariant === 'dual' ? ['pico', 'dual'] : ['pico']) : [];
+  const staged: { relative: string; source: string; enabled: boolean }[] = [];
+  for (const library of ['libopenxr_loader.so', 'libviro_renderer.so']) {
+    const enabled =
+      active &&
+      (library === 'libopenxr_loader.so'
+        ? options.openXrLoaderOverlay
+        : options.viroRendererOverlay);
+    const relative = path.join('jniLibs', OVERLAY_ABI, library);
+    const source = path.join(stagedRoot, relative);
+    if (enabled && !fs.existsSync(source)) {
+      throw new Error(
+        `[expo-pico-core] Missing staged ${relative}. Disable the overlay to use a rebuilt AAR.`
+      );
+    }
+    if (fs.existsSync(source)) staged.push({ relative, source, enabled });
+  }
+  const assets = path.join(stagedRoot, 'androidAssets');
+  if (fs.existsSync(assets)) {
+    for (const name of fs.readdirSync(assets)) {
+      const source = path.join(assets, name);
+      if (fs.statSync(source).isFile())
+        staged.push({
+          relative: path.join('assets', name),
+          source,
+          enabled: active && options.viroRendererOverlay,
+        });
+    }
+  }
+  const desired = new Map<string, string>();
+  const known = new Map<string, string>();
+  for (const entry of staged) {
+    for (const flavor of ['main', 'pico', 'dual']) {
+      const relative = path.join(flavor, entry.relative);
+      known.set(relative, digest(entry.source));
+      if (entry.enabled && flavors.includes(flavor)) desired.set(relative, entry.source);
+    }
+  }
+  // Clean only content we can attribute to this plugin. Unknown legacy files
+  // must be reviewed explicitly; silently keeping them can mask a new AAR.
+  for (const relative of new Set([...Object.keys(previous), ...known.keys()])) {
+    const target = path.resolve(sourceRoot, relative);
+    if (!target.startsWith(path.resolve(sourceRoot) + path.sep)) {
+      throw new Error('[expo-pico-core] Invalid overlay state path');
+    }
+    if (fs.existsSync(target)) {
+      const current = digest(target);
+      if (current !== previous[relative] && current !== known.get(relative)) {
+        throw new Error(
+          `[expo-pico-core] Review custom native override ${target} before prebuild; it was not modified.`
+        );
+      }
+    }
+  }
+  for (const relative of new Set([...Object.keys(previous), ...known.keys()])) {
+    const target = path.resolve(sourceRoot, relative);
+    const source = desired.get(relative);
+    if (fs.existsSync(target)) {
+      if (!source) fs.unlinkSync(target);
+    }
+    if (source) {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      if (!fs.existsSync(target) || digest(target) !== known.get(relative)) {
+        fs.copyFileSync(source, target);
+      }
+      next[relative] = digest(source);
+    }
+  }
+  fs.mkdirSync(sourceRoot, { recursive: true });
+  fs.writeFileSync(statePath, JSON.stringify(next, null, 2) + '\n');
+}
+
+export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (config, options) =>
+  withDangerousMod(config, [
     'android',
     (cfg) => {
-      const projectRoot = cfg.modRequest.projectRoot;
-      const platformRoot = cfg.modRequest.platformProjectRoot;
-      const stagedRoot = path.resolve(__dirname, '../assets/jniLibs');
-
-      const libraries: string[] = ['libopenxr_loader.so'];
-      if (options.viroRendererOverlay) {
-        libraries.push('libviro_renderer.so');
-      }
-
-      for (const abi of ['arm64-v8a', 'armeabi-v7a'] as const) {
-        for (const library of libraries) {
-          const src = path.join(stagedRoot, abi, library);
-          if (!fs.existsSync(src)) {
-            // Not staged for this ABI. Expected for libviro_renderer.so, which
-            // is only carried for arm64-v8a — PICO ships no 32-bit device — and
-            // for a source checkout with no staged assets at all. Silent: the
-            // alignment gate catches a genuinely missing loader downstream.
-            continue;
-          }
-          const destDir = path.join(platformRoot, 'app/src/main/jniLibs', abi);
-          const dest = path.join(destDir, library);
-          fs.mkdirSync(destDir, { recursive: true });
-
-          if (fs.existsSync(dest)) {
-            const a = fs.statSync(src).size;
-            const b = fs.statSync(dest).size;
-            if (a === b) continue;
-          }
-          fs.copyFileSync(src, dest);
-        }
-      }
-
-      // Overlay bundled Android assets the native renderer loads at runtime but
-      // that the stock @reactvision/react-viro AAR does not carry — currently
-      // `controller_neutral.glb`, which libviro_renderer.so reads via
-      // VROPlatformCopyAssetToFile() to draw the OpenXR controller mesh. Without
-      // this the mesh code runs but finds no asset. Only staged when the viro
-      // renderer overlay is active (the .so that needs it).
-      if (options.viroRendererOverlay) {
-        const assetSrcDir = path.resolve(__dirname, '../assets/androidAssets');
-        if (fs.existsSync(assetSrcDir)) {
-          const destDir = path.join(platformRoot, 'app/src/main/assets');
-          fs.mkdirSync(destDir, { recursive: true });
-          for (const name of fs.readdirSync(assetSrcDir)) {
-            const src = path.join(assetSrcDir, name);
-            const dest = path.join(destDir, name);
-            if (fs.existsSync(dest) && fs.statSync(dest).size === fs.statSync(src).size) {
-              continue;
-            }
-            fs.copyFileSync(src, dest);
-          }
-        }
-      }
-
-      void projectRoot;
+      syncPicoOverlays(cfg.modRequest.platformProjectRoot, options);
       return cfg;
     },
   ]);
-};

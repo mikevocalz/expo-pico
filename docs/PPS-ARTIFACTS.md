@@ -88,7 +88,7 @@ The generated block excludes every filename Maven already supplies:
 
 ```gradle
 dependencies {
-    implementation fileTree(
+    picoImplementation fileTree(
         dir: 'libs',
         include: ['*.aar', '*.jar'],
         exclude: ['platform-service-*.aar', 'platform-service-*.jar',

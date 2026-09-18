@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
+import { getPicoRuntimeInfo } from '@expo-pico/core';
 
 import { IsoCube } from './IsoCube';
 import { useLayout } from './useLayout';
@@ -64,12 +64,12 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const L = useLayout();
   const onHeadset = info.xrMode !== 'mobile';
 
-  // Prefer the immersive activity. Rendering the scene inline leaves the 2D
-  // panel in the environment, because the panel is what the renderer draws
-  // into. enterImmersiveScene() resolves false when no VR-category activity is
-  // declared, and then the inline route is the only thing available.
-  const onEnterXr = useCallback(async () => {
-    if (await enterImmersiveScene()) return;
+  // The xr route mounts ViroXRSceneNavigator, and mounting it is what starts
+  // the immersive activity: it sets the scene intent and calls
+  // VRLauncher.launchVRScene(). Calling enterImmersiveScene() here instead
+  // would start VRActivity with no intent for ViroQuestEntryPoint to read.
+  // Same route on a phone, where the navigator renders the scene inline.
+  const onEnterXr = useCallback(() => {
     onNavigate('xr');
   }, [onNavigate]);
 

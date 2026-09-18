@@ -1,4 +1,7 @@
 <picture>
+
+For native Viro rendering on PICO, see the [Viro + Expo-PICO integration guide](docs/VIRO-PICO-INTEGRATION.md), including the PICO flavor and PICO CLI workflows.
+
   <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/pico-wordmark-dark.svg">
   <img src="./docs/assets/pico-wordmark-light.svg" alt="PICO" height="34">
 </picture>
@@ -234,10 +237,13 @@ Ships with `expo-pico-core`.
 
 ## Shipping
 
+- [Handoff](docs/HANDOFF.md) — current state of the PICO release gates, what to pick up first, and how to resume the device session.
+
 - [docs/QUICKSTART.md](./docs/QUICKSTART.md): bootstrap guide.
 - [docs/FAQ.md](./docs/FAQ.md): why Expo, why Android-only, which renderer to use, release versioning.
 - [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md): porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
 - [docs/EAS.md](./docs/EAS.md): EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
+- [docs/VIRO-PICO-RELEASE-EVIDENCE.md](./docs/VIRO-PICO-RELEASE-EVIDENCE.md): release evidence ledger for the ViroCore / Viro / Expo-PICO pull requests. Gate results, artifact hashes, upstream pin drift, and open risks.
 
 ## Development
 

@@ -28,13 +28,12 @@ export const IMMERSIVE_ROOT_COMPONENT = 'VRQuestScene';
  * registerImmersiveScene(MyVrScene);
  * ```
  *
- * This deliberately overrides `@reactvision/react-viro`, which auto-registers
- * its own `ViroQuestEntryPoint` under the same name on import. That component
- * renders whatever `VRQuestNavigatorBridge.getIntent()` returns, and the intent
- * is only ever set on Viro's Quest-gated path — `ViroPlatform.isQuest` matches
- * `Build.MANUFACTURER`/`BRAND` against Oculus and Meta, so it is false on PICO
- * and no intent is ever set. Viro's own entry point documents this override as
- * supported.
+ * For a custom immersive root only. The PICO-aware mikevocalz/viro fork
+ * registers its own ViroQuestEntryPoint and sets its intent on both Quest and
+ * PICO. Apps using ViroXRSceneNavigator should keep that registration: replacing
+ * it bypasses the scene intent, navigation proxy, view tag, and exit callbacks.
+ * Older upstream Viro builds without a PICO launch path may still use this
+ * helper with their own renderer integration.
  */
 export function registerImmersiveScene(component: ComponentType<object>): void {
   AppRegistry.registerComponent(IMMERSIVE_ROOT_COMPONENT, () => component);
