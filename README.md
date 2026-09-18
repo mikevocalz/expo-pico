@@ -241,6 +241,7 @@ Ships with `expo-pico-core`.
 - [docs/FAQ.md](./docs/FAQ.md): why Expo, why Android-only, which renderer to use, release versioning.
 - [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md): porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
 - [docs/EAS.md](./docs/EAS.md): EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
+- [docs/VIRO-PICO-RELEASE-EVIDENCE.md](./docs/VIRO-PICO-RELEASE-EVIDENCE.md): release evidence ledger for the ViroCore / Viro / Expo-PICO pull requests. Gate results, artifact hashes, upstream pin drift, and open risks.
 
 ## Development
 
