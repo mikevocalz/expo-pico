@@ -71,3 +71,41 @@ Every case in `docs/pico/g5-runbook.md` is blocked behind this. None of them can
 start, including the ones that have nothing to do with platform services: the
 interaction profile read, the plane-detection capability transitions, scene
 push and pop, `onExitViro`, suspend and resume, recentre, and passthrough.
+
+## The app id is bound to the package
+
+Tested by taking a working app id from another app installed on the same
+headset and building the example with it. The behaviour changed measurably but
+the app still did not run:
+
+| Build | Entitlement dialogs | Process |
+| --- | --- | --- |
+| No `picoAppId` | 37 | killed immediately |
+| Borrowed id from another package | 4 | survived about 8 s, then killed |
+
+The kill is explicit in logcat — `hide app panel before kill app process
+AppRecord ... pkg:com.example.expopico` — and PICO's service logs no reason for
+it either way. The id was issued for `com.dvntproject2.decax9` and was applied
+to `com.example.expopico`.
+
+Dropping from 37 dialogs to 4 shows the id is read rather than ignored, and the
+package names differing is the most consistent explanation for it still being
+rejected. That is an inference, not something the device states: no rejection
+reason appears in any log.
+
+The practical consequence is the same either way. An id has to be issued for the
+package being built, so a `picoAppId` cannot be borrowed from another app to get
+a test build running. Register `com.example.expopico` in the PICO Developer
+Console, or build the example under an applicationId that is already registered.
+
+Also worth knowing: another app on this headset launches with the literal
+placeholder `REPLACE_WITH_PICO_APP_ID` in its manifest and shows no entitlement
+dialog at all. Its manifest declares none of the PICO OS 5 metadata this plugin
+emits — no `com.pico.xrMode`, no `com.pico.spatial.mode`, no
+`com.pico.targetProfile`, no `com.pico.supportedDevices`. So the entitlement
+path is entered because of what an OS 5 build declares, not because the app is
+sideloaded. A plain VR build sidesteps it, at the cost of the OS 5 capabilities.
+
+A `targetProfile` mismatch was tested and ruled out: pinning it from `auto`
+(which resolved to `swan`) to `pico4ultra`, matching the actual device, made no
+difference — 37 dialogs, same kill.
