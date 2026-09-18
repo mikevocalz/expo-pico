@@ -372,6 +372,16 @@ case K07, which needs hardware. Landed in viro `f0a51bd`.
    the gap requires replacing or conditionally excluding the audio dependency, which is a
    support-matrix decision and sits outside this work's non-goals.
 
+   The CCA refresh taken from #377 does not change that list, and a commit
+   message on virocore 9abdd83a claims otherwise — it says taking those archives
+   "removes one of the vendored archives with no arm64-simulator coverage". That
+   is wrong. develop's `reactvisioncca/arm64_simulator/libreactvisioncca.a`
+   already carried both `x86_64` and `arm64`, at minos 13.0 and 14.0; what #377
+   changes is the minos, to a uniform 15.0. The three archives below are the
+   ones genuinely missing arm64, measured with `lipo -archs`:
+   `libLinearMath.a` and `libprotobuf-lite.a` report `x86_64` alone, and
+   `harfbuzz` reports `i386 x86_64`.
+
    Three vendored archives also have no arm64-simulator slice: `bullet/x86_64/libLinearMath.a`,
    `protobuf/x86_64`, `harfbuzz/x86_64`. They are the next walls after GVRAudioSDK, not the first
    one. Rebuilding them first will not make the simulator link. All four are architecture coverage,
