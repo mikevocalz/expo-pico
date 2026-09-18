@@ -37,6 +37,23 @@ export function plan(argv) {
     if (!values[key]?.trim()) throw new Error(`${command} requires ${key}`);
     return values[key];
   };
+  // PICO CLI 0.5.0 parses with cac, which reads `--device -e` as `{device: true,
+  // e: true}`. Only the ADB serial charset is safe, and never with a leading dash.
+  const requireDevice = () => {
+    const device = requireValue('--device');
+    if (!/^[A-Za-z0-9._:][A-Za-z0-9._:-]*$/.test(device))
+      throw new Error(`--device must be an ADB serial: ${device}`);
+    return device;
+  };
+  // A relative traversal or an absolute elsewhere would have mkdirSync create,
+  // and writeFileSync fill, a directory outside the project.
+  const requireDirectory = (key) => {
+    const directory = path.resolve(requireValue(key));
+    const relative = path.relative(process.cwd(), directory);
+    if (relative.startsWith('..') || path.isAbsolute(relative))
+      throw new Error(`${key} must stay inside ${process.cwd()}: ${directory}`);
+    return directory;
+  };
   const jobs = [];
   if (command === 'doctor') jobs.push({ args: ['doctor', '--format', 'json'], json: true });
   else if (command === 'devices')
@@ -44,7 +61,7 @@ export function plan(argv) {
   else {
     if (!['install', 'launch', 'capture'].includes(command))
       throw new Error(`Unknown command: ${command}`);
-    const device = requireValue('--device');
+    const device = requireDevice();
     if (command === 'install') {
       const apk = path.resolve(requireValue('--apk'));
       if (!apk.endsWith('.apk')) throw new Error('--apk must be an APK');
@@ -56,7 +73,7 @@ export function plan(argv) {
         throw new Error('Invalid Android package ID');
       if (command === 'launch') jobs.push({ args: ['app', 'launch', app, '--device', device] });
       else {
-        const out = path.resolve(requireValue('--out'));
+        const out = requireDirectory('--out');
         jobs.push({
           args: ['device', 'info', '--device', device, '--format', 'json'],
           json: true,
@@ -100,7 +117,12 @@ export function validateResult(result, expectsJson) {
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`PICO CLI exited ${result.status ?? result.signal}`);
   if (expectsJson) {
-    const payload = JSON.parse(result.stdout);
+    let payload;
+    try {
+      payload = JSON.parse(result.stdout);
+    } catch (error) {
+      throw new Error(`PICO CLI returned non-JSON: ${error.message}`);
+    }
     if (payload.tool_status === 'FAILED' || payload.success === false) {
       throw new Error(payload.summary || 'PICO CLI reported failure');
     }
@@ -119,8 +141,7 @@ export function main(argv, run = spawnSync) {
       console.log(JSON.stringify({ command: 'npx', args, output: job.file }));
       continue;
     }
-    if (job.file || job.directory)
-      mkdirSync(job.directory ?? path.dirname(job.file), { recursive: true });
+    if (job.directory) mkdirSync(job.directory, { recursive: true });
     // Use Node to run npm's npx entry point: no shell interpolation, including on Windows.
     const npmExec = process.env.npm_execpath;
     const npxEntry = npmExec?.endsWith('npm-cli.js')
@@ -135,12 +156,16 @@ export function main(argv, run = spawnSync) {
       maxBuffer: 16 * 1024 * 1024,
       timeout: 120000,
     });
-    if (result.stdout) {
-      if (job.file) writeFileSync(job.file, result.stdout);
-      else process.stdout.write(result.stdout);
-    }
     if (result.stderr) process.stderr.write(result.stderr);
+    // Validate before writing: a partial or timed-out run must not leave a file
+    // that a later read would take for evidence.
     validateResult(result, job.json);
+    if (result.stdout) {
+      if (job.file) {
+        mkdirSync(path.dirname(job.file), { recursive: true });
+        writeFileSync(job.file, result.stdout);
+      } else process.stdout.write(result.stdout);
+    }
   }
 }
 
