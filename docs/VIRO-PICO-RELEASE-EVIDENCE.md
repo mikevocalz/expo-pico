@@ -21,7 +21,7 @@ could not run and says why; FAIL means it ran and did not hold.
 | --- | --- | --- |
 | G0 | Custom-binary inventory across both forks | PASS |
 | G1 | Android AAR provenance and 16KB page alignment | PASS |
-| G1.3 / G1.4 | `npm pack` tarball and APK build | BLOCKED |
+| G1.3 / G1.4 | `npm pack` tarball and APK build | PASS |
 | G2 | iOS deployment-target invariant | PASS |
 | G3 | ViroKit rebuild, device / simulator link | PASS (device) / FAIL (simulator) |
 | G4 | Test suites, native and web | PASS (native) / BLOCKED (web) |
@@ -158,21 +158,102 @@ per-release automated check.
 
 ## APK checks
 
-**Not run.** No APK was built during this release cycle.
+Both gates now pass. A PICO APK exists and is traceable to the sources that produced it.
 
-`npm pack` fails before packaging can proceed, which blocks G1.3 and G1.4:
+### Packaging (G1.3)
 
-- `prepare` runs `tsc`, which exits 2 with 48 errors.
-- 32 errors come from `@reactvision/viro-web-renderer`. That package is unpublished, has no public
-  repository, and is referenced through a dangling `file:../viro-web-renderer` symlink.
-- 4 errors come from `nitro-canvas-in-Vision`, which is declared in no dependency section at all.
-- 12 errors are `TS7006`, all traced back to callback parameters whose types flow from those same
-  imports.
+`npm pack` was blocked by an exit code, not by missing output. `tsc` writes complete JS and `.d.ts`
+for every file — the project does not set `noEmitOnError` — so the only consequence of its 48 errors
+was that `prepare` short-circuited `tsc && copy-files` before `copy-files` ran, which meant
+`dist/components/Resources` had been shipping whatever was last committed rather than the current
+copy.
 
-After attributing those 48, no independent type defect remains.
+`build` now runs `scripts/typecheck-gate.js` (viro `0eb5235`). It keeps the emit and permits exactly
+two diagnostic shapes: one naming an absent module, and `TS7006` in a file that reaches an absent
+module through the repo's own relative imports. That reachable set is computed from the import graph
+rather than listed, so a new file inherits the right treatment without editing the gate. Everything
+else fails, as does output that is not a parseable file diagnostic — a `tsc` crash or a config error
+is never waved through.
 
-The APK path is additionally blocked because the PICO legacy PVR SDK AARs are absent from the
-working tree; they are gitignored and not redistributable here.
+Three controls establish that it is not a rubber stamp:
+
+| Control | Expected | Result |
+| --- | --- | --- |
+| `TS2322` in a file that reaches no absent module | reject | exit 1 |
+| `TS7006` in that same file | reject | exit 1 |
+| Clean tree | accept | exit 0, all 48 attributed |
+
+The second control is the load-bearing one: it proves the implicit-any clause is scoped to tainted
+files rather than blanket.
+
+| Artifact | Value |
+| --- | --- |
+| Tarball | `reactvision-react-viro-3.0.0-moyo.3.tgz` |
+| SHA-256 | `dcc1e49c01eb26860b173ac0336ba8e176251b2eedc68d63841811c8ce66e4fe` |
+| Package name | `@reactvision/react-viro` |
+| Files | 1687 |
+| Renderer AAR inside | `dc9a68a0…4219d4`, exact match |
+| Bridge AAR inside | `6907dc2e…d81f8`, exact match |
+| ViroKit inside | `minos 15.1` |
+| `dist` navigator | carries `hdrEnabled={!ViroPlatform_1.isQuest}` |
+| `dist/components/Resources` | present |
+
+### APK (G1.4)
+
+Built from the paired fork build with `openXrLoaderOverlay: false` and `viroRendererOverlay: false`,
+so a staged older `.so` could not mask the new one.
+
+| Check | Result |
+| --- | --- |
+| APK | `app-pico-debug.apk`, 175 MB |
+| SHA-256 | `0dd44afdbc3906c0a54092a5d0d19d921f4ed2ec91c40968ba63504e8552b9f8` |
+| `libviro_renderer.so` in APK | `2a5c0221…a997` — identical to the copy inside the step-1 AAR |
+| JNI symbol | `Java_com_viro_core_Renderer_nativeGetPlaneDetectionStatus` exported |
+| `libopenxr_loader.so` | `50d69917…da1e` |
+| `zipalign -v -c -P 16 4` | Verification successful |
+| ELF 16KB alignment | 48 of 50 libraries OK, 2 failures |
+
+ELF and ZIP alignment are separate facts and both were checked. The two ELF failures are
+`lib/arm64-v8a/libpxrplatformloader.so` and `lib/arm64-v8a/libpxrplatformloader4j.so`, each reporting
+`PT_LOAD alignment 0x1000 < 0x4000`. Both arrive from PICO's own Platform Service SDK through the
+Bytedance Maven artifact. Every Viro and fork library in the APK is clean at `0x4000`. See open
+risks.
+
+### Blockers found and cleared on the way here
+
+Each of these would have consumed a device session before anyone reached a real test case.
+
+**1. `MainApplication.kt:38` — `Unresolved reference 'PICO'`.** `expo install expo-gl` ran yarn as a
+side effect, which reverted `@reactvision/react-viro` to published `2.58.1`. That version's
+`ReactViroPackage.ViroPlatform` enum has no `PICO` constant; the fork's bridge AAR does. This is the
+G5 PRE-2 precondition surfacing as a hard compile error rather than an ambiguous runtime `null`.
+
+**2. `nitro-canvas-in-Vision` breaks Metro for every consuming app.** It is 404 on npm, declared in
+no dependency section, and eagerly required from the package entry through `ViroGpuPanel`,
+`ViroThreeJSPanel` and `ViroRivePanel`. Any app importing anything at all from
+`@reactvision/react-viro` fails to bundle. It exists only as a local checkout. This remains an open
+blocker for publishing.
+
+**3. `expo-gl`, pulled transitively.** `nitro-canvas-in-Vision` sets `"react-native": "src/index"`,
+so Metro resolves its `src/` while `tsc` and Node use the built `lib/`. `expo-gl` therefore never
+appeared in any typecheck — `tsc` stops at the first unresolvable module and does not follow into
+its imports. Only a bundler walks that far.
+
+**4. `expo prebuild` aborted outright** (expo-pico `84ff76d`). Four packages — achievements,
+leaderboards, social, storage — had `app.plugin.js` requiring `./plugin/build/index` while `tsc`
+emits `plugin/build/src/index.js`; the other eleven spell the `src/` segment out. It stayed hidden
+because the path resolves only when Expo loads the plugin during prebuild, and the build outputs are
+gitignored, so a fresh checkout fails earlier for an unrelated reason.
+
+### G5 PRE-1 cleared
+
+expo-pico `2063e9c`. `example/index.js` no longer overrides Viro's `VRQuestScene` registration. That
+override was a workaround for published `2.58.1` gating the navigator's intent path on `isQuest` —
+and its `ViroPlatform` contains no `isPico` at all, zero occurrences — so on PICO nothing ever set
+the intent and VRActivity mounted with nothing to read. The fork gates on `isQuest || isPico`, which
+makes the workaround obsolete and actively harmful: keeping it removed `ViroQuestEntryPoint`, and
+with it scene push/pop, `onExitViro`, and the view tag that `getCapabilities` resolves against. The
+`xr` route now mounts `ViroXRSceneNavigator` through `XrLauncher`.
 
 ## Device matrix
 
@@ -310,6 +391,23 @@ case K07, which needs hardware. Landed in viro `f0a51bd`.
 
 The CCA precondition for virocore#377 is met: all four `libreactvisioncca` archives are
 byte-identical to develop, so that pull request's refresh is takeable without losing local work.
+
+7. **`nitro-canvas-in-Vision` makes the package unpublishable as it stands.** It is 404 on npm,
+   declared in no dependency section, and eagerly required from the package entry through
+   `ViroGpuPanel`, `ViroThreeJSPanel` and `ViroRivePanel`. Metro cannot resolve it, so any app
+   importing anything from `@reactvision/react-viro` fails to bundle — the APK above only builds
+   because a local checkout was copied into `node_modules`. It also pulls `expo-gl` transitively via
+   its `"react-native": "src/index"` field, so a consumer inherits that too without it appearing in
+   any manifest. Declaring it (optional peer plus local dev dependency, matching how
+   `viro-web-renderer` is already declared) and making the entry tolerate its absence are both
+   open decisions.
+8. **Two PICO Platform Service libraries are 4KB-aligned.** `lib/arm64-v8a/libpxrplatformloader.so`
+   and `libpxrplatformloader4j.so` report `PT_LOAD alignment 0x1000 < 0x4000` inside the built APK.
+   They come from PICO's own Platform Service SDK through the Bytedance Maven artifact, not from
+   Viro or this fork, and nothing in this repo produces them. On a genuine 16KB-page device they
+   would fail to load. No runbook case touches the PPS surface, so this does not block the device
+   matrix, but it is a real ceiling on that surface and the fix is upstream at PICO.
+
 
 ## Merge order
 
