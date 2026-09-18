@@ -9,6 +9,20 @@ const digest = (file: string): string =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
 /**
+ * The only ABI these overlays are staged for.
+ *
+ * PICO ships no 32-bit device, and `scripts/verify-16kb-alignment.py` — the
+ * one thing in this repo that can vouch for a staged binary — reads 64-bit
+ * ELF only. Staging `armeabi-v7a` would put a library nothing here can check
+ * into the source set, and `ndkAbiFilters: false` is a supported option, so
+ * the Gradle ABI filter is not a guarantee it stays out of the APK.
+ *
+ * A copy an earlier plugin version staged is still removed: cleanup walks the
+ * recorded `.expo-pico-overlays.json` state, not just the current ABI list.
+ */
+const OVERLAY_ABI = 'arm64-v8a';
+
+/**
  * Compatibility overlays for older AARs. The native ViroCore renderer remains
  * authoritative; modern paired AAR builds can disable both overlays. ELF page
  * alignment must be checked in the resulting artifact, independent of OS name.
@@ -34,16 +48,14 @@ export function syncPicoOverlays(
       (library === 'libopenxr_loader.so'
         ? options.openXrLoaderOverlay
         : options.viroRendererOverlay);
-    for (const abi of ['arm64-v8a', 'armeabi-v7a']) {
-      const relative = path.join('jniLibs', abi, library);
-      const source = path.join(stagedRoot, relative);
-      if (enabled && abi === 'arm64-v8a' && !fs.existsSync(source)) {
-        throw new Error(
-          `[expo-pico-core] Missing staged ${relative}. Disable the overlay to use a rebuilt AAR.`
-        );
-      }
-      if (fs.existsSync(source)) staged.push({ relative, source, enabled });
+    const relative = path.join('jniLibs', OVERLAY_ABI, library);
+    const source = path.join(stagedRoot, relative);
+    if (enabled && !fs.existsSync(source)) {
+      throw new Error(
+        `[expo-pico-core] Missing staged ${relative}. Disable the overlay to use a rebuilt AAR.`
+      );
     }
+    if (fs.existsSync(source)) staged.push({ relative, source, enabled });
   }
   const assets = path.join(stagedRoot, 'androidAssets');
   if (fs.existsSync(assets)) {
