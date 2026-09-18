@@ -237,6 +237,8 @@ Ships with `expo-pico-core`.
 
 ## Shipping
 
+- [Handoff](docs/HANDOFF.md) — current state of the PICO release gates, what to pick up first, and how to resume the device session.
+
 - [docs/QUICKSTART.md](./docs/QUICKSTART.md): bootstrap guide.
 - [docs/FAQ.md](./docs/FAQ.md): why Expo, why Android-only, which renderer to use, release versioning.
 - [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md): porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
