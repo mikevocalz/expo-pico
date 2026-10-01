@@ -113,7 +113,7 @@ aapt dump xmltree android/app/build/outputs/apk/pico/debug/app-pico-debug.apk An
 - `settings.gradle` unconditional subproject inclusion. Viro's helper has no idempotency check; re-prebuilding duplicates `include` lines. `withPicoSettingsGradle` is marker-guarded and opt-in.
 - Oculus-specific manifest categories. `com.oculus.intent.category.VR`, `oculus.software.handtracking`, `com.oculus.supportedDevices`, `com.oculus.permission.USE_ANCHOR_API`: none of these are valid on PICO OS. Equivalent entries live under `com.pico.*` / `pico.hardware.*` / `pico.software.*`.
 - Per-mode package accumulation. Viro registers one `ReactViroPackage` per active `xRMode` entry. PICO Swan / PICO OS 6 are mutually exclusive at boot; exactly one `PicoCorePackage` is registered.
-- Gradle classpath overrides. Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 56 toolchain ships the right AGP; we never force it.
+- Gradle classpath overrides. Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 58 toolchain owns the project AGP line; expo-pico does not force a competing project-wide AGP version.
 - Forcing `minSdkVersion` 24. Viro's `withViroProjectBuildGradle` hardcodes min SDK 24. PICO's floor is higher (32 for OS 6, 33 for Swan). The plugin sets the floor per-flavor, not project-wide.
 
 ## Diagnostic gates
