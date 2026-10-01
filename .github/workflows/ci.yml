@@ -11,19 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout current Expo Horizon parity dependency
-        uses: actions/checkout@v4
-        with:
-          repository: software-mansion-labs/expo-horizon
-          ref: 725f3d2d1897f082a145c632dd4dfb3d25c2791f
-          path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
           cache: yarn
           registry-url: https://registry.npmjs.org
-      - name: Build vendored Expo Horizon plugin
-        run: yarn --cwd .vendor/expo-horizon install --frozen-lockfile
       - run: yarn install --frozen-lockfile
       - run: yarn prettier:check
       - run: yarn lint
@@ -69,12 +61,6 @@ jobs:
       PICO_APP_ID: ci-placeholder-app-id
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout current Expo Horizon parity dependency
-        uses: actions/checkout@v4
-        with:
-          repository: software-mansion-labs/expo-horizon
-          ref: 725f3d2d1897f082a145c632dd4dfb3d25c2791f
-          path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
@@ -83,8 +69,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Build vendored Expo Horizon plugin
-        run: yarn --cwd .vendor/expo-horizon install --frozen-lockfile
       - run: yarn install --frozen-lockfile
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
