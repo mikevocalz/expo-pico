@@ -4,7 +4,7 @@ PICO is a native Viro platform, alongside Quest and visionOS. The three reposito
 
 | Layer            | Repository                                                                                             | Responsibility                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Renderer         | [mikevocalz/virocore](https://github.com/mikevocalz/virocore)                        | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities    |
+| Renderer         | [mikevocalz/virocore](https://github.com/mikevocalz/virocore)                                          | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities    |
 | React API        | [mikevocalz/viro](https://github.com/mikevocalz/viro)                                                  | `ViroXRSceneNavigator`, shared immersive activity, scene navigation, Studio, native bridge            |
 | Expo platform    | [mikevocalz/expo-pico](https://github.com/mikevocalz/expo-pico)                                        | `pico` flavor, PICO activity metadata, native package registration, platform services and diagnostics |
 | Quest comparison | [expo-horizon-core](https://github.com/software-mansion-labs/expo-horizon/tree/main/expo-horizon-core) | `quest` flavor and Horizon platform configuration                                                     |
