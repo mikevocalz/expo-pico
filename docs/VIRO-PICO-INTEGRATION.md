@@ -4,12 +4,16 @@ PICO is a native Viro platform, alongside Quest and visionOS. The three reposito
 
 | Layer            | Repository                                                                                             | Responsibility                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Renderer         | [mikevocalz/virocore](https://github.com/mikevocalz/virocore/tree/pico-support)                        | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities    |
+| Renderer         | [mikevocalz/virocore](https://github.com/mikevocalz/virocore)                        | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities    |
 | React API        | [mikevocalz/viro](https://github.com/mikevocalz/viro)                                                  | `ViroXRSceneNavigator`, shared immersive activity, scene navigation, Studio, native bridge            |
 | Expo platform    | [mikevocalz/expo-pico](https://github.com/mikevocalz/expo-pico)                                        | `pico` flavor, PICO activity metadata, native package registration, platform services and diagnostics |
 | Quest comparison | [expo-horizon-core](https://github.com/software-mansion-labs/expo-horizon/tree/main/expo-horizon-core) | `quest` flavor and Horizon platform configuration                                                     |
 
 `PICO` and `QUEST` use Viro's existing OpenXR renderer and shared `VRActivity` / `VRQuestScene` entry. That component name remains for compatibility. visionOS retains its native immersive-space path and a plain `ViroScene` root. PICO CLI operates around this stack; it does not replace Viro with a Spatial SDK or Unity project.
+
+## October 1, 2026 integration status
+
+The coordinated Viro work is no longer waiting on the old draft companion branches. ViroReact v3.0.2 plus the fork-specific XR work has been consolidated onto the fork's `main`, and ViroCore v3.0.2 plus the PICO/OpenXR capability work is also on `main`. The older `codex/pico-cli-bridge` PRs in those repositories were closed as superseded. Expo-PICO remains the flavor/platform layer and should consume rebuilt artifacts from those current main lines.
 
 ## Configure the coordinated fork build
 
