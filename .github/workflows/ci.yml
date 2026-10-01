@@ -22,6 +22,8 @@ jobs:
           node-version: 22.18.0
           cache: yarn
           registry-url: https://registry.npmjs.org
+      - name: Build vendored Expo Horizon plugin
+        run: yarn --cwd .vendor/expo-horizon install --frozen-lockfile
       - run: yarn install --frozen-lockfile
       - run: yarn prettier:check
       - run: yarn lint
