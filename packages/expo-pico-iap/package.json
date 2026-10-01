@@ -23,7 +23,7 @@
     "build:plugin": "tsc --project plugin/tsconfig.json",
     "clean": "rm -rf build nitrogen/generated",
     "test": "jest --config jest.config.js",
-    "prepare": "nitrogen && tsc",
+    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json",
     "typecheck": "tsc --noEmit",
     "nitrogen": "nitrogen",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
