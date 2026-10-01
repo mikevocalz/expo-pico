@@ -13,6 +13,8 @@ PICO is a native Viro platform, alongside Quest and visionOS. The three reposito
 
 ## October 1, 2026 integration status
 
+The workspace is now aligned to Expo SDK 58 / React Native 0.88.0-rc.3, the public example uses ViroReact 3.0.2 for reproducible CI, and the SDK 58 Yarn lockfile has been regenerated from the upgraded workspace manifests.
+
 The coordinated Viro work is no longer waiting on the old draft companion branches. ViroReact v3.0.2 plus the fork-specific XR work has been consolidated onto the fork's `main`, and ViroCore v3.0.2 plus the PICO/OpenXR capability work is also on `main`. The older `codex/pico-cli-bridge` PRs in those repositories were closed as superseded. Expo-PICO remains the flavor/platform layer and should consume rebuilt artifacts from those current main lines.
 
 ## Configure the coordinated fork build
