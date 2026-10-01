@@ -10,7 +10,7 @@ For native Viro rendering on PICO, see the [Viro + Expo-PICO integration guide](
 
 **Ship an Expo app to a PICO headset without ejecting to the bare workflow.**
 
-[![Expo SDK 57](https://img.shields.io/badge/Expo_SDK-57-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
+[![Expo SDK 58](https://img.shields.io/badge/Expo_SDK-58-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
 [![New Architecture](https://img.shields.io/badge/React_Native-New_Architecture-0B0B0C?style=flat-square&logo=react&logoColor=61DAFB)](https://reactnative.dev/architecture/landing-page)
 [![Nitro Modules](https://img.shields.io/badge/Nitro_Modules-0.37-0B0B0C?style=flat-square)](https://nitro.margelo.com)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](./docs/FAQ.md#2-why-is-this-android-only)
@@ -217,7 +217,7 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 
 ## Compatibility
 
-- Expo SDK 57 (current baseline). React Native 0.86.2. React 19.2. Hermes.
+- Expo SDK 58 (current baseline). React Native 0.88.0-rc.3. React 19.3. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).
