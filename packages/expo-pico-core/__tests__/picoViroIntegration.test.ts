@@ -115,10 +115,12 @@ test('subprojects fallback declares the missing device dimension, never a flavor
   expect(generated).toContain('// expo-pico-core: subprojects missing-dim fallback');
 });
 
-test('subprojects fallback is skipped for mobile and re-runs idempotently', async () => {
-  expect(await renderProjectGradle(resolveOptions({ xrMode: 'mobile' }))).not.toContain(
-    'subprojects { sub ->'
-  );
+test('missing-dimension fallback is skipped for mobile while Horizon compatibility remains', async () => {
+  const mobile = await renderProjectGradle(resolveOptions({ xrMode: 'mobile' }));
+  expect(mobile).not.toContain('// expo-pico-core: subprojects missing-dim fallback');
+  expect(mobile).toContain('// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility');
+  expect(mobile).toContain('sub.name == "expo-horizon-core"');
+
   const options = resolveOptions({ xrMode: 'pico-os5' });
   const once = await renderProjectGradle(options);
   expect(await renderProjectGradle(options, once)).toBe(once);
