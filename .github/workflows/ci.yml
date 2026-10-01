@@ -19,7 +19,7 @@ jobs:
           path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: yarn
           registry-url: https://registry.npmjs.org
       - run: yarn install --frozen-lockfile
@@ -75,9 +75,9 @@ jobs:
           path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: yarn
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
