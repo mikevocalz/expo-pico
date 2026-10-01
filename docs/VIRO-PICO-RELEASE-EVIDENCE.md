@@ -124,7 +124,7 @@ The 17.6 value is incidental, not required. Upstream `ab1fbe9` ("fix building is
 target from 9.1 to 17.6, while the only real fix in that commit is two `#include <vector>` lines.
 No availability-annotated symbol forces 17.6.
 
-F = 15.1, taken from React Native 0.86.0 `helpers.rb:84`.
+F = 15.1 was the React Native 0.86 baseline used during the original investigation; the current Expo 58 line uses React Native 0.88.0-rc.3.
 
 A trial build at the proposed target compiled 275 translation units at
 `-target arm64-apple-ios15.1` with zero availability diagnostics, on device and simulator both.
@@ -224,7 +224,7 @@ risks.
 Each of these would have consumed a device session before anyone reached a real test case.
 
 **1. `MainApplication.kt:38` — `Unresolved reference 'PICO'`.** `expo install expo-gl` ran yarn as a
-side effect, which reverted `@reactvision/react-viro` to published `2.58.1`. That version's
+side effect, which reverted `@reactvision/react-viro` to the historical published `2.58.1`. That version's
 `ReactViroPackage.ViroPlatform` enum has no `PICO` constant; the fork's bridge AAR does. This is the
 G5 PRE-2 precondition surfacing as a hard compile error rather than an ambiguous runtime `null`.
 
@@ -248,7 +248,7 @@ gitignored, so a fresh checkout fails earlier for an unrelated reason.
 ### G5 PRE-1 cleared
 
 expo-pico `2063e9c`. `example/index.js` no longer overrides Viro's `VRQuestScene` registration. That
-override was a workaround for published `2.58.1` gating the navigator's intent path on `isQuest` —
+override was a workaround for the historical published `2.58.1` gating the navigator's intent path on `isQuest` —
 and its `ViroPlatform` contains no `isPico` at all, zero occurrences — so on PICO nothing ever set
 the intent and VRActivity mounted with nothing to read. The fork gates on `isQuest || isPico`, which
 makes the workaround obsolete and actively harmful: keeping it removed `ViroQuestEntryPoint`, and
@@ -271,7 +271,7 @@ Two preconditions would still block G5 even with a serial in hand:
 1. The example app overrides the `VRQuestScene` registration. The override drops
    `ViroQuestEntryPoint`, the push/pop handling, `onExitViro`, and the viewTag, so the scene the
    runbook describes is not the scene the example mounts.
-2. The example pins the published `2.58.1` package. Against that build, `getCapabilities` rejects
+2. The example pins the the historical published `2.58.1` package. Against that build, `getCapabilities` rejects
    with `E_XR_REBUILD_REQUIRED`, and the rejection is swallowed into a `null` that is
    indistinguishable from "not detected yet". A run against this pin cannot produce a readable
    result even if it completes.
