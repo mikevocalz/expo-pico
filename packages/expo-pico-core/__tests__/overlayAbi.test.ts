@@ -39,9 +39,9 @@ describe('overlay staging is arm64-v8a only', () => {
     put(path.join(staged, 'jniLibs/armeabi-v7a/libopenxr_loader.so'), 'LOAD32');
     syncPicoOverlays(platform, resolveOptions({ buildVariant: 'dual' }), staged);
     for (const flavor of ['main', 'mobile', 'pico', 'dual', 'quest']) {
-      expect(
-        fs.existsSync(path.join(platform, 'app/src', flavor, 'jniLibs/armeabi-v7a'))
-      ).toBe(false);
+      expect(fs.existsSync(path.join(platform, 'app/src', flavor, 'jniLibs/armeabi-v7a'))).toBe(
+        false
+      );
     }
     expect(fs.readFileSync(path.join(platform, 'app/src/pico', loader), 'utf8')).toBe('LOAD64');
   });

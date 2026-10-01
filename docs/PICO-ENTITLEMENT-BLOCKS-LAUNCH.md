@@ -78,10 +78,10 @@ Tested by taking a working app id from another app installed on the same
 headset and building the example with it. The behaviour changed measurably but
 the app still did not run:
 
-| Build | Entitlement dialogs | Process |
-| --- | --- | --- |
-| No `picoAppId` | 37 | killed immediately |
-| Borrowed id from another package | 4 | survived about 8 s, then killed |
+| Build                            | Entitlement dialogs | Process                         |
+| -------------------------------- | ------------------- | ------------------------------- |
+| No `picoAppId`                   | 37                  | killed immediately              |
+| Borrowed id from another package | 4                   | survived about 8 s, then killed |
 
 The kill is explicit in logcat — `hide app panel before kill app process
 AppRecord ... pkg:com.example.expopico` — and PICO's service logs no reason for

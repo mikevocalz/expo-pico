@@ -9,40 +9,40 @@ could not run and says why; FAIL means it ran and did not hold.
 
 ## Branch heads under test
 
-| Repository | Head |
-| --- | --- |
-| virocore | `8a05e2c1` |
-| viro | `8c17158` |
-| expo-pico | `a3500263` |
+| Repository | Head       |
+| ---------- | ---------- |
+| virocore   | `8a05e2c1` |
+| viro       | `8c17158`  |
+| expo-pico  | `a3500263` |
 
 ## Gate summary
 
-| Gate | Scope | Status |
-| --- | --- | --- |
-| G0 | Custom-binary inventory across both forks | PASS |
-| G1 | Android AAR provenance and 16KB page alignment | PASS |
-| G1.3 / G1.4 | `npm pack` tarball and APK build | PASS |
-| G2 | iOS deployment-target invariant | PASS |
-| G3 | ViroKit rebuild, device / simulator link | PASS (device) / FAIL (simulator) |
-| G4 | Test suites, native and web | PASS (native) / BLOCKED (web) |
-| G5 | On-device PICO validation | BLOCKED |
-| G6 | Documentation and design skills | PASS (items 1, 2, 3, 4, 7, 8) / BLOCKED (items 5, 6) |
-| WASM lane | Web renderer build | BLOCKED |
+| Gate        | Scope                                          | Status                                               |
+| ----------- | ---------------------------------------------- | ---------------------------------------------------- |
+| G0          | Custom-binary inventory across both forks      | PASS                                                 |
+| G1          | Android AAR provenance and 16KB page alignment | PASS                                                 |
+| G1.3 / G1.4 | `npm pack` tarball and APK build               | PASS                                                 |
+| G2          | iOS deployment-target invariant                | PASS                                                 |
+| G3          | ViroKit rebuild, device / simulator link       | PASS (device) / FAIL (simulator)                     |
+| G4          | Test suites, native and web                    | PASS (native) / BLOCKED (web)                        |
+| G5          | On-device PICO validation                      | BLOCKED                                              |
+| G6          | Documentation and design skills                | PASS (items 1, 2, 3, 4, 7, 8) / BLOCKED (items 5, 6) |
+| WASM lane   | Web renderer build                             | BLOCKED                                              |
 
 ## Tool versions
 
-| Tool | Version |
-| --- | --- |
-| Xcode | 26.4.1 (17E202) |
-| iOS SDK | 26.4 |
-| visionOS SDK | 26.4 |
-| Android NDK | 27.1.12297006 |
-| JDK | 17.0.20.1 |
-| node | 26.8.2 |
-| yarn | 1.22.22 |
-| CocoaPods | 1.17.0 |
-| cmake | 4.4.3 |
-| emcc | not installed |
+| Tool         | Version         |
+| ------------ | --------------- |
+| Xcode        | 26.4.1 (17E202) |
+| iOS SDK      | 26.4            |
+| visionOS SDK | 26.4            |
+| Android NDK  | 27.1.12297006   |
+| JDK          | 17.0.20.1       |
+| node         | 26.8.2          |
+| yarn         | 1.22.22         |
+| CocoaPods    | 1.17.0          |
+| cmake        | 4.4.3           |
+| emcc         | not installed   |
 
 `emcc` is absent from this machine, so the WASM lane is **BLOCKED**. No Emscripten output was
 produced or inspected.
@@ -52,13 +52,13 @@ produced or inspected.
 Every pin was re-resolved against the upstream repositories at the time of this ledger. All five
 pull requests are **OPEN**.
 
-| Upstream PR | Re-resolved head | State | Fork agreement |
-| --- | --- | --- | --- |
-| viro#526 | `5bddce6` | OPEN | drifted (see below) |
-| viro#527 | `bc51be9` | OPEN | byte-for-byte on non-binary files |
-| viro#528 | `e7ea9b1` | OPEN | byte-for-byte on non-binary files |
-| virocore#376 | `222b369` | OPEN | byte-for-byte on non-binary files |
-| virocore#377 | `1a3c43f` | OPEN | byte-for-byte on non-binary files |
+| Upstream PR  | Re-resolved head | State | Fork agreement                    |
+| ------------ | ---------------- | ----- | --------------------------------- |
+| viro#526     | `5bddce6`        | OPEN  | drifted (see below)               |
+| viro#527     | `bc51be9`        | OPEN  | byte-for-byte on non-binary files |
+| viro#528     | `e7ea9b1`        | OPEN  | byte-for-byte on non-binary files |
+| virocore#376 | `222b369`        | OPEN  | byte-for-byte on non-binary files |
+| virocore#377 | `1a3c43f`        | OPEN  | byte-for-byte on non-binary files |
 
 Neither fork records the SHA it integrated for any of the five. Every integration point below was
 inferred by comparing file content, not read from a recorded pin. Treat the four "byte-for-byte"
@@ -82,21 +82,21 @@ No action taken; the fork stays on the `b893648` content and this row is the rea
 viro carries four custom binaries. Each has a locatable producing source, so there is no
 `CUSTOM-NO-SOURCE` entry in the inventory.
 
-| Binary | Producing source located |
-| --- | --- |
-| `ViroKit.framework/ViroKit` | yes |
-| `lib/libViroReact.a` | yes |
-| `react_viro-release.aar` | yes |
-| `viro_renderer-release.aar` | yes |
+| Binary                      | Producing source located |
+| --------------------------- | ------------------------ |
+| `ViroKit.framework/ViroKit` | yes                      |
+| `lib/libViroReact.a`        | yes                      |
+| `react_viro-release.aar`    | yes                      |
+| `viro_renderer-release.aar` | yes                      |
 
 ### G1 Android AAR provenance
 
 **PASS.**
 
-| Artifact | sha256 |
-| --- | --- |
-| `viro_renderer-release.aar` | `dc9a68a086947c59d3917b535713a99c9563b719fb328861c1287e9b554219d4` |
-| `react_viro-release.aar` | `6907dc2eac2120629cf5fa19b155a295a8cebc7304720254347b966da1ad81f8` |
+| Artifact                                        | sha256                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------ |
+| `viro_renderer-release.aar`                     | `dc9a68a086947c59d3917b535713a99c9563b719fb328861c1287e9b554219d4` |
+| `react_viro-release.aar`                        | `6907dc2eac2120629cf5fa19b155a295a8cebc7304720254347b966da1ad81f8` |
 | `libviro_renderer.so` (inside the renderer AAR) | `2a5c022176e06251a200e7e76cbf2e7f1f4a0b3576d783f159ebca427ba3a997` |
 
 `viro_renderer-release.aar` was built from virocore `6541ac3c` via `scripts/build-pico-aar.sh`,
@@ -135,15 +135,15 @@ and did produce the diagnostic, which confirms the ordering leaves the check liv
 
 Converged in virocore `d467a13a`.
 
-| Setting | Before | After | Changed |
-| --- | --- | --- | --- |
-| `project.pbxproj` iOS deployment target (4 occurrences) | 17.6 | 15.1 | yes |
-| ViroKit iOS podspec #1 | 13.0 | 15.1 | yes |
-| ViroKit iOS podspec #2 | 13.0 | 15.1 | yes |
-| XROS deployment target (4 occurrences) | 1.0 | 1.0 | no, deliberate |
-| Project-level deployment target (2 occurrences) | 10.0 | 10.0 | no, deliberate |
-| `ViroReact.podspec` | 15.1 | 15.1 | no, already correct |
-| Podfile platform | 15.0 | 15.0 | no, deliberate |
+| Setting                                                 | Before | After | Changed             |
+| ------------------------------------------------------- | ------ | ----- | ------------------- |
+| `project.pbxproj` iOS deployment target (4 occurrences) | 17.6   | 15.1  | yes                 |
+| ViroKit iOS podspec #1                                  | 13.0   | 15.1  | yes                 |
+| ViroKit iOS podspec #2                                  | 13.0   | 15.1  | yes                 |
+| XROS deployment target (4 occurrences)                  | 1.0    | 1.0   | no, deliberate      |
+| Project-level deployment target (2 occurrences)         | 10.0   | 10.0  | no, deliberate      |
+| `ViroReact.podspec`                                     | 15.1   | 15.1  | no, already correct |
+| Podfile platform                                        | 15.0   | 15.0  | no, deliberate      |
 
 ## Symbol chains
 
@@ -177,41 +177,41 @@ is never waved through.
 
 Three controls establish that it is not a rubber stamp:
 
-| Control | Expected | Result |
-| --- | --- | --- |
-| `TS2322` in a file that reaches no absent module | reject | exit 1 |
-| `TS7006` in that same file | reject | exit 1 |
-| Clean tree | accept | exit 0, all 48 attributed |
+| Control                                          | Expected | Result                    |
+| ------------------------------------------------ | -------- | ------------------------- |
+| `TS2322` in a file that reaches no absent module | reject   | exit 1                    |
+| `TS7006` in that same file                       | reject   | exit 1                    |
+| Clean tree                                       | accept   | exit 0, all 48 attributed |
 
 The second control is the load-bearing one: it proves the implicit-any clause is scoped to tainted
 files rather than blanket.
 
-| Artifact | Value |
-| --- | --- |
-| Tarball | `reactvision-react-viro-3.0.0-moyo.3.tgz` |
-| SHA-256 | `dcc1e49c01eb26860b173ac0336ba8e176251b2eedc68d63841811c8ce66e4fe` |
-| Package name | `@reactvision/react-viro` |
-| Files | 1687 |
-| Renderer AAR inside | `dc9a68a0…4219d4`, exact match |
-| Bridge AAR inside | `6907dc2e…d81f8`, exact match |
-| ViroKit inside | `minos 15.1` |
-| `dist` navigator | carries `hdrEnabled={!ViroPlatform_1.isQuest}` |
-| `dist/components/Resources` | present |
+| Artifact                    | Value                                                              |
+| --------------------------- | ------------------------------------------------------------------ |
+| Tarball                     | `reactvision-react-viro-3.0.0-moyo.3.tgz`                          |
+| SHA-256                     | `dcc1e49c01eb26860b173ac0336ba8e176251b2eedc68d63841811c8ce66e4fe` |
+| Package name                | `@reactvision/react-viro`                                          |
+| Files                       | 1687                                                               |
+| Renderer AAR inside         | `dc9a68a0…4219d4`, exact match                                     |
+| Bridge AAR inside           | `6907dc2e…d81f8`, exact match                                      |
+| ViroKit inside              | `minos 15.1`                                                       |
+| `dist` navigator            | carries `hdrEnabled={!ViroPlatform_1.isQuest}`                     |
+| `dist/components/Resources` | present                                                            |
 
 ### APK (G1.4)
 
 Built from the paired fork build with `openXrLoaderOverlay: false` and `viroRendererOverlay: false`,
 so a staged older `.so` could not mask the new one.
 
-| Check | Result |
-| --- | --- |
-| APK | `app-pico-debug.apk`, 175 MB |
-| SHA-256 | `0dd44afdbc3906c0a54092a5d0d19d921f4ed2ec91c40968ba63504e8552b9f8` |
-| `libviro_renderer.so` in APK | `2a5c0221…a997` — identical to the copy inside the step-1 AAR |
-| JNI symbol | `Java_com_viro_core_Renderer_nativeGetPlaneDetectionStatus` exported |
-| `libopenxr_loader.so` | `50d69917…da1e` |
-| `zipalign -v -c -P 16 4` | Verification successful |
-| ELF 16KB alignment | 48 of 50 libraries OK, 2 failures |
+| Check                        | Result                                                               |
+| ---------------------------- | -------------------------------------------------------------------- |
+| APK                          | `app-pico-debug.apk`, 175 MB                                         |
+| SHA-256                      | `0dd44afdbc3906c0a54092a5d0d19d921f4ed2ec91c40968ba63504e8552b9f8`   |
+| `libviro_renderer.so` in APK | `2a5c0221…a997` — identical to the copy inside the step-1 AAR        |
+| JNI symbol                   | `Java_com_viro_core_Renderer_nativeGetPlaneDetectionStatus` exported |
+| `libopenxr_loader.so`        | `50d69917…da1e`                                                      |
+| `zipalign -v -c -P 16 4`     | Verification successful                                              |
+| ELF 16KB alignment           | 48 of 50 libraries OK, 2 failures                                    |
 
 ELF and ZIP alignment are separate facts and both were checked. The two ELF failures are
 `lib/arm64-v8a/libpxrplatformloader.so` and `lib/arm64-v8a/libpxrplatformloader4j.so`, each reporting
@@ -260,11 +260,11 @@ with it scene push/pop, `onExitViro`, and the view tag that `getCapabilities` re
 **BLOCKED.** No device serial was available, so no row in this matrix was executed. The procedure
 is written up in `docs/pico/g5-runbook.md` in the viro repository.
 
-| Check | Status | Reason |
-| --- | --- | --- |
-| Plane detection transitions `null` -> `true` | BLOCKED | no device; predicted UNREACHABLE on PICO regardless |
-| `getCapabilities` returns an initialized capability set | BLOCKED | no device; rejects `E_XR_REBUILD_REQUIRED` against the pinned package |
-| HDR composite versus passthrough on PICO (runbook case K07) | BLOCKED | no device |
+| Check                                                       | Status  | Reason                                                                |
+| ----------------------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| Plane detection transitions `null` -> `true`                | BLOCKED | no device; predicted UNREACHABLE on PICO regardless                   |
+| `getCapabilities` returns an initialized capability set     | BLOCKED | no device; rejects `E_XR_REBUILD_REQUIRED` against the pinned package |
+| HDR composite versus passthrough on PICO (runbook case K07) | BLOCKED | no device                                                             |
 
 Two preconditions would still block G5 even with a serial in hand:
 
@@ -280,10 +280,10 @@ Two preconditions would still block G5 even with a serial in hand:
 
 **Native PASS. Web BLOCKED.**
 
-| Project | Suites | Tests | Status |
-| --- | --- | --- | --- |
-| native | 26 | 226 | PASS |
-| web | 5 of 9 `web*` suites blocked, 4 pass | | BLOCKED |
+| Project | Suites                               | Tests | Status  |
+| ------- | ------------------------------------ | ----- | ------- |
+| native  | 26                                   | 226   | PASS    |
+| web     | 5 of 9 `web*` suites blocked, 4 pass |       | BLOCKED |
 
 The web blockage was measured, not inferred: each of the 5 suites was run and the failure traced to
 the missing renderer package.
@@ -386,6 +386,7 @@ case K07, which needs hardware. Landed in viro `f0a51bd`.
    `protobuf/x86_64`, `harfbuzz/x86_64`. They are the next walls after GVRAudioSDK, not the first
    one. Rebuilding them first will not make the simulator link. All four are architecture coverage,
    not deployment target: each would satisfy the minos ordering if it linked at all.
+
 2. **`libViroReact.a` was not rebuilt.** It remains at its previously committed content while
    `ViroKit` was rebuilt at 15.1.
 3. **visionOS has no committed binary** on either ref, and its podspec vendors an `.xcframework`
@@ -417,7 +418,6 @@ byte-identical to develop, so that pull request's refresh is takeable without lo
    Viro or this fork, and nothing in this repo produces them. On a genuine 16KB-page device they
    would fail to load. No runbook case touches the PPS surface, so this does not block the device
    matrix, but it is a real ceiling on that surface and the fix is upstream at PICO.
-
 
 ## Merge order
 

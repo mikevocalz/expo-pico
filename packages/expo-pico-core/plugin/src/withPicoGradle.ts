@@ -138,7 +138,9 @@ export function updateOverlayPackaging(contents: string, options: ResolvedPicoOp
     ...(options.viroRendererOverlay ? ['**/libviro_renderer.so'] : []),
   ];
   if (libraries.length === 0 || options.buildVariant === 'mobile') return contents;
-  return contents + `
+  return (
+    contents +
+    `
 // expo-pico-core: begin flavor overlays
 androidComponents {
     onVariants(selector().all()) { variant ->
@@ -148,7 +150,8 @@ androidComponents {
     }
 }
 // expo-pico-core: end flavor overlays
-`;
+`
+  );
 }
 
 export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {

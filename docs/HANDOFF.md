@@ -5,10 +5,10 @@ off a previous note. Where something is an inference it says so.
 
 ## Branch heads
 
-| Repo | Branch | Head |
-| --- | --- | --- |
-| mikevocalz/virocore | `codex/pico-cli-bridge` | `6415c165` |
-| mikevocalz/viro | `codex/pico-cli-bridge` | `035f8f8d` |
+| Repo                 | Branch                  | Head       |
+| -------------------- | ----------------------- | ---------- |
+| mikevocalz/virocore  | `codex/pico-cli-bridge` | `6415c165` |
+| mikevocalz/viro      | `codex/pico-cli-bridge` | `035f8f8d` |
 | mikevocalz/expo-pico | `codex/pico-cli-bridge` | `827ba108` |
 
 All three synced with their remotes, no uncommitted work. Suites green: viro 26
@@ -17,21 +17,21 @@ of virocore and expo-pico.
 
 ## Gate status
 
-| Gate | Status | Note |
-| --- | --- | --- |
-| G0 inventory, pins, drift | PASS | viro#526 drifted; fork integrated `b893648`, head is now merge `5bddce6` |
-| G1 AAR provenance, 16KB | PASS | |
-| G1.3 packaging | PASS | was blocked by an exit code, not missing output |
-| G1.4 APK | PASS | `0dd44afd…`, 48 of 50 libraries aligned |
-| G2 iOS target invariant | PASS | converged on 15.1 |
-| G3 device framework | PASS | ViroKit rebuilt at `minos 15.1` |
-| G3 simulator | FAIL | terminal, see below |
-| G3 WASM | PASS | `viro-web.wasm` 3.1M, emcc 6.0.3 |
-| G4 native suites | PASS | |
-| G4 web suites | BLOCKED | renderer unpublished |
-| G5 device matrix | PARTIAL | first real results in `viro/docs/pico/g5-results.md` |
-| G6 docs and reviews | PASS | items 5 and 6 need G5 captures |
-| G7 evidence ledger | PASS | `docs/VIRO-PICO-RELEASE-EVIDENCE.md` |
+| Gate                      | Status  | Note                                                                     |
+| ------------------------- | ------- | ------------------------------------------------------------------------ |
+| G0 inventory, pins, drift | PASS    | viro#526 drifted; fork integrated `b893648`, head is now merge `5bddce6` |
+| G1 AAR provenance, 16KB   | PASS    |                                                                          |
+| G1.3 packaging            | PASS    | was blocked by an exit code, not missing output                          |
+| G1.4 APK                  | PASS    | `0dd44afd…`, 48 of 50 libraries aligned                                  |
+| G2 iOS target invariant   | PASS    | converged on 15.1                                                        |
+| G3 device framework       | PASS    | ViroKit rebuilt at `minos 15.1`                                          |
+| G3 simulator              | FAIL    | terminal, see below                                                      |
+| G3 WASM                   | PASS    | `viro-web.wasm` 3.1M, emcc 6.0.3                                         |
+| G4 native suites          | PASS    |                                                                          |
+| G4 web suites             | BLOCKED | renderer unpublished                                                     |
+| G5 device matrix          | PARTIAL | first real results in `viro/docs/pico/g5-results.md`                     |
+| G6 docs and reviews       | PASS    | items 5 and 6 need G5 captures                                           |
+| G7 evidence ledger        | PASS    | `docs/VIRO-PICO-RELEASE-EVIDENCE.md`                                     |
 
 ## Pick this up first
 

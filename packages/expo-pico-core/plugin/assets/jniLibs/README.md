@@ -19,10 +19,10 @@ of the APK. Staging is restricted at the source, not left to the filter.
 
 Both files below are tracked in git; a clean checkout has them.
 
-| File                                   |      Bytes | sha256                                                             | BuildID                                    |
-| -------------------------------------- | ---------: | ------------------------------------------------------------------ | ------------------------------------------ |
-| `arm64-v8a/libopenxr_loader.so`        |  1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so`        |  7 046 480 | `7efd15dcc3e7033266f0de4d52b4e4e3d762f6d64d3a60a6e9db3357568d6e90` | `594d58bcae783ba18161ae25bfb3604a6bfc6de6` |
+| File                            |     Bytes | sha256                                                             | BuildID                                    |
+| ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
+| `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
+| `arm64-v8a/libviro_renderer.so` | 7 046 480 | `7efd15dcc3e7033266f0de4d52b4e4e3d762f6d64d3a60a6e9db3357568d6e90` | `594d58bcae783ba18161ae25bfb3604a6bfc6de6` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -90,7 +90,7 @@ $ strings -a arm64-v8a/libviro_renderer.so | grep interaction_profiles/ | sort -
 
 The binary is stripped and its BuildID matches no build this repo can
 reproduce, so there is no machine-checkable link back to any source revision.
-What *is* checkable is the delta against the published renderer: the same
+What _is_ checkable is the delta against the published renderer: the same
 command over `node_modules/@reactvision/react-viro/android/viro_renderer/viro_renderer-release.aar!jni/arm64-v8a/libviro_renderer.so`
 lists only `ext/eye_gaze_interaction` and `oculus/touch_controller`. The four
 `bytedance` profiles are what this overlay adds.

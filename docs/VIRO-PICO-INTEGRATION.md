@@ -2,12 +2,12 @@
 
 PICO is a native Viro platform, alongside Quest and visionOS. The three repositories have distinct responsibilities:
 
-| Layer | Repository | Responsibility |
-| --- | --- | --- |
-| Renderer | [mikevocalz/virocore](https://github.com/mikevocalz/virocore/tree/pico-support) | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities |
-| React API | [mikevocalz/viro](https://github.com/mikevocalz/viro) | `ViroXRSceneNavigator`, shared immersive activity, scene navigation, Studio, native bridge |
-| Expo platform | [mikevocalz/expo-pico](https://github.com/mikevocalz/expo-pico) | `pico` flavor, PICO activity metadata, native package registration, platform services and diagnostics |
-| Quest comparison | [expo-horizon-core](https://github.com/software-mansion-labs/expo-horizon/tree/main/expo-horizon-core) | `quest` flavor and Horizon platform configuration |
+| Layer            | Repository                                                                                             | Responsibility                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Renderer         | [mikevocalz/virocore](https://github.com/mikevocalz/virocore/tree/pico-support)                        | OpenXR sessions, PICO controller profiles, rendering, passthrough, initialized native capabilities    |
+| React API        | [mikevocalz/viro](https://github.com/mikevocalz/viro)                                                  | `ViroXRSceneNavigator`, shared immersive activity, scene navigation, Studio, native bridge            |
+| Expo platform    | [mikevocalz/expo-pico](https://github.com/mikevocalz/expo-pico)                                        | `pico` flavor, PICO activity metadata, native package registration, platform services and diagnostics |
+| Quest comparison | [expo-horizon-core](https://github.com/software-mansion-labs/expo-horizon/tree/main/expo-horizon-core) | `quest` flavor and Horizon platform configuration                                                     |
 
 `PICO` and `QUEST` use Viro's existing OpenXR renderer and shared `VRActivity` / `VRQuestScene` entry. That component name remains for compatibility. visionOS retains its native immersive-space path and a plain `ViroScene` root. PICO CLI operates around this stack; it does not replace Viro with a Spatial SDK or Unity project.
 
@@ -18,16 +18,19 @@ Use a package built from the matching Viro and ViroCore changes. The public pack
 ```ts
 plugins: [
   ['@reactvision/react-viro', { android: { xRMode: ['PICO'] } }],
-  ['@expo-pico/core', {
-    buildVariant: 'pico',
-    xrMode: 'pico-os5',
-    appType: 'mr',
-    passthrough: true,
-    // For the rebuilt, verified ViroCore AAR:
-    openXrLoaderOverlay: false,
-    viroRendererOverlay: false,
-  }],
-]
+  [
+    '@expo-pico/core',
+    {
+      buildVariant: 'pico',
+      xrMode: 'pico-os5',
+      appType: 'mr',
+      passthrough: true,
+      // For the rebuilt, verified ViroCore AAR:
+      openXrLoaderOverlay: false,
+      viroRendererOverlay: false,
+    },
+  ],
+];
 ```
 
 If shipping Quest too, keep the Horizon plugin and use Viro `xRMode: ['QUEST', 'PICO']`. Expo-PICO and Horizon share the `device` flavor dimension. PICO falls back to Horizon's `mobile` library variant, Quest falls back to Expo-PICO's `mobile` variant, and `dual` tries `pico` then `mobile` for dependencies. This uses [Gradle matchingFallbacks](https://developer.android.com/build/build-variants#resolve_matching_errors); `missingDimensionStrategy` is for an absent dimension.
@@ -70,11 +73,11 @@ Optional profiling uses the separately installed PICO tools (`pico-cli perf doct
 
 ## Upstream integration and remaining release gates
 
-| Requested change | Included source work | Native / external follow-up |
-| --- | --- | --- |
-| [Viro #526](https://github.com/ReactVision/viro/pull/526) | Navigation proxy, error relay, scene boundary, in-scene HUD/alerts, AR scene root on OpenXR; extended to PICO with capability fallback | Verify scene launch/exit/re-entry, controller placement, projection and recentering on Quest and PICO |
-| [Viro #527](https://github.com/ReactVision/viro/pull/527) | Web Studio and component parity; [ViroCore #376](https://github.com/ReactVision/virocore/pull/376) source changes | Requires the corresponding `@reactvision/viro-web-renderer` changes and a WASM rebuild; that repository was unavailable during integration |
-| [Viro #528](https://github.com/ReactVision/viro/pull/528) | iOS deployment declaration, colocation module project registration and public header; [ViroCore #377](https://github.com/ReactVision/virocore/pull/377) Podfile changes | Rebuild custom Moyo native libraries with the upstream CCA dependency; do not overwrite them with upstream prebuilt archives |
+| Requested change                                          | Included source work                                                                                                                                                    | Native / external follow-up                                                                                                                |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Viro #526](https://github.com/ReactVision/viro/pull/526) | Navigation proxy, error relay, scene boundary, in-scene HUD/alerts, AR scene root on OpenXR; extended to PICO with capability fallback                                  | Verify scene launch/exit/re-entry, controller placement, projection and recentering on Quest and PICO                                      |
+| [Viro #527](https://github.com/ReactVision/viro/pull/527) | Web Studio and component parity; [ViroCore #376](https://github.com/ReactVision/virocore/pull/376) source changes                                                       | Requires the corresponding `@reactvision/viro-web-renderer` changes and a WASM rebuild; that repository was unavailable during integration |
+| [Viro #528](https://github.com/ReactVision/viro/pull/528) | iOS deployment declaration, colocation module project registration and public header; [ViroCore #377](https://github.com/ReactVision/virocore/pull/377) Podfile changes | Rebuild custom Moyo native libraries with the upstream CCA dependency; do not overwrite them with upstream prebuilt archives               |
 
 `getCapabilities().planeDetection` reports native source initialization: `null` while pending, `false` without a usable source, `true` after initialization. It does not guarantee that a scan contains planes or that an asynchronous permission request will succeed. Studio keeps content visible with manual placement when capability reporting is absent/unavailable. Confirm denied permissions and an empty room scan on-device.
 

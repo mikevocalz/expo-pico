@@ -2,7 +2,6 @@
 
 > For the PICO-aware Viro fork, use [Viro + Expo-PICO integration](VIRO-PICO-INTEGRATION.md). It documents the native renderer, React API, PICO flavor and CLI as one coordinated build. The older upstream compatibility paths below do not describe the fork’s built-in PICO support.
 
-
 Audience: developers with an Expo app currently using [`@reactvision/react-viro`](https://github.com/ReactVision/viro) on its Quest (`QUEST` / OpenXR) path who want to ship the same app on PICO 4 / 4 Ultra / Swan.
 
 This guide is not a 1:1 port. Viro's native surface (`<ViroScene>`, `<ViroNode>`, `<ViroSphere>`, etc.) is a scene graph; `expo-pico` is platform plumbing. Your scene graph keeps working. The port is about which config plugin sets up the Android native project and which launcher contract the APK enumerates under. Rendering code is unchanged.
