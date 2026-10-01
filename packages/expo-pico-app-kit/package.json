@@ -52,12 +52,12 @@
     "@fishjam-cloud/react-native-client": ">=0.27.0",
     "@fishjam-cloud/react-native-webrtc": ">=0.27.0",
     "@fishjam-cloud/ts-client": ">=0.27.0",
-    "expo": "~57.0.16",
+    "expo": ">=58.0.0 <59",
     "react-native": "*",
     "react-native-mmkv": ">=4.0.0"
   },
   "devDependencies": {
-    "@types/react": "~19.2.14",
+    "@types/react": "~19.3.0",
     "typescript": "~6.0.3",
     "react-native-mmkv": "^4.0.0"
   },
