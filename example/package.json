@@ -35,7 +35,7 @@
     "@fishjam-cloud/react-native-client": "0.31.0",
     "@fishjam-cloud/react-native-webrtc": "0.31.0",
     "@fishjam-cloud/ts-client": "0.31.0",
-    "@reactvision/react-viro": "git+https://github.com/mikevocalz/viro.git#b57aac6acfefad13ab8bada9c53cd475ebaf961a",
+    "@reactvision/react-viro": "3.0.2",
     "expo": "58.0.0",
     "expo-asset": "58.0.8",
     "expo-constants": "58.0.9",
