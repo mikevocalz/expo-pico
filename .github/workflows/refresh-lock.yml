@@ -12,6 +12,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: codex/pico-cli-bridge
+      - name: Checkout Expo Horizon dependency
+        uses: actions/checkout@v4
+        with:
+          repository: software-mansion-labs/expo-horizon
+          ref: 7071e63ee43092ea23a1d86c93ea14950d92edae
+          path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
