@@ -4,14 +4,14 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const PICO_CLI_PACKAGE = '@picoxr/pico-cli@0.5.0';
+export const PICO_CLI_PACKAGE = '@picoxr/pico-cli@0.6.0';
 const usage = `Usage: node scripts/pico-cli.mjs <doctor|devices|install|launch|capture> [options]
   --device SERIAL    Required for install, launch, capture
   --apk PATH         Required for install (build assemblePicoDebug first)
   --package ID       Required for launch/capture; launch the panel to create Viro's scene intent
   --out DIRECTORY    Required for capture; saves device info, package logcat, screenshot
   --dry-run          Print commands without invoking PICO CLI
-Commands use the pinned PICO CLI 0.5.0 through npx. No setup or native scaffolding is run.`;
+Commands use the pinned PICO CLI 0.6.0 through npx. No setup or native scaffolding is run.`;
 
 export function plan(argv) {
   const [command, ...args] = argv;
@@ -37,7 +37,7 @@ export function plan(argv) {
     if (!values[key]?.trim()) throw new Error(`${command} requires ${key}`);
     return values[key];
   };
-  // PICO CLI 0.5.0 parses with cac, which reads `--device -e` as `{device: true,
+  // PICO CLI parses with cac, which reads `--device -e` as `{device: true,
   // e: true}`. Only the ADB serial charset is safe, and never with a leading dash.
   const requireDevice = () => {
     const device = requireValue('--device');
