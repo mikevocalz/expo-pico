@@ -51,25 +51,25 @@
     "@expo-pico/platform-service-common": "^1.0.0"
   },
   "devDependencies": {
-    "@expo/config-plugins": "~57.0.9",
+    "@expo/config-plugins": "~58.0.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
-    "@types/react": "~19.2.14",
-    "expo": "~57.0.16",
+    "@types/react": "~19.3.0",
+    "expo": "^58.0.1",
     "@expo-pico/core": "*",
     "jest": "^29.7.0",
-    "react-native": "0.86.2",
+    "react-native": "0.88.0-rc.2",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
-    "react-native-nitro-modules": "^0.37.0",
-    "nitrogen": "^0.37.0"
+    "react-native-nitro-modules": "0.37.1",
+    "nitrogen": "0.37.1"
   },
   "peerDependencies": {
-    "expo": "~57.0.16",
+    "expo": ">=58.0.0 <59",
     "@expo-pico/core": ">=1.0.0",
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": ">=0.37.0"
+    "react-native-nitro-modules": ">=0.37.1"
   },
   "peerDependenciesMeta": {
     "expo": {
