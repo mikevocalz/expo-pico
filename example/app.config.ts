@@ -126,7 +126,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // non-system OpenXR loader (rare — Viro uses the system loader).
         ndkAbiFilters: true,
         openXrLoaderDeclaration: true,
-        // This example still pins the published Viro package. After installing
+        // This example pins public ViroReact 3.0.2 for reproducible CI. After installing
         // the paired fork build, set both overrides false; see the integration guide.
         openXrLoaderOverlay: true,
         viroRendererOverlay: false,
