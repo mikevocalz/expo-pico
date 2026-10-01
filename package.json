@@ -65,7 +65,7 @@
     "typescript": "~6.0.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.18.0"
   },
   "packageManager": "yarn@1.22.22",
   "repository": {
