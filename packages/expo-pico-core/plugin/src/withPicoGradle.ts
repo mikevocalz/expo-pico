@@ -24,6 +24,7 @@ const PICO_SDK_MARKER = '// expo-pico-core: pico sdk config';
 const PICO_REPO_MARKER = '// expo-pico-core: pico maven repo';
 const HERMES_PATH_MARKER = '// expo-pico-core: hermesc path compatibility';
 const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
+const HORIZON_BUILD_CONFIG_MARKER = '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
 const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
@@ -344,6 +345,23 @@ ${PICO_REPO_BLOCK}
       } else {
         contents = result;
       }
+    }
+
+    // expo-horizon-core 57.0.2 declares a custom BuildConfig field but was
+    // authored before AGP 9 disabled generated BuildConfig classes by default.
+    // Configure only that library when present; withId runs early enough to
+    // enable the feature before its build.gradle evaluates buildConfigField.
+    if (!gradleContains(contents, HORIZON_BUILD_CONFIG_MARKER)) {
+      contents += `
+${HORIZON_BUILD_CONFIG_MARKER}
+subprojects { sub ->
+    if (sub.name == "expo-horizon-core") {
+        sub.plugins.withId("com.android.library") {
+            sub.android.buildFeatures.buildConfig = true
+        }
+    }
+}
+`;
     }
 
     // Global `subprojects { missingDimensionStrategy 'device', 'mobile' }`
