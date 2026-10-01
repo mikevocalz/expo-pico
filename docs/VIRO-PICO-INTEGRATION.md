@@ -52,9 +52,9 @@ zipalign -v -c -P 16 4 /absolute/app-pico-debug.apk
 
 The Python gate rejects missing arm64 libraries, malformed ELF headers and any under-aligned load segment. ZIP alignment is a separate check. [Android's 16KB guidance](https://developer.android.com/guide/practices/page-sizes) concerns devices using 16KB pages; Android/PICO OS version alone does not establish the page size.
 
-## PICO CLI 0.5.0
+## PICO CLI 0.6.0
 
-The [PICO CLI announcement](https://developer.picoxr.com/blog/pico-cli-is-now-live/) adds device, deployment and diagnostic workflows. These scripts use verified 0.5.0 command syntax and pin the npm package. Node 18+ and npm are required; CLI execution may download that version on first use. They do not run `setup`, install AI plugins, scaffold another renderer, or build the React Native app.
+The [PICO CLI announcement](https://developer.picoxr.com/blog/pico-cli-is-now-live/) adds device, deployment and diagnostic workflows. These scripts use verified 0.6.0 hierarchical command syntax and pin the npm package. Node 20+ and npm are required; CLI execution may download that version on first use. They do not run `setup`, install AI plugins, scaffold another renderer, or build the React Native app. PICO CLI 0.6.0 also adds `url launch` for WebApps and removes the original top-level `web` workflow; this wrapper intentionally stays scoped to native device/app diagnostics.
 
 ```sh
 npm run pico:doctor
