@@ -24,7 +24,8 @@ const PICO_SDK_MARKER = '// expo-pico-core: pico sdk config';
 const PICO_REPO_MARKER = '// expo-pico-core: pico maven repo';
 const HERMES_PATH_MARKER = '// expo-pico-core: hermesc path compatibility';
 const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
-const HORIZON_BUILD_CONFIG_MARKER = '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
+const HORIZON_BUILD_CONFIG_MARKER =
+  '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
 const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
