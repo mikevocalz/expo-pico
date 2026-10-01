@@ -4276,8 +4276,10 @@ expo-glass-effect@^58.0.3:
   resolved "https://registry.yarnpkg.com/expo-glass-effect/-/expo-glass-effect-58.0.3.tgz#36222e759d76df02ab25828f3113ee1e2fe01005"
   integrity sha512-NoFT5j2uZecNsiDAd47z37PWYTxNJnJMrVYiAU+SggiV9K91Sc0IuIcMsuOM4sUuPBQdSTs8/I9KXk5M0Z2O/w==
 
-"expo-horizon-core@file:.vendor/expo-horizon/expo-horizon-core":
+expo-horizon-core@57.0.2:
   version "57.0.2"
+  resolved "https://registry.yarnpkg.com/expo-horizon-core/-/expo-horizon-core-57.0.2.tgz#5b47dff32d2070968a45be3b99785cff8b7d16cd"
+  integrity sha512-FjutMcL5V9ofeU/Sk5g+2j7f6Q0IDsSV8JesTPzpv0g0HnI0d43jNEz0nQO5o5Y9JH33w27/7vZJnKsAYdswug==
 
 expo-keep-awake@~58.0.2:
   version "58.0.3"
