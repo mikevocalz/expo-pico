@@ -23,7 +23,7 @@
     "build:plugin": "tsc --project plugin/tsconfig.json",
     "clean": "rm -rf build nitrogen/generated",
     "test": "jest --config jest.config.js",
-    "prepare": "nitrogen && tsc",
+    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json",
     "typecheck": "tsc --noEmit",
     "nitrogen": "nitrogen",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
@@ -51,22 +51,22 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/react": "~19.2.14",
-    "expo": "~57.0.16",
+    "@types/react": "19.3.0",
+    "expo": "58.0.0",
     "@expo-pico/core": "*",
     "jest": "^29.7.0",
-    "react-native": "0.86.2",
+    "react-native": "0.88.0-rc.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
-    "react-native-nitro-modules": "^0.37.0",
-    "nitrogen": "^0.37.0"
+    "react-native-nitro-modules": "0.37.1",
+    "nitrogen": "0.37.1"
   },
   "peerDependencies": {
-    "expo": "~57.0.16",
+    "expo": ">=58.0.0 <59",
     "@expo-pico/core": ">=1.0.0",
-    "react": "*",
-    "react-native": "*",
-    "react-native-nitro-modules": ">=0.37.0"
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "react-native-nitro-modules": ">=0.37.1 <0.38"
   },
   "peerDependenciesMeta": {
     "expo": {

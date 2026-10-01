@@ -1,6 +1,8 @@
 # Migrating from ReactVision/Viro (Quest / OVR_MOBILE) to expo-pico
 
-Audience: developers with an Expo app currently using [`@reactvision/react-viro`](https://github.com/ReactVision/viro) on its Quest (`OVR_MOBILE`) path who want to ship the same app on PICO 4 / 4 Ultra / Swan.
+> For the PICO-aware Viro fork, use [Viro + Expo-PICO integration](VIRO-PICO-INTEGRATION.md). It documents the native renderer, React API, PICO flavor and CLI as one coordinated build. The older upstream compatibility paths below do not describe the fork’s built-in PICO support.
+
+Audience: developers with an Expo app currently using [`@reactvision/react-viro`](https://github.com/ReactVision/viro) on its Quest (`QUEST` / OpenXR) path who want to ship the same app on PICO 4 / 4 Ultra / Swan.
 
 This guide is not a 1:1 port. Viro's native surface (`<ViroScene>`, `<ViroNode>`, `<ViroSphere>`, etc.) is a scene graph; `expo-pico` is platform plumbing. Your scene graph keeps working. The port is about which config plugin sets up the Android native project and which launcher contract the APK enumerates under. Rendering code is unchanged.
 
@@ -26,7 +28,7 @@ Viro is the renderer used by this repo's example app and is actively maintained 
 
 ## Option A: keep Viro for rendering, add `expo-pico-core` for PICO plumbing
 
-Works when your scene graph is complex and you don't want to re-author it in another renderer. Viro's Quest runtime won't activate on PICO hardware (Oculus-specific), but Viro's AR/GVR paths will still run against PICO's underlying Android GL surface.
+Works when your scene graph is complex and you don't want to re-author it in another renderer. The PICO-aware fork uses `android.xRMode: ['PICO']` and the native OpenXR renderer. AR/GVR on a flat Android surface is not an immersive PICO renderer.
 
 ### 1. Add `expo-pico-core` alongside Viro
 
@@ -111,7 +113,7 @@ aapt dump xmltree android/app/build/outputs/apk/pico/debug/app-pico-debug.apk An
 - `settings.gradle` unconditional subproject inclusion. Viro's helper has no idempotency check; re-prebuilding duplicates `include` lines. `withPicoSettingsGradle` is marker-guarded and opt-in.
 - Oculus-specific manifest categories. `com.oculus.intent.category.VR`, `oculus.software.handtracking`, `com.oculus.supportedDevices`, `com.oculus.permission.USE_ANCHOR_API`: none of these are valid on PICO OS. Equivalent entries live under `com.pico.*` / `pico.hardware.*` / `pico.software.*`.
 - Per-mode package accumulation. Viro registers one `ReactViroPackage` per active `xRMode` entry. PICO Swan / PICO OS 6 are mutually exclusive at boot; exactly one `PicoCorePackage` is registered.
-- Gradle classpath overrides. Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 56 toolchain ships the right AGP; we never force it.
+- Gradle classpath overrides. Viro rewrites the AGP classpath in the root `build.gradle`. The Expo SDK 58 toolchain owns the project AGP line; expo-pico does not force a competing project-wide AGP version.
 - Forcing `minSdkVersion` 24. Viro's `withViroProjectBuildGradle` hardcodes min SDK 24. PICO's floor is higher (32 for OS 6, 33 for Swan). The plugin sets the floor per-flavor, not project-wide.
 
 ## Diagnostic gates

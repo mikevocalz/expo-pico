@@ -1,4 +1,7 @@
 <picture>
+
+For native Viro rendering on PICO, see the [Viro + Expo-PICO integration guide](docs/VIRO-PICO-INTEGRATION.md), including the PICO flavor and PICO CLI workflows.
+
   <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/pico-wordmark-dark.svg">
   <img src="./docs/assets/pico-wordmark-light.svg" alt="PICO" height="34">
 </picture>
@@ -7,7 +10,7 @@
 
 **Ship an Expo app to a PICO headset without ejecting to the bare workflow.**
 
-[![Expo SDK 57](https://img.shields.io/badge/Expo_SDK-57-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
+[![Expo SDK 58](https://img.shields.io/badge/Expo_SDK-58-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
 [![New Architecture](https://img.shields.io/badge/React_Native-New_Architecture-0B0B0C?style=flat-square&logo=react&logoColor=61DAFB)](https://reactnative.dev/architecture/landing-page)
 [![Nitro Modules](https://img.shields.io/badge/Nitro_Modules-0.37-0B0B0C?style=flat-square)](https://nitro.margelo.com)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](./docs/FAQ.md#2-why-is-this-android-only)
@@ -214,7 +217,7 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 
 ## Compatibility
 
-- Expo SDK 57 (current baseline). React Native 0.86.2. React 19.2. Hermes.
+- Expo SDK 58 (current baseline). React Native 0.88.0-rc.3. React 19.3. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).
@@ -234,10 +237,13 @@ Ships with `expo-pico-core`.
 
 ## Shipping
 
+- [Handoff](docs/HANDOFF.md) — current state of the PICO release gates, what to pick up first, and how to resume the device session.
+
 - [docs/QUICKSTART.md](./docs/QUICKSTART.md): bootstrap guide.
 - [docs/FAQ.md](./docs/FAQ.md): why Expo, why Android-only, which renderer to use, release versioning.
 - [docs/MIGRATING-FROM-VIRO.md](./docs/MIGRATING-FROM-VIRO.md): porting a ReactVision/Viro Quest (`OVR_MOBILE`) app to PICO.
 - [docs/EAS.md](./docs/EAS.md): EAS Build profiles, secrets, signing, and PICO Store submission. Ships with a concrete `example/eas.json` you can copy.
+- [docs/VIRO-PICO-RELEASE-EVIDENCE.md](./docs/VIRO-PICO-RELEASE-EVIDENCE.md): release evidence ledger for the ViroCore / Viro / Expo-PICO pull requests. Gate results, artifact hashes, upstream pin drift, and open risks.
 
 ## Development
 

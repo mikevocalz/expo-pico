@@ -154,6 +154,7 @@ plugin that writes `pvr.app.type=vr` must be listed BEFORE `@expo-pico/core` in
 order to run AFTER it.
 
 ## 15. I paired this with `@reactvision/react-viro` and the OpenXR broker
+
 `<queries>` entry vanished from my manifest.
 
 `withViroAndroid` does `contents.manifest.queries = [...]` — an assignment, not

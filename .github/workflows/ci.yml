@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: yarn
           registry-url: https://registry.npmjs.org
       - run: yarn install --frozen-lockfile
@@ -38,7 +38,7 @@ jobs:
               "name": "smoke",
               "slug": "smoke",
               "plugins": [[
-                "expo-pico-core",
+                "@expo-pico/core",
                 { "xrMode": "pico-os6", "appType": "vr",
                   "platformService": { "picoAppId": "APP", "picoAppKey": "KEY" } }
               ]]
@@ -63,9 +63,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: yarn
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17

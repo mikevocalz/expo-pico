@@ -95,7 +95,12 @@ export function runDiagnosticChecks(
       severity: 'error',
       message:
         `xrMode '${options.xrMode}' is an immersive build but picoAppId is empty. ` +
-        'Every PPS call (account, IAP, achievements, leaderboards, social) will fail at runtime with PICO error 100008 "appkey is empty". ' +
+        'On PICO OS the app will not start: the entitlement service puts a system dialog over it ' +
+        '("No entitlement info in the local cache") and the OS ends the process about 40ms later, ' +
+        'with no crash in logcat. Observed on PICO 4 Ultra, Android 14. The dialog is an XRShell ' +
+        'panel on its own display, so adb cannot dismiss it, and pressing Confirm with the ' +
+        'controller does not let the app run. Nothing is testable on device until this is set — ' +
+        'not only PPS, which would separately fail with error 100008 "appkey is empty". ' +
         envHint,
     });
   }

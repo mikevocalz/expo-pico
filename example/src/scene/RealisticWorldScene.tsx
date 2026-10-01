@@ -54,8 +54,7 @@ const SOUNDS = {
   // Google Actions sound library — freely usable .ogg assets.
   water: 'https://actions.google.com/sounds/v1/water/water_lapping_wind.ogg',
   songbirds: 'https://actions.google.com/sounds/v1/animals/june_songbirds.ogg',
-  birdsAndCrows:
-    'https://actions.google.com/sounds/v1/animals/june_songbirds_with_crows.ogg',
+  birdsAndCrows: 'https://actions.google.com/sounds/v1/animals/june_songbirds_with_crows.ogg',
 };
 
 type BirdType = 'blackbird' | 'gull' | 'sparrow';
@@ -347,10 +346,7 @@ function Cloud({
   delay: number;
 }): React.JSX.Element {
   return (
-    <ViroNode
-      position={position}
-      animation={{ name: 'cloudDrift', loop: true, run: true, delay }}
-    >
+    <ViroNode position={position} animation={{ name: 'cloudDrift', loop: true, run: true, delay }}>
       <ViroSphere radius={radius} materials={['cloud']} opacity={0.78} />
       <ViroSphere
         radius={radius * 0.7}
@@ -377,17 +373,12 @@ function Bird({
   delay: number;
   type: BirdType;
 }): React.JSX.Element {
-  const anim =
-    type === 'gull' ? 'gullFly' : type === 'sparrow' ? 'sparrowFly' : 'birdFly';
-  const material =
-    type === 'gull' ? 'birdWhite' : type === 'sparrow' ? 'birdBrown' : 'birdBlack';
+  const anim = type === 'gull' ? 'gullFly' : type === 'sparrow' ? 'sparrowFly' : 'birdFly';
+  const material = type === 'gull' ? 'birdWhite' : type === 'sparrow' ? 'birdBrown' : 'birdBlack';
 
   if (type === 'gull') {
     return (
-      <ViroNode
-        position={position}
-        animation={{ name: anim, loop: true, run: true, delay }}
-      >
+      <ViroNode position={position} animation={{ name: anim, loop: true, run: true, delay }}>
         <ViroBox width={0.32} height={0.05} length={0.07} materials={[material]} />
         <ViroBox
           width={0.06}
@@ -410,11 +401,8 @@ function Bird({
 
   if (type === 'sparrow') {
     return (
-      <ViroNode
-        position={position}
-        animation={{ name: anim, loop: true, run: true, delay }}
-      >
-        <ViroBox width={0.10} height={0.04} length={0.04} materials={[material]} />
+      <ViroNode position={position} animation={{ name: anim, loop: true, run: true, delay }}>
+        <ViroBox width={0.1} height={0.04} length={0.04} materials={[material]} />
         <ViroBox
           width={0.03}
           height={0.02}
@@ -427,10 +415,7 @@ function Bird({
   }
 
   return (
-    <ViroNode
-      position={position}
-      animation={{ name: anim, loop: true, run: true, delay }}
-    >
+    <ViroNode position={position} animation={{ name: anim, loop: true, run: true, delay }}>
       <ViroBox width={0.16} height={0.04} length={0.04} materials={[material]} />
       <ViroBox
         width={0.04}
@@ -495,80 +480,80 @@ export function RealisticWorldScene(): React.JSX.Element {
         {/* Ambient fill for shadowed areas. */}
         <ViroAmbientLight color="#8FA8C4" intensity={400} />
 
-      {/* Sun: warm directional with shadows. */}
-      <ViroDirectionalLight
-        color="#FFF4E0"
-        intensity={1400}
-        direction={[-0.5, -0.85, -0.3]}
-        castsShadow
-        influenceBitMask={2}
-      />
+        {/* Sun: warm directional with shadows. */}
+        <ViroDirectionalLight
+          color="#FFF4E0"
+          intensity={1400}
+          direction={[-0.5, -0.85, -0.3]}
+          castsShadow
+          influenceBitMask={2}
+        />
 
-      {/* Water glint: sharp low-angle spot from the sun side. */}
-      <ViroSpotLight
-        color="#CCEEFF"
-        intensity={500}
-        position={[8, 6, -4]}
-        direction={[-1, -0.6, -1]}
-        innerAngle={15}
-        outerAngle={45}
-        influenceBitMask={2}
-      />
+        {/* Water glint: sharp low-angle spot from the sun side. */}
+        <ViroSpotLight
+          color="#CCEEFF"
+          intensity={500}
+          position={[8, 6, -4]}
+          direction={[-1, -0.6, -1]}
+          innerAngle={15}
+          outerAngle={45}
+          influenceBitMask={2}
+        />
 
-      {/* Sky dome. */}
-      <ViroSphere
-        materials={['sky']}
-        radius={SKY_RADIUS}
-        facesOutward={false}
-        position={[0, 0, 0]}
-      />
-
-      {/* Ground — a large grass clearing. */}
-      <ViroQuad
-        rotation={[-90, 0, 0]}
-        position={[0, GROUND_Y, -6]}
-        width={GROUND_SIZE}
-        height={GROUND_SIZE}
-        materials={['grass']}
-        lightReceivingBitMask={3}
-      />
-
-      {/* Lake — animated GLSL water surface. */}
-      <ViroQuad
-        rotation={[-90, 0, 0]}
-        position={LAKE_POSITION}
-        width={LAKE_WIDTH}
-        height={LAKE_LENGTH}
-        materials={['water']}
-        lightReceivingBitMask={3}
-      />
-
-      {/* Trees around the lake. */}
-      {trees.map((pos, i) => (
-        <Tree key={`tree-${i}`} position={pos} />
-      ))}
-
-      {/* Shore rocks. */}
-      {rocks.map((rock, i) => (
+        {/* Sky dome. */}
         <ViroSphere
-          key={`rock-${i}`}
-          position={rock.position}
-          radius={0.3 * rock.scale}
-          materials={['rock']}
-          shadowCastingBitMask={2}
+          materials={['sky']}
+          radius={SKY_RADIUS}
+          facesOutward={false}
+          position={[0, 0, 0]}
+        />
+
+        {/* Ground — a large grass clearing. */}
+        <ViroQuad
+          rotation={[-90, 0, 0]}
+          position={[0, GROUND_Y, -6]}
+          width={GROUND_SIZE}
+          height={GROUND_SIZE}
+          materials={['grass']}
           lightReceivingBitMask={3}
         />
-      ))}
 
-      {/* Moving clouds. */}
-      {clouds.map((cloud, i) => (
-        <Cloud key={`cloud-${i}`} {...cloud} />
-      ))}
+        {/* Lake — animated GLSL water surface. */}
+        <ViroQuad
+          rotation={[-90, 0, 0]}
+          position={LAKE_POSITION}
+          width={LAKE_WIDTH}
+          height={LAKE_LENGTH}
+          materials={['water']}
+          lightReceivingBitMask={3}
+        />
 
-      {/* Flying birds — blackbird, gull, sparrow. */}
-      {birds.map((bird, i) => (
-        <Bird key={`bird-${i}`} {...bird} />
-      ))}
+        {/* Trees around the lake. */}
+        {trees.map((pos, i) => (
+          <Tree key={`tree-${i}`} position={pos} />
+        ))}
+
+        {/* Shore rocks. */}
+        {rocks.map((rock, i) => (
+          <ViroSphere
+            key={`rock-${i}`}
+            position={rock.position}
+            radius={0.3 * rock.scale}
+            materials={['rock']}
+            shadowCastingBitMask={2}
+            lightReceivingBitMask={3}
+          />
+        ))}
+
+        {/* Moving clouds. */}
+        {clouds.map((cloud, i) => (
+          <Cloud key={`cloud-${i}`} {...cloud} />
+        ))}
+
+        {/* Flying birds — blackbird, gull, sparrow. */}
+        {birds.map((bird, i) => (
+          <Bird key={`bird-${i}`} {...bird} />
+        ))}
       </ViroNode>
     </ViroScene>
   );

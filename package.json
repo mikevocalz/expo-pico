@@ -20,7 +20,6 @@
     "example"
   ],
   "scripts": {
-    "postinstall": "patch-package",
     "build": "turbo run build build:plugin build:cli",
     "prepare": "yarn workspaces run prepare",
     "clean": "turbo run clean",
@@ -38,27 +37,33 @@
     "test:pack": "for dir in packages/expo-pico-*; do (cd \"$dir\" && npm pack --dry-run >/dev/null); done",
     "example:prebuild:android": "cd example && npx expo prebuild --platform android --no-install",
     "example:assemble:mobile": "cd example/android && rm -rf app/build/outputs/apk/mobile && ./gradlew assembleMobileDebug",
-    "example:assemble:pico": "yarn example:clean:cache && cd example/android && rm -rf app/build/outputs/apk/pico && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a",
+    "example:assemble:pico": "yarn example:clean:cache && cd example/android && rm -rf app/build/outputs/apk/pico && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a && cd ../.. && yarn verify:apk:pico",
+    "verify:apk:pico": "python3 scripts/verify-16kb-alignment.py example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk --allow libpxrplatformloader.so --allow libpxrplatformloader4j.so",
     "validate:device": "bash scripts/validate-device.sh",
     "validate:device:no-adb": "bash scripts/validate-device.sh --skip-adb",
     "studio": "open -a 'Android Studio' example/android",
     "example:clean:cache": "rm -rf example/.expo/cache example/node_modules/.cache \"${TMPDIR:-/tmp}\"/metro-* \"${TMPDIR:-/tmp}\"/haste-map-* 2>/dev/null || true",
-    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1"
+    "example:deploy:pico": "yarn example:assemble:pico && adb install -r example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk && adb shell am force-stop com.example.expopico && adb shell monkey -p com.example.expopico -c android.intent.category.LAUNCHER 1",
+    "pico:doctor": "node scripts/pico-cli.mjs doctor",
+    "pico:devices": "node scripts/pico-cli.mjs devices",
+    "pico:install": "node scripts/pico-cli.mjs install",
+    "pico:launch": "node scripts/pico-cli.mjs launch",
+    "pico:capture": "node scripts/pico-cli.mjs capture",
+    "test:pico-cli": "node --test scripts/pico-cli.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
-    "@react-native/eslint-config": "^0.84.1",
+    "@react-native/eslint-config": "0.88.0-rc.3",
     "@types/jest": "^29.5.14",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "patch-package": "^8.0.1",
     "prettier": "3.8.1",
     "turbo": "^2.9.18",
     "typescript": "~6.0.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.18.0"
   },
   "packageManager": "yarn@1.22.22",
   "repository": {
