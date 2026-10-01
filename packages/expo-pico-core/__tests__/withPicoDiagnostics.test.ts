@@ -1,24 +1,14 @@
-import { WarningAggregator } from '@expo/config-plugins';
-
 import { resolveOptions } from '../plugin/src/types';
-import { withPicoDiagnostics } from '../plugin/src/withPicoDiagnostics';
+import { runDiagnosticChecks } from '../plugin/src/withPicoDiagnostics';
 
 type WarnCall = { tag: string; message: string };
 
 function runDiagnostics(input: Parameters<typeof resolveOptions>[0]): WarnCall[] {
-  const calls: WarnCall[] = [];
-  const spy = jest
-    .spyOn(WarningAggregator, 'addWarningAndroid')
-    .mockImplementation((tag: string, message: string) => {
-      calls.push({ tag, message });
-    });
-  try {
-    const resolved = resolveOptions(input);
-    withPicoDiagnostics({} as any, resolved);
-  } finally {
-    spy.mockRestore();
-  }
-  return calls;
+  const resolved = resolveOptions(input);
+  return runDiagnosticChecks(resolved).map((finding) => ({
+    tag: '@expo-pico/core',
+    message: finding.message,
+  }));
 }
 
 describe('withPicoDiagnostics — clean config', () => {
