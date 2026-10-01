@@ -83,6 +83,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Build vendored Expo Horizon plugin
+        run: yarn --cwd .vendor/expo-horizon install --frozen-lockfile
       - run: yarn install --frozen-lockfile
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
