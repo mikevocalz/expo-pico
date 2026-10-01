@@ -38,7 +38,7 @@ jobs:
               "name": "smoke",
               "slug": "smoke",
               "plugins": [[
-                "expo-pico-core",
+                "@expo-pico/core",
                 { "xrMode": "pico-os6", "appType": "vr",
                   "platformService": { "picoAppId": "APP", "picoAppKey": "KEY" } }
               ]]
