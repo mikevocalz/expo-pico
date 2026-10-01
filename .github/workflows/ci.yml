@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Expo Horizon SDK 56 parity dependency
+      - name: Checkout current Expo Horizon parity dependency
         uses: actions/checkout@v4
         with:
           repository: software-mansion-labs/expo-horizon
-          ref: 7071e63ee43092ea23a1d86c93ea14950d92edae
+          ref: 725f3d2d1897f082a145c632dd4dfb3d25c2791f
           path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
@@ -69,11 +69,11 @@ jobs:
       PICO_APP_ID: ci-placeholder-app-id
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Expo Horizon SDK 56 parity dependency
+      - name: Checkout current Expo Horizon parity dependency
         uses: actions/checkout@v4
         with:
           repository: software-mansion-labs/expo-horizon
-          ref: 7071e63ee43092ea23a1d86c93ea14950d92edae
+          ref: 725f3d2d1897f082a145c632dd4dfb3d25c2791f
           path: .vendor/expo-horizon
       - uses: actions/setup-node@v4
         with:
