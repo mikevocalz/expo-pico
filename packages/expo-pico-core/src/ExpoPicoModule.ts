@@ -1,8 +1,6 @@
 import { requireOptionalNativeModule } from 'expo-modules-core';
-import { resolveHybridObject } from '@expo-pico/platform-service-common';
-
-import type { PicoCore } from './PicoCore.nitro';
-import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntime.nitro';
+import type { PicoCore } from './PicoCoreNativeTypes';
+import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntimeNativeTypes';
 import type {
   PicoBodyJoint,
   PicoCapabilitySnapshotEntry,
@@ -17,7 +15,7 @@ import type {
 } from './types';
 
 /**
- * Nitro-backed replacement for the former Expo Modules default export.
+ * Expo Modules v2 adapter preserving the existing public API.
  *
  * Keeps the exact shape the rest of the package already consumes — sync
  * properties, `| null` rather than optionals, and positional tuples for
@@ -185,7 +183,7 @@ function core(): PicoCore | null {
     };
     return adapter as unknown as PicoCore;
   }
-  return resolveHybridObject<PicoCore>('PicoCore');
+  return null;
 }
 
 function runtime(): PicoRuntime | null {
@@ -241,7 +239,7 @@ function runtime(): PicoRuntime | null {
     };
     return adapter as unknown as PicoRuntime;
   }
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
+  return null;
 }
 
 const nn = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
