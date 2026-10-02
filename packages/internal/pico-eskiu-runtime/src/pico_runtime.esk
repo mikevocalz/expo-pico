@@ -24,7 +24,9 @@ uint64 pico_eskiu_capability_intersection(uint64 declared, uint64 available) {
 int pico_eskiu_capability_enabled(uint64 declared, uint64 available, int bit_index) {
   if (bit_index < 0 || bit_index > 63) { return 0; }
   let mask: uint64 = ((uint64)1) << bit_index;
-  return ((declared & mask) != 0 && (available & mask) != 0) ? 1 : 0;
+  if ((declared & mask) == 0) { return 0; }
+  if ((available & mask) == 0) { return 0; }
+  return 1;
 }
 
 float pico_eskiu_haptic_amplitude(float amplitude) {
