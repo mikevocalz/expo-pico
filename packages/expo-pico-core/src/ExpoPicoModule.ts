@@ -186,7 +186,7 @@ function core(): PicoCore | null {
   return null;
 }
 
-function runtime(): PicoRuntime | null {
+export function getPicoRuntimeAdapter(): PicoRuntime | null {
   const v2 = runtimeV2();
   if (v2) {
     const adapter = {
@@ -252,7 +252,7 @@ const quat = (q: PicoQuat): [number, number, number, number] => [q.x, q.y, q.z, 
 const UNAVAILABLE = 'PICO native library not present in this build';
 
 function requireRuntime(): PicoRuntime {
-  const r = runtime();
+  const r = getPicoRuntimeAdapter();
   if (!r) throw new Error(UNAVAILABLE);
   return r;
 }
@@ -393,16 +393,16 @@ const ExpoPicoModule = {
 
   // ── XR display ────────────────────────────────────────────────────────────
   async getCurrentRefreshRate(): Promise<number | null> {
-    return nn(await runtime()?.getCurrentRefreshRate());
+    return nn(await getPicoRuntimeAdapter()?.getCurrentRefreshRate());
   },
   async getSupportedRefreshRates(): Promise<number[] | null> {
-    return nn(await runtime()?.getSupportedRefreshRates());
+    return nn(await getPicoRuntimeAdapter()?.getSupportedRefreshRates());
   },
   async setRefreshRate(hz: number): Promise<boolean> {
     return requireRuntime().setRefreshRate(hz);
   },
   async getFoveationLevel(): Promise<PicoFoveationLevel | null> {
-    return nn(await runtime()?.getFoveationLevel()) as PicoFoveationLevel | null;
+    return nn(await getPicoRuntimeAdapter()?.getFoveationLevel()) as PicoFoveationLevel | null;
   },
   async setFoveationLevel(level: PicoFoveationLevel): Promise<boolean> {
     return requireRuntime().setFoveationLevel(level);
@@ -411,7 +411,7 @@ const ExpoPicoModule = {
     return requireRuntime().setPassthroughEnabled(enabled);
   },
   async isPassthroughActive(): Promise<boolean | null> {
-    return nn(await runtime()?.isPassthroughActive());
+    return nn(await getPicoRuntimeAdapter()?.isPassthroughActive());
   },
 
   // ── Tracking ──────────────────────────────────────────────────────────────
@@ -422,7 +422,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableEyeTracking();
   },
   async getEyePose(): Promise<PicoEyePose | null> {
-    const p = await runtime()?.getEyePose();
+    const p = await getPicoRuntimeAdapter()?.getEyePose();
     if (!p) return null;
     return {
       leftGazeOrigin: vec3(p.leftGazeOrigin),
@@ -442,7 +442,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableFaceTracking();
   },
   async getFaceWeights(): Promise<Record<string, number> | null> {
-    return nn(await runtime()?.getFaceWeights());
+    return nn(await getPicoRuntimeAdapter()?.getFaceWeights());
   },
   async enableBodyTracking(): Promise<boolean> {
     return requireRuntime().enableBodyTracking();
@@ -451,7 +451,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableBodyTracking();
   },
   async getBodyJoints(): Promise<PicoBodyJoint[] | null> {
-    const joints = await runtime()?.getBodyJoints();
+    const joints = await getPicoRuntimeAdapter()?.getBodyJoints();
     if (!joints) return null;
     return joints.map((j) => ({
       joint: j.joint,
@@ -467,7 +467,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableHandTracking();
   },
   async getHandPose(): Promise<PicoHandPose | null> {
-    const pose = await runtime()?.getHandPose();
+    const pose = await getPicoRuntimeAdapter()?.getHandPose();
     if (!pose) return null;
     const side = (s: typeof pose.leftHand) =>
       s
@@ -488,23 +488,23 @@ const ExpoPicoModule = {
 
   // ── Spatial ───────────────────────────────────────────────────────────────
   async isBoundaryVisible(): Promise<boolean | null> {
-    return nn(await runtime()?.isBoundaryVisible());
+    return nn(await getPicoRuntimeAdapter()?.isBoundaryVisible());
   },
   async setBoundaryVisible(visible: boolean): Promise<boolean> {
     return requireRuntime().setBoundaryVisible(visible);
   },
   async getBoundaryGeometry(): Promise<number[][] | null> {
-    const pts = await runtime()?.getBoundaryGeometry();
+    const pts = await getPicoRuntimeAdapter()?.getBoundaryGeometry();
     return pts ? pts.map((p) => [p.x, p.y, p.z]) : null;
   },
   async refreshSceneMesh(): Promise<boolean> {
     return requireRuntime().refreshSceneMesh();
   },
   async getSceneMeshTriangleCount(): Promise<number | null> {
-    return nn(await runtime()?.getSceneMeshTriangleCount());
+    return nn(await getPicoRuntimeAdapter()?.getSceneMeshTriangleCount());
   },
   async getDetectedPlanes(): Promise<PicoDetectedPlane[] | null> {
-    const planes = await runtime()?.getDetectedPlanes();
+    const planes = await getPicoRuntimeAdapter()?.getDetectedPlanes();
     if (!planes) return null;
     return planes.map((p) => ({
       id: p.id,
@@ -520,7 +520,7 @@ const ExpoPicoModule = {
 
   // ── Controllers, haptics, trackers ────────────────────────────────────────
   async getControllers(): Promise<PicoController[] | null> {
-    return nn(await runtime()?.getControllers());
+    return nn(await getPicoRuntimeAdapter()?.getControllers());
   },
   async triggerHaptic(
     hand: 'left' | 'right',
@@ -530,7 +530,7 @@ const ExpoPicoModule = {
     return requireRuntime().triggerHaptic(hand, amplitude, durationMs);
   },
   async getMotionTrackers(): Promise<PicoMotionTracker[] | null> {
-    const trackers = await runtime()?.getMotionTrackers();
+    const trackers = await getPicoRuntimeAdapter()?.getMotionTrackers();
     if (!trackers) return null;
     return trackers.map((t) => ({
       id: t.id,
@@ -544,16 +544,16 @@ const ExpoPicoModule = {
 
   // ── Sensors + spatial audio ───────────────────────────────────────────────
   async getHighRateSensors(): Promise<PicoHighRateSensor[]> {
-    return (await runtime()?.getHighRateSensors()) ?? [];
+    return (await getPicoRuntimeAdapter()?.getHighRateSensors()) ?? [];
   },
   async isSpatialAudioEnabled(): Promise<boolean | null> {
-    return nn(await runtime()?.isSpatialAudioEnabled());
+    return nn(await getPicoRuntimeAdapter()?.isSpatialAudioEnabled());
   },
   async setSpatialAudioEnabled(enabled: boolean): Promise<boolean> {
     return requireRuntime().setSpatialAudioEnabled(enabled);
   },
   async getHrtfProfile(): Promise<string | null> {
-    return nn(await runtime()?.getHrtfProfile());
+    return nn(await getPicoRuntimeAdapter()?.getHrtfProfile());
   },
 };
 
