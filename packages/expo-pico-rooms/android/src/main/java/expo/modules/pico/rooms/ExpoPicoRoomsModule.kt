@@ -102,6 +102,14 @@ class ExpoPicoRoomsModule : Module() {
       )
     }
 
+    AsyncFunction("getFriendsAndRooms") { promise: Promise ->
+      guardAvailability(promise) { return@AsyncFunction }
+      RoomsBridge.getFriendsAndRooms(
+        onSuccess = { rooms -> promise.resolve(rooms) },
+        onError = { code, msg -> promise.reject(code, msg, null) }
+      )
+    }
+
     AsyncFunction("kickUser") { userId: String, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
       RoomsBridge.kickUser(userId,
