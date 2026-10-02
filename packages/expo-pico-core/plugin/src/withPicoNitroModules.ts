@@ -62,7 +62,7 @@ export interface PicoNativeModule {
 }
 
 /**
- * Locate the installed packages that have an Android module to include.
+ * Locate installed Android packages that are not already Expo Modules v2.
  *
  * Resolution is rooted at the consuming app so it works with yarn/npm
  * hoisting, pnpm's nested store, and a monorepo `workspace:` link alike.
@@ -111,6 +111,9 @@ export function findPicoNativeModules(
   for (const packageName of packages) {
     const packageDir = resolvePackageDir(packageName, projectRoot);
     if (!packageDir) continue;
+    // Expo Modules v2 packages are owned by Expo's autolinker. Only keep
+    // packages that still rely on the transitional Nitro inclusion path.
+    if (fs.existsSync(path.join(packageDir, 'expo-module.config.json'))) continue;
     const androidDir = path.join(packageDir, 'android');
     if (!fs.existsSync(path.join(androidDir, 'build.gradle'))) continue;
     found.push({
@@ -165,9 +168,9 @@ ${lines.join('\n')}
  * Make sure every installed `@expo-pico/*` Android module is a Gradle
  * project in the consuming app.
  *
- * These packages used to rely on Expo Modules autolinking, which included
- * them because each shipped an `expo-module.config.json` listing Android
- * modules. The Nitro migration dropped those files — the Kotlin no longer
+ * Packages with `expo-module.config.json` are intentionally skipped because
+ * Expo Modules autolinking owns them. This custom path exists only for the
+ * packages that still depend on Nitro during the staged migration — the Kotlin no longer
  * extends Expo's `Module`, so the generated Expo package list would
  * reference classes that are not compiled. Nitro itself has no autolinker
  * that writes `settings.gradle`; it only generates the per-module Gradle
