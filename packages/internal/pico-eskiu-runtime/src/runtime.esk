@@ -1,0 +1,21 @@
+float expo_pico_clampf(float value, float lo, float hi) {
+    if (value < lo) { return lo; }
+    if (value > hi) { return hi; }
+    return value;
+}
+
+int expo_pico_capability_enabled(uint64 declared, uint64 available, int bit) {
+    if (bit < 0 || bit > 63) { return 0; }
+    let mask: uint64 = ((uint64)1) << bit;
+    if ((declared & mask) == 0) { return 0; }
+    if ((available & mask) == 0) { return 0; }
+    return 1;
+}
+
+float expo_pico_haptic_amplitude(float amplitude) {
+    return expo_pico_clampf(amplitude, 0.0, 1.0);
+}
+
+float expo_pico_passthrough_level(float level) {
+    return expo_pico_clampf(level, 0.0, 1.0);
+}
