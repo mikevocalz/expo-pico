@@ -13,7 +13,7 @@ import type {
   StorageConflictEvent,
   StorageSyncProgressEvent,
   StorageSyncResult,
-} from './PicoStorage.nitro';
+} from './types';
 
 export type {
   StorageStatus,
@@ -27,7 +27,7 @@ export type {
   StorageSyncResult,
   StorageConflictEvent,
   StorageSyncProgressEvent,
-} from './PicoStorage.nitro';
+} from './types';
 
 const PKG = '@expo-pico/storage';
 

@@ -15,7 +15,7 @@ import type {
   RoomUserJoinedEvent,
   RoomUserLeftEvent,
   MatchmakingFoundEvent,
-} from './PicoRooms.nitro';
+} from './types';
 
 export type {
   RoomConnectionState,
@@ -32,7 +32,7 @@ export type {
   RoomUserJoinedEvent,
   RoomUserLeftEvent,
   MatchmakingFoundEvent,
-} from './PicoRooms.nitro';
+} from './types';
 
 const PKG = '@expo-pico/rooms';
 

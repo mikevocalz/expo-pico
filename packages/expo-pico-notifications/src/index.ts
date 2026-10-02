@@ -10,7 +10,7 @@ import type {
   NotificationPermissionStatus,
   PicoPushMessage,
   PicoPushRevocation,
-} from './PicoNotifications.nitro';
+} from './types';
 
 export type {
   NotificationPermissionStatus,
@@ -19,7 +19,7 @@ export type {
   NotificationToken,
   PicoPushMessage,
   PicoPushRevocation,
-} from './PicoNotifications.nitro';
+} from './types';
 
 const PKG = '@expo-pico/notifications';
 

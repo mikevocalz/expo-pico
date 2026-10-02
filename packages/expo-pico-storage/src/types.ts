@@ -1,27 +1,18 @@
 export type StorageStatus = 'available' | 'unavailable' | 'syncing' | 'error';
-
 export type StorageConflictPolicy = 'server-wins' | 'client-wins' | 'manual';
-
 export type StorageEntryType = 'string' | 'number' | 'boolean' | 'json';
-
-export interface StorageEntry {
-  key: string;
-  value: string;
-  type: StorageEntryType;
-  version: number;
-  updatedAt: number;
-}
+export type StorageSyncPhase = 'uploading' | 'downloading' | 'resolving';
 
 export interface StorageSaveOptions {
-  /** Conflict resolution policy when server has newer data. Default: 'server-wins' */
+  /** Default: 'server-wins'. */
   conflictPolicy?: StorageConflictPolicy;
-  /** Maximum size in bytes. Default: 65536 (64KB) */
+  /** Default: 65536. */
   maxBytes?: number;
 }
 
 export interface StorageLoadResult {
   key: string;
-  value: string | null;
+  value?: string;
   version: number;
   found: boolean;
 }
@@ -56,7 +47,36 @@ export interface StorageConflictEvent {
 }
 
 export interface StorageSyncProgressEvent {
-  phase: 'uploading' | 'downloading' | 'resolving';
+  phase: StorageSyncPhase;
   completedCount: number;
   totalCount: number;
+}
+
+/**
+ * PPS 1.0.x removed cloud storage. Every method returns NOT_IN_PPS_1_0 today.
+ * Back per-player state with your own service keyed off the account userId,
+ * or expo-secure-store for local-only data.
+ */
+export interface PicoStorage {
+  readonly available: boolean;
+  readonly sdkVersion: string;
+  readonly status: StorageStatus;
+
+  saveEntry(
+    key: string,
+    value: string,
+    type: StorageEntryType,
+    options?: StorageSaveOptions
+  ): Promise<StorageSaveResult>;
+  loadEntry(key: string): Promise<StorageLoadResult>;
+  deleteEntry(key: string): Promise<void>;
+  listKeys(): Promise<string[]>;
+  syncStorage(): Promise<StorageSyncResult>;
+  getStorageQuota(): Promise<StorageQuota>;
+  clearLocalCache(): Promise<void>;
+
+  addStorageConflictListener(listener: (event: StorageConflictEvent) => void): number;
+  addStorageSyncProgressListener(listener: (event: StorageSyncProgressEvent) => void): number;
+  addStorageSyncCompleteListener(listener: (result: StorageSyncResult) => void): number;
+  removeListener(id: number): void;
 }

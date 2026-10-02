@@ -10,10 +10,9 @@ export type PresenceStatus = 'online' | 'away' | 'busy' | 'offline';
 export interface SocialUser {
   userId: string;
   displayName: string;
-  avatarUrl: string | null;
+  avatarUrl?: string;
   presenceStatus: PresenceStatus;
-  presenceRichText: string | null;
-  /** True if this user is currently in the same app */
+  presenceRichText?: string;
   isInSameApp: boolean;
 }
 
@@ -26,7 +25,7 @@ export interface FriendRequest {
 
 export interface FriendListResult {
   friends: SocialUser[];
-  nextPageToken: string | null;
+  nextPageToken?: string;
   totalCount: number;
 }
 
@@ -39,18 +38,15 @@ export interface SentInvite {
 }
 
 export interface InviteOptions {
-  /** API name of destination (lobby, match, etc.) */
   destinationApiName: string;
-  /** Up to 8 user IDs to invite */
+  /** Up to 8 user IDs. */
   userIds: string[];
-  /** Optional extra data to attach to the invite */
   data?: Record<string, string>;
 }
 
 export interface PresenceOptions {
   status: PresenceStatus;
   richText?: string;
-  /** API name describing what the user is doing */
   destinationApiName?: string;
 }
 
@@ -58,11 +54,7 @@ export interface FriendPresenceChangedEvent {
   userId: string;
   previousStatus: PresenceStatus;
   currentStatus: PresenceStatus;
-  richText: string | null;
-}
-
-export interface FriendRequestReceivedEvent {
-  request: FriendRequest;
+  richText?: string;
 }
 
 export interface InviteReceivedEvent {
@@ -70,4 +62,127 @@ export interface InviteReceivedEvent {
   fromUser: SocialUser;
   destinationApiName: string;
   data: Record<string, string>;
+}
+
+/**
+ * accept/decline/block/unblock were removed in PPS 1.0.x. They stay on the
+ * interface as typed seams returning NOT_IN_PPS_1_0 so a future PPS release
+ * can wire them without a breaking API change.
+ */
+/** Why the app was launched. `normal` means the user opened it directly. */
+export type PicoLaunchType = 'unknown' | 'normal' | 'invite' | 'coordinated' | 'deeplink';
+
+/** Outcome of a coordinated/invite launch. */
+export type PicoLaunchResult =
+  | 'unknown'
+  | 'success'
+  | 'failed-room-full'
+  | 'failed-game-already-started'
+  | 'failed-room-not-found'
+  | 'failed-user-declined'
+  | 'failed-other';
+
+/**
+ * Why this app instance was launched.
+ *
+ * Read synchronously — PPS returns it from a getter, not a Task, because the
+ * launch intent is already resolved by the time the app runs.
+ */
+export interface PicoLaunchDetails {
+  launchType: PicoLaunchType;
+  launchResult: PicoLaunchResult;
+  launchSource: string;
+  deepLinkMessage: string;
+  destinationApiName: string;
+  trackingId: string;
+  lobbySessionId: string;
+  matchSessionId: string;
+  extra: string;
+  clientAction: string;
+}
+
+/** A travel destination declared in the PICO developer console. */
+export interface PicoDestination {
+  apiName: string;
+  displayName: string;
+  deepLinkMessage: string;
+}
+
+/** A page of users who can be invited to the current destination. */
+export interface InvitableUsersResult {
+  users: SocialUser[];
+  /** Opaque cursor. Absent when PPS reports no further page. */
+  nextPageToken?: string;
+}
+
+/** A page of invites this user has sent. */
+export interface SentInviteListResult {
+  invites: SentInvite[];
+  nextPageToken?: string;
+}
+
+/** A page of destinations declared in the developer console. */
+export interface DestinationListResult {
+  destinations: PicoDestination[];
+  nextPageToken?: string;
+}
+
+/** Target for {@link PicoSocial.launchApp}. Give an app id or a package name. */
+export interface LaunchAppOptions {
+  targetAppId?: string;
+  targetPackageName?: string;
+  deepLinkMessage?: string;
+}
+
+export interface PicoSocial {
+  readonly available: boolean;
+  readonly sdkVersion: string;
+
+  getCurrentUser(): Promise<SocialUser>;
+  getFriendList(pageSize?: number, pageToken?: string): Promise<FriendListResult>;
+  getFriendshipStatus(userId: string): Promise<FriendshipStatus>;
+  sendFriendRequest(userId: string): Promise<FriendRequest>;
+  getPendingFriendRequests(): Promise<FriendRequest[]>;
+
+  acceptFriendRequest(requestId: string): Promise<void>;
+  declineFriendRequest(requestId: string): Promise<void>;
+  removeFriend(userId: string): Promise<void>;
+  blockUser(userId: string): Promise<void>;
+  unblockUser(userId: string): Promise<void>;
+
+  setPresence(options: PresenceOptions): Promise<void>;
+  clearPresence(): Promise<void>;
+  sendInvites(options: InviteOptions): Promise<SentInvite[]>;
+
+  /** Why this app instance was launched. Synchronous; never throws. */
+  getLaunchDetails(): PicoLaunchDetails;
+  /** Destinations declared in the developer console. Pass `nextPageToken` to page. */
+  getDestinations(pageToken?: string): Promise<DestinationListResult>;
+  /** Users invitable to the current destination. `suggestedUserIds` biases the list. */
+  getInvitableUsers(suggestedUserIds?: string[], pageToken?: string): Promise<InvitableUsersResult>;
+  /** Invites this user has already sent. */
+  getSentInvites(pageToken?: string): Promise<SentInviteListResult>;
+  /** Launches another PICO app. Resolves with the raw PPS result string. */
+  launchApp(options: LaunchAppOptions): Promise<string>;
+  /**
+   * Fires when the launch intent changes while the app is running — e.g. the
+   * user accepts an invite without the app restarting. PPS holds one callback,
+   * so listeners are multiplexed.
+   */
+  addLaunchDetailsListener(listener: (details: PicoLaunchDetails) => void): number;
+  /** Opens the system invite panel for the current presence. */
+  launchPresenceInvitePanel(): Promise<boolean>;
+  /** Opens the system flow inviting friends into `roomId`. */
+  launchInviteUserJoinRoomFlow(roomId: string): Promise<boolean>;
+  /** Opens the PICO store. Resolves with the raw PPS result string. */
+  launchStore(): Promise<string>;
+  /** Shares a video to the PICO social feed. */
+  shareVideo(videoPath: string, description: string): Promise<boolean>;
+  /** Shares up to a handful of images to the PICO social feed. */
+  shareImages(imagePaths: string[]): Promise<boolean>;
+
+  addFriendPresenceChangedListener(listener: (event: FriendPresenceChangedEvent) => void): number;
+  addFriendRequestReceivedListener(listener: (request: FriendRequest) => void): number;
+  addInviteReceivedListener(listener: (event: InviteReceivedEvent) => void): number;
+  removeListener(id: number): void;
 }

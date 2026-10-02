@@ -1,12 +1,13 @@
+import { requireOptionalNativeModule } from 'expo-modules-core';
+
 import {
   guardService,
   wrapNativeCall,
-  resolveHybridObject,
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatial.nitro';
+import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatialNativeTypes';
 import type {
   PicoSpaceState,
   PicoContainerType,
@@ -33,8 +34,81 @@ const NO_CAPABILITIES: SpatialCapabilities = {
   spatialSdkAvailable: false,
 };
 
+type PicoSpatialV2Native = {
+  getInfo(): {
+    spaceState: string;
+    containerType: string;
+    spatialSdkVersion?: string | null;
+    capabilities: SpatialCapabilities;
+    eyeGazeAvailable: boolean;
+    sceneMeshAvailable: boolean;
+    faceTrackingAvailable: boolean;
+    bodyTrackingAvailable: boolean;
+  };
+  getSpatialSdkProbe(): Record<string, boolean>;
+  createSpatialAnchor(pose: SpatialPose): any;
+  setWindowContainerProperties(props: WindowContainerProperties): void;
+  requestFullSpace(): void;
+  getGazeSnapshot(): GazePose | null;
+  getSceneMesh(): SceneMeshRaw;
+};
+
+let v2Cache: PicoSpatialV2Native | null | undefined;
+let v2ListenerId = 0;
+
+function nativeV2(): PicoSpatialV2Native | null {
+  if (v2Cache !== undefined) return v2Cache;
+  try {
+    v2Cache = requireOptionalNativeModule<PicoSpatialV2Native>('PicoSpatialV2');
+  } catch {
+    v2Cache = null;
+  }
+  return v2Cache;
+}
+
 function native(): PicoSpatial | null {
-  return resolveHybridObject<PicoSpatial>('PicoSpatial');
+  const v2 = nativeV2();
+  if (v2) {
+    const info = () => v2.getInfo();
+    return {
+      get spaceState() {
+        return info().spaceState;
+      },
+      get containerType() {
+        return info().containerType;
+      },
+      get spatialSdkVersion() {
+        return info().spatialSdkVersion ?? undefined;
+      },
+      get capabilities() {
+        return info().capabilities;
+      },
+      get eyeGazeAvailable() {
+        return !!info().eyeGazeAvailable;
+      },
+      get sceneMeshAvailable() {
+        return !!info().sceneMeshAvailable;
+      },
+      get faceTrackingAvailable() {
+        return !!info().faceTrackingAvailable;
+      },
+      get bodyTrackingAvailable() {
+        return !!info().bodyTrackingAvailable;
+      },
+      getSpatialSdkProbe: async () => v2.getSpatialSdkProbe(),
+      createSpatialAnchor: async (pose: any) => v2.createSpatialAnchor(pose),
+      setWindowContainerProperties: async (props: any) => v2.setWindowContainerProperties(props),
+      requestFullSpace: async () => v2.requestFullSpace(),
+      getGazeSnapshot: async () => v2.getGazeSnapshot() ?? undefined,
+      getSceneMesh: async () => v2.getSceneMesh(),
+      addGazeListener: () => ++v2ListenerId,
+      addSceneMeshUpdateListener: () => ++v2ListenerId,
+      addFaceListener: () => ++v2ListenerId,
+      addBodyListener: () => ++v2ListenerId,
+      removeListener: () => {},
+    } as unknown as PicoSpatial;
+  }
+  return null;
 }
 
 function toTypedMesh(raw: SceneMeshRaw): SceneMesh {

@@ -1,8 +1,7 @@
 export type RoomConnectionState = 'disconnected' | 'connecting' | 'joined' | 'leaving' | 'error';
-
 export type RoomJoinPolicy = 'everyone' | 'friends-only' | 'invite-only';
-
 export type RoomMemberRole = 'owner' | 'moderator' | 'member';
+export type RoomLeaveReason = 'quit' | 'kicked' | 'disconnected';
 
 export interface RoomMember {
   userId: string;
@@ -13,11 +12,10 @@ export interface RoomMember {
 
 export interface RoomInfo {
   roomId: string;
-  name: string | null;
+  name?: string;
   joinPolicy: RoomJoinPolicy;
   memberCount: number;
   maxMembers: number;
-  /** Arbitrary key-value metadata set by the room owner at create time */
   data: Record<string, string>;
   members: RoomMember[];
 }
@@ -38,15 +36,12 @@ export interface MatchmakingOptions {
   data?: Record<string, string>;
 }
 
-/** Sync session state snapshot — reads atomically-cached native values */
 export interface RoomSessionState {
-  roomId: string | null;
+  roomId?: string;
   memberCount: number;
   connectionState: RoomConnectionState;
-  role: RoomMemberRole | null;
+  role?: RoomMemberRole;
 }
-
-// ─── Event payloads ──────────────────────────────────────────────────────────
 
 export interface RoomUpdatedEvent {
   roomId: string;
@@ -64,10 +59,44 @@ export interface RoomUserJoinedEvent {
 export interface RoomUserLeftEvent {
   roomId: string;
   userId: string;
-  reason: 'quit' | 'kicked' | 'disconnected';
+  reason: RoomLeaveReason;
 }
 
 export interface MatchmakingFoundEvent {
   roomId: string;
   poolName: string;
+}
+
+/**
+ * PPS 1.0.x removed dedicated rooms. Every method here returns
+ * NOT_IN_PPS_1_0 today; the interface is kept so a future PPS release can
+ * wire it without an API break. Run live session state on Fishjam or Colyseus.
+ */
+export interface PicoRooms {
+  readonly available: boolean;
+  readonly sdkVersion: string;
+  readonly sessionState: RoomSessionState;
+
+  createRoom(options?: CreateRoomOptions): Promise<RoomInfo>;
+  joinRoom(roomId: string): Promise<JoinRoomResult>;
+  leaveRoom(): Promise<void>;
+  getRoomInfo(roomId: string): Promise<RoomInfo>;
+  /**
+   * Every room currently visible in the friends-and-rooms feed.
+   *
+   * This is a discovery feed ("join Alice's game"), not a room directory: it
+   * only ever contains rooms a friend of the signed-in user is in. Returns an
+   * empty array when no friend is in a room.
+   */
+  getFriendsAndRooms(): Promise<RoomInfo[]>;
+  kickUser(userId: string): Promise<void>;
+  updateRoomData(data: Record<string, string>): Promise<void>;
+  requestMatchmaking(options: MatchmakingOptions): Promise<void>;
+  cancelMatchmaking(): Promise<void>;
+
+  addRoomUpdatedListener(listener: (event: RoomUpdatedEvent) => void): number;
+  addRoomUserJoinedListener(listener: (event: RoomUserJoinedEvent) => void): number;
+  addRoomUserLeftListener(listener: (event: RoomUserLeftEvent) => void): number;
+  addMatchmakingFoundListener(listener: (event: MatchmakingFoundEvent) => void): number;
+  removeListener(id: number): void;
 }

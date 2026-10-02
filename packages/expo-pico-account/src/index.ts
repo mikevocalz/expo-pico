@@ -1,10 +1,10 @@
-import { NitroModules } from 'react-native-nitro-modules';
 import {
   PicoServiceError,
   PicoErrorCode,
   wrapNativeCall,
+  resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoAccount, PicoAuthType } from './PicoAccount.nitro';
+import type { PicoAccount, PicoAuthType } from './types';
 
 export type {
   PicoUserProfile,
@@ -14,7 +14,7 @@ export type {
   PicoAdultStatus,
   PicoAuthType,
   PicoAuthScopeResult,
-} from './PicoAccount.nitro';
+} from './types';
 
 const PKG = '@expo-pico/account';
 
@@ -23,19 +23,8 @@ const PKG = '@expo-pico/account';
  * (mobile flavor, non-PICO hardware), and that must surface as
  * SERVICE_UNAVAILABLE rather than a module-load crash.
  */
-let cached: PicoAccount | null = null;
-let resolved = false;
-
 function nativeAccount(): PicoAccount | null {
-  if (!resolved) {
-    resolved = true;
-    try {
-      cached = NitroModules.createHybridObject<PicoAccount>('PicoAccount');
-    } catch {
-      cached = null;
-    }
-  }
-  return cached;
+  return resolveHybridObject<PicoAccount>('PicoAccount');
 }
 
 export function isAccountAvailable(): boolean {
