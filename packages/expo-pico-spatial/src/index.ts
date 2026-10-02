@@ -3,12 +3,11 @@ import { requireOptionalNativeModule } from 'expo-modules-core';
 import {
   guardService,
   wrapNativeCall,
-  resolveHybridObject,
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatial.nitro';
+import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatialNativeTypes';
 import type {
   PicoSpaceState,
   PicoContainerType,
@@ -109,7 +108,7 @@ function native(): PicoSpatial | null {
       removeListener: () => {},
     } as unknown as PicoSpatial;
   }
-  return resolveHybridObject<PicoSpatial>('PicoSpatial');
+  return null;
 }
 
 function toTypedMesh(raw: SceneMeshRaw): SceneMesh {
