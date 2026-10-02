@@ -64,3 +64,12 @@ side depending on the other's bridge implementation.
 
 The PICO vendor SDK adapters remain Kotlin until PICO exposes equivalent
 native/OpenXR APIs.
+
+
+## Core + spatial migration status
+
+The core and spatial packages now register through Expo Modules v2 first. Their
+portable hot-path normalization/capability helpers are exposed through the shared
+Eskiu C ABI so ViroCore can consume the same native representation without a
+second HybridObject bridge. Nitro remains transition-only until the stacked
+platform-service and RTC PRs finish.
