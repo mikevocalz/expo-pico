@@ -78,6 +78,94 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
     get(target, prop, receiver) {
       if (typeof prop !== 'string') return Reflect.get(target, prop, receiver);
 
+      // Public API compatibility adapters. Nitro codegen previously unpacked
+      // these structs for us; Expo Modules receives plain JS objects/arrays.
+      if (name === 'PicoLeaderboards' && prop === 'getEntries') {
+        return (apiName: string, options: any = {}) =>
+          (target as any).getEntries(
+            apiName,
+            options?.filter ?? 'none',
+            options?.startAt ?? 'top',
+            options?.pageSize ?? 50,
+            options?.pageToken ?? null
+          );
+      }
+
+      if (name === 'PicoLeaderboards' && prop === 'getEntriesAfterRank') {
+        return (apiName: string, afterRank: number, options: any = {}) =>
+          (target as any).getEntriesAfterRank(
+            apiName,
+            afterRank,
+            options?.pageSize ?? 50,
+            options?.pageToken ?? null
+          );
+      }
+
+      if (name === 'PicoLeaderboards' && prop === 'writeScore') {
+        return (apiName: string, score: number, options: any = {}) =>
+          (target as any).writeScore(
+            apiName,
+            score,
+            options?.extraData ?? null,
+            options?.supplementaryMetric ?? null,
+            options?.forceUpdate ?? false
+          );
+      }
+
+      if (name === 'PicoRooms' && prop === 'createRoom') {
+        return async () => unsupported(name, prop);
+      }
+
+      if (name === 'PicoRtc' && prop === 'initRtcEngine') {
+        return (options?: any) => (target as any).initRtcEngine(options ?? {});
+      }
+
+      if (name === 'PicoRtc' && prop === 'joinChannel') {
+        return (options: any) =>
+          (target as any).joinChannel(
+            options?.channelId ?? '',
+            options?.token ?? '',
+            options?.uid ?? 0
+          );
+      }
+
+      if (name === 'PicoSocial' && prop === 'getFriendList') {
+        return (pageSize?: number, pageToken?: string) =>
+          (target as any).getFriendList(pageToken ?? null, pageSize ?? 50);
+      }
+
+      if (name === 'PicoSocial' && prop === 'setPresence') {
+        return (options: any) =>
+          (target as any).setPresence(
+            options?.status ?? 'offline',
+            options?.richText ?? null,
+            options?.destinationApiName ?? null
+          );
+      }
+
+      if (name === 'PicoSocial' && prop === 'sendInvites') {
+        return (options: any) =>
+          (target as any).sendInvites(
+            options?.destinationApiName ?? '',
+            options?.userIds ?? [],
+            options?.data ?? {}
+          );
+      }
+
+      if (name === 'PicoStorage' && prop === 'saveEntry') {
+        return (key: string, value: string, _type: string, options: any = {}) =>
+          (target as any).saveEntry(
+            key,
+            value,
+            options?.conflictPolicy ?? 'server-wins',
+            options?.maxBytes ?? 65536
+          );
+      }
+
+      if (name === 'PicoSubscription' && prop === 'subscribe') {
+        return (options: any) => (target as any).subscribe(options?.sku ?? '');
+      }
+
       if (prop in target && target[prop] !== undefined) {
         return bindIfFunction(target, target[prop]);
       }
@@ -99,6 +187,11 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
 
       if (propertyAlias && propertyAlias in target && target[propertyAlias] !== undefined) {
         return bindIfFunction(target, target[propertyAlias]);
+      }
+
+      if (prop === 'status') {
+        const availableKey = `${prefix}SdkAvailable`;
+        return target[availableKey] === true ? 'available' : 'unavailable';
       }
 
       if (name === 'PicoRooms' && prop === 'sessionState') {
