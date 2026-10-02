@@ -1,4 +1,4 @@
-import { NativeModule } from 'expo';
+import { NativeModule } from 'expo-modules-core';
 import { resolveNativeModule } from '@expo-pico/platform-service-common';
 import type {
   ExpoPicoSpatialModuleInterface,
