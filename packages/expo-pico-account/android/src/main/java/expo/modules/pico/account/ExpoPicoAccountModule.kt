@@ -59,5 +59,43 @@ class ExpoPicoAccountModule : Module() {
                 onError = { code, msg -> promise.reject(code, msg, null) },
             )
         }
+
+        AsyncFunction("getAdultStatus") { promise: Promise ->
+            AccountBridge.getAdultStatus(
+                onSuccess = { status -> promise.resolve(status) },
+                onError = { code, msg -> promise.reject(code, msg, null) },
+            )
+        }
+
+        AsyncFunction("getAuthorizedScopes") { promise: Promise ->
+            AccountBridge.getAuthorizedScopes(
+                onSuccess = { scopes -> promise.resolve(scopes) },
+                onError = { code, msg -> promise.reject(code, msg, null) },
+            )
+        }
+
+        AsyncFunction("requestAuthScopes") { scopes: List<String>, promise: Promise ->
+            AccountBridge.requestAuthScopes(
+                scopes = scopes,
+                onSuccess = { granted -> promise.resolve(granted) },
+                onError = { code, msg -> promise.reject(code, msg, null) },
+            )
+        }
+
+        AsyncFunction("cancelAuthorization") { promise: Promise ->
+            AccountBridge.cancelAuthorization(
+                onSuccess = { promise.resolve(null) },
+                onError = { code, msg -> promise.reject(code, msg, null) },
+            )
+        }
+
+        AsyncFunction("sendAuthScopesRequest") { scopes: List<String>, authType: String, promise: Promise ->
+            AccountBridge.sendAuthScopesRequest(
+                scopes = scopes,
+                authType = authType,
+                onSuccess = { result -> promise.resolve(result) },
+                onError = { code, msg -> promise.reject(code, msg, null) },
+            )
+        }
     }
 }
