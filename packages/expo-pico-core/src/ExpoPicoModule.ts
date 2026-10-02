@@ -1,3 +1,4 @@
+import { requireOptionalNativeModule } from 'expo-modules-core';
 import { resolveHybridObject } from '@expo-pico/platform-service-common';
 
 import type { PicoCore } from './PicoCore.nitro';
@@ -25,11 +26,174 @@ import type {
  * translation happens here and nowhere else.
  */
 
+type PicoCoreV2Native = {
+  getInfo(): Record<string, any>;
+  getDeclaredCapabilities(): Record<string, boolean>;
+  getDeclaredRefreshRates(): number[];
+  getDeclaredTargetDevices(): string[];
+  getPlatformSdkProbe(): Record<string, boolean>;
+  hasSystemFeature(name: string): boolean;
+  getDeclaredFeatures(): Array<Record<string, any>>;
+  getDeclaredPermissions(): Array<Record<string, any>>;
+  getCapabilitySnapshot(): Array<Record<string, any>>;
+  isCapabilityAvailable(name: string): boolean | null;
+  enterImmersiveScene(): boolean;
+  exitImmersiveScene(): boolean;
+  hasImmersiveActivity(): boolean;
+};
+
+type PicoRuntimeV2Native = {
+  getAvailability(): { hapticsAvailable: boolean; passthroughAvailable: boolean };
+  getCurrentRefreshRate(): number | null;
+  getSupportedRefreshRates(): number[] | null;
+  setRefreshRate(hz: number): boolean;
+  getFoveationLevel(): string | null;
+  setFoveationLevel(level: string): boolean;
+  setPassthroughEnabled(enabled: boolean): boolean;
+  isPassthroughActive(): boolean | null;
+  setPassthroughLevel(enabled: boolean, level: number): void;
+  enableEyeTracking(): boolean;
+  disableEyeTracking(): boolean;
+  getEyePose(): any;
+  enableFaceTracking(): boolean;
+  disableFaceTracking(): boolean;
+  getFaceWeights(): Record<string, number> | null;
+  enableBodyTracking(): boolean;
+  disableBodyTracking(): boolean;
+  getBodyJoints(): any;
+  enableHandTracking(): boolean;
+  disableHandTracking(): boolean;
+  getHandPose(): any;
+  isBoundaryVisible(): boolean | null;
+  setBoundaryVisible(visible: boolean): boolean;
+  getBoundaryGeometry(): any;
+  refreshSceneMesh(): boolean;
+  getSceneMeshTriangleCount(): number | null;
+  getDetectedPlanes(): any;
+  refreshScene(): boolean;
+  getControllers(): any;
+  triggerHaptic(hand: string, amplitude: number, durationMs: number): boolean;
+  pulseHaptic(hand: string, amplitude: number, durationMs: number): void;
+  getMotionTrackers(): any;
+  getHighRateSensors(): any[];
+  isSpatialAudioEnabled(): boolean | null;
+  setSpatialAudioEnabled(enabled: boolean): boolean;
+  getHrtfProfile(): string | null;
+};
+
+let coreV2Cache: PicoCoreV2Native | null | undefined;
+let runtimeV2Cache: PicoRuntimeV2Native | null | undefined;
+let passthroughListenerId = 0;
+
+function coreV2(): PicoCoreV2Native | null {
+  if (coreV2Cache !== undefined) return coreV2Cache;
+  try {
+    coreV2Cache = requireOptionalNativeModule<PicoCoreV2Native>('PicoCoreV2');
+  } catch {
+    coreV2Cache = null;
+  }
+  return coreV2Cache;
+}
+
+function runtimeV2(): PicoRuntimeV2Native | null {
+  if (runtimeV2Cache !== undefined) return runtimeV2Cache;
+  try {
+    runtimeV2Cache = requireOptionalNativeModule<PicoRuntimeV2Native>('PicoRuntimeV2');
+  } catch {
+    runtimeV2Cache = null;
+  }
+  return runtimeV2Cache;
+}
+
 function core(): PicoCore | null {
+  const v2 = coreV2();
+  if (v2) {
+    const info = () => v2.getInfo();
+    const adapter = {
+      get isPicoBuild() { return !!info().isPicoBuild; },
+      get isPicoDevice() { return !!info().isPicoDevice; },
+      get spatialMode() { return info().spatialMode ?? 'none'; },
+      get containerMode() { return info().containerMode ?? 'none'; },
+      get targetProfile() { return info().targetProfile ?? 'unknown'; },
+      get xrMode() { return info().xrMode ?? 'mobile'; },
+      get appType() { return info().appType ?? '2d'; },
+      get picoAppId() { return info().picoAppId ?? undefined; },
+      get picoAppKey() { return info().picoAppKey ?? undefined; },
+      get hasPlatformIdentity() { return !!info().hasPlatformIdentity; },
+      get hasIapIdentity() { return !!info().hasIapIdentity; },
+      get picoOsVersion() { return info().picoOsVersion ?? undefined; },
+      get deviceModel() { return info().deviceModel ?? undefined; },
+      get emulatorOptimizations() { return !!info().emulatorOptimizations; },
+      get swanRuntimeInitialized() { return !!info().swanRuntimeInitialized; },
+      get os5RuntimeInitialized() { return !!info().os5RuntimeInitialized; },
+      get platformSdkPresent() { return !!info().platformSdkPresent; },
+      get platformSdkVersion() { return info().platformSdkVersion ?? undefined; },
+      get declaredCapabilities() { return v2.getDeclaredCapabilities(); },
+      get declaredRefreshRates() { return v2.getDeclaredRefreshRates(); },
+      get declaredTargetDevices() { return v2.getDeclaredTargetDevices(); },
+      hasSystemFeature: async (name: string) => v2.hasSystemFeature(name),
+      getDeclaredFeatures: async () => v2.getDeclaredFeatures(),
+      getDeclaredPermissions: async () => v2.getDeclaredPermissions(),
+      getPlatformSdkProbe: async () => v2.getPlatformSdkProbe(),
+      enterImmersiveScene: async () => v2.enterImmersiveScene(),
+      exitImmersiveScene: async () => v2.exitImmersiveScene(),
+      hasImmersiveActivity: async () => v2.hasImmersiveActivity(),
+      getCapabilitySnapshot: async () => v2.getCapabilitySnapshot(),
+      isCapabilityAvailable: async (name: any) => v2.isCapabilityAvailable(name) ?? undefined,
+    };
+    return adapter as unknown as PicoCore;
+  }
   return resolveHybridObject<PicoCore>('PicoCore');
 }
 
 function runtime(): PicoRuntime | null {
+  const v2 = runtimeV2();
+  if (v2) {
+    const adapter = {
+      get hapticsAvailable() { return !!v2.getAvailability().hapticsAvailable; },
+      get passthroughAvailable() { return !!v2.getAvailability().passthroughAvailable; },
+      getCurrentRefreshRate: async () => v2.getCurrentRefreshRate() ?? undefined,
+      getSupportedRefreshRates: async () => v2.getSupportedRefreshRates() ?? undefined,
+      setRefreshRate: async (hz: number) => v2.setRefreshRate(hz),
+      getFoveationLevel: async () => v2.getFoveationLevel() as any,
+      setFoveationLevel: async (level: any) => v2.setFoveationLevel(level),
+      setPassthroughEnabled: async (enabled: boolean) => v2.setPassthroughEnabled(enabled),
+      isPassthroughActive: async () => v2.isPassthroughActive() ?? undefined,
+      setPassthroughLevel: async (enabled: boolean, level: number) => v2.setPassthroughLevel(enabled, level),
+      enableEyeTracking: async () => v2.enableEyeTracking(),
+      disableEyeTracking: async () => v2.disableEyeTracking(),
+      getEyePose: async () => v2.getEyePose() ?? undefined,
+      enableFaceTracking: async () => v2.enableFaceTracking(),
+      disableFaceTracking: async () => v2.disableFaceTracking(),
+      getFaceWeights: async () => v2.getFaceWeights() ?? undefined,
+      enableBodyTracking: async () => v2.enableBodyTracking(),
+      disableBodyTracking: async () => v2.disableBodyTracking(),
+      getBodyJoints: async () => v2.getBodyJoints() ?? undefined,
+      enableHandTracking: async () => v2.enableHandTracking(),
+      disableHandTracking: async () => v2.disableHandTracking(),
+      getHandPose: async () => v2.getHandPose() ?? undefined,
+      isBoundaryVisible: async () => v2.isBoundaryVisible() ?? undefined,
+      setBoundaryVisible: async (visible: boolean) => v2.setBoundaryVisible(visible),
+      getBoundaryGeometry: async () => v2.getBoundaryGeometry() ?? undefined,
+      refreshSceneMesh: async () => v2.refreshSceneMesh(),
+      getSceneMeshTriangleCount: async () => v2.getSceneMeshTriangleCount() ?? undefined,
+      getDetectedPlanes: async () => v2.getDetectedPlanes() ?? undefined,
+      refreshScene: async () => v2.refreshScene(),
+      getControllers: async () => v2.getControllers() ?? undefined,
+      triggerHaptic: async (hand: any, amplitude: number, durationMs: number) =>
+        v2.triggerHaptic(hand, amplitude, durationMs),
+      pulseHaptic: async (hand: any, amplitude: number, durationMs: number) =>
+        v2.pulseHaptic(hand, amplitude, durationMs),
+      getMotionTrackers: async () => v2.getMotionTrackers() ?? undefined,
+      getHighRateSensors: async () => v2.getHighRateSensors(),
+      isSpatialAudioEnabled: async () => v2.isSpatialAudioEnabled() ?? undefined,
+      setSpatialAudioEnabled: async (enabled: boolean) => v2.setSpatialAudioEnabled(enabled),
+      getHrtfProfile: async () => v2.getHrtfProfile() ?? undefined,
+      addPassthroughDialListener: () => ++passthroughListenerId,
+      removeListener: () => {},
+    };
+    return adapter as unknown as PicoRuntime;
+  }
   return resolveHybridObject<PicoRuntime>('PicoRuntime');
 }
 
