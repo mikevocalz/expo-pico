@@ -8,8 +8,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # in nitro.json. Those names are unique across the family, so installing
 # several @expo-pico/* packages never puts two identically-named .so files
 # into one APK.
-add_library(ExpoPicoCore SHARED src/main/cpp/ExpoPicoCore.cpp)
+add_library(
+  ExpoPicoCore
+  SHARED
+  src/main/cpp/ExpoPicoCore.cpp
+  src/main/cpp/ExpoPicoEskiuBridge.cpp
+)
 
 # Appends every C++ source nitrogen generated for this package to the
 # target above, and links fbjni / React Native / NitroModules.
 include(${CMAKE_SOURCE_DIR}/../nitrogen/generated/android/ExpoPicoCore+autolinking.cmake)
+
+
+# Shared allocation-free systems runtime. Eskiu emits an arm64 object; NDK
+# remains the final linker so React Native/JNI/16 KB alignment stay standard.
+include(${CMAKE_CURRENT_LIST_DIR}/../../internal/pico-eskiu-runtime/cmake/ExpoPicoEskiu.cmake)
+expo_pico_add_eskiu_runtime(ExpoPicoCore)

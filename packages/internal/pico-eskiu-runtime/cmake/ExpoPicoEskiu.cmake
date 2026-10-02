@@ -8,6 +8,9 @@ function(expo_pico_add_eskiu_runtime target)
     return()
   endif()
 
+  set(ESKIU_RUNTIME_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/..")
+  target_include_directories(${target} PRIVATE "${ESKIU_RUNTIME_DIR}/include")
+
   if(DEFINED ENV{ESKIUC})
     set(EXPO_PICO_ESKIUC "$ENV{ESKIUC}")
   else()
@@ -22,7 +25,6 @@ function(expo_pico_add_eskiu_runtime target)
     return()
   endif()
 
-  set(ESKIU_RUNTIME_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/..")
   set(ESKIU_SOURCE "${ESKIU_RUNTIME_DIR}/src/runtime.esk")
   set(ESKIU_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/expo_pico_eskiu_runtime.o")
 
@@ -41,6 +43,5 @@ function(expo_pico_add_eskiu_runtime target)
 
   set_source_files_properties("${ESKIU_OBJECT}" PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
   target_sources(${target} PRIVATE "${ESKIU_OBJECT}")
-  target_include_directories(${target} PRIVATE "${ESKIU_RUNTIME_DIR}/include")
   target_compile_definitions(${target} PRIVATE EXPO_PICO_ESKIU=1)
 endfunction()
