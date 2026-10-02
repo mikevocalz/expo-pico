@@ -1,31 +1,32 @@
 package expo.modules.pico.notifications
 
+import com.pico.pps.sdk.push.IPPSPushClient
+import com.pico.pps.sdk.push.IPPSPushMsgReceiver
+import com.pico.pps.sdk.push.IRegisterPPSPushCallback
+import com.pico.pps.sdk.push.IUnregisterPPSPushCallback
+import com.pico.pps.sdk.push.Message
+import com.pico.pps.sdk.push.PPSPushClient
+import com.pico.pps.sdk.push.RevokeMsg
 import expo.modules.pico.PicoAppContext
-import expo.modules.pico.PicoPlatformSDK
 
-/**
- * PPS 1.0.x push uses a callback-style API (not Tasks):
- *
- *   IPPSPushClient.register(appId, fcmToken, IRegisterPPSPushCallback)
- *     callback.onSuccess(String token) | onFailed(String code, String msg)
- *
- * Factory is `PPSPushClient.getClientImpl(ctx)` — NOT `getPushClient`.
- */
 internal object NotificationsBridge {
-    private val CLIENT_CLASS = "com.pico.pps.sdk.push.PPSPushClient"
-    private val CALLBACK_CLASS = "com.pico.pps.sdk.push.IRegisterPPSPushCallback"
-
-    private inline fun ctx(onError: (String, String) -> Unit, block: (android.content.Context) -> Unit) {
-        PicoAppContext.get()?.let(block) ?: onError("NO_CONTEXT", "PicoAppContext not initialized")
+    private fun client(): IPPSPushClient? {
+        val context = PicoAppContext.get() ?: return null
+        return runCatching { PPSPushClient.getClientImpl(context) }.getOrNull()
     }
 
+    fun permissionStatus(): String =
+        if (client() == null) "denied" else "not-determined"
+
     fun requestPermissions(
-        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+        onSuccess: (Map<String, Any?>) -> Unit,
+        onError: (String, String) -> Unit,
     ) {
-        // PPS push doesn't expose a Tasks-style permission API on PICO devices —
-        // notification permission is granted by the OS at app launch. Surface a
-        // synthetic "granted" result so consumers can complete the round-trip.
-        onSuccess(mapOf("granted" to true, "status" to "granted"))
+        if (client() == null) {
+            onError("SERVICE_UNAVAILABLE", "PICO push service is unavailable")
+            return
+        }
+        onSuccess(mapOf("status" to permissionStatus(), "prompted" to false))
     }
 
     fun registerForPushNotifications(
@@ -33,41 +34,99 @@ internal object NotificationsBridge {
         fcmToken: String,
         onSuccess: (Map<String, Any?>) -> Unit,
         onError: (String, String) -> Unit,
-    ) = ctx(onError) { c ->
+    ) {
+        val push = client()
+            ?: return onError("SERVICE_UNAVAILABLE", "PICO push service is unavailable")
         try {
-            val factoryClass = Class.forName(CLIENT_CLASS)
-            val clientObj = factoryClass.getDeclaredMethod("getClientImpl", android.content.Context::class.java)
-                .also { it.isAccessible = true }
-                .invoke(null, c)
-                ?: return@ctx onError("SDK_UNAVAILABLE", "PPSPushClient.getClientImpl returned null")
-            val callbackInterface = Class.forName(CALLBACK_CLASS)
-            val proxy = java.lang.reflect.Proxy.newProxyInstance(
-                clientObj.javaClass.classLoader,
-                arrayOf(callbackInterface),
-            ) { _, m, args ->
-                try {
-                    when (m.name) {
-                        "onSuccess" -> {
-                            val token = args?.firstOrNull() as? String ?: ""
-                            onSuccess(mapOf<String, Any?>("token" to token))
-                        }
-                        "onFailed", "onFailure", "onError" -> {
-                            val code = args?.getOrNull(0)?.toString() ?: "PUSH_REGISTER_FAILED"
-                            val msg = args?.getOrNull(1)?.toString() ?: "unknown"
-                            onError(code, msg)
-                        }
+            push.register(
+                appId,
+                fcmToken,
+                object : IRegisterPPSPushCallback {
+                    override fun onSuccess(token: String) {
+                        onSuccess(
+                            mapOf(
+                                "token" to token,
+                                "provider" to "pico",
+                                "registeredAtMs" to System.currentTimeMillis().toDouble(),
+                            )
+                        )
                     }
-                } catch (t: Throwable) {
-                    onError("CALLBACK_PARSE", "${t.javaClass.simpleName}: ${t.message}")
-                }
-                null
-            }
-            val method = clientObj.javaClass.getMethod(
-                "register", String::class.java, String::class.java, callbackInterface
+
+                    override fun onFailed(code: String, message: String) {
+                        onError(code, message)
+                    }
+                },
             )
-            method.invoke(clientObj, appId, fcmToken, proxy)
         } catch (t: Throwable) {
-            onError("INVOKE_FAILED", "${t.javaClass.simpleName}: ${t.message}")
+            onError("PUSH_REGISTER_FAILED", t.message ?: "Push registration failed")
         }
+    }
+
+    fun unregisterForPushNotifications(
+        onSuccess: () -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val push = client()
+            ?: return onError("SERVICE_UNAVAILABLE", "PICO push service is unavailable")
+        try {
+            push.unRegister(
+                object : IUnregisterPPSPushCallback {
+                    override fun onSuccess() = onSuccess()
+
+                    override fun onFailed(code: String, message: String) {
+                        onError(code, message)
+                    }
+                },
+            )
+        } catch (t: Throwable) {
+            onError("PUSH_UNREGISTER_FAILED", t.message ?: "Push unregistration failed")
+        }
+    }
+
+    private var receiverInstalled = false
+
+    private val receiver = object : IPPSPushMsgReceiver {
+        override fun onPushMessage(message: Message) {
+            onMessage?.invoke(
+                mapOf(
+                    "msgId" to message.msgId.orEmpty(),
+                    "data" to message.data.orEmpty(),
+                )
+            )
+        }
+
+        override fun onRevokeMsg(revokeMsg: RevokeMsg) {
+            onRevocation?.invoke(
+                mapOf(
+                    "msgId" to revokeMsg.msgId.orEmpty(),
+                    "revokeId" to revokeMsg.revokeId.orEmpty(),
+                    "revokeData" to revokeMsg.revokeData.orEmpty(),
+                )
+            )
+        }
+    }
+
+    private var onMessage: ((Map<String, Any?>) -> Unit)? = null
+    private var onRevocation: ((Map<String, Any?>) -> Unit)? = null
+
+    fun startObserving(
+        message: (Map<String, Any?>) -> Unit,
+        revocation: (Map<String, Any?>) -> Unit,
+    ) {
+        onMessage = message
+        onRevocation = revocation
+        if (receiverInstalled) return
+        val push = client() ?: return
+        runCatching { push.setPushMsgReceiver(receiver) }
+            .onSuccess { receiverInstalled = true }
+    }
+
+    fun stopObserving() {
+        onMessage = null
+        onRevocation = null
+        if (!receiverInstalled) return
+        val push = client()
+        runCatching { push?.removePushMsgReceiver() }
+        receiverInstalled = false
     }
 }
