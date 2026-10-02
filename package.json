@@ -3,7 +3,6 @@
   "private": true,
   "workspaces": [
     "packages/internal/pico-platform-service-common",
-    "packages/internal/pico-eskiu-runtime",
     "packages/expo-pico-core",
     "packages/expo-pico-spatial",
     "packages/expo-pico-account",
@@ -51,8 +50,8 @@
     "pico:launch": "node scripts/pico-cli.mjs launch",
     "pico:capture": "node scripts/pico-cli.mjs capture",
     "test:pico-cli": "node --test scripts/pico-cli.test.mjs",
-    "eskiu:doctor": "node scripts/eskiu-doctor.mjs",
-    "eskiu:check": "node scripts/eskiu-doctor.mjs --strict"
+    "audit:native-bridge": "node scripts/audit-native-bridge.mjs",
+    "audit:native-bridge:strict": "node scripts/audit-native-bridge.mjs --strict"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
