@@ -3,16 +3,13 @@ package expo.modules.pico
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import com.facebook.react.bridge.ReactApplicationContext
 import io.github.expo.modules.v2.ExpoModule
 import io.github.expo.modules.v2.JS
 import io.github.expo.modules.v2.Module
+import io.github.expo.modules.v2.react.reactContextOrNull
 
 @ExpoModule
 object PicoRuntimeV2 : Module() {
-  private val reactContext: ReactApplicationContext?
-    get() = appContext.reactContext as? ReactApplicationContext
-
   private fun classPresent(name: String): Boolean =
     runCatching { Class.forName(name); true }.getOrDefault(false)
 
@@ -56,7 +53,7 @@ object PicoRuntimeV2 : Module() {
 
   @JS
   fun getHighRateSensors(): List<Map<String, Any>> {
-    val context = reactContext ?: return emptyList()
+    val context = reactContextOrNull ?: return emptyList()
     val manager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager ?: return emptyList()
     return SENSOR_TYPES.flatMap { (androidType, picoType) ->
       manager.getSensorList(androidType).mapNotNull { sensor ->
