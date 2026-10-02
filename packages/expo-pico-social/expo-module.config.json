@@ -1,0 +1,7 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["expo.modules.pico.social.ExpoPicoSocialModule"]
+  },
+  "plugin": "./plugin/build/index"
+}
