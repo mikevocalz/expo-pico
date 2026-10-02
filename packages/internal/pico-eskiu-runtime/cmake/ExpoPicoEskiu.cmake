@@ -32,7 +32,8 @@ function(expo_pico_add_eskiu_runtime target)
     OUTPUT "${ESKIU_OBJECT}"
     COMMAND "${EXPO_PICO_ESKIUC}"
             "${ESKIU_SOURCE}"
-            --target aarch64-unknown-linux-gnu
+            --target aarch64-linux-android
+            --reloc pic
             --freestanding
             -O2
             -o "${ESKIU_OBJECT}"
