@@ -3,22 +3,8 @@ plugins {
     id 'expo-module-gradle-plugin'
 }
 
-/**
- * ABIs the consuming app builds for. PICO 4 / 4 Ultra / Swan are all
- * 64-bit ARM, but the `mobile` flavor may target more, so this reads the
- * app's own `reactNativeArchitectures` instead of hard-coding arm64-v8a.
- */
-def reactNativeArchitectures() {
-    def value = rootProject.getProperties().get("reactNativeArchitectures")
-    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
-}
-
-// expo-pico-core writes these `pico*` values into the consuming app's
-// gradle.properties. Core declares the same nine on its own BuildConfig; this
-// module needs its own copy because BuildConfig is generated per namespace and
-// `expo.modules.pico.spatial` cannot see `expo.modules.pico`'s.
-def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
-def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
+def picoSpatialModeConfigField = ""${project.findProperty('picoSpatialMode') ?: '2d'}""
+def picoContainerModeConfigField = ""${project.findProperty('picoContainerMode') ?: ''}""
 def picoHandTrackingConfigField = "${project.findProperty('picoHandTracking') ?: 'false'}"
 def picoEyeTrackingConfigField = "${project.findProperty('picoEyeTracking') ?: 'false'}"
 def picoFaceTrackingConfigField = "${project.findProperty('picoFaceTracking') ?: 'false'}"
@@ -30,9 +16,13 @@ def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: '
 android {
     namespace "expo.modules.pico.spatial"
     compileSdk safeExtGet('compileSdkVersion', 37)
-    ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
 
     defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
+        missingDimensionStrategy "device", "pico", "mobile"
+        versionCode 1
+        versionName "1.0.0"
+
         buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
         buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
         buildConfigField "boolean", "PICO_HAND_TRACKING", picoHandTrackingConfigField
@@ -42,14 +32,6 @@ android {
         buildConfigField "boolean", "PICO_SCENE_MESH", picoSceneMeshConfigField
         buildConfigField "boolean", "PICO_SCENE_UNDERSTANDING", picoSceneUnderstandingConfigField
         buildConfigField "boolean", "PICO_PASSTHROUGH", picoPassthroughConfigField
-        minSdk safeExtGet('minSdkVersion', 24)
-        // expo-pico-core declares the `device` dimension (pico / mobile).
-        // This module has no flavor-specific code, so it falls back to the
-        // `pico` variant and then `mobile`.
-        missingDimensionStrategy "device", "pico", "mobile"
-        versionCode 1
-        versionName "0.1.0"
-    }
     }
 
     buildFeatures {
@@ -65,7 +47,3 @@ repositories {
     mavenCentral()
     google()
 }
-
-dependencies {
-}
-
