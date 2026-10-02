@@ -1,4 +1,3 @@
-import { requireOptionalNativeModule } from 'expo-modules-core';
 import { NitroModules } from 'react-native-nitro-modules';
 
 /**
@@ -12,15 +11,22 @@ import { NitroModules } from 'react-native-nitro-modules';
  */
 const cache = new Map<string, unknown>();
 
+function loadOptionalExpoModule<T extends object>(name: string): T | null {
+  try {
+    // Keep expo-modules-core out of module evaluation in Node/Jest. Its SDK 58
+    // entry is ESM, while these package tests compile to CommonJS.
+    const core = require('expo-modules-core') as typeof import('expo-modules-core');
+    return core.requireOptionalNativeModule<T>(name);
+  } catch {
+    return null;
+  }
+}
+
 export function resolveHybridObject<T extends object>(name: string): T | null {
   if (cache.has(name)) return cache.get(name) as T | null;
 
   let resolved: T | null = null;
-  try {
-    resolved = requireOptionalNativeModule<T>(name);
-  } catch {
-    resolved = null;
-  }
+  resolved = loadOptionalExpoModule<T>(name);
 
   if (!resolved) {
     try {
