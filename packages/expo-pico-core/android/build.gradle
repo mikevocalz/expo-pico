@@ -149,23 +149,6 @@ android {
         ]
     }
 
-    sourceSets {
-        main {
-            // Assignment, not `+=`, and that is the whole point: it drops
-            // AGP's default `src/main/java` from the build.
-            //
-            // The pre-Nitro Expo Modules Kotlin that used to live in
-            // `src/main/java` is gone — every method has a `src/nitro`
-            // equivalent now. The assignment stays because AGP would
-            // otherwise re-add its default `src/main/java`, and because
-            // `src/nitro` has to be on the list to compile at all.
-            //
-            // `../nitrogen/generated/android/kotlin` is appended by the
-            // autolinking script applied at the bottom of this file.
-            java.srcDirs = ["src/main/java", "src/nitro"]
-        }
-    }
-
     lint {
         abortOnError false
     }
@@ -177,18 +160,9 @@ repositories {
 }
 
 dependencies {
-    implementation "com.facebook.react:react-android"
-    implementation "com.facebook.react:hermes-android"
-    implementation project(":react-native-nitro-modules")
-
     // PICO Platform SDK AAR — compile-only for controller haptics, so it is
     // never bundled into the published npm package. Consumers place the AAR
     // under vendor/pico-sdk/. See vendor/pico-sdk/README.md.
     compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
 }
 
-// Adds the nitrogen-generated Kotlin to this module's source set. Run
-// `yarn nitrogen` in this package before syncing Gradle — the file below
-// does not exist until nitrogen has run, and Gradle fails fast if it is
-// missing rather than silently building a module with no bindings.
-apply from: '../nitrogen/generated/android/ExpoPicoCore+autolinking.gradle'
