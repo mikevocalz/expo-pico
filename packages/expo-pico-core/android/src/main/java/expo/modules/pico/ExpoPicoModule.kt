@@ -1,5 +1,7 @@
 package expo.modules.pico
 
+import android.content.Intent
+
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.pico.os5.PicoOs5Runtime
@@ -96,6 +98,28 @@ class ExpoPicoModule : Module() {
         AsyncFunction("isCapabilityAvailable") { name: String ->
             val ctx = appContext.reactContext ?: return@AsyncFunction null
             PicoCapabilityRuntime.isCapabilityAvailable(ctx, name)
+        }
+
+        // ── Immersive activity handoff ───────────────────────────────
+
+        AsyncFunction("hasImmersiveActivity") {
+            resolveImmersiveActivity() != null
+        }
+
+        AsyncFunction("enterImmersiveScene") {
+            val context = appContext.reactContext ?: return@AsyncFunction false
+            val intent = resolveImmersiveActivity() ?: return@AsyncFunction false
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            runCatching { context.startActivity(intent) }.isSuccess
+        }
+
+        AsyncFunction("exitImmersiveScene") {
+            val activity = appContext.currentActivity ?: return@AsyncFunction false
+            val immersive = resolveImmersiveActivity()?.component?.className
+                ?: return@AsyncFunction false
+            if (activity.componentName.className != immersive) return@AsyncFunction false
+            activity.finish()
+            true
         }
 
         // ── XR display surfaces (refresh rate, foveation, passthrough)
@@ -224,5 +248,29 @@ class ExpoPicoModule : Module() {
         AsyncFunction("getHrtfProfile") {
             PicoSpatialAudioRuntime.getHrtfProfile()
         }
+    }
+
+    private fun resolveImmersiveActivity(): Intent? {
+        val context = appContext.reactContext ?: return null
+        val pm = context.packageManager
+        for (category in IMMERSIVE_CATEGORIES) {
+            val probe = Intent(Intent.ACTION_MAIN)
+                .addCategory(category)
+                .setPackage(context.packageName)
+            val match = runCatching { pm.queryIntentActivities(probe, 0) }
+                .getOrDefault(emptyList())
+                .firstOrNull() ?: continue
+            return Intent(Intent.ACTION_MAIN)
+                .addCategory(category)
+                .setClassName(context.packageName, match.activityInfo.name)
+        }
+        return null
+    }
+
+    private companion object {
+        val IMMERSIVE_CATEGORIES = listOf(
+            "com.pico.intent.category.VR",
+            "com.picovr.intent.category.VR",
+        )
     }
 }
