@@ -27,14 +27,13 @@
     "expo-pico-doctor": "./cli/build/doctor.js"
   },
   "scripts": {
-    "build": "nitrogen && tsc",
+    "build": "tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",
     "build:cli": "tsc --project cli/tsconfig.json && chmod +x cli/build/doctor.js",
-    "clean": "rm -rf build nitrogen/generated plugin/build cli/build",
+    "clean": "rm -rf build plugin/build cli/build",
     "test": "jest --config jest.config.js",
-    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json && tsc --project cli/tsconfig.json && chmod +x cli/build/doctor.js",
+    "prepare": "tsc && tsc --project plugin/tsconfig.json && tsc --project cli/tsconfig.json && chmod +x cli/build/doctor.js",
     "typecheck": "tsc --noEmit",
-    "nitrogen": "nitrogen",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
   },
   "keywords": [
@@ -58,7 +57,7 @@
     "provenance": true
   },
   "devDependencies": {
-    "@expo/config-plugins": "58.0.4",
+    "@expo/config-plugins": "58.0.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
     "@types/react": "19.3.0",
@@ -67,26 +66,20 @@
     "react-native": "0.88.0-rc.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
-    "react-native-nitro-modules": "0.37.1",
-    "nitrogen": "0.37.1",
-    "expo-modules-core": "58.0.11"
+    "expo-modules-core": "58.0.0"
   },
   "peerDependencies": {
     "expo": ">=58.0.2 <59",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0-rc.3 <0.89",
     "expo-location": "*",
-    "react-native-nitro-modules": ">=0.37.1 <0.38",
-    "expo-modules-core": ">=58.0.11 <59"
+    "expo-modules-core": ">=58.0.0 <59"
   },
   "peerDependenciesMeta": {
     "expo": {
       "optional": false
     },
     "expo-location": {
-      "optional": true
-    },
-    "react-native-nitro-modules": {
       "optional": true
     },
     "expo-modules-core": {
@@ -96,13 +89,11 @@
   "files": [
     "LICENSE",
     "build",
-    "nitrogen/generated",
     "android",
     "cli/build",
     "plugin/build",
     "plugin/assets",
     "app.plugin.js",
-    "nitro.json",
     "expo-module.config.json"
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-core",
