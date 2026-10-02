@@ -1,3 +1,5 @@
+import <math>;
+
 float expo_pico_clampf(float value, float lo, float hi) {
     if (value < lo) { return lo; }
     if (value > hi) { return hi; }
