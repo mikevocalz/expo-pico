@@ -61,7 +61,7 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
   const mapping = EXPO_MODULES[name];
   let module: Record<string, unknown> | null = null;
   try {
-    module = requireOptionalNativeModule<Record<string, unknown>>(mapping?.name ?? name);
+    module = requireOptionalNativeModule(mapping?.name ?? name) as unknown as Record<string, unknown> | null;
   } catch {
     module = null;
   }
@@ -188,19 +188,6 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
           'launchStore',
           'shareVideo',
           'shareImages',
-        ].includes(prop)
-      ) {
-        return async () => unsupported(name, prop);
-      }
-
-      if (
-        name === 'PicoAccount' &&
-        [
-          'getAdultStatus',
-          'getAuthorizedScopes',
-          'requestAuthScopes',
-          'cancelAuthorization',
-          'sendAuthScopesRequest',
         ].includes(prop)
       ) {
         return async () => unsupported(name, prop);
