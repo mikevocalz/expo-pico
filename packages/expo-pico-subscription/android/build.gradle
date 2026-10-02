@@ -3,35 +3,31 @@ plugins {
     id 'expo-module-gradle-plugin'
 }
 
-expoModule {
-    canBePublished false
-}
-
 android {
     namespace "expo.modules.pico.subscription"
+    compileSdk safeExtGet('compileSdkVersion', 36)
+
     defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
         missingDimensionStrategy "device", "pico", "mobile"
         versionCode 1
-        versionName "0.1.0"
+        versionName "1.0.0"
     }
-    lint {
-        abortOnError false
-    }
+
     buildFeatures {
         buildConfig true
     }
+
+    lint {
+        abortOnError false
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
 }
 
 dependencies {
-    // Phase L — cross-module Kotlin import of
-    // `PicoPlatformSdkDetector` from expo-pico-core. Resolved via
-    // Expo Modules autolinking, which generates an
-    // `include :expo-pico-core` line in the consuming app's
-    // settings.gradle at prebuild time. If your autolinking path
-    // uses a different project name, remove this line — sibling
-    // Utils.kt still works via its own inline Class.forName probe.
-    // See docs/DEVICE-TESTING-REQUIRED.md.
-    implementation project(':expo-pico-core')
-    // PICO IAP SDK (includes subscription APIs) — extension seam
-    // implementation "com.pvr:pvr-iap-sdk:2.1.0"
+
 }
