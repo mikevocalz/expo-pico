@@ -1,180 +1,210 @@
 package expo.modules.pico.account
 
+import com.bytedance.pico.matrix.proto.v2.AUTH_TYPE
+import com.bytedance.pico.matrix.proto.v2.AdultStatus
+import com.bytedance.pico.matrix.proto.v2.AuthScopeRequest
+import com.bytedance.pico.matrix.proto.v2.SignInRequest
+import com.pico.pps.sdk.auth.ISignInClient
+import com.pico.pps.sdk.auth.PicoSignInClient
+import com.pico.pps.sdk.base.MatrixResult
+import com.pico.pps.sdk.base.OnCancelListener
+import com.pico.pps.sdk.base.OnFailureListener
+import com.pico.pps.sdk.base.OnSuccessListener
+import com.pico.pps.sdk.base.Task
 import expo.modules.pico.PicoAppContext
-import expo.modules.pico.PicoPlatformSDK
 
 /**
- * AccountBridge routes through [PicoPlatformSDK] reflection.
+ * Thin Expo Modules v2 adapter over PICO Platform Service auth.
  *
- * Wired to the PICO Platform Service SDK 3.x Tasks-style API:
- *
- *   PicoSignInClient.getSignInClient(context)
- *       .getUserInfo()
- *       .addOnSuccessListener { result: MatrixResult<GetCurrentOpenUserInfoResponse> -> ... }
- *
- * Verified against https://developer.picoxr.com/reference/platform_service/latest/account-api/
- *
- * PPS is wired by default on `picoDebug` builds — `@expo-pico/core`'s
- * `withPicoGradle` adds `com.pico.pps:platform-service-auth:1.0.0` from
- * the public Bytedance Maven, so `PicoSignInClient` is on the classpath
- * with no AAR drop. Calls return `SDK_UNAVAILABLE` only on the mobile
- * flavor, on non-PICO hardware, or if Gradle could not reach the Maven
- * repo at build time.
+ * This intentionally stays Kotlin: PPS is a Java/Kotlin AAR API. Moving it
+ * through Eskiu would add JNI hops instead of reducing them.
  */
 internal object AccountBridge {
+    private fun client(): ISignInClient? {
+        val context = PicoAppContext.get() ?: return null
+        return runCatching { PicoSignInClient.getSignInClient(context) }.getOrNull()
+    }
 
-    // PicoSignInClient (com.pico.pps.sdk.auth.*) — modern PPS SDK, pulled
-    // from public Maven by withPicoGradle. The legacy callback-style
-    // PlatformSDK is kept as a fallback for older PVR-prefixed SDK variants.
-    private val CLIENT = arrayOf(
-        "com.pico.pps.sdk.auth.PicoSignInClient",
-        "com.pvr.platform.sdk.PlatformSDK",
-    )
-    private val FACTORY = arrayOf("getSignInClient", "getClient", "getInstance")
+    private fun unavailable(method: String, onError: (String, String) -> Unit) {
+        onError(
+            "SERVICE_UNAVAILABLE",
+            "$method requires PICO Platform Service auth on a PICO build"
+        )
+    }
+
+    private fun <T, R> Task<T>.bridge(
+        label: String,
+        onSuccess: (R) -> Unit,
+        onError: (String, String) -> Unit,
+        transform: (T) -> R,
+    ) {
+        addOnSuccessListener(object : OnSuccessListener<T> {
+            override fun onSuccess(result: MatrixResult<T>) {
+                try {
+                    if (!result.isSuccess()) {
+                        val info = result.errorInfo
+                        val code = info?.errorCode?.toString() ?: "PPS_ERROR"
+                        val message = buildString {
+                            append(label).append(" failed")
+                            if (!info?.errorMsg.isNullOrEmpty()) append(": ").append(info?.errorMsg)
+                            if (!info?.logId.isNullOrEmpty()) append(" [logId ").append(info?.logId).append("]")
+                        }
+                        onError(code, message)
+                        return
+                    }
+                    val data = result.data
+                    if (data == null) {
+                        onError("EMPTY_RESULT", "$label returned no data")
+                        return
+                    }
+                    onSuccess(transform(data))
+                } catch (t: Throwable) {
+                    onError("PPS_BRIDGE_ERROR", t.message ?: "$label failed")
+                }
+            }
+        })
+        addOnFailureListener(object : OnFailureListener {
+            override fun onFailure(e: Exception) {
+                onError("PPS_FAILURE", e.message ?: "$label failed")
+            }
+        })
+        addOnCancelListener(object : OnCancelListener {
+            override fun onCancel() {
+                onError("CANCELLED", "$label was cancelled")
+            }
+        })
+    }
 
     fun getUserProfile(
         onSuccess: (Map<String, Any?>) -> Unit,
         onError: (String, String) -> Unit,
     ) {
-        val ctx = PicoAppContext.get() ?: return onError("NO_CONTEXT", "PicoAppContext not initialized")
-        PicoPlatformSDK.callTask(
-            context = ctx,
-            clientCandidates = CLIENT,
-            factoryNameCandidates = FACTORY,
-            methodCandidates = arrayOf("getUserInfo", "getCurrentUser", "getMe"),
-            args = arrayOf<Any?>(),
-            mapResult = { raw ->
-                val response = if (raw is Map<*, *>) {
-                    @Suppress("UNCHECKED_CAST") raw as Map<String, Any?>
-                } else PicoPlatformSDK.objectToMap(raw) ?: emptyMap()
-                // GetCurrentOpenUserInfoResponse.loginUser : OpenUserInfo
-                val loginUser = (response["loginUser"] as? Map<*, *>)?.let {
-                    @Suppress("UNCHECKED_CAST") it as Map<String, Any?>
-                } ?: response  // fall back to flat shape if the field is missing
-                mapOf<String, Any?>(
-                    "userId" to (loginUser["openUid"] ?: loginUser["openId"] ?: loginUser["userId"] ?: loginUser["accountId"] ?: loginUser["picoId"]),
-                    "displayName" to (loginUser["displayName"] ?: loginUser["nickName"] ?: loginUser["nickname"] ?: loginUser["userName"]),
-                    "avatarUrl" to (loginUser["avatarUrl"] ?: loginUser["headImage"] ?: loginUser["smallImageUrl"] ?: loginUser["avatar"]),
-                    "accessToken" to loginUser["accessToken"],
-                    "storeRegion" to loginUser["storeRegion"],
-                    "isPicoDevice" to AccountUtils.isPicoDevice(),
-                )
-            },
-            onSuccess = { onSuccess(it) },
-            onError = onError,
-        )
+        val signIn = client() ?: return unavailable("getUserProfile", onError)
+        @Suppress("DEPRECATION")
+        signIn.getUserInfo().bridge("getUserProfile", onSuccess, onError) { response ->
+            val user = response.loginUser
+                ?: throw IllegalStateException("NOT_SIGNED_IN: no user is signed in")
+            mapOf(
+                "userId" to user.openUid.orEmpty(),
+                "displayName" to user.displayName.orEmpty(),
+                "avatarUrl" to user.avatarUrl,
+            )
+        }
     }
 
     fun getAccountLinkStatus(
         onSuccess: (String) -> Unit,
         onError: (String, String) -> Unit,
     ) {
-        // The signed-in user IS a linked PVR account on PICO; we report
-        // "linked" when getUserInfo returns a non-null openId.
-        getUserProfile(
-            onSuccess = { profile -> onSuccess(if (profile["userId"] != null) "linked" else "unlinked") },
-            onError = onError,
-        )
+        // PPS has no account-link-status endpoint. Preserve the explicit
+        // unsupported state rather than guessing from OAuth scopes.
+        if (client() == null) return unavailable("getAccountLinkStatus", onError)
+        onSuccess("unsupported")
     }
 
-    // ISignInClient.getAccessToken() → Task<GetAccessTokenResponse>
     fun getAccessToken(
         onSuccess: (String) -> Unit,
         onError: (String, String) -> Unit,
     ) {
-        val ctx = PicoAppContext.get() ?: return onError("NO_CONTEXT", "PicoAppContext not initialized")
-        PicoPlatformSDK.callTask(
-            context = ctx,
-            clientCandidates = CLIENT,
-            factoryNameCandidates = FACTORY,
-            methodCandidates = arrayOf("getAccessToken"),
-            args = arrayOf<Any?>(),
-            mapResult = { raw ->
-                val asMap = if (raw is Map<*, *>) {
-                    @Suppress("UNCHECKED_CAST") raw as Map<String, Any?>
-                } else PicoPlatformSDK.objectToMap(raw) ?: emptyMap()
-                (asMap["accessToken"] ?: asMap["token"] ?: "").toString()
-            },
-            onSuccess = onSuccess,
-            onError = onError,
-        )
+        val signIn = client() ?: return unavailable("getAccessToken", onError)
+        @Suppress("DEPRECATION")
+        signIn.getAccessToken().bridge("getAccessToken", onSuccess, onError) { response ->
+            response.accessToken
+                ?: throw IllegalStateException("NOT_SIGNED_IN: no access token is available")
+        }
     }
 
-    // ISignInClient.signOut() → Task<Unit>
-    fun logout(
-        onSuccess: () -> Unit,
-        onError: (String, String) -> Unit,
-    ) {
-        val ctx = PicoAppContext.get() ?: return onError("NO_CONTEXT", "PicoAppContext not initialized")
-        PicoPlatformSDK.callTask(
-            context = ctx,
-            clientCandidates = CLIENT,
-            factoryNameCandidates = FACTORY,
-            methodCandidates = arrayOf("signOut", "logout"),
-            args = arrayOf<Any?>(),
-            mapResult = { Unit },
-            onSuccess = { onSuccess() },
-            onError = onError,
-        )
-    }
-
-    // ISignInClient.signIn(SignInRequest) → Task<SignInResponse>
-    // SignInRequest is a Wire proto: prefer Builder over ctor (resilient
-    // across proto regenerations; ctor arity drifts when fields are added).
     fun login(
         onSuccess: (Map<String, Any?>) -> Unit,
         onError: (String, String) -> Unit,
     ) {
-        val ctx = PicoAppContext.get() ?: return onError("NO_CONTEXT", "PicoAppContext not initialized")
-        val req = try { buildSignInRequest() }
-        catch (t: Throwable) {
-            return onError("SDK_SCHEMA", "Could not construct SignInRequest: ${t.javaClass.simpleName}: ${t.message}")
+        val signIn = client() ?: return unavailable("login", onError)
+        val request = SignInRequest(emptyList(), AUTH_TYPE.ACCESS_TOKEN)
+        signIn.signIn(request).bridge("login", onSuccess, onError) { response ->
+            mapOf(
+                "status" to "success",
+                "userId" to response.userInfo?.openUid,
+                "accessToken" to response.accessToken,
+                "code" to response.authCode,
+                "message" to null,
+            )
         }
-        PicoPlatformSDK.callTask(
-            context = ctx,
-            clientCandidates = CLIENT,
-            factoryNameCandidates = FACTORY,
-            methodCandidates = arrayOf("signIn", "login"),
-            args = arrayOf<Any?>(req),
-            mapResult = { raw ->
-                val response = if (raw is Map<*, *>) {
-                    @Suppress("UNCHECKED_CAST") raw as Map<String, Any?>
-                } else PicoPlatformSDK.objectToMap(raw) ?: emptyMap()
-                val loginUser = (response["loginUser"] as? Map<*, *>)?.let {
-                    @Suppress("UNCHECKED_CAST") it as Map<String, Any?>
-                } ?: response
-                mapOf<String, Any?>(
-                    "userId" to (loginUser["openUid"] ?: loginUser["openId"] ?: loginUser["userId"]),
-                    "displayName" to loginUser["displayName"],
-                    "avatarUrl" to (loginUser["avatarUrl"] ?: loginUser["headImage"] ?: loginUser["smallImageUrl"]),
-                    "accessToken" to (loginUser["accessToken"] ?: response["accessToken"]),
-                )
-            },
-            onSuccess = onSuccess,
-            onError = onError,
-        )
     }
 
-    private fun buildSignInRequest(): Any {
-        val reqClass = Class.forName("com.bytedance.pico.matrix.proto.v2.SignInRequest")
-        // AUTH_TYPE is an enum at com.bytedance.pico.matrix.proto.v2.AUTH_TYPE.
-        // SignInRequest.DEFAULT_AUTHTYPE is a static of that enum's type.
-        val authTypeClass = Class.forName("com.bytedance.pico.matrix.proto.v2.AUTH_TYPE")
-        val defaultAuthType = reqClass.getDeclaredField("DEFAULT_AUTHTYPE").get(null)
-        // PICO PPS rejects "openid" (OAuth-std) with 100004 (invalid scope).
-        // Empty list is accepted because the PICO OS user is already signed
-        // in at app-launch — signIn becomes a no-op confirmation of identity.
-        val scopes = emptyList<String>()
-        // Prefer Builder if present (Wire proto pattern); fall back to ctor.
-        return try {
-            val builderClass = Class.forName("com.bytedance.pico.matrix.proto.v2.SignInRequest\$Builder")
-            val builder = builderClass.getDeclaredConstructor().newInstance()
-            builderClass.getMethod("scopeList", java.util.List::class.java).invoke(builder, scopes)
-            builderClass.getMethod("authType", authTypeClass).invoke(builder, defaultAuthType)
-            builderClass.getDeclaredMethod("build").invoke(builder)
-        } catch (_: Throwable) {
-            reqClass.getDeclaredConstructor(java.util.List::class.java, authTypeClass)
-                .newInstance(scopes, defaultAuthType)
+    fun logout(
+        onSuccess: () -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("logout", onError)
+        signIn.signOut().bridge("logout", { onSuccess() }, onError) { Unit }
+    }
+
+    fun getAdultStatus(
+        onSuccess: (String) -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("getAdultStatus", onError)
+        signIn.isAdult().bridge("getAdultStatus", onSuccess, onError) { response ->
+            when (response.adultStatus) {
+                AdultStatus.ADULT -> "adult"
+                AdultStatus.MINOR -> "minor"
+                else -> "unknown"
+            }
+        }
+    }
+
+    fun getAuthorizedScopes(
+        onSuccess: (List<String>) -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("getAuthorizedScopes", onError)
+        signIn.getAuthorizedScopes().bridge("getAuthorizedScopes", onSuccess, onError) { response ->
+            response.authorizedScopes.orEmpty()
+        }
+    }
+
+    fun requestAuthScopes(
+        scopes: List<String>,
+        onSuccess: (List<String>) -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("requestAuthScopes", onError)
+        signIn.requestAuthScopes(scopes).bridge("requestAuthScopes", onSuccess, onError) { response ->
+            response.authorizedScopes.orEmpty()
+        }
+    }
+
+    fun cancelAuthorization(
+        onSuccess: () -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("cancelAuthorization", onError)
+        signIn.cancelAuthorization().bridge("cancelAuthorization", { onSuccess() }, onError) { Unit }
+    }
+
+    fun sendAuthScopesRequest(
+        scopes: List<String>,
+        authType: String,
+        onSuccess: (Map<String, Any?>) -> Unit,
+        onError: (String, String) -> Unit,
+    ) {
+        val signIn = client() ?: return unavailable("sendAuthScopesRequest", onError)
+        val ppsAuthType = when (authType) {
+            "auth-code" -> AUTH_TYPE.AUTH_CODE
+            "id-token" -> AUTH_TYPE.ID_TOKEN
+            else -> AUTH_TYPE.ACCESS_TOKEN
+        }
+        val request = AuthScopeRequest(scopes, ppsAuthType)
+        signIn.sendAuthScopesRequest(request).bridge("sendAuthScopesRequest", onSuccess, onError) { response ->
+            mapOf(
+                "authorizedScopes" to response.authorizedScopeList.orEmpty(),
+                "accessToken" to response.accessToken.orEmpty(),
+                "refreshToken" to response.refreshToken.orEmpty(),
+                "idToken" to response.idToken.orEmpty(),
+                "authCode" to response.authCode.orEmpty(),
+                "userId" to response.userInfo?.openUid.orEmpty(),
+                "displayName" to response.userInfo?.displayName.orEmpty(),
+            )
         }
     }
 }
