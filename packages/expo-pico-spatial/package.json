@@ -51,7 +51,7 @@
     "@expo-pico/platform-service-common": "^1.0.0"
   },
   "devDependencies": {
-    "@expo/config-plugins": "58.0.2",
+    "@expo/config-plugins": "58.0.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
     "@types/react": "19.3.0",
@@ -63,7 +63,7 @@
     "typescript": "~6.0.3",
     "react-native-nitro-modules": "0.37.1",
     "nitrogen": "0.37.1",
-    "expo-modules-core": "58.0.0"
+    "expo-modules-core": "58.0.11"
   },
   "peerDependencies": {
     "expo": ">=58.0.2 <59",
@@ -71,7 +71,7 @@
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0-rc.3 <0.89",
     "react-native-nitro-modules": ">=0.37.1 <0.38",
-    "expo-modules-core": ">=58.0.0 <59"
+    "expo-modules-core": ">=58.0.11 <59"
   },
   "peerDependenciesMeta": {
     "expo": {
