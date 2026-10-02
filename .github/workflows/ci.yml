@@ -20,6 +20,7 @@ jobs:
       - run: yarn prettier:check
       - run: yarn lint
       - run: yarn typecheck
+      - run: yarn audit:native-bridge:strict
       - run: yarn test
       - run: yarn build
       - run: yarn test:pack
