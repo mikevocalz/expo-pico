@@ -49,7 +49,9 @@
     "pico:install": "node scripts/pico-cli.mjs install",
     "pico:launch": "node scripts/pico-cli.mjs launch",
     "pico:capture": "node scripts/pico-cli.mjs capture",
-    "test:pico-cli": "node --test scripts/pico-cli.test.mjs"
+    "test:pico-cli": "node --test scripts/pico-cli.test.mjs",
+    "audit:native-bridge": "node scripts/audit-native-bridge.mjs",
+    "audit:native-bridge:strict": "node scripts/audit-native-bridge.mjs --strict"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
