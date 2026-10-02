@@ -63,7 +63,8 @@ class ExpoPicoModule : Module() {
                 "entitlementCheck" to BuildConfig.PICO_ENTITLEMENT_CHECK,
             ),
             "declaredRefreshRates" to PicoCapabilityRuntime.getDeclaredRefreshRates(),
-            "declaredTargetDevices" to PicoCapabilityRuntime.getDeclaredTargetDevices()
+            "declaredTargetDevices" to PicoCapabilityRuntime.getDeclaredTargetDevices(),
+            "eskiuAbiVersion" to PicoEskiuRuntime.abiVersion
         )
 
         // Runtime introspection + SDK probes. Async so
@@ -224,7 +225,7 @@ class ExpoPicoModule : Module() {
             PicoControllerRuntime.getControllers()
         }
         AsyncFunction("triggerHaptic") { hand: String, amplitude: Float, durationMs: Int ->
-            PicoControllerRuntime.triggerHaptic(hand, amplitude, durationMs)
+            PicoControllerRuntime.triggerHaptic(hand, PicoEskiuRuntime.hapticAmplitude(amplitude), durationMs)
         }
         AsyncFunction("getMotionTrackers") {
             PicoControllerRuntime.getMotionTrackers()
