@@ -1,0 +1,42 @@
+name: Refresh Yarn lock
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "package.json"
+      - "packages/**/package.json"
+      - "example/package.json"
+      - "yarn.lock"
+      - ".github/workflows/refresh-yarn-lock.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+      - name: Refresh lockfile only
+        run: yarn install --ignore-scripts --non-interactive
+      - name: Commit lockfile if changed
+        shell: bash
+        run: |
+          if git diff --quiet -- yarn.lock; then
+            echo "yarn.lock already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git commit -m "chore: refresh yarn.lock for Expo Modules v2 migration"
+          git push origin HEAD:${{ github.head_ref }}
