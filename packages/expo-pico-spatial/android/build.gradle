@@ -1,19 +1,7 @@
-buildscript {
-    ext.safeExtGet = { prop, fallback ->
-        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
-    }
-    repositories {
-        mavenCentral()
-        google()
-    }
-    dependencies {
-        classpath "com.android.tools.build:gradle:${safeExtGet('agpVersion', '8.9.1')}"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '2.1.20')}"
-    }
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
 }
-
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
 
 /**
  * ABIs the consuming app builds for. PICO 4 / 4 Ultra / Swan are all
@@ -41,7 +29,7 @@ def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: '
 
 android {
     namespace "expo.modules.pico.spatial"
-    compileSdk safeExtGet('compileSdkVersion', 36)
+    compileSdk safeExtGet('compileSdkVersion', 37)
     ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
 
     defaultConfig {
@@ -109,7 +97,7 @@ android {
             //
             // `../nitrogen/generated/android/kotlin` is appended by the
             // autolinking script applied at the bottom of this file.
-            java.srcDirs = ["src/nitro"]
+            java.srcDirs = ["src/main/java", "src/nitro"]
         }
     }
 
