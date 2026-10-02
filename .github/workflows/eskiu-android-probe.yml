@@ -37,6 +37,8 @@ jobs:
           find "$RUNNER_TEMP/eskiu" -type f -name eskiuc -exec chmod +x {} \;
           echo "$(dirname "$(find "$RUNNER_TEMP/eskiu" -type f -name eskiuc | head -n 1)")" >> "$GITHUB_PATH"
       - name: Probe Eskiu -> Android object -> shared library
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.1.12297006
-        run: bash scripts/eskiu/probe-android-target.sh
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/27.1.12297006"
+          bash scripts/eskiu/probe-android-target.sh
