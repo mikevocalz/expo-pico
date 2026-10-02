@@ -145,10 +145,6 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
         };
       }
 
-      if (name === 'PicoNotifications' && prop === 'unregisterForPushNotifications') {
-        return async () => undefined;
-      }
-
       if (name === 'PicoRooms' && prop === 'getFriendsAndRooms') {
         return async () => unsupported(name, prop);
       }
