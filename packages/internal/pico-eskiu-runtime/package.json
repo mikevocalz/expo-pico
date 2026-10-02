@@ -1,0 +1,8 @@
+{
+  "name": "@expo-pico/eskiu-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal Eskiu systems runtime for expo-pico arm64 XR builds.",
+  "license": "MIT",
+  "files": ["CMakeLists.txt", "cmake", "include", "src"]
+}
