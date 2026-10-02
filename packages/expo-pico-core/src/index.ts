@@ -1,12 +1,11 @@
 import {
-  resolveHybridObject,
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type { PicoRuntime } from './PicoRuntime.nitro';
+import type { PicoRuntime } from './PicoRuntimeNativeTypes';
 
-import ExpoPicoModule from './ExpoPicoModule';
+import ExpoPicoModule, { getPicoRuntimeAdapter } from './ExpoPicoModule';
 import { hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT } from './immersive';
 import type {
   PicoAppType,
@@ -38,7 +37,7 @@ export type { Subscription };
 // the exported functions below are unchanged.
 
 function runtime(): PicoRuntime | null {
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
+  return getPicoRuntimeAdapter();
 }
 
 /**
