@@ -10,5 +10,8 @@ module.exports = {
   requireNativeModule: function () {
     throw new Error('Native module not available in test environment');
   },
+  requireOptionalNativeModule: function () {
+    return null;
+  },
   EventEmitter: EventEmitter,
 };
