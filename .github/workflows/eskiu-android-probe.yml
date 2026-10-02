@@ -1,0 +1,35 @@
+name: Eskiu Android ABI probe
+
+on:
+  pull_request:
+    paths:
+      - "cmake/PicoEskiu.cmake"
+      - "packages/internal/pico-eskiu-runtime/**"
+      - "scripts/eskiu/**"
+      - "tools/eskiu/**"
+      - ".github/workflows/eskiu-android-probe.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android NDK
+        run: sdkmanager "ndk;27.1.12297006"
+      - name: Install pinned Eskiu compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/doranteseduardo/eskiu/releases/download/v0.9.2/eskiuc-linux-x86_64.tar.gz"
+          curl -L "$url" -o /tmp/eskiuc.tgz
+          echo "46316ce1553489045aec1cf9fbc432f551cda4850b90d200a7b4c73bc835e8ec  /tmp/eskiuc.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/eskiu"
+          tar -xzf /tmp/eskiuc.tgz -C "$RUNNER_TEMP/eskiu"
+          find "$RUNNER_TEMP/eskiu" -type f -name eskiuc -exec chmod +x {} \;
+          echo "$(dirname "$(find "$RUNNER_TEMP/eskiu" -type f -name eskiuc | head -n 1)")" >> "$GITHUB_PATH"
+      - name: Probe Eskiu -> Android object -> shared library
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.1.12297006
+        run: bash scripts/eskiu/probe-android-target.sh

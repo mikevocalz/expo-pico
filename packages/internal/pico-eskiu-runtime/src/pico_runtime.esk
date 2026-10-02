@@ -1,0 +1,11 @@
+// Minimal shared runtime ABI probe.
+//
+// Keep this surface C-shaped. Expo Modules/Kotlin and ViroCore can both call
+// the same exported symbols without either runtime owning the other.
+int pico_eskiu_abi_version() {
+  return 1;
+}
+
+int pico_eskiu_android_probe(int value) {
+  return value + 1;
+}
