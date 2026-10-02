@@ -1,7 +1,6 @@
-import { resolveHybridObject } from '@expo-pico/platform-service-common';
-
-import type { PicoCore } from './PicoCore.nitro';
-import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntime.nitro';
+import { requireOptionalNativeModule } from 'expo-modules-core';
+import type { PicoCore } from './PicoCoreNativeTypes';
+import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntimeNativeTypes';
 import type {
   PicoBodyJoint,
   PicoCapabilitySnapshotEntry,
@@ -16,7 +15,7 @@ import type {
 } from './types';
 
 /**
- * Nitro-backed replacement for the former Expo Modules default export.
+ * Expo Modules v2 adapter preserving the existing public API.
  *
  * Keeps the exact shape the rest of the package already consumes — sync
  * properties, `| null` rather than optionals, and positional tuples for
@@ -25,12 +24,222 @@ import type {
  * translation happens here and nowhere else.
  */
 
-function core(): PicoCore | null {
-  return resolveHybridObject<PicoCore>('PicoCore');
+type PicoCoreV2Native = {
+  getInfo(): Record<string, any>;
+  getDeclaredCapabilities(): Record<string, boolean>;
+  getDeclaredRefreshRates(): number[];
+  getDeclaredTargetDevices(): string[];
+  getPlatformSdkProbe(): Record<string, boolean>;
+  hasSystemFeature(name: string): boolean;
+  getDeclaredFeatures(): Array<Record<string, any>>;
+  getDeclaredPermissions(): Array<Record<string, any>>;
+  getCapabilitySnapshot(): Array<Record<string, any>>;
+  isCapabilityAvailable(name: string): boolean | null;
+  enterImmersiveScene(): boolean;
+  exitImmersiveScene(): boolean;
+  hasImmersiveActivity(): boolean;
+};
+
+type PicoRuntimeV2Native = {
+  getAvailability(): { hapticsAvailable: boolean; passthroughAvailable: boolean };
+  getCurrentRefreshRate(): number | null;
+  getSupportedRefreshRates(): number[] | null;
+  setRefreshRate(hz: number): boolean;
+  getFoveationLevel(): string | null;
+  setFoveationLevel(level: string): boolean;
+  setPassthroughEnabled(enabled: boolean): boolean;
+  isPassthroughActive(): boolean | null;
+  setPassthroughLevel(enabled: boolean, level: number): void;
+  enableEyeTracking(): boolean;
+  disableEyeTracking(): boolean;
+  getEyePose(): any;
+  enableFaceTracking(): boolean;
+  disableFaceTracking(): boolean;
+  getFaceWeights(): Record<string, number> | null;
+  enableBodyTracking(): boolean;
+  disableBodyTracking(): boolean;
+  getBodyJoints(): any;
+  enableHandTracking(): boolean;
+  disableHandTracking(): boolean;
+  getHandPose(): any;
+  isBoundaryVisible(): boolean | null;
+  setBoundaryVisible(visible: boolean): boolean;
+  getBoundaryGeometry(): any;
+  refreshSceneMesh(): boolean;
+  getSceneMeshTriangleCount(): number | null;
+  getDetectedPlanes(): any;
+  refreshScene(): boolean;
+  getControllers(): any;
+  triggerHaptic(hand: string, amplitude: number, durationMs: number): boolean;
+  pulseHaptic(hand: string, amplitude: number, durationMs: number): void;
+  getMotionTrackers(): any;
+  getHighRateSensors(): any[];
+  isSpatialAudioEnabled(): boolean | null;
+  setSpatialAudioEnabled(enabled: boolean): boolean;
+  getHrtfProfile(): string | null;
+};
+
+let coreV2Cache: PicoCoreV2Native | null | undefined;
+let runtimeV2Cache: PicoRuntimeV2Native | null | undefined;
+let passthroughListenerId = 0;
+
+function coreV2(): PicoCoreV2Native | null {
+  if (coreV2Cache !== undefined) return coreV2Cache;
+  try {
+    coreV2Cache = requireOptionalNativeModule<PicoCoreV2Native>('PicoCoreV2');
+  } catch {
+    coreV2Cache = null;
+  }
+  return coreV2Cache;
 }
 
-function runtime(): PicoRuntime | null {
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
+function runtimeV2(): PicoRuntimeV2Native | null {
+  if (runtimeV2Cache !== undefined) return runtimeV2Cache;
+  try {
+    runtimeV2Cache = requireOptionalNativeModule<PicoRuntimeV2Native>('PicoRuntimeV2');
+  } catch {
+    runtimeV2Cache = null;
+  }
+  return runtimeV2Cache;
+}
+
+function core(): PicoCore | null {
+  const v2 = coreV2();
+  if (v2) {
+    const info = () => v2.getInfo();
+    const adapter = {
+      get isPicoBuild() {
+        return !!info().isPicoBuild;
+      },
+      get isPicoDevice() {
+        return !!info().isPicoDevice;
+      },
+      get spatialMode() {
+        return info().spatialMode ?? 'none';
+      },
+      get containerMode() {
+        return info().containerMode ?? 'none';
+      },
+      get targetProfile() {
+        return info().targetProfile ?? 'unknown';
+      },
+      get xrMode() {
+        return info().xrMode ?? 'mobile';
+      },
+      get appType() {
+        return info().appType ?? '2d';
+      },
+      get picoAppId() {
+        return info().picoAppId ?? undefined;
+      },
+      get picoAppKey() {
+        return info().picoAppKey ?? undefined;
+      },
+      get hasPlatformIdentity() {
+        return !!info().hasPlatformIdentity;
+      },
+      get hasIapIdentity() {
+        return !!info().hasIapIdentity;
+      },
+      get picoOsVersion() {
+        return info().picoOsVersion ?? undefined;
+      },
+      get deviceModel() {
+        return info().deviceModel ?? undefined;
+      },
+      get emulatorOptimizations() {
+        return !!info().emulatorOptimizations;
+      },
+      get swanRuntimeInitialized() {
+        return !!info().swanRuntimeInitialized;
+      },
+      get os5RuntimeInitialized() {
+        return !!info().os5RuntimeInitialized;
+      },
+      get platformSdkPresent() {
+        return !!info().platformSdkPresent;
+      },
+      get platformSdkVersion() {
+        return info().platformSdkVersion ?? undefined;
+      },
+      get declaredCapabilities() {
+        return v2.getDeclaredCapabilities();
+      },
+      get declaredRefreshRates() {
+        return v2.getDeclaredRefreshRates();
+      },
+      get declaredTargetDevices() {
+        return v2.getDeclaredTargetDevices();
+      },
+      hasSystemFeature: async (name: string) => v2.hasSystemFeature(name),
+      getDeclaredFeatures: async () => v2.getDeclaredFeatures(),
+      getDeclaredPermissions: async () => v2.getDeclaredPermissions(),
+      getPlatformSdkProbe: async () => v2.getPlatformSdkProbe(),
+      enterImmersiveScene: async () => v2.enterImmersiveScene(),
+      exitImmersiveScene: async () => v2.exitImmersiveScene(),
+      hasImmersiveActivity: async () => v2.hasImmersiveActivity(),
+      getCapabilitySnapshot: async () => v2.getCapabilitySnapshot(),
+      isCapabilityAvailable: async (name: any) => v2.isCapabilityAvailable(name) ?? undefined,
+    };
+    return adapter as unknown as PicoCore;
+  }
+  return null;
+}
+
+export function getPicoRuntimeAdapter(): PicoRuntime | null {
+  const v2 = runtimeV2();
+  if (v2) {
+    const adapter = {
+      get hapticsAvailable() {
+        return !!v2.getAvailability().hapticsAvailable;
+      },
+      get passthroughAvailable() {
+        return !!v2.getAvailability().passthroughAvailable;
+      },
+      getCurrentRefreshRate: async () => v2.getCurrentRefreshRate() ?? undefined,
+      getSupportedRefreshRates: async () => v2.getSupportedRefreshRates() ?? undefined,
+      setRefreshRate: async (hz: number) => v2.setRefreshRate(hz),
+      getFoveationLevel: async () => v2.getFoveationLevel() as any,
+      setFoveationLevel: async (level: any) => v2.setFoveationLevel(level),
+      setPassthroughEnabled: async (enabled: boolean) => v2.setPassthroughEnabled(enabled),
+      isPassthroughActive: async () => v2.isPassthroughActive() ?? undefined,
+      setPassthroughLevel: async (enabled: boolean, level: number) =>
+        v2.setPassthroughLevel(enabled, level),
+      enableEyeTracking: async () => v2.enableEyeTracking(),
+      disableEyeTracking: async () => v2.disableEyeTracking(),
+      getEyePose: async () => v2.getEyePose() ?? undefined,
+      enableFaceTracking: async () => v2.enableFaceTracking(),
+      disableFaceTracking: async () => v2.disableFaceTracking(),
+      getFaceWeights: async () => v2.getFaceWeights() ?? undefined,
+      enableBodyTracking: async () => v2.enableBodyTracking(),
+      disableBodyTracking: async () => v2.disableBodyTracking(),
+      getBodyJoints: async () => v2.getBodyJoints() ?? undefined,
+      enableHandTracking: async () => v2.enableHandTracking(),
+      disableHandTracking: async () => v2.disableHandTracking(),
+      getHandPose: async () => v2.getHandPose() ?? undefined,
+      isBoundaryVisible: async () => v2.isBoundaryVisible() ?? undefined,
+      setBoundaryVisible: async (visible: boolean) => v2.setBoundaryVisible(visible),
+      getBoundaryGeometry: async () => v2.getBoundaryGeometry() ?? undefined,
+      refreshSceneMesh: async () => v2.refreshSceneMesh(),
+      getSceneMeshTriangleCount: async () => v2.getSceneMeshTriangleCount() ?? undefined,
+      getDetectedPlanes: async () => v2.getDetectedPlanes() ?? undefined,
+      refreshScene: async () => v2.refreshScene(),
+      getControllers: async () => v2.getControllers() ?? undefined,
+      triggerHaptic: async (hand: any, amplitude: number, durationMs: number) =>
+        v2.triggerHaptic(hand, amplitude, durationMs),
+      pulseHaptic: async (hand: any, amplitude: number, durationMs: number) =>
+        v2.pulseHaptic(hand, amplitude, durationMs),
+      getMotionTrackers: async () => v2.getMotionTrackers() ?? undefined,
+      getHighRateSensors: async () => v2.getHighRateSensors(),
+      isSpatialAudioEnabled: async () => v2.isSpatialAudioEnabled() ?? undefined,
+      setSpatialAudioEnabled: async (enabled: boolean) => v2.setSpatialAudioEnabled(enabled),
+      getHrtfProfile: async () => v2.getHrtfProfile() ?? undefined,
+      addPassthroughDialListener: () => ++passthroughListenerId,
+      removeListener: () => {},
+    };
+    return adapter as unknown as PicoRuntime;
+  }
+  return null;
 }
 
 const nn = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
@@ -43,7 +252,7 @@ const quat = (q: PicoQuat): [number, number, number, number] => [q.x, q.y, q.z, 
 const UNAVAILABLE = 'PICO native library not present in this build';
 
 function requireRuntime(): PicoRuntime {
-  const r = runtime();
+  const r = getPicoRuntimeAdapter();
   if (!r) throw new Error(UNAVAILABLE);
   return r;
 }
@@ -184,16 +393,16 @@ const ExpoPicoModule = {
 
   // ── XR display ────────────────────────────────────────────────────────────
   async getCurrentRefreshRate(): Promise<number | null> {
-    return nn(await runtime()?.getCurrentRefreshRate());
+    return nn(await getPicoRuntimeAdapter()?.getCurrentRefreshRate());
   },
   async getSupportedRefreshRates(): Promise<number[] | null> {
-    return nn(await runtime()?.getSupportedRefreshRates());
+    return nn(await getPicoRuntimeAdapter()?.getSupportedRefreshRates());
   },
   async setRefreshRate(hz: number): Promise<boolean> {
     return requireRuntime().setRefreshRate(hz);
   },
   async getFoveationLevel(): Promise<PicoFoveationLevel | null> {
-    return nn(await runtime()?.getFoveationLevel()) as PicoFoveationLevel | null;
+    return nn(await getPicoRuntimeAdapter()?.getFoveationLevel()) as PicoFoveationLevel | null;
   },
   async setFoveationLevel(level: PicoFoveationLevel): Promise<boolean> {
     return requireRuntime().setFoveationLevel(level);
@@ -202,7 +411,7 @@ const ExpoPicoModule = {
     return requireRuntime().setPassthroughEnabled(enabled);
   },
   async isPassthroughActive(): Promise<boolean | null> {
-    return nn(await runtime()?.isPassthroughActive());
+    return nn(await getPicoRuntimeAdapter()?.isPassthroughActive());
   },
 
   // ── Tracking ──────────────────────────────────────────────────────────────
@@ -213,7 +422,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableEyeTracking();
   },
   async getEyePose(): Promise<PicoEyePose | null> {
-    const p = await runtime()?.getEyePose();
+    const p = await getPicoRuntimeAdapter()?.getEyePose();
     if (!p) return null;
     return {
       leftGazeOrigin: vec3(p.leftGazeOrigin),
@@ -233,7 +442,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableFaceTracking();
   },
   async getFaceWeights(): Promise<Record<string, number> | null> {
-    return nn(await runtime()?.getFaceWeights());
+    return nn(await getPicoRuntimeAdapter()?.getFaceWeights());
   },
   async enableBodyTracking(): Promise<boolean> {
     return requireRuntime().enableBodyTracking();
@@ -242,7 +451,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableBodyTracking();
   },
   async getBodyJoints(): Promise<PicoBodyJoint[] | null> {
-    const joints = await runtime()?.getBodyJoints();
+    const joints = await getPicoRuntimeAdapter()?.getBodyJoints();
     if (!joints) return null;
     return joints.map((j) => ({
       joint: j.joint,
@@ -258,7 +467,7 @@ const ExpoPicoModule = {
     return requireRuntime().disableHandTracking();
   },
   async getHandPose(): Promise<PicoHandPose | null> {
-    const pose = await runtime()?.getHandPose();
+    const pose = await getPicoRuntimeAdapter()?.getHandPose();
     if (!pose) return null;
     const side = (s: typeof pose.leftHand) =>
       s
@@ -279,23 +488,23 @@ const ExpoPicoModule = {
 
   // ── Spatial ───────────────────────────────────────────────────────────────
   async isBoundaryVisible(): Promise<boolean | null> {
-    return nn(await runtime()?.isBoundaryVisible());
+    return nn(await getPicoRuntimeAdapter()?.isBoundaryVisible());
   },
   async setBoundaryVisible(visible: boolean): Promise<boolean> {
     return requireRuntime().setBoundaryVisible(visible);
   },
   async getBoundaryGeometry(): Promise<number[][] | null> {
-    const pts = await runtime()?.getBoundaryGeometry();
+    const pts = await getPicoRuntimeAdapter()?.getBoundaryGeometry();
     return pts ? pts.map((p) => [p.x, p.y, p.z]) : null;
   },
   async refreshSceneMesh(): Promise<boolean> {
     return requireRuntime().refreshSceneMesh();
   },
   async getSceneMeshTriangleCount(): Promise<number | null> {
-    return nn(await runtime()?.getSceneMeshTriangleCount());
+    return nn(await getPicoRuntimeAdapter()?.getSceneMeshTriangleCount());
   },
   async getDetectedPlanes(): Promise<PicoDetectedPlane[] | null> {
-    const planes = await runtime()?.getDetectedPlanes();
+    const planes = await getPicoRuntimeAdapter()?.getDetectedPlanes();
     if (!planes) return null;
     return planes.map((p) => ({
       id: p.id,
@@ -311,7 +520,7 @@ const ExpoPicoModule = {
 
   // ── Controllers, haptics, trackers ────────────────────────────────────────
   async getControllers(): Promise<PicoController[] | null> {
-    return nn(await runtime()?.getControllers());
+    return nn(await getPicoRuntimeAdapter()?.getControllers());
   },
   async triggerHaptic(
     hand: 'left' | 'right',
@@ -321,7 +530,7 @@ const ExpoPicoModule = {
     return requireRuntime().triggerHaptic(hand, amplitude, durationMs);
   },
   async getMotionTrackers(): Promise<PicoMotionTracker[] | null> {
-    const trackers = await runtime()?.getMotionTrackers();
+    const trackers = await getPicoRuntimeAdapter()?.getMotionTrackers();
     if (!trackers) return null;
     return trackers.map((t) => ({
       id: t.id,
@@ -335,16 +544,16 @@ const ExpoPicoModule = {
 
   // ── Sensors + spatial audio ───────────────────────────────────────────────
   async getHighRateSensors(): Promise<PicoHighRateSensor[]> {
-    return (await runtime()?.getHighRateSensors()) ?? [];
+    return (await getPicoRuntimeAdapter()?.getHighRateSensors()) ?? [];
   },
   async isSpatialAudioEnabled(): Promise<boolean | null> {
-    return nn(await runtime()?.isSpatialAudioEnabled());
+    return nn(await getPicoRuntimeAdapter()?.isSpatialAudioEnabled());
   },
   async setSpatialAudioEnabled(enabled: boolean): Promise<boolean> {
     return requireRuntime().setSpatialAudioEnabled(enabled);
   },
   async getHrtfProfile(): Promise<string | null> {
-    return nn(await runtime()?.getHrtfProfile());
+    return nn(await getPicoRuntimeAdapter()?.getHrtfProfile());
   },
 };
 

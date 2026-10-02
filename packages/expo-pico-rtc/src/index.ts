@@ -15,7 +15,7 @@ import type {
   RtcUserJoinedEvent,
   RtcUserLeftEvent,
   RtcStateChangeEvent,
-} from './PicoRtc.nitro';
+} from './types';
 
 export type {
   RtcServiceStatus,
@@ -30,7 +30,7 @@ export type {
   RtcUserJoinedEvent,
   RtcUserLeftEvent,
   RtcStateChangeEvent,
-} from './PicoRtc.nitro';
+} from './types';
 
 export type { Subscription };
 

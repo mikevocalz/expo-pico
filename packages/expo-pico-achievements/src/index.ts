@@ -5,7 +5,7 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import type { PicoAchievements, AchievementUnlockedEvent } from './PicoAchievements.nitro';
+import type { PicoAchievements, AchievementUnlockedEvent } from './types';
 
 export type {
   Achievement,
@@ -15,7 +15,7 @@ export type {
   UnlockAchievementResult,
   AddCountResult,
   AddBitfieldResult,
-} from './PicoAchievements.nitro';
+} from './types';
 
 const PKG = '@expo-pico/achievements';
 

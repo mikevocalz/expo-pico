@@ -1,83 +1,75 @@
 /**
- * RTC service availability and engine state.
- * @see https://developer.picoxr.com/document/ue4/rtc/
+ * PPS 1.0.x removed RTC — every method returns NOT_IN_PPS_1_0 today. The
+ * interface is kept so a future PPS release can wire it without an API break.
+ * Production voice runs on Fishjam via @expo-pico/app-kit.
  */
-export type RtcServiceStatus = 'available' | 'unavailable' | 'initializing' | 'error';
 
-/**
- * RTC engine initialization options.
- */
+export type RtcServiceStatus = 'available' | 'unavailable' | 'initializing' | 'error';
+export type RtcAudioScenario = 'default' | 'music' | 'gaming';
+export type RtcJoinStatus = 'joined' | 'error';
+export type RtcLeaveReason = 'quit' | 'dropped' | 'kicked';
+export type RtcConnectionState = 'connected' | 'reconnecting' | 'failed' | 'disconnected';
+
+/** 0 (silent) to 100 (max). */
+export type RtcVolume = number;
+
 export interface RtcInitOptions {
-  /**
-   * PICO platform app ID. If omitted, read from expo-pico-core BuildConfig.
-   * Most apps should leave this unset and rely on core.
-   */
+  /** Falls back to expo-pico-core's BuildConfig when unset — the usual case. */
   appId?: string;
-  /**
-   * Audio scenario profile.
-   * - 'default': Standard VoIP quality
-   * - 'music': Higher fidelity for music-over-voice use cases
-   * - 'gaming': Optimized for low-latency gaming comms
-   */
-  audioScenario?: 'default' | 'music' | 'gaming';
+  audioScenario?: RtcAudioScenario;
 }
 
-/**
- * Options for joining an RTC channel.
- */
 export interface RtcJoinOptions {
-  /** The channel name / room identifier. Max 64 chars, alphanumeric + _ */
+  /** Max 64 chars, alphanumeric + underscore. */
   channelId: string;
-  /**
-   * Authentication token for the channel.
-   * Extension seam: token generation is server-side; this module only passes
-   * the token through to the SDK.
-   */
+  /** Minted server-side; this module only passes it through. */
   token: string;
-  /**
-   * Numeric user ID for this participant.
-   * Must be unique within the channel. 0 = SDK auto-assigns.
-   */
+  /** Unique within the channel. 0 lets the SDK assign one. */
   uid: number;
 }
 
-export type RtcJoinResult =
-  | { status: 'joined'; channelId: string; uid: number }
-  | { status: 'error'; code: string; message: string };
-
 /**
- * Audio output volume: 0 (silent) to 100 (max).
+ * Flattened from a discriminated union — Nitro structs cannot model one.
+ * `joined` populates channelId/uid; `error` populates code/message.
  */
-export type RtcVolume = number;
+export interface RtcJoinResult {
+  status: RtcJoinStatus;
+  channelId?: string;
+  uid?: number;
+  code?: string;
+  message?: string;
+}
 
-/**
- * Event fired when a remote user joins the current channel.
- */
 export interface RtcUserJoinedEvent {
   uid: number;
   channelId: string;
   elapsed: number;
 }
 
-/**
- * Event fired when a remote user leaves the current channel.
- */
 export interface RtcUserLeftEvent {
   uid: number;
   channelId: string;
-  /** Reason the user left: 'quit' | 'dropped' | 'kicked' */
-  reason: 'quit' | 'dropped' | 'kicked';
+  reason: RtcLeaveReason;
 }
 
-/**
- * Event fired when the local RTC engine state changes.
- */
 export interface RtcStateChangeEvent {
-  state: 'connected' | 'reconnecting' | 'failed' | 'disconnected';
+  state: RtcConnectionState;
   reason: string;
 }
 
-export interface ExpoPicoRtcModuleInterface {
-  rtcSdkAvailable: boolean;
-  rtcSdkVersion: string | null;
+export interface PicoRtc {
+  readonly available: boolean;
+  readonly sdkVersion?: string;
+  readonly status: RtcServiceStatus;
+
+  initRtcEngine(options?: RtcInitOptions): Promise<void>;
+  joinChannel(options: RtcJoinOptions): Promise<RtcJoinResult>;
+  leaveChannel(): Promise<void>;
+  muteLocalAudio(muted: boolean): Promise<void>;
+  setAudioOutputVolume(volume: RtcVolume): Promise<void>;
+
+  addUserJoinedListener(listener: (event: RtcUserJoinedEvent) => void): number;
+  addUserLeftListener(listener: (event: RtcUserLeftEvent) => void): number;
+  addRtcStateChangeListener(listener: (event: RtcStateChangeEvent) => void): number;
+  removeListener(id: number): void;
 }

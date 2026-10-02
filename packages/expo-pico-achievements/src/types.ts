@@ -1,5 +1,4 @@
 export type AchievementType = 'simple' | 'count' | 'bitfield';
-
 export type AchievementVisibility = 'always-visible' | 'hidden';
 
 export interface Achievement {
@@ -8,20 +7,18 @@ export interface Achievement {
   description: string;
   type: AchievementType;
   visibility: AchievementVisibility;
-  /** count type: target value to unlock. null for simple/bitfield types */
-  target: number | null;
-  /** bitfield type: total number of bits. null for simple/count types */
-  bitfieldLength: number | null;
-  iconUrl: string | null;
+  /** 'count' type only: value required to unlock. */
+  target?: number;
+  /** 'bitfield' type only: total number of bits. */
+  bitfieldLength?: number;
+  iconUrl?: string;
   isUnlocked: boolean;
-  unlockedAtMs: number | null;
-  /** Current progress value: count for 'count' type, bits set for 'bitfield', 0 or 1 for 'simple' */
+  unlockedAtMs?: number;
   progress: number;
 }
 
 export interface UnlockAchievementResult {
   apiName: string;
-  /** True only if this call caused the unlock (false if already unlocked before) */
   justUnlocked: boolean;
   unlockedAtMs: number;
 }
@@ -40,9 +37,23 @@ export interface AddBitfieldResult {
   justUnlocked: boolean;
 }
 
-// ─── Event payloads ─────────────────────────────────────────────────────────
-
 export interface AchievementUnlockedEvent {
   apiName: string;
   unlockedAtMs: number;
+}
+
+export interface PicoAchievements {
+  readonly available: boolean;
+  readonly sdkVersion: string;
+
+  getAllAchievements(): Promise<Achievement[]>;
+  getUnlockedAchievements(): Promise<Achievement[]>;
+  getAchievementProgress(apiNames: string[]): Promise<Achievement[]>;
+  unlockAchievement(apiName: string): Promise<UnlockAchievementResult>;
+  addAchievementCount(apiName: string, count: number): Promise<AddCountResult>;
+  addAchievementBitfield(apiName: string, bitfield: string): Promise<AddBitfieldResult>;
+
+  /** Returns a listener id for removeAchievementUnlockedListener. */
+  addAchievementUnlockedListener(listener: (event: AchievementUnlockedEvent) => void): number;
+  removeAchievementUnlockedListener(id: number): void;
 }
