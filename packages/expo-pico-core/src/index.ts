@@ -1,10 +1,9 @@
 import {
-  resolveHybridObject,
-  NULL_SUBSCRIPTION,
+  createNativeEventEmitter,
+  safeAddListener,
+  resolveNativeModule,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-
-import type { PicoRuntime } from './PicoRuntime.nitro';
 
 import ExpoPicoModule from './ExpoPicoModule';
 import { hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT } from './immersive';
@@ -15,7 +14,9 @@ import type {
   PicoTargetProfileRuntime,
   PicoXRMode,
   HapticHand,
+  ExpoPicoHapticsModuleInterface,
   PassthroughLevelEvent,
+  ExpoPicoPassthroughModuleInterface,
 } from './types';
 
 export type {
@@ -27,87 +28,66 @@ export type {
   HapticHand,
   PicoPlatformSdkProbe,
   ExpoPicoModuleInterface,
+  ExpoPicoHapticsModuleInterface,
   PassthroughLevelEvent,
+  ExpoPicoPassthroughModuleInterface,
 } from './types';
 
 export type { Subscription };
 
-// ─── Controller haptics + passthrough dial ──────────────────────────────────
-// Both were separate native modules under Expo Modules (ExpoPicoHaptics,
-// ExpoPicoPassthrough). They are members of the PicoRuntime HybridObject now;
-// the exported functions below are unchanged.
+const hapticsResolution =
+  resolveNativeModule<ExpoPicoHapticsModuleInterface>('ExpoPicoHaptics');
+const haptics: ExpoPicoHapticsModuleInterface = hapticsResolution.available
+  ? hapticsResolution.nativeModule
+  : {
+      hapticsAvailable: false,
+      pulseHaptic: () => Promise.reject(new Error('ExpoPicoHaptics native module not available')),
+      isHapticsAvailable: () => false,
+    };
 
-function runtime(): PicoRuntime | null {
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
-}
+const passthroughResolution =
+  resolveNativeModule<ExpoPicoPassthroughModuleInterface>('ExpoPicoPassthrough');
+const passthrough: ExpoPicoPassthroughModuleInterface = passthroughResolution.available
+  ? passthroughResolution.nativeModule
+  : {
+      passthroughAvailable: false,
+      setPassthrough: () =>
+        Promise.reject(new Error('ExpoPicoPassthrough native module not available')),
+      isPassthroughAvailable: () => false,
+    };
 
-/**
- * Triggers a haptic pulse on the specified controller.
- *
- * @param hand       'left' | 'right' | 'both'
- * @param amplitude  vibration strength, clamped to 0.0-1.0
- * @param durationMs duration in milliseconds, must be > 0
- *
- * Rejects with SERVICE_UNAVAILABLE when the haptics surface is absent, and
- * with VALIDATION_ERROR for invalid inputs.
- */
+const passthroughEmitter = createNativeEventEmitter(
+  passthroughResolution.available ? passthroughResolution.nativeModule : null
+);
+
 export async function pulseHaptic(
   hand: HapticHand,
   amplitude: number,
   durationMs: number
 ): Promise<void> {
-  const r = runtime();
-  if (!r?.hapticsAvailable) {
-    throw new Error('ExpoPicoHaptics surface not available');
-  }
-  return r.pulseHaptic(hand, amplitude, durationMs);
+  return haptics.pulseHaptic(hand, amplitude, durationMs);
 }
 
-/**
- * True when the haptics surface is wired at runtime. Note this is one of the
- * few surfaces still gated by the legacy PVR AAR (PXR_Plugin); the modern PPS
- * Maven artifacts do not cover programmatic haptics.
- */
 export function isHapticsAvailable(): boolean {
-  return runtime()?.hapticsAvailable ?? false;
+  return haptics.hapticsAvailable ?? false;
 }
 
-/**
- * Adds a listener for physical PICO passthrough dial events.
- *
- * On PICO 4 / PICO 4 Ultra the hardware transparency dial fires this callback
- * whenever the user turns it, with `{ level: 0.0-1.0, enabled: boolean }`.
- * Drive a `passthroughTransparency` prop from `level`. Inert on non-PICO
- * devices — the subscription returns but never fires.
- */
 export function addPassthroughDialListener(
   cb: (event: PassthroughLevelEvent) => void
 ): Subscription {
-  const r = runtime();
-  if (!r?.passthroughAvailable) return NULL_SUBSCRIPTION;
-  const id = r.addPassthroughDialListener(cb);
-  return { remove: () => r.removeListener(id) };
+  return safeAddListener<PassthroughLevelEvent>(
+    passthroughEmitter,
+    'onPassthroughLevelChanged',
+    cb
+  );
 }
 
-/**
- * Programmatically enable/disable passthrough and set the transparency level.
- *
- * @param enabled true = show the real-world background
- * @param level   0.0 fully virtual - 1.0 fully real-world. Defaults to 1.
- *
- * Rejects with SERVICE_UNAVAILABLE when PXR_Plugin is not present.
- */
 export async function setPassthrough(enabled: boolean, level = 1.0): Promise<void> {
-  const r = runtime();
-  if (!r?.passthroughAvailable) {
-    throw new Error('ExpoPicoPassthrough surface not available');
-  }
-  return r.setPassthroughLevel(enabled, level);
+  return passthrough.setPassthrough(enabled, level);
 }
 
-/** True when the passthrough surface is wired at runtime. */
 export function isPassthroughAvailable(): boolean {
-  return runtime()?.passthroughAvailable ?? false;
+  return passthrough.passthroughAvailable ?? false;
 }
 
 export function isPicoBuild(): boolean {
