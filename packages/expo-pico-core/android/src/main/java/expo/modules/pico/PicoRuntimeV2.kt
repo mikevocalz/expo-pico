@@ -51,7 +51,7 @@ object PicoRuntimeV2 : Module() {
       .map(String::trim)
       .filter(String::isNotEmpty)
       .mapNotNull(String::toDoubleOrNull)
-      .takeIf(List<Double>::isNotEmpty)
+      .takeIf { it.isNotEmpty() }
   }
 
   @JS
