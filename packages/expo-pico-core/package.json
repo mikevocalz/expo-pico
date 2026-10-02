@@ -57,7 +57,7 @@
     "provenance": true
   },
   "devDependencies": {
-    "@expo/config-plugins": "58.0.4",
+    "@expo/config-plugins": "~58.0.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
     "@types/react": "19.3.0",
@@ -66,14 +66,14 @@
     "react-native": "0.88.0-rc.3",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
-    "expo-modules-core": "58.0.11"
+    "expo-modules-core": "~58.0.9"
   },
   "peerDependencies": {
     "expo": ">=58.0.2 <59",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0-rc.3 <0.89",
     "expo-location": "*",
-    "expo-modules-core": ">=58.0.11 <59"
+    "expo-modules-core": ">=58.0.9 <59"
   },
   "peerDependenciesMeta": {
     "expo": {
