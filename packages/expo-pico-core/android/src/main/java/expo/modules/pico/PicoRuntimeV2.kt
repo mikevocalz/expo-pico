@@ -81,8 +81,10 @@ object PicoRuntimeV2 : Module() {
     requireCapability("setPassthroughEnabled", BuildConfig.PICO_PASSTHROUGH, "passthrough")
   @JS fun isPassthroughActive(): Boolean? =
     requireCapability("isPassthroughActive", BuildConfig.PICO_PASSTHROUGH, "passthrough")
-  @JS fun setPassthroughLevel(enabled: Boolean, level: Double) =
+  @JS fun setPassthroughLevel(enabled: Boolean, level: Double) {
+    PicoEskiuBridge.normalizePassthroughLevel(level)
     requireCapability("setPassthroughLevel", BuildConfig.PICO_PASSTHROUGH, "passthrough")
+  }
 
   @JS fun enableEyeTracking(): Boolean = requireCapability("enableEyeTracking", BuildConfig.PICO_EYE_TRACKING, "eyeTracking")
   @JS fun disableEyeTracking(): Boolean = requireCapability("disableEyeTracking", BuildConfig.PICO_EYE_TRACKING, "eyeTracking")
@@ -104,10 +106,14 @@ object PicoRuntimeV2 : Module() {
   @JS fun getDetectedPlanes(): List<Map<String, Any>>? = requireCapability("getDetectedPlanes", BuildConfig.PICO_SCENE_UNDERSTANDING, "sceneUnderstanding")
   @JS fun refreshScene(): Boolean = requireCapability("refreshScene", BuildConfig.PICO_SCENE_UNDERSTANDING, "sceneUnderstanding")
   @JS fun getControllers(): List<Map<String, Any>>? = requireXr("getControllers")
-  @JS fun triggerHaptic(hand: String, amplitude: Double, durationMs: Double): Boolean =
-    requireCapability("triggerHaptic", BuildConfig.PICO_CONTROLLER_HAPTICS, "controllerHaptics")
-  @JS fun pulseHaptic(hand: String, amplitude: Double, durationMs: Double) =
+  @JS fun triggerHaptic(hand: String, amplitude: Double, durationMs: Double): Boolean {
+    PicoEskiuBridge.normalizeHapticAmplitude(amplitude)
+    return requireCapability("triggerHaptic", BuildConfig.PICO_CONTROLLER_HAPTICS, "controllerHaptics")
+  }
+  @JS fun pulseHaptic(hand: String, amplitude: Double, durationMs: Double) {
+    PicoEskiuBridge.normalizeHapticAmplitude(amplitude)
     requireCapability("pulseHaptic", BuildConfig.PICO_CONTROLLER_HAPTICS, "controllerHaptics")
+  }
   @JS fun getMotionTrackers(): List<Map<String, Any>>? =
     requireCapability("getMotionTrackers", BuildConfig.PICO_MOTION_TRACKER, "motionTracker")
   @JS fun isSpatialAudioEnabled(): Boolean? =
