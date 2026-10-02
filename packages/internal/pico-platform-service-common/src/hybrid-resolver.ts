@@ -1,23 +1,37 @@
-import { NitroModules, type HybridObject } from 'react-native-nitro-modules';
+import { requireOptionalNativeModule } from 'expo-modules-core';
+import { NitroModules } from 'react-native-nitro-modules';
 
 /**
- * Resolves an autolinked HybridObject, or null when the native library is not
- * in this build (mobile flavor, non-PICO hardware, Gradle offline at prebuild).
+ * Transitional resolver used while expo-pico moves from Nitro to Expo Modules v2.
  *
- * createHybridObject throws in those cases; every expo-pico package must
- * degrade to SERVICE_UNAVAILABLE instead of failing at module load, so the
- * throw is swallowed here and the result cached either way.
+ * Resolution order is intentional:
+ *   1. Expo Modules v2 — the target architecture.
+ *   2. Nitro HybridObject — compatibility fallback until that package migrates.
+ *
+ * Both paths are optional so mobile/non-PICO builds degrade to
+ * SERVICE_UNAVAILABLE instead of crashing at module evaluation time.
  */
 const cache = new Map<string, unknown>();
 
-export function resolveHybridObject<T extends HybridObject<{}>>(name: string): T | null {
+export function resolveHybridObject<T extends object>(name: string): T | null {
   if (cache.has(name)) return cache.get(name) as T | null;
-  let resolved: T | null;
+
+  let resolved: T | null = null;
+
   try {
-    resolved = NitroModules.createHybridObject<T>(name);
+    resolved = requireOptionalNativeModule<T>(name);
   } catch {
     resolved = null;
   }
+
+  if (!resolved) {
+    try {
+      resolved = NitroModules.createHybridObject(name) as T;
+    } catch {
+      resolved = null;
+    }
+  }
+
   cache.set(name, resolved);
   return resolved;
 }
