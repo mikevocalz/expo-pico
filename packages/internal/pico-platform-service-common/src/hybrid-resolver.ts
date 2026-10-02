@@ -94,11 +94,18 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
                 : prop === 'permissionStatus'
                   ? 'notificationPermissionStatus'
                   : prop === 'sessionState'
-                    ? 'roomSessionState'
+                    ? null
                     : null;
 
       if (propertyAlias && propertyAlias in target && target[propertyAlias] !== undefined) {
         return bindIfFunction(target, target[propertyAlias]);
+      }
+
+      if (name === 'PicoRooms' && prop === 'sessionState') {
+        const getter = (target as any).getRoomSessionState;
+        return typeof getter === 'function'
+          ? getter.call(target)
+          : { memberCount: 0, connectionState: 'disconnected' };
       }
 
       if (eventMethods[prop]) {
@@ -143,10 +150,6 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
             ? history.some((item: any) => item?.sku === sku || item?.productId === sku)
             : false;
         };
-      }
-
-      if (name === 'PicoRooms' && prop === 'getFriendsAndRooms') {
-        return async () => unsupported(name, prop);
       }
 
       if (name === 'PicoRooms' && (prop === 'requestMatchmaking' || prop === 'cancelMatchmaking')) {
