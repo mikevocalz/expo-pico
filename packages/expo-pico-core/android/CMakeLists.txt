@@ -17,7 +17,8 @@ if(ESKIUC AND CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
     OUTPUT "${ESKIU_OBJECT}"
     COMMAND "${ESKIUC}"
             "${ESKIU_SOURCE}"
-            --target aarch64-unknown-linux-gnu
+            -c
+            --target aarch64-linux-android
             --freestanding
             -O2
             -o "${ESKIU_OBJECT}"
