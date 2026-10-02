@@ -14,7 +14,7 @@ import type {
   InviteReceivedEvent,
   PicoLaunchDetails,
   LaunchAppOptions,
-} from './PicoSocial.nitro';
+} from './types';
 
 export type {
   FriendshipStatus,
@@ -28,7 +28,7 @@ export type {
   FriendPresenceChangedEvent,
   InviteReceivedEvent,
   PicoLaunchDetails,
-} from './PicoSocial.nitro';
+} from './types';
 
 const PKG = '@expo-pico/social';
 

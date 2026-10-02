@@ -3,7 +3,7 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoIap } from './PicoIap.nitro';
+import type { PicoIap } from './types';
 
 export type {
   IapProduct,
@@ -11,7 +11,7 @@ export type {
   IapPurchase,
   ConsumeResult,
   PurchaseResult,
-} from './PicoIap.nitro';
+} from './types';
 
 const PKG = '@expo-pico/iap';
 

@@ -19,13 +19,12 @@
     }
   },
   "scripts": {
-    "build": "nitrogen && tsc",
+    "build": "tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",
-    "clean": "rm -rf build nitrogen/generated",
+    "clean": "rm -rf build",
     "test": "jest --config jest.config.js",
-    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json",
+    "prepare": "tsc && tsc --project plugin/tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "nitrogen": "nitrogen",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
   },
   "keywords": [
@@ -53,26 +52,20 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
-    "nitrogen": "0.37.1",
-    "react-native-nitro-modules": "0.37.1",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3"
   },
   "peerDependencies": {
-    "expo": ">=58.0.0 <59",
+    "expo": ">=58.0.2 <59",
     "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
-    "react-native": ">=0.88.0-rc.3 <0.89",
-    "react-native-nitro-modules": ">=0.37.1 <0.38"
+    "react-native": ">=0.88.0-rc.3 <0.89"
   },
   "peerDependenciesMeta": {
     "expo": {
       "optional": false
     },
     "@expo-pico/core": {
-      "optional": false
-    },
-    "react-native-nitro-modules": {
       "optional": false
     }
   },
@@ -86,10 +79,8 @@
   "files": [
     "LICENSE",
     "build",
-    "nitrogen/generated",
     "android",
     "plugin/build",
-    "app.plugin.js",
-    "nitro.json"
+    "app.plugin.js"
   ]
 }

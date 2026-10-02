@@ -7,7 +7,7 @@ import type {
   PicoLeaderboards,
   GetEntriesOptions,
   WriteScoreOptions,
-} from './PicoLeaderboards.nitro';
+} from './types';
 
 export type {
   Leaderboard,
@@ -19,7 +19,7 @@ export type {
   GetEntriesOptions,
   WriteScoreOptions,
   WriteScoreResult,
-} from './PicoLeaderboards.nitro';
+} from './types';
 
 const PKG = '@expo-pico/leaderboards';
 

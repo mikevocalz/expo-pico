@@ -1,36 +1,90 @@
+/** Account-linking state reported by PicoSignInClient. */
+export type PicoAccountLinkStatus = 'linked' | 'not-linked' | 'pending' | 'error' | 'unsupported';
+
+export type PicoLoginStatus = 'success' | 'cancelled' | 'error';
+
 /**
- * PICO platform user identity.
- * @see https://developer.picoxr.com/document/platform_service/account/
+ * Tri-state, deliberately not a boolean.
+ *
+ * PPS returns `AdultStatus{UNKNOWN, MINOR, ADULT}`. Collapsing `UNKNOWN` into
+ * `false` would read as "confirmed minor" and collapsing it into `true` would
+ * open an age gate the platform never verified, so the third state is carried
+ * through and the caller decides.
  */
-export interface PicoUserProfile {
-  /** PICO platform user ID (opaque string). */
+export type PicoAdultStatus = 'unknown' | 'minor' | 'adult';
+
+/**
+ * What an auth-scope response should carry back. Not a login mode — the
+ * artifact declares exactly these three.
+ */
+export type PicoAuthType = 'auth-code' | 'access-token' | 'id-token';
+
+/**
+ * Result of an interactive scope request.
+ *
+ * Which credential is populated follows the `PicoAuthType` asked for; the
+ * others come back empty. `refreshToken` is a long-lived credential — treat it
+ * the way you would any other, and prefer exchanging `authCode` server-side
+ * over holding tokens in the JS bundle.
+ */
+export interface PicoAuthScopeResult {
+  authorizedScopes: string[];
+  accessToken: string;
+  refreshToken: string;
+  idToken: string;
+  authCode: string;
   userId: string;
-  /** Display name set by the user. */
   displayName: string;
-  /** URL of the user's avatar image, or null if not set. */
-  avatarUrl: string | null;
+}
+
+export interface PicoUserProfile {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
 }
 
 /**
- * Result of a login attempt.
+ * Flattened from the previous discriminated union. Nitro structs cannot model
+ * `{status:'success',...} | {status:'cancelled'}`, so the variant fields are
+ * optional and only populated for their own `status`:
+ *   success   → userId, accessToken
+ *   error     → code, message
+ *   cancelled → nothing
  */
-export type PicoLoginResult =
-  | { status: 'success'; userId: string; accessToken: string }
-  | { status: 'cancelled' }
-  | { status: 'error'; code: string; message: string };
+export interface PicoLoginResult {
+  status: PicoLoginStatus;
+  userId?: string;
+  accessToken?: string;
+  code?: string;
+  message?: string;
+}
 
-/**
- * Account linking status.
- * @see https://developer.picoxr.com/document/platform_service/account-linking/
- */
-export type PicoAccountLinkStatus = 'linked' | 'not-linked' | 'pending' | 'error' | 'unsupported';
+export interface PicoAccount {
+  /** False when PPS is off the classpath (mobile flavor, non-PICO hardware, offline prebuild). */
+  readonly available: boolean;
+  readonly sdkVersion: string;
+  /** Remediation string when `available` is false; 'ready' once initialized. */
+  readonly sdkStatus: string;
 
-/**
- * Module interface — constants exposed at init time.
- */
-export interface ExpoPicoAccountModuleInterface {
-  /** Whether the PICO Platform SDK is available and initialized. */
-  platformSdkAvailable: boolean;
-  /** Platform SDK version string, or null if SDK not present. */
-  platformSdkVersion: string | null;
+  getUserProfile(): Promise<PicoUserProfile>;
+  getAccountLinkStatus(): Promise<PicoAccountLinkStatus>;
+  login(): Promise<PicoLoginResult>;
+  getAccessToken(): Promise<string>;
+  logout(): Promise<void>;
+
+  /** Age gate. Returns `'unknown'` when PICO has not verified the account. */
+  getAdultStatus(): Promise<PicoAdultStatus>;
+  /** Scopes the user has already granted this app. */
+  getAuthorizedScopes(): Promise<string[]>;
+  /** Requests additional OAuth scopes; resolves with the scopes actually granted. */
+  requestAuthScopes(scopes: string[]): Promise<string[]>;
+  /** Revokes this app's authorization. The next call needing a scope re-prompts. */
+  cancelAuthorization(): Promise<void>;
+  /**
+   * Interactive scope request that also returns credentials.
+   *
+   * `requestAuthScopes()` answers only which scopes were granted; this returns
+   * the token or auth code as well, per `authType`.
+   */
+  sendAuthScopesRequest(scopes: string[], authType: PicoAuthType): Promise<PicoAuthScopeResult>;
 }
