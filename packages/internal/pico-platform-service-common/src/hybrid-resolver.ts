@@ -8,6 +8,7 @@ const EXPO_MODULES: Record<string, { name: string; prefix: string }> = {
   PicoLeaderboards: { name: 'ExpoPicoLeaderboards', prefix: 'leaderboards' },
   PicoNotifications: { name: 'ExpoPicoNotifications', prefix: 'notifications' },
   PicoRooms: { name: 'ExpoPicoRooms', prefix: 'rooms' },
+  PicoRtc: { name: 'ExpoPicoRtc', prefix: 'rtc' },
   PicoSocial: { name: 'ExpoPicoSocial', prefix: 'social' },
   PicoStorage: { name: 'ExpoPicoStorage', prefix: 'storage' },
   PicoSubscription: { name: 'ExpoPicoSubscription', prefix: 'subscription' },
