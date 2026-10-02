@@ -57,14 +57,17 @@
     "nitrogen": "0.37.1",
     "react-native-nitro-modules": "0.37.1",
     "ts-jest": "^29.4.9",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "expo": "58.0.2",
+    "expo-modules-core": "58.0.0"
   },
   "peerDependencies": {
-    "expo": ">=58.0.0 <59",
+    "expo": ">=58.0.2 <59",
     "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0-rc.3 <0.89",
-    "react-native-nitro-modules": ">=0.37.1 <0.38"
+    "react-native-nitro-modules": ">=0.37.1 <0.38",
+    "expo-modules-core": ">=58.0.0 <59"
   },
   "peerDependenciesMeta": {
     "expo": {
@@ -74,6 +77,9 @@
       "optional": false
     },
     "react-native-nitro-modules": {
+      "optional": false
+    },
+    "expo-modules-core": {
       "optional": false
     }
   },
