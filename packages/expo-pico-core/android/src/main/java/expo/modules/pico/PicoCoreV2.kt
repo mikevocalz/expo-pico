@@ -4,16 +4,14 @@ import android.content.Intent
 import android.content.pm.FeatureInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import com.facebook.react.bridge.ReactApplicationContext
 import io.github.expo.modules.v2.ExpoModule
 import io.github.expo.modules.v2.JS
 import io.github.expo.modules.v2.Module
+import io.github.expo.modules.v2.react.currentActivity
+import io.github.expo.modules.v2.react.reactContextOrNull
 
 @ExpoModule
 object PicoCoreV2 : Module() {
-  private val reactContext: ReactApplicationContext?
-    get() = appContext.reactContext as? ReactApplicationContext
-
   private fun classPresent(name: String): Boolean =
     runCatching { Class.forName(name); true }.getOrDefault(false)
 
@@ -21,7 +19,7 @@ object PicoCoreV2 : Module() {
     value.split(',').map(String::trim).filter(String::isNotEmpty)
 
   private fun isPicoDevice(): Boolean {
-    val pm = reactContext?.packageManager ?: return false
+    val pm = reactContextOrNull?.packageManager ?: return false
     return DEVICE_FEATURES.any { runCatching { pm.hasSystemFeature(it) }.getOrDefault(false) }
   }
 
@@ -94,11 +92,11 @@ object PicoCoreV2 : Module() {
 
   @JS
   fun hasSystemFeature(name: String): Boolean =
-    reactContext?.packageManager?.let { runCatching { it.hasSystemFeature(name) }.getOrDefault(false) } ?: false
+    reactContextOrNull?.packageManager?.let { runCatching { it.hasSystemFeature(name) }.getOrDefault(false) } ?: false
 
   @JS
   fun getDeclaredFeatures(): List<Map<String, Any?>> {
-    val context = reactContext ?: return emptyList()
+    val context = reactContextOrNull ?: return emptyList()
     val info = context.packageManager.getPackageInfo(
       context.packageName,
       PackageManager.GET_CONFIGURATIONS,
@@ -140,7 +138,7 @@ object PicoCoreV2 : Module() {
   @JS
   fun getCapabilitySnapshot(): List<Map<String, Any?>> {
     val declared = declaredCapabilities()
-    val pm = reactContext?.packageManager
+    val pm = reactContextOrNull?.packageManager
     return CAPABILITIES.map { cap ->
       val featureAvailable = cap.feature?.let { feature ->
         pm?.let { runCatching { it.hasSystemFeature(feature) }.getOrDefault(false) }
@@ -183,7 +181,7 @@ object PicoCoreV2 : Module() {
 
   @JS
   fun enterImmersiveScene(): Boolean {
-    val context = reactContext ?: return false
+    val context = reactContextOrNull ?: return false
     val intent = immersiveIntent() ?: return false
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
     return runCatching { context.startActivity(intent) }.isSuccess
@@ -191,7 +189,7 @@ object PicoCoreV2 : Module() {
 
   @JS
   fun exitImmersiveScene(): Boolean {
-    val activity = reactContext?.currentActivity ?: return false
+    val activity = reactContextOrNull?.currentActivity ?: return false
     val immersive = immersiveIntent()?.component?.className ?: return false
     if (activity.componentName.className != immersive) return false
     activity.finish()
