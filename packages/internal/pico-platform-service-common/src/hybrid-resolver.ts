@@ -51,7 +51,7 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
   }
 
   try {
-    nitroModule = NitroModules.createHybridObject(name) as Record<string, unknown>;
+    nitroModule = NitroModules.createHybridObject(name) as unknown as Record<string, unknown>;
   } catch {
     nitroModule = null;
   }
