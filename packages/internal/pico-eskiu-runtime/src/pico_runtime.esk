@@ -1,11 +1,36 @@
-// Minimal shared runtime ABI probe.
+// Shared allocation-free systems runtime for expo-pico + ViroCore.
 //
-// Keep this surface C-shaped. Expo Modules/Kotlin and ViroCore can both call
-// the same exported symbols without either runtime owning the other.
+// Public functions stay C-shaped and scalar/POD-only. PICO Java/Kotlin SDK
+// calls do not belong here; Expo Modules v2 owns those adapters.
+
 int pico_eskiu_abi_version() {
-  return 1;
+  return 2;
 }
 
 int pico_eskiu_android_probe(int value) {
   return value + 1;
+}
+
+float pico_eskiu_clamp01(float value) {
+  if (value < 0.0) { return 0.0; }
+  if (value > 1.0) { return 1.0; }
+  return value;
+}
+
+uint64 pico_eskiu_capability_intersection(uint64 declared, uint64 available) {
+  return declared & available;
+}
+
+int pico_eskiu_capability_enabled(uint64 declared, uint64 available, int bit_index) {
+  if (bit_index < 0 || bit_index > 63) { return 0; }
+  let mask: uint64 = ((uint64)1) << bit_index;
+  return ((declared & mask) != 0 && (available & mask) != 0) ? 1 : 0;
+}
+
+float pico_eskiu_haptic_amplitude(float amplitude) {
+  return pico_eskiu_clamp01(amplitude);
+}
+
+float pico_eskiu_passthrough_level(float level) {
+  return pico_eskiu_clamp01(level);
 }
