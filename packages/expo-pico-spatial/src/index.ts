@@ -22,6 +22,9 @@ import type {
 } from './types';
 
 export * from './types';
+export * from './layout';
+
+import { layoutReadinessFromProbe } from './layout';
 
 const PKG = '@expo-pico/spatial';
 
@@ -151,6 +154,14 @@ export function getSpatialCapabilities(): SpatialCapabilities {
 
 export function getSpatialSdkVersion(): string | null {
   return native()?.spatialSdkVersion ?? null;
+}
+
+export function getSpatialSdkProbe(): Record<string, boolean> {
+  return nativeV2()?.getSpatialSdkProbe() ?? {};
+}
+
+export function getSpatialLayoutReadiness() {
+  return layoutReadinessFromProbe(getSpatialSdkProbe());
 }
 
 // ─── Spatial anchors ─────────────────────────────────────────────────────────
