@@ -25,9 +25,11 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    AsyncFunction("getFriendList") { pageToken: String?, pageSize: Int, promise: Promise ->
+    // JS: getFriendList(pageSize?, pageToken?). The bridge ignores both (PPS getFriends()
+    // takes no paging args), so the 20 default only matters if paging is wired later.
+    AsyncFunction("getFriendList") { pageSize: Int?, pageToken: String?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
-      SocialBridge.getFriendList(pageToken, pageSize,
+      SocialBridge.getFriendList(pageToken, pageSize ?: DEFAULT_FRIEND_PAGE_SIZE,
         onSuccess = { map -> promise.resolve(map) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
@@ -89,9 +91,13 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    // status: String, richText: String?, destinationApiName: String?
-    AsyncFunction("setPresence") { status: String, richText: String?, destinationApiName: String?, promise: Promise ->
+    // JS: setPresence(options: PresenceOptions { status, richText?, destinationApiName? })
+    AsyncFunction("setPresence") { options: Map<String, Any?>, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val status = options["status"] as? String
+        ?: return@AsyncFunction promise.reject("INVALID_ARGUMENT", "status is required", null)
+      val richText = options["richText"] as? String
+      val destinationApiName = options["destinationApiName"] as? String
       SocialBridge.setPresence(status, richText, destinationApiName,
         onSuccess = { promise.resolve(null) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
@@ -106,10 +112,14 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    // destinationApiName: String, userIds: List<String>, data: Map<String, String>
-    AsyncFunction("sendInvites") { destinationApiName: String, userIds: List<String>, data: Map<String, String>, promise: Promise ->
+    // options: InviteOptions { destinationApiName, userIds, data? } — JS passes one object.
+    // PPS sendInvites takes no payload, so `data` is not forwarded.
+    AsyncFunction("sendInvites") { options: Map<String, Any?>, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
-      SocialBridge.sendInvites(destinationApiName, userIds, data,
+      val destinationApiName = options["destinationApiName"] as? String
+        ?: return@AsyncFunction promise.reject("INVALID_ARGUMENT", "destinationApiName is required", null)
+      val userIds = (options["userIds"] as? List<*>)?.filterIsInstance<String>().orEmpty()
+      SocialBridge.sendInvites(userIds, destinationApiName,
         onSuccess = { list -> promise.resolve(list) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
@@ -144,6 +154,10 @@ class ExpoPicoSocialModule : Module() {
       "destinationApiName" to destinationApiName,
       "data"               to data
     ))
+  }
+
+  private companion object {
+    const val DEFAULT_FRIEND_PAGE_SIZE = 20
   }
 
   private inline fun guardAvailability(promise: Promise, earlyReturn: () -> Unit) {

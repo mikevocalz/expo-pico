@@ -10,7 +10,7 @@ PICO platform social APIs for Expo apps. Friends, presence, invites, and real-ti
 ## Installation
 
 ```sh
-yarn add @expo-pico/social react-native-nitro-modules
+yarn add @expo-pico/social
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts
@@ -101,7 +101,7 @@ if (isSocialAvailable()) {
   console.log('Logged in as:', me.displayName);
 
   // Paginate friends list
-  const { friends, nextPageToken } = await getFriendList(undefined, 20);
+  const { friends, nextPageToken } = await getFriendList(20);
 
   // Send a friend request
   await sendFriendRequest('user-id-123');
@@ -130,7 +130,7 @@ if (isSocialAvailable()) {
 | `isSocialAvailable()`                  | Returns `true` on a PICO build with the Social SDK linked  |
 | `getSocialSdkVersion()`                | Returns the PICO Platform SDK version string               |
 | `getCurrentUser()`                     | Returns the authenticated user's `SocialUser` profile      |
-| `getFriendList(pageToken?, pageSize?)` | Returns a paginated `FriendListResult`                     |
+| `getFriendList(pageSize?, pageToken?)` | Returns a paginated `FriendListResult`                     |
 | `getFriendshipStatus(userId)`          | Returns the `FriendshipStatus` with a given user           |
 | `sendFriendRequest(userId)`            | Sends a friend request; returns the `FriendRequest` record |
 | `acceptFriendRequest(requestId)`       | Accepts an incoming friend request                         |

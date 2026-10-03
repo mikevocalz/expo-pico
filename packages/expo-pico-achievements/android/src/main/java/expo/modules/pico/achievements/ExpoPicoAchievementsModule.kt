@@ -43,8 +43,8 @@ class ExpoPicoAchievementsModule : Module() {
       )
     }
 
-    // count: Int bridged from JS number automatically
-    AsyncFunction("addAchievementCount") { apiName: String, count: Int, promise: Promise ->
+    // count: Long bridged from JS number automatically (PPS addCount takes a Long)
+    AsyncFunction("addAchievementCount") { apiName: String, count: Long, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
       AchievementsBridge.addCount(apiName, count,
         onSuccess = { bundle -> promise.resolve(bundle) },

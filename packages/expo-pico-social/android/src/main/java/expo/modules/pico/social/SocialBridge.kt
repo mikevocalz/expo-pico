@@ -109,22 +109,22 @@ internal object SocialBridge {
             onSuccess, onError)
     }
 
-    fun acceptFriendRequest(_id: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+    fun acceptFriendRequest(_id: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("acceptFriendRequest", onError)
 
-    fun declineFriendRequest(_id: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+    fun declineFriendRequest(_id: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("declineFriendRequest", onError)
 
-    fun removeFriend(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+    fun removeFriend(_userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("removeFriend", onError)
 
-    fun blockUser(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+    fun blockUser(_userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("blockUser", onError)
 
-    fun unblockUser(_userId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
+    fun unblockUser(_userId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("unblockUser", onError)
 
-    fun getPendingFriendRequests(_onSuccess: (List<Map<String, Any?>>) -> Unit, onError: (String, String) -> Unit) =
+    fun getPendingFriendRequests(onSuccess: (List<Map<String, Any?>>) -> Unit, onError: (String, String) -> Unit) =
         notInPps("getPendingFriendRequests", onError)
 
     fun sendInvites(
