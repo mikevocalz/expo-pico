@@ -87,7 +87,16 @@ object PicoSpatialV2 : Module() {
   private const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
 
   private val SDK_PROBES = mapOf(
-    "spatialAnchors" to SPATIAL_SDK_CLASS,
+    // Legacy/private PVR-era Spatial SDK seam still used by the existing bridge.
+    "legacySpatialAnchors" to SPATIAL_SDK_CLASS,
+
+    // Public PICO Spatial SDK 6.x runtime probes. These do not imply that the
+    // Expo bridge is bound yet; JavaScript exposes nativeLayoutBridgeBound
+    // separately so apps never confuse classpath presence with usable APIs.
+    "spatialUiScope" to "com.pico.spatial.ui.foundation.dsl.SpatialAppScope",
+    "attachmentPanel" to "com.pico.spatial.core.ecs.AttachmentPanelComponent",
+    "spatialNavigator" to "com.pico.spatial.ui.platform.containers.SpatialNavigator",
+
     "pxrPlugin" to PXR_PLUGIN_CLASS,
     "sceneUnderstanding" to "com.picovr.picovrlib.PXR_MixedReality",
     "eyeTracking" to "com.picovr.picovrlib.PXR_EyeTracking",
