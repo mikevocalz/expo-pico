@@ -5,16 +5,56 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.Promise
 
 class ExpoPicoSocialModule : Module() {
+  private val launchDetailsSink: (Map<String, Any?>) -> Unit = { details ->
+    sendEvent("onLaunchDetails", details)
+  }
+
   override fun definition() = ModuleDefinition {
     Name("ExpoPicoSocial")
 
-    Events("onFriendPresenceChanged", "onFriendRequestReceived", "onInviteReceived")
+    // PPS 1.0 pushes launch-intent changes only. It has no listener for friend
+    // presence, incoming friend requests or invites (see SocialLaunchDetails and
+    // the README), so those events are not declared.
+    Events("onLaunchDetails")
+
+    // Register the PPS callback before init: init replays the launch intent
+    // through the same callback list.
+    OnCreate {
+      SocialLaunchDetails.sink = launchDetailsSink
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+    }
+
+    OnActivityEntersForeground {
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+    }
+
+    // An invite accepted while the app runs arrives as a new intent. PPS decides
+    // whether it carries PICO launch keys and fires the callback if so.
+    OnNewIntent { intent ->
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+      SocialLaunchDetails.onNewIntent(intent)
+    }
+
+    // A JS reload can create the next module before this one is destroyed, so
+    // only clear the sink if it is still ours.
+    OnDestroy {
+      if (SocialLaunchDetails.sink === launchDetailsSink) SocialLaunchDetails.sink = null
+    }
 
     Constants {
       mapOf(
         "socialSdkAvailable" to SocialUtils.isSocialSdkAvailable(),
         "socialSdkVersion"   to SocialUtils.getSocialSdkVersion()
       )
+    }
+
+    // Synchronous: PPS returns LaunchDetails from a getter. Never throws.
+    Function("getLaunchDetails") {
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+      SocialLaunchDetails.read(appContext.reactContext)
     }
 
     AsyncFunction("getCurrentUser") { promise: Promise ->
@@ -132,28 +172,6 @@ class ExpoPicoSocialModule : Module() {
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
     }
-  }
-
-  internal fun emitFriendPresenceChanged(userId: String, previous: String, current: String, richText: String?) {
-    sendEvent("onFriendPresenceChanged", mapOf(
-      "userId"         to userId,
-      "previousStatus" to previous,
-      "currentStatus"  to current,
-      "richText"       to richText
-    ))
-  }
-
-  internal fun emitFriendRequestReceived(requestMap: Map<String, Any?>) {
-    sendEvent("onFriendRequestReceived", mapOf("request" to requestMap))
-  }
-
-  internal fun emitInviteReceived(inviteId: String, fromUser: Map<String, Any?>, destinationApiName: String, data: Map<String, String>) {
-    sendEvent("onInviteReceived", mapOf(
-      "inviteId"           to inviteId,
-      "fromUser"           to fromUser,
-      "destinationApiName" to destinationApiName,
-      "data"               to data
-    ))
   }
 
   private companion object {

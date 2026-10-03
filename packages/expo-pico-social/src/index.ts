@@ -118,22 +118,67 @@ function subscribe(register: (h: PicoSocial) => number): Subscription {
   return { remove: () => hybrid.removeListener(id) };
 }
 
+// PPS 1.0.x pushes no friend-presence, friend-request or invite events. The
+// PicoSocialClient and PicoFriendClient interfaces have no listener or
+// callback registration for them; the only push it offers is the
+// launch-intent callback behind addLaunchDetailsListener(). These listeners
+// stay exported so callers keep compiling, but they warn once with
+// NOT_IN_PPS_1_0 and return a subscription that never fires.
+const warnedNotInPps = new Set<string>();
+
+// This package compiles with lib ES2020 and no DOM or Node types, so declare
+// the one console method it uses. React Native provides it at runtime.
+declare const console: { warn(message: string): void };
+
+function listenerNotInPps(method: string, reason: string): Subscription {
+  if (!warnedNotInPps.has(method)) {
+    warnedNotInPps.add(method);
+    console.warn(`${PKG}: ${method}() NOT_IN_PPS_1_0 — ${reason} The listener will never fire.`);
+  }
+  return NULL_SUBSCRIPTION;
+}
+
+/**
+ * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * PPS has no presence-change push. Call `getFriendList()` when you need the
+ * current friend list.
+ */
 export function addFriendPresenceChangedListener(
-  listener: (event: FriendPresenceChangedEvent) => void
+  _listener: (event: FriendPresenceChangedEvent) => void
 ): Subscription {
-  return subscribe((h) => h.addFriendPresenceChangedListener(listener));
+  return listenerNotInPps(
+    'addFriendPresenceChangedListener',
+    'PPS 1.0.x has no friend presence notification.'
+  );
 }
 
+/**
+ * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * PPS has no friend-request push, and no API to list incoming requests.
+ */
 export function addFriendRequestReceivedListener(
-  listener: (request: FriendRequest) => void
+  _listener: (request: FriendRequest) => void
 ): Subscription {
-  return subscribe((h) => h.addFriendRequestReceivedListener(listener));
+  return listenerNotInPps(
+    'addFriendRequestReceivedListener',
+    'PPS 1.0.x has no friend request notification.'
+  );
 }
 
+/**
+ * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * An accepted invite reaches the app as a launch instead: read
+ * `getLaunchDetails()` at startup and subscribe with
+ * `addLaunchDetailsListener()`, then check for `launchType === 'invite'`.
+ */
 export function addInviteReceivedListener(
-  listener: (event: InviteReceivedEvent) => void
+  _listener: (event: InviteReceivedEvent) => void
 ): Subscription {
-  return subscribe((h) => h.addInviteReceivedListener(listener));
+  return listenerNotInPps(
+    'addInviteReceivedListener',
+    'PPS 1.0.x has no invite-received notification; an accepted invite arrives ' +
+      "as a launch (getLaunchDetails() / addLaunchDetailsListener() with launchType 'invite')."
+  );
 }
 
 /**
@@ -195,6 +240,10 @@ export async function launchApp(options: LaunchAppOptions) {
  * Fires when the launch intent changes while the app is running — the user
  * accepting an invite without a restart, for example. Use `getLaunchDetails()`
  * for the intent the app started with.
+ *
+ * Backed by PPS `ISocialClient.setLaunchIntentChangeCallback`; the native
+ * module also feeds intents from `onNewIntent` to PPS. Returns a no-op
+ * subscription when PPS is absent.
  */
 export function addLaunchDetailsListener(
   listener: (details: PicoLaunchDetails) => void

@@ -3,7 +3,7 @@
 [![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
-PICO platform social APIs for Expo apps. Friends, presence, invites, and real-time social events on PICO OS 6 devices.
+PICO platform social APIs for Expo apps. Friends, presence, invites, and launch details on PICO OS 6 devices.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
@@ -91,8 +91,8 @@ import {
   sendFriendRequest,
   setPresence,
   sendInvites,
-  addFriendPresenceChangedListener,
-  addInviteReceivedListener,
+  getLaunchDetails,
+  addLaunchDetailsListener,
 } from '@expo-pico/social';
 
 if (isSocialAvailable()) {
@@ -112,14 +112,15 @@ if (isSocialAvailable()) {
   // Invite friends to a destination
   await sendInvites({ destinationApiName: 'lobby_main', userIds: ['user-id-123'] });
 
-  // Listen for real-time events
-  const presenceSub = addFriendPresenceChangedListener((event) => {
-    console.log(event.userId, 'changed status to', event.currentStatus);
+  // An accepted invite reaches the app as a launch, not as an event.
+  const launch = getLaunchDetails();
+  if (launch.launchType === 'invite') joinDestination(launch.destinationApiName);
+
+  // Invites accepted while the app is already running
+  const launchSub = addLaunchDetailsListener((details) => {
+    if (details.launchType === 'invite') joinDestination(details.destinationApiName);
   });
-  const inviteSub = addInviteReceivedListener((event) => {
-    console.log('Invite from', event.fromUser.displayName, 'to', event.destinationApiName);
-  });
-  // Later: presenceSub.remove(); inviteSub.remove();
+  // Later: launchSub.remove();
 }
 ```
 
@@ -142,9 +143,30 @@ if (isSocialAvailable()) {
 | `clearPresence()`                      | Clears the current user's presence                         |
 | `sendInvites(options)`                 | Sends invites to a destination; returns `SentInvite[]`     |
 | `getPendingFriendRequests()`           | Returns all pending incoming `FriendRequest[]`             |
-| `addFriendPresenceChangedListener(cb)` | Real-time presence change events; returns `Subscription`   |
-| `addFriendRequestReceivedListener(cb)` | Real-time friend request events; returns `Subscription`    |
-| `addInviteReceivedListener(cb)`        | Real-time invite events; returns `Subscription`            |
+| `getLaunchDetails()`                   | Why the app was launched (invite, deep link, normal). Sync |
+| `addLaunchDetailsListener(cb)`         | Fires when a new launch intent arrives while running       |
+| `addFriendPresenceChangedListener(cb)` | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
+| `addFriendRequestReceivedListener(cb)` | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
+| `addInviteReceivedListener(cb)`        | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
+
+## Events
+
+PPS 1.0.x has one push mechanism on the social side:
+`ISocialClient.setLaunchIntentChangeCallback`. `addLaunchDetailsListener()` is
+wired to it. The native module calls `PicoSocialClient.init(activity)` so PPS
+sees the launch intent, and forwards intents from `onNewIntent` to PPS, which
+fires the callback when the intent carries PICO launch keys.
+
+`PicoSocialClient` and `PicoFriendClient` have no listener or callback for
+friend presence, incoming friend requests or received invites. The three
+matching listeners stay exported so existing code compiles, but each logs one
+`NOT_IN_PPS_1_0` warning and returns a subscription that never fires.
+
+- Presence: call `getFriendList()` when you need current state.
+- Friend requests: PPS 1.0.x has no API for incoming requests at all.
+- Invites: an accepted invite launches (or re-launches) the app. Read
+  `getLaunchDetails()` and `addLaunchDetailsListener()` for
+  `launchType === 'invite'`.
 
 ## Native artifacts
 
