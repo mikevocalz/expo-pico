@@ -52,7 +52,9 @@ function bindIfFunction(target: object, value: unknown): unknown {
 }
 
 function unsupported(name: string, method: string): never {
-  throw new Error(`NOT_IMPLEMENTED: ${name}.${method} is not exposed by the current PICO PPS surface`);
+  throw new Error(
+    `NOT_IMPLEMENTED: ${name}.${method} is not exposed by the current PICO PPS surface`
+  );
 }
 
 export function resolveHybridObject<T extends object>(name: string): T | null {
@@ -61,7 +63,10 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
   const mapping = EXPO_MODULES[name];
   let module: Record<string, unknown> | null = null;
   try {
-    module = requireOptionalNativeModule(mapping?.name ?? name) as unknown as Record<string, unknown> | null;
+    module = requireOptionalNativeModule(mapping?.name ?? name) as unknown as Record<
+      string,
+      unknown
+    > | null;
   } catch {
     module = null;
   }
@@ -113,9 +118,10 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
           const id = nextListenerId++;
           try {
             const addListener = (target as any).addListener;
-            const subscription = typeof addListener === 'function'
-              ? addListener.call(target, eventMethods[prop], listener)
-              : { remove() {} };
+            const subscription =
+              typeof addListener === 'function'
+                ? addListener.call(target, eventMethods[prop], listener)
+                : { remove() {} };
             listeners.set(id, subscription ?? { remove() {} });
           } catch {
             listeners.set(id, { remove() {} });
@@ -124,10 +130,7 @@ export function resolveHybridObject<T extends object>(name: string): T | null {
         };
       }
 
-      if (
-        prop === 'removeListener' ||
-        prop === 'removeAchievementUnlockedListener'
-      ) {
+      if (prop === 'removeListener' || prop === 'removeAchievementUnlockedListener') {
         return (id: number) => {
           listeners.get(id)?.remove();
           listeners.delete(id);
