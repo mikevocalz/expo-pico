@@ -39,8 +39,8 @@ class ExpoPicoLeaderboardsModule : Module() {
     }
 
     // JS: getEntries(apiName, options?: GetEntriesOptions { filter?, startAt?, pageSize?, pageToken? })
-    // GetEntriesOptions declares no defaults. Missing filter/startAt fall through to the
-    // bridge's parse defaults (global, centered-on-viewer); pageSize defaults to 20 (README).
+    // Missing filter/startAt default to 'none' / 'centered-on-viewer'; pageSize defaults to 20.
+    // 'viewer-and-friends' rejects UNSUPPORTED_FILTER; unknown strings reject INVALID_ARGUMENT.
     AsyncFunction("getEntries") { apiName: String, options: Map<String, Any?>?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
       val filter = options?.get("filter") as? String ?: DEFAULT_FILTER

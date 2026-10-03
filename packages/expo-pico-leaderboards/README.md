@@ -128,6 +128,17 @@ if (isLeaderboardsAvailable()) {
 | `getUserEntry(apiName)`                             | Returns the current user's entry, or `null` if not on the board     |
 | `writeScore(apiName, score, options?)`              | Writes a score; returns `didUpdate`, `previousScore`, and `newRank` |
 
+### `getEntries` options
+
+| Option    | Values                          | Default                |
+| --------- | ------------------------------- | ---------------------- |
+| `filter`  | `'none'`, `'friends'`           | `'none'`               |
+| `startAt` | `'top'`, `'centered-on-viewer'` | `'centered-on-viewer'` |
+
+`filter: 'viewer-and-friends'` is part of the shared type but PICO has no matching filter, so
+`getEntries` rejects it with code `UNSUPPORTED_FILTER`. Any other unrecognised `filter` or
+`startAt` string rejects with `INVALID_ARGUMENT` instead of falling back to the global board.
+
 ### Pagination
 
 All paginated methods return `PicoPage<T>`:

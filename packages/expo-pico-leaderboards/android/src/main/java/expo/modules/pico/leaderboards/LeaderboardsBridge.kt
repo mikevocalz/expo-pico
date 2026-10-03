@@ -52,13 +52,14 @@ internal object LeaderboardsBridge {
             onSuccess, onError)
     }
 
-    // filter: 0=Global, 1=Friend (per PPS Action constants). startAt: 0=CenteredOnViewer, 1=Top.
+    // filter/startAt are PPS JNI enum ints (ppfLeaderboardFilterType / ppfLeaderboardStartAt),
+    // read at runtime by LeaderboardQueryArgs. Unknown or unsupported strings reject.
     fun getEntries(
         apiName: String, filter: String, startAt: String, pageSize: Int, pageToken: String?,
         onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
     ) = ctx(onError) { c ->
-        val filterInt = parseFilter(filter)
-        val startAtInt = parseStartAt(startAt)
+        val filterInt = resolveOrReject(LeaderboardQueryArgs.filter(filter), onError) ?: return@ctx
+        val startAtInt = resolveOrReject(LeaderboardQueryArgs.startAt(startAt), onError) ?: return@ctx
         val pageInt = pageToken?.toIntOrNull() ?: 0
         PicoPlatformSDK.callTask(c, CLIENT, FACTORY,
             arrayOf("getEntries"),
@@ -84,20 +85,23 @@ internal object LeaderboardsBridge {
     fun getUserEntry(
         apiName: String, onSuccess: (Map<String, Any?>?) -> Unit, onError: (String, String) -> Unit
     ) = ctx(onError) { c ->
+        // Global board, centered on the viewer, page size 1: the viewer's own row,
+        // or an empty page if they have no score yet.
+        val global = resolveOrReject(LeaderboardQueryArgs.filter("none"), onError) ?: return@ctx
+        val centered = resolveOrReject(LeaderboardQueryArgs.centeredOnViewer(), onError) ?: return@ctx
         PicoPlatformSDK.callTask(c, CLIENT, FACTORY,
             arrayOf("getEntries"),
-            arrayOf<Any?>(apiName, 1, 0, 0, 1),  // filter=Friend, startAt=CenteredOnViewer, page=0, pageSize=1
+            arrayOf<Any?>(apiName, global, centered, 0, 1),  // page=0, pageSize=1
             { raw -> PicoPlatformSDK.coerceToList(raw).firstOrNull() },
             onSuccess, onError)
     }
 
-    private fun parseFilter(s: String): Int = when (s.lowercase()) {
-        "friend", "friends" -> 1
-        else -> 0  // global
-    }
-
-    private fun parseStartAt(s: String): Int = when (s.lowercase()) {
-        "top" -> 1
-        else -> 0  // centered on viewer
-    }
+    private fun resolveOrReject(value: PpsEnumValue, onError: (String, String) -> Unit): Int? =
+        when (value) {
+            is PpsEnumValue.Resolved -> value.value
+            is PpsEnumValue.Rejected -> {
+                onError(value.code, value.message)
+                null
+            }
+        }
 }

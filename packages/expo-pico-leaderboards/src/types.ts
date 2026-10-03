@@ -1,4 +1,10 @@
 export type LeaderboardSortOrder = 'descending' | 'ascending';
+/**
+ * `'viewer-and-friends'` is not supported on PICO: the Platform SDK has no such filter
+ * (`ppfLeaderboardFilterType` offers only None, Friends and UserIds), so `getEntries`
+ * rejects it with code `UNSUPPORTED_FILTER`. Any other unknown value rejects with
+ * `INVALID_ARGUMENT`.
+ */
 export type LeaderboardFilter = 'none' | 'friends' | 'viewer-and-friends';
 export type LeaderboardStartAt = 'top' | 'centered-on-viewer';
 
@@ -28,7 +34,9 @@ export interface LeaderboardEntryPage {
 }
 
 export interface GetEntriesOptions {
+  /** Defaults to `'none'` (global board). */
   filter?: LeaderboardFilter;
+  /** Defaults to `'centered-on-viewer'`. */
   startAt?: LeaderboardStartAt;
   pageSize?: number;
   pageToken?: string;
