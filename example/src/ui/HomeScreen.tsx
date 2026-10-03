@@ -5,6 +5,7 @@ import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
 import { isQuest } from '@reactvision/react-viro';
 
 import { IsoCube } from './IsoCube';
+import { SpatialLayoutPreview } from './SpatialLayoutPreview';
 import { useLayout } from './useLayout';
 import { palette, radius, space } from './theme';
 
@@ -96,10 +97,10 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const actions = (
     <View style={[styles.actionCol, L.twoColumn && styles.actionColWide]}>
       <View style={[styles.chips, !L.twoColumn && styles.chipsRow]}>
-        <Chip label="XR MODE" value={info.xrMode} tone={onHeadset ? 'ok' : 'warn'} />
-        <Chip label="APP TYPE" value={info.appType} />
+        <Chip label="XR mode" value={info.xrMode} tone={onHeadset ? 'ok' : 'warn'} />
+        <Chip label="App type" value={info.appType} />
         <Chip
-          label="PLATFORM SDK"
+          label="Platform SDK"
           value={info.platformSdkPresent ? 'live' : 'seam'}
           tone={info.platformSdkPresent ? 'ok' : 'warn'}
         />
@@ -116,9 +117,11 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
 
       <Text style={styles.ctaNote}>
         {onHeadset
-          ? `${info.deviceModel ?? 'Headset'} · immersive session`
+          ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
           : 'No headset detected — the scene renders as a flat preview.'}
       </Text>
+
+      <SpatialLayoutPreview />
 
       <View style={styles.rows}>
         <Row
@@ -196,7 +199,7 @@ const styles = StyleSheet.create({
   },
   chipBody: { flex: 1 },
   chipDot: { width: 7, height: 7, borderRadius: 4 },
-  chipLabel: { color: palette.textFaint, fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
+  chipLabel: { color: palette.textMuted, fontSize: 11, fontWeight: '600' },
   chipValue: { color: palette.text, fontSize: 12, fontWeight: '600' },
 
   cta: {
