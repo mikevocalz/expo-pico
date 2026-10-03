@@ -33,8 +33,14 @@ android {
 repositories {
     mavenCentral()
     google()
+    maven {
+        url "https://artifact.bytedance.com/repository/Volcengine/"
+        content { includeGroup "com.pico.pps" }
+    }
 }
 
 dependencies {
-
+    implementation project(':expo-pico-core')
+    compileOnly "com.pico.pps:platform-service-friend:1.0.0"
+    compileOnly "com.pico.pps:pps_sdk_base:1.0.0"
 }
