@@ -24,7 +24,7 @@ import type {
 export * from './types';
 export * from './layout';
 
-import { layoutReadinessFromProbe } from './layout';
+import { layoutReadinessFromProbe, type PicoSpatialLayoutBridgeStatus } from './layout';
 
 const PKG = '@expo-pico/spatial';
 
@@ -54,6 +54,16 @@ type PicoSpatialV2Native = {
   requestFullSpace(): void;
   getGazeSnapshot(): GazePose | null;
   getSceneMesh(): SceneMeshRaw;
+  // Added with the WindowContainer bridge. Optional because a JS bundle can
+  // run against an older native binary that lacks them.
+  getLayoutBridgeStatus?(): {
+    sdkLinked: boolean;
+    spatialPlatform: boolean;
+    reason?: string | null;
+    lastError?: string | null;
+  };
+  openWindowContainer?(id: string, tag: string | null): boolean;
+  closeWindowContainer?(id: string, tag: string | null): boolean;
 };
 
 let v2Cache: PicoSpatialV2Native | null | undefined;
@@ -160,8 +170,95 @@ export function getSpatialSdkProbe(): Record<string, boolean> {
   return nativeV2()?.getSpatialSdkProbe() ?? {};
 }
 
+/**
+ * Status of the native WindowContainer bridge. Never throws: a missing or
+ * outdated native module is reported through `reason`.
+ */
+export function getLayoutBridgeStatus(): PicoSpatialLayoutBridgeStatus {
+  const v2 = nativeV2();
+  if (!v2) {
+    return unboundStatus('NATIVE_MODULE_UNAVAILABLE: PicoSpatialV2 is not in this binary.');
+  }
+  if (typeof v2.getLayoutBridgeStatus !== 'function') {
+    return unboundStatus(
+      'NATIVE_BRIDGE_OUTDATED: this binary predates getLayoutBridgeStatus. Rebuild the app.'
+    );
+  }
+  const raw = v2.getLayoutBridgeStatus();
+  return {
+    sdkLinked: raw.sdkLinked === true,
+    spatialPlatform: raw.spatialPlatform === true,
+    reason: raw.reason ?? null,
+    lastError: raw.lastError ?? null,
+  };
+}
+
 export function getSpatialLayoutReadiness() {
-  return layoutReadinessFromProbe(getSpatialSdkProbe());
+  return layoutReadinessFromProbe(getSpatialSdkProbe(), getLayoutBridgeStatus());
+}
+
+function unboundStatus(reason: string): PicoSpatialLayoutBridgeStatus {
+  return { sdkLinked: false, spatialPlatform: false, reason, lastError: null };
+}
+
+// ─── WindowContainers (PICO OS 6) ────────────────────────────────────────────
+
+export interface WindowContainerOptions {
+  /** Passed through to the SDK to tell apart containers that share an id. */
+  tag?: string;
+}
+
+export type WindowContainerResult = { ok: true } | { ok: false; reason: string };
+
+type WindowContainerCall = 'openWindowContainer' | 'closeWindowContainer';
+
+function callWindowContainer(
+  method: WindowContainerCall,
+  id: string,
+  options: WindowContainerOptions
+): WindowContainerResult {
+  if (typeof id !== 'string' || id.trim() === '') {
+    return { ok: false, reason: 'INVALID_ID: id must be a non-empty string.' };
+  }
+  const status = getLayoutBridgeStatus();
+  if (!status.sdkLinked || !status.spatialPlatform) {
+    return { ok: false, reason: status.reason ?? 'BRIDGE_NOT_READY' };
+  }
+  const v2 = nativeV2();
+  if (!v2 || typeof v2[method] !== 'function') {
+    return { ok: false, reason: `NATIVE_BRIDGE_OUTDATED: this binary has no ${method}.` };
+  }
+  if (v2[method]!(id, options.tag ?? null) === true) return { ok: true };
+  const after = getLayoutBridgeStatus();
+  return {
+    ok: false,
+    reason:
+      after.lastError ??
+      `SDK_CALL_FAILED: ${method} returned false; see logcat tag ExpoPicoSpatial.`,
+  };
+}
+
+/**
+ * Opens a PICO OS 6 WindowContainer named `id` hosting the app's current
+ * activity. On PICO OS 5, phones, or builds without the Spatial SDK
+ * (`enableSpatialSdk`), resolves to `{ ok: false, reason }` and never throws.
+ *
+ * `ok: true` means the SDK call returned without throwing. The SDK gives no
+ * completion signal, so it does not confirm the window is on screen yet.
+ */
+export function openWindowContainer(
+  id: string,
+  options: WindowContainerOptions = {}
+): WindowContainerResult {
+  return callWindowContainer('openWindowContainer', id, options);
+}
+
+/** Closes the WindowContainer opened with the same `id` and `tag`. */
+export function closeWindowContainer(
+  id: string,
+  options: WindowContainerOptions = {}
+): WindowContainerResult {
+  return callWindowContainer('closeWindowContainer', id, options);
 }
 
 // ─── Spatial anchors ─────────────────────────────────────────────────────────
