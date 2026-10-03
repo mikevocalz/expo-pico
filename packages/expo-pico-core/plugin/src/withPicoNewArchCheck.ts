@@ -33,7 +33,7 @@ export const withPicoNewArchCheck: ConfigPlugin<ResolvedPicoOptions> = (config, 
     WarningAggregator.addWarningAndroid(
       TAG,
       `xrMode '${options.xrMode}' expects newArchEnabled: true. ` +
-        'PicoCorePackage relies on the New Architecture package registration shape. ' +
+        'The Expo Modules v2 core module and the VR activity flag guard need the New Architecture. ' +
         "Set 'newArchEnabled: true' in app.config.{ts,js,json} (top-level)."
     );
   }

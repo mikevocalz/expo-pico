@@ -33,7 +33,7 @@ import { withPicoSwan } from './withPicoSwan';
  *   6. Swan composite (Swan-only Gradle deps + optional source set)
  *   7. strings.xml
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
- *   9. MainApplication injection (PicoCorePackage with xrMode platform)
+ *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
  */
 const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) => {

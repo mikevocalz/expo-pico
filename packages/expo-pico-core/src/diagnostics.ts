@@ -147,7 +147,7 @@ export function buildDiagnosticsReport(
       message: 'xrMode=pico-swan but PicoSwanRuntime.initialize has not run yet.',
       hint:
         'Normal if you are reading diagnostics before MainApplication.onCreate resolves. ' +
-        'If this persists, verify the PicoCorePackage registration in MainApplication.kt.',
+        'If this persists, check that @expo-pico/core is autolinked (npx expo-modules-autolinking verify).',
     });
   }
 
