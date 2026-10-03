@@ -36,7 +36,7 @@ export function getNotificationsSdkVersion(): string {
 }
 
 export function getNotificationPermissionStatus(): NotificationPermissionStatus {
-  return native()?.permissionStatus ?? 'not-determined';
+  return native()?.getPermissionStatus() ?? 'not-determined';
 }
 
 export async function requestPermissions() {

@@ -29,8 +29,9 @@ export interface PicoPushRevocation {
 export interface PicoNotifications {
   readonly available: boolean;
   readonly sdkVersion: string;
-  readonly permissionStatus: NotificationPermissionStatus;
 
+  /** Live read; the status changes after `requestPermissions()` resolves. */
+  getPermissionStatus(): NotificationPermissionStatus;
   requestPermissions(): Promise<NotificationPermissionResult>;
   registerForPushNotifications(): Promise<NotificationToken>;
   /** Releases the push token. The device stops receiving pushes for this app. */

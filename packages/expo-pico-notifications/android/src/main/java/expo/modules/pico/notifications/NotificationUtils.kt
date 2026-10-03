@@ -6,6 +6,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
 object NotificationUtils {
@@ -32,15 +33,39 @@ object NotificationUtils {
         ) || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     }
 
+    private const val PREFS = "expo-pico-notifications"
+    private const val KEY_REQUESTED = "postNotificationsRequested"
+
+    /**
+     * Live notification permission as the JS `NotificationPermissionStatus`.
+     *
+     * Android has no "never asked" API, so "not-determined" means API 33+, not
+     * granted, and this module hasn't shown the prompt yet (tracked in prefs).
+     * Below API 33 there is no runtime prompt: notifications are on unless the
+     * user turned them off in Settings.
+     */
     fun getPermissionStatus(context: Context?): String {
-        if (context == null) return "undetermined"
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return "granted"
-        return when (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.POST_NOTIFICATIONS
-        )) {
-            PackageManager.PERMISSION_GRANTED -> "granted"
-            else -> "undetermined"
+        if (context == null) return "not-determined"
+        val enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return if (enabled) "granted" else "denied"
+        }
+        val granted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        return when {
+            granted && enabled -> "granted"
+            granted -> "denied"  // granted, then switched off in Settings
+            wasRequested(context) -> "denied"
+            else -> "not-determined"
         }
     }
+
+    fun markRequested(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_REQUESTED, true).apply()
+    }
+
+    private fun wasRequested(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_REQUESTED, false)
 }
