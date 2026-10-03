@@ -15,20 +15,6 @@ internal object NotificationsBridge {
         return runCatching { PPSPushClient.getClientImpl(context) }.getOrNull()
     }
 
-    fun permissionStatus(): String =
-        if (client() == null) "denied" else "not-determined"
-
-    fun requestPermissions(
-        onSuccess: (Map<String, Any?>) -> Unit,
-        onError: (String, String) -> Unit,
-    ) {
-        if (client() == null) {
-            onError("SERVICE_UNAVAILABLE", "PICO push service is unavailable")
-            return
-        }
-        onSuccess(mapOf("status" to permissionStatus(), "prompted" to false))
-    }
-
     fun registerForPushNotifications(
         appId: String,
         fcmToken: String,

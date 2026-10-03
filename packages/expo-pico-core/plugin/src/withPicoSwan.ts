@@ -99,8 +99,7 @@ function stripMarkedBlock(source: string): string {
  * existing `mobile`/`pico` flavor split owned by withPicoAppBuildGradle.
  *
  * The seam is intentionally minimal: a single `object PicoSwanBootstrap`
- * with a no-op `init()` that the app can call from MainApplication after
- * the PicoCorePackage is registered.
+ * with a no-op `init()` that the app can call from MainApplication.onCreate.
  */
 const withSwanSourceSet: ConfigPlugin<ResolvedPicoOptions> = (config, _options) => {
   return withDangerousMod(config, [

@@ -132,22 +132,22 @@ internal object RoomsBridge {
 
     fun createRoom(
         _joinPolicy: String, _maxMembers: Int, _data: Map<String, String>,
-        _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+        onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
     ) = notInPps("createRoom", onError)
 
     fun joinRoom(
-        _roomId: String, _onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
+        _roomId: String, onSuccess: (Map<String, Any?>) -> Unit, onError: (String, String) -> Unit
     ) = notInPps("joinRoom", onError)
 
     fun leaveRoom(
-        _onSuccess: () -> Unit, onError: (String, String) -> Unit
+        onSuccess: () -> Unit, onError: (String, String) -> Unit
     ) = notInPps("leaveRoom", onError)
 
     fun kickUser(
-        _userId: String, _onSuccess: () -> Unit, onError: (String, String) -> Unit
+        _userId: String, onSuccess: () -> Unit, onError: (String, String) -> Unit
     ) = notInPps("kickUser", onError)
 
     fun updateRoomData(
-        _data: Map<String, String>, _onSuccess: () -> Unit, onError: (String, String) -> Unit
+        _data: Map<String, String>, onSuccess: () -> Unit, onError: (String, String) -> Unit
     ) = notInPps("updateRoomData", onError)
 }

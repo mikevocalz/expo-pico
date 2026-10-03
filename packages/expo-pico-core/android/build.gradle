@@ -160,6 +160,7 @@ repositories {
 }
 
 dependencies {
+    implementation "com.facebook.react:react-android"
     // PICO Platform SDK AAR — compile-only for controller haptics, so it is
     // never bundled into the published npm package. Consumers place the AAR
     // under vendor/pico-sdk/. See vendor/pico-sdk/README.md.

@@ -38,10 +38,18 @@ class ExpoPicoRoomsModule : Module() {
       )
     }
 
-    // AsyncFunction: Expo Modules automatically runs on a background thread.
-    // Data type note: Map<String, String> is bridged from JS object automatically.
-    AsyncFunction("createRoom") { joinPolicy: String, maxMembers: Int, data: Map<String, String>, promise: Promise ->
+    // JS: createRoom(options?: CreateRoomOptions { joinPolicy?, maxMembers?, data? })
+    // CreateRoomOptions declares no defaults. The PPS 1.0 bridge rejects NOT_IN_PPS_1_0
+    // regardless, so these fallbacks only exist to keep the signature total.
+    AsyncFunction("createRoom") { options: Map<String, Any?>?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val joinPolicy = options?.get("joinPolicy") as? String ?: "everyone"
+      val maxMembers = (options?.get("maxMembers") as? Number)?.toInt() ?: 0
+      val data = (options?.get("data") as? Map<*, *>)
+        ?.entries
+        ?.mapNotNull { (k, v) -> if (k is String && v is String) k to v else null }
+        ?.toMap()
+        .orEmpty()
       connectionState.set("connecting")
       RoomsBridge.createRoom(joinPolicy, maxMembers, data,
         onSuccess = { bundle ->

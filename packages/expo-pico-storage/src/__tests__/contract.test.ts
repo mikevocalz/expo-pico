@@ -1,9 +1,7 @@
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => {
-      throw new Error('HybridObject not available in test environment');
-    }),
-  },
+// Simulates a build with no PICO native library: the Expo module lookup
+// in @expo-pico/platform-service-common returns null.
+jest.mock('expo-modules-core', () => ({
+  requireOptionalNativeModule: jest.fn(() => null),
 }));
 import * as api from '../index';
 import { runPackageContractTests } from '@expo-pico/platform-service-common/testing';
@@ -28,4 +26,11 @@ runPackageContractTests({
     'addStorageSyncCompleteListener',
   ],
   seamMethods: [],
+});
+
+describe('native module resolution', () => {
+  it('resolves the ExpoPicoStorage Expo module', () => {
+    const { requireOptionalNativeModule } = jest.requireMock('expo-modules-core');
+    expect(requireOptionalNativeModule).toHaveBeenCalledWith('ExpoPicoStorage');
+  });
 });

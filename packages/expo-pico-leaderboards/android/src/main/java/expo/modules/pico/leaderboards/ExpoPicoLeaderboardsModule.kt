@@ -25,28 +25,40 @@ class ExpoPicoLeaderboardsModule : Module() {
       )
     }
 
-    // score: Long — JS numbers bridged to Long for 64-bit score support
-    // extraData: String? — nullable bridged from JS null
-    // supplementaryMetric: Double? — nullable metric
-    // forceUpdate: Boolean
-    AsyncFunction("writeScore") { apiName: String, score: Long, extraData: String?, supplementaryMetric: Double?, forceUpdate: Boolean, promise: Promise ->
+    // JS: writeScore(apiName, score, options?: WriteScoreOptions { extraData?, supplementaryMetric?, forceUpdate? })
+    // score arrives as a JS number and is bridged to Long for 64-bit scores.
+    AsyncFunction("writeScore") { apiName: String, score: Long, options: Map<String, Any?>?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val extraData = options?.get("extraData") as? String
+      val supplementaryMetric = (options?.get("supplementaryMetric") as? Number)?.toDouble()
+      val forceUpdate = options?.get("forceUpdate") as? Boolean ?: false
       LeaderboardsBridge.writeScore(apiName, score, extraData, supplementaryMetric, forceUpdate,
         onSuccess = { bundle -> promise.resolve(bundle) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
     }
 
-    AsyncFunction("getEntries") { apiName: String, filter: String, startAt: String, pageSize: Int, pageToken: String?, promise: Promise ->
+    // JS: getEntries(apiName, options?: GetEntriesOptions { filter?, startAt?, pageSize?, pageToken? })
+    // Missing filter/startAt default to 'none' / 'centered-on-viewer'; pageSize defaults to 20.
+    // 'viewer-and-friends' rejects UNSUPPORTED_FILTER; unknown strings reject INVALID_ARGUMENT.
+    AsyncFunction("getEntries") { apiName: String, options: Map<String, Any?>?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val filter = options?.get("filter") as? String ?: DEFAULT_FILTER
+      val startAt = options?.get("startAt") as? String ?: DEFAULT_START_AT
+      val pageSize = (options?.get("pageSize") as? Number)?.toInt() ?: DEFAULT_PAGE_SIZE
+      val pageToken = options?.get("pageToken") as? String
       LeaderboardsBridge.getEntries(apiName, filter, startAt, pageSize, pageToken,
         onSuccess = { bundle -> promise.resolve(bundle) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
     }
 
-    AsyncFunction("getEntriesAfterRank") { apiName: String, afterRank: Int, pageSize: Int, pageToken: String?, promise: Promise ->
+    // JS: getEntriesAfterRank(apiName, afterRank, options?: GetEntriesOptions)
+    // PPS getEntriesAfterRank has no filter/startAt; only pageSize and pageToken are read.
+    AsyncFunction("getEntriesAfterRank") { apiName: String, afterRank: Int, options: Map<String, Any?>?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val pageSize = (options?.get("pageSize") as? Number)?.toInt() ?: DEFAULT_PAGE_SIZE
+      val pageToken = options?.get("pageToken") as? String
       LeaderboardsBridge.getEntriesAfterRank(apiName, afterRank, pageSize, pageToken,
         onSuccess = { bundle -> promise.resolve(bundle) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
@@ -60,6 +72,12 @@ class ExpoPicoLeaderboardsModule : Module() {
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
     }
+  }
+
+  private companion object {
+    const val DEFAULT_FILTER = "none"
+    const val DEFAULT_START_AT = "centered-on-viewer"
+    const val DEFAULT_PAGE_SIZE = 20
   }
 
   private inline fun guardAvailability(promise: Promise, earlyReturn: () -> Unit) {

@@ -18,7 +18,10 @@ object PicoCoreV2 : Module() {
   private fun splitList(value: String): List<String> =
     value.split(',').map(String::trim).filter(String::isNotEmpty)
 
+  // PICO 4 Ultra (A9210, PICO OS 5.15) declares neither system feature, so the
+  // manufacturer is the primary signal; the features cover older OS builds.
   private fun isPicoDevice(): Boolean {
+    if (android.os.Build.MANUFACTURER.equals("pico", ignoreCase = true)) return true
     val pm = reactContextOrNull?.packageManager ?: return false
     return DEVICE_FEATURES.any { runCatching { pm.hasSystemFeature(it) }.getOrDefault(false) }
   }
@@ -50,6 +53,9 @@ object PicoCoreV2 : Module() {
   @JS
   fun getInfo(): Map<String, Any?> {
     val probe = platformSdkProbe()
+    // PPS (com.pico.pps.*) is what the platform-service modules call; the
+    // probe map only covers the legacy loginpay SDK and the PXR plugin.
+    val sdkPresent = probe.values.any { it } || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     return mapOf(
       "apiVersion" to 2,
       "isPicoBuild" to (BuildConfig.PICO_XR_MODE != "mobile"),
@@ -63,7 +69,9 @@ object PicoCoreV2 : Module() {
       "picoAppKey" to BuildConfig.PICO_APP_KEY.takeIf(String::isNotEmpty),
       "hasPlatformIdentity" to BuildConfig.PICO_HAS_PLATFORM_IDENTITY,
       "hasIapIdentity" to BuildConfig.PICO_HAS_IAP_IDENTITY,
-      "picoOsVersion" to android.os.Build.VERSION.RELEASE.takeIf { isPicoDevice() && it.isNotEmpty() },
+      // PICO OS puts its own version (e.g. "5.15.7") in ro.build.display.id;
+      // VERSION.RELEASE is the Android version.
+      "picoOsVersion" to android.os.Build.DISPLAY.takeIf { isPicoDevice() && it.isNotEmpty() },
       "deviceModel" to android.os.Build.MODEL.takeIf(String::isNotEmpty),
       "emulatorOptimizations" to BuildConfig.PICO_EMULATOR_OPTIMIZATIONS,
       "swanRuntimeInitialized" to (
@@ -72,8 +80,8 @@ object PicoCoreV2 : Module() {
       "os5RuntimeInitialized" to (
         BuildConfig.PICO_XR_MODE == "pico-os5" && classPresent(OS5_RUNTIME_CLASS)
       ),
-      "platformSdkPresent" to probe.values.any { it },
-      "platformSdkVersion" to if (probe.values.any { it }) "present" else null,
+      "platformSdkPresent" to sdkPresent,
+      "platformSdkVersion" to if (sdkPresent) "present" else null,
     )
   }
 

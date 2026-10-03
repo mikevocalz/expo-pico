@@ -14,7 +14,7 @@ PICO platform subscription billing and entitlement for Expo apps.
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts
@@ -55,7 +55,7 @@ apply to one-time consumable/durable products.
 ## Installation
 
 ```sh
-yarn add @expo-pico/subscription react-native-nitro-modules
+yarn add @expo-pico/subscription
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:

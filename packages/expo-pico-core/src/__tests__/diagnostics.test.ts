@@ -1,13 +1,8 @@
-// The diagnostics module imports ExpoPicoModule (which calls
-// `requireNativeModule` at import time). Jest runs in Node with no
-// native bridge, so stub the module before the import chain resolves.
-// We only test the pure reducer + formatter here, neither of which
-// touches the native mock, so returning an empty object is enough.
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => ({})),
-  },
-}));
+// The diagnostics module imports ExpoPicoModule, which resolves the
+// PicoCoreV2 / PicoRuntimeV2 Expo modules lazily through
+// requireOptionalNativeModule. Jest maps expo-modules-core to a stub that
+// returns null, so the import chain loads with no native bridge. Only the pure
+// reducer and formatter are tested here; neither touches the native module.
 
 import {
   buildDiagnosticsReport,

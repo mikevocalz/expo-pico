@@ -30,10 +30,10 @@ const EVENT_METHODS: Record<string, Record<string, string>> = {
     addUserLeftListener: 'onRtcUserLeft',
     addRtcStateChangeListener: 'onRtcStateChange',
   },
+  // PPS 1.0.x only pushes launch-intent changes. Friend presence, friend
+  // requests and invites have no PPS listener, so @expo-pico/social does not
+  // route them here.
   PicoSocial: {
-    addFriendPresenceChangedListener: 'onFriendPresenceChanged',
-    addFriendRequestReceivedListener: 'onFriendRequestReceived',
-    addInviteReceivedListener: 'onInviteReceived',
     addLaunchDetailsListener: 'onLaunchDetails',
   },
   PicoStorage: {

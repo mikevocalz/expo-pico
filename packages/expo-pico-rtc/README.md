@@ -24,7 +24,7 @@ Typed seam for real-time voice communication (RTC) on PICO OS 6.
 ## Installation
 
 ```sh
-yarn add @expo-pico/rtc react-native-nitro-modules
+yarn add @expo-pico/rtc
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:

@@ -1,4 +1,6 @@
-const mockModule = {
+// PicoCoreV2.getInfo() payload. Read on every property access, so mutating
+// it between assertions is visible to the API without re-importing.
+const mockInfo: Record<string, unknown> = {
   isPicoBuild: true,
   isPicoDevice: false,
   spatialMode: 'immersive',
@@ -10,10 +12,10 @@ const mockModule = {
   emulatorOptimizations: false,
 };
 
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => mockModule),
-  },
+jest.mock('expo-modules-core', () => ({
+  requireOptionalNativeModule: jest.fn((name: string) =>
+    name === 'PicoCoreV2' ? { getInfo: () => mockInfo } : null
+  ),
 }));
 
 import {
@@ -32,7 +34,7 @@ describe('expo-pico-core — runtime JS API', () => {
     });
 
     it('reflects the native module value', () => {
-      expect(isPicoBuild()).toBe(mockModule.isPicoBuild);
+      expect(isPicoBuild()).toBe(mockInfo.isPicoBuild);
     });
   });
 
@@ -42,7 +44,7 @@ describe('expo-pico-core — runtime JS API', () => {
     });
 
     it('reflects the native module value', () => {
-      expect(isPicoDevice()).toBe(mockModule.isPicoDevice);
+      expect(isPicoDevice()).toBe(mockInfo.isPicoDevice);
     });
   });
 
@@ -57,13 +59,13 @@ describe('expo-pico-core — runtime JS API', () => {
     });
 
     it('falls back to 2d for an unknown spatialMode value', () => {
-      const original = mockModule.spatialMode;
-      mockModule.spatialMode = 'bogus-value';
-      // Re-import after module state change requires jest.resetModules or
-      // testing the guard directly. Instead verify guard handles unknown values.
-      // The getSpatialMode function checks against the valid array; this test
-      // verifies the fallback logic path exists via the type narrowing in index.ts.
-      mockModule.spatialMode = original;
+      const original = mockInfo.spatialMode;
+      mockInfo.spatialMode = 'bogus-value';
+      try {
+        expect(getSpatialMode()).toBe('2d');
+      } finally {
+        mockInfo.spatialMode = original;
+      }
     });
   });
 

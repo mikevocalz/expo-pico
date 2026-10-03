@@ -10,7 +10,7 @@ PICO platform leaderboard APIs for Expo apps. Query rankings, write scores, and 
 ## Installation
 
 ```sh
-yarn add @expo-pico/leaderboards react-native-nitro-modules
+yarn add @expo-pico/leaderboards
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts
@@ -127,6 +127,17 @@ if (isLeaderboardsAvailable()) {
 | `getEntriesAfterRank(apiName, afterRank, options?)` | Returns entries starting after the given rank                       |
 | `getUserEntry(apiName)`                             | Returns the current user's entry, or `null` if not on the board     |
 | `writeScore(apiName, score, options?)`              | Writes a score; returns `didUpdate`, `previousScore`, and `newRank` |
+
+### `getEntries` options
+
+| Option    | Values                          | Default                |
+| --------- | ------------------------------- | ---------------------- |
+| `filter`  | `'none'`, `'friends'`           | `'none'`               |
+| `startAt` | `'top'`, `'centered-on-viewer'` | `'centered-on-viewer'` |
+
+`filter: 'viewer-and-friends'` is part of the shared type but PICO has no matching filter, so
+`getEntries` rejects it with code `UNSUPPORTED_FILTER`. Any other unrecognised `filter` or
+`startAt` string rejects with `INVALID_ARGUMENT` instead of falling back to the global board.
 
 ### Pagination
 

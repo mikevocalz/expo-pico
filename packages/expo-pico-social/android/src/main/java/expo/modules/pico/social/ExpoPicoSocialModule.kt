@@ -5,16 +5,56 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.Promise
 
 class ExpoPicoSocialModule : Module() {
+  private val launchDetailsSink: (Map<String, Any?>) -> Unit = { details ->
+    sendEvent("onLaunchDetails", details)
+  }
+
   override fun definition() = ModuleDefinition {
     Name("ExpoPicoSocial")
 
-    Events("onFriendPresenceChanged", "onFriendRequestReceived", "onInviteReceived")
+    // PPS 1.0 pushes launch-intent changes only. It has no listener for friend
+    // presence, incoming friend requests or invites (see SocialLaunchDetails and
+    // the README), so those events are not declared.
+    Events("onLaunchDetails")
+
+    // Register the PPS callback before init: init replays the launch intent
+    // through the same callback list.
+    OnCreate {
+      SocialLaunchDetails.sink = launchDetailsSink
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+    }
+
+    OnActivityEntersForeground {
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+    }
+
+    // An invite accepted while the app runs arrives as a new intent. PPS decides
+    // whether it carries PICO launch keys and fires the callback if so.
+    OnNewIntent { intent ->
+      SocialLaunchDetails.registerCallbackIfNeeded(appContext.reactContext)
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+      SocialLaunchDetails.onNewIntent(intent)
+    }
+
+    // A JS reload can create the next module before this one is destroyed, so
+    // only clear the sink if it is still ours.
+    OnDestroy {
+      if (SocialLaunchDetails.sink === launchDetailsSink) SocialLaunchDetails.sink = null
+    }
 
     Constants {
       mapOf(
         "socialSdkAvailable" to SocialUtils.isSocialSdkAvailable(),
         "socialSdkVersion"   to SocialUtils.getSocialSdkVersion()
       )
+    }
+
+    // Synchronous: PPS returns LaunchDetails from a getter. Never throws.
+    Function("getLaunchDetails") {
+      SocialLaunchDetails.initIfNeeded(appContext.currentActivity)
+      SocialLaunchDetails.read(appContext.reactContext)
     }
 
     AsyncFunction("getCurrentUser") { promise: Promise ->
@@ -25,9 +65,11 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    AsyncFunction("getFriendList") { pageToken: String?, pageSize: Int, promise: Promise ->
+    // JS: getFriendList(pageSize?, pageToken?). The bridge ignores both (PPS getFriends()
+    // takes no paging args), so the 20 default only matters if paging is wired later.
+    AsyncFunction("getFriendList") { pageSize: Int?, pageToken: String?, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
-      SocialBridge.getFriendList(pageToken, pageSize,
+      SocialBridge.getFriendList(pageToken, pageSize ?: DEFAULT_FRIEND_PAGE_SIZE,
         onSuccess = { map -> promise.resolve(map) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
@@ -89,9 +131,13 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    // status: String, richText: String?, destinationApiName: String?
-    AsyncFunction("setPresence") { status: String, richText: String?, destinationApiName: String?, promise: Promise ->
+    // JS: setPresence(options: PresenceOptions { status, richText?, destinationApiName? })
+    AsyncFunction("setPresence") { options: Map<String, Any?>, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val status = options["status"] as? String
+        ?: return@AsyncFunction promise.reject("INVALID_ARGUMENT", "status is required", null)
+      val richText = options["richText"] as? String
+      val destinationApiName = options["destinationApiName"] as? String
       SocialBridge.setPresence(status, richText, destinationApiName,
         onSuccess = { promise.resolve(null) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
@@ -106,10 +152,14 @@ class ExpoPicoSocialModule : Module() {
       )
     }
 
-    // destinationApiName: String, userIds: List<String>, data: Map<String, String>
-    AsyncFunction("sendInvites") { destinationApiName: String, userIds: List<String>, data: Map<String, String>, promise: Promise ->
+    // options: InviteOptions { destinationApiName, userIds, data? } — JS passes one object.
+    // PPS sendInvites takes no payload, so `data` is not forwarded.
+    AsyncFunction("sendInvites") { options: Map<String, Any?>, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
-      SocialBridge.sendInvites(destinationApiName, userIds, data,
+      val destinationApiName = options["destinationApiName"] as? String
+        ?: return@AsyncFunction promise.reject("INVALID_ARGUMENT", "destinationApiName is required", null)
+      val userIds = (options["userIds"] as? List<*>)?.filterIsInstance<String>().orEmpty()
+      SocialBridge.sendInvites(userIds, destinationApiName,
         onSuccess = { list -> promise.resolve(list) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
@@ -124,26 +174,8 @@ class ExpoPicoSocialModule : Module() {
     }
   }
 
-  internal fun emitFriendPresenceChanged(userId: String, previous: String, current: String, richText: String?) {
-    sendEvent("onFriendPresenceChanged", mapOf(
-      "userId"         to userId,
-      "previousStatus" to previous,
-      "currentStatus"  to current,
-      "richText"       to richText
-    ))
-  }
-
-  internal fun emitFriendRequestReceived(requestMap: Map<String, Any?>) {
-    sendEvent("onFriendRequestReceived", mapOf("request" to requestMap))
-  }
-
-  internal fun emitInviteReceived(inviteId: String, fromUser: Map<String, Any?>, destinationApiName: String, data: Map<String, String>) {
-    sendEvent("onInviteReceived", mapOf(
-      "inviteId"           to inviteId,
-      "fromUser"           to fromUser,
-      "destinationApiName" to destinationApiName,
-      "data"               to data
-    ))
+  private companion object {
+    const val DEFAULT_FRIEND_PAGE_SIZE = 20
   }
 
   private inline fun guardAvailability(promise: Promise, earlyReturn: () -> Unit) {

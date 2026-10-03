@@ -23,7 +23,7 @@ Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project 
 ## Install
 
 ```bash
-yarn add @expo-pico/core react-native-nitro-modules
+yarn add @expo-pico/core
 ```
 
 ## Quick start

@@ -1,10 +1,7 @@
-// Simulates a build with no PICO native library present.
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => {
-      throw new Error('HybridObject not available in test environment');
-    }),
-  },
+// Simulates a build with no PICO native library: the Expo module lookup
+// in @expo-pico/platform-service-common returns null.
+jest.mock('expo-modules-core', () => ({
+  requireOptionalNativeModule: jest.fn(() => null),
 }));
 
 // Ensure @expo-pico/platform-service-common uses real implementations
@@ -39,8 +36,8 @@ runPackageContractTests({
 describe('getRoomSessionState default state', () => {
   it('returns typed default when native is unavailable', () => {
     const state = api.getRoomSessionState();
-    // Nitro specs have no null — roomId/role are optional, so an absent
-    // value is undefined rather than the null the pre-Nitro API returned.
+    // roomId and role are optional on RoomSessionState, so an absent value
+    // is undefined rather than null.
     expect(state.connectionState).toBe('disconnected');
     expect(state.roomId).toBeUndefined();
     expect(state.memberCount).toBe(0);
@@ -49,5 +46,12 @@ describe('getRoomSessionState default state', () => {
 
   it('does not throw when native is unavailable', () => {
     expect(() => api.getRoomSessionState()).not.toThrow();
+  });
+});
+
+describe('native module resolution', () => {
+  it('resolves the ExpoPicoRooms Expo module', () => {
+    const { requireOptionalNativeModule } = jest.requireMock('expo-modules-core');
+    expect(requireOptionalNativeModule).toHaveBeenCalledWith('ExpoPicoRooms');
   });
 });

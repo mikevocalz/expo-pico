@@ -10,7 +10,7 @@ PICO platform achievements APIs for Expo apps. Unlock, track progress, and liste
 ## Installation
 
 ```sh
-yarn add @expo-pico/achievements react-native-nitro-modules
+yarn add @expo-pico/achievements
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts

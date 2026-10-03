@@ -181,8 +181,5 @@ export interface PicoSocial {
   /** Shares up to a handful of images to the PICO social feed. */
   shareImages(imagePaths: string[]): Promise<boolean>;
 
-  addFriendPresenceChangedListener(listener: (event: FriendPresenceChangedEvent) => void): number;
-  addFriendRequestReceivedListener(listener: (request: FriendRequest) => void): number;
-  addInviteReceivedListener(listener: (event: InviteReceivedEvent) => void): number;
   removeListener(id: number): void;
 }

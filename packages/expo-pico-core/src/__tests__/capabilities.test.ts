@@ -9,8 +9,8 @@
  * be exercised on a real device — these tests cover the JS layer only.
  */
 
-const mockModule = {
-  declaredCapabilities: {
+const mockDeclared: { capabilities: Record<string, boolean> | undefined } = {
+  capabilities: {
     handTracking: true,
     passthrough: true,
     sceneUnderstanding: false,
@@ -30,10 +30,17 @@ const mockModule = {
     developerTools: false,
     entitlementCheck: false,
   },
-  declaredRefreshRates: [72, 90],
-  declaredTargetDevices: ['pico-4-ultra', 'swan'],
+};
 
-  getCapabilitySnapshot: jest.fn(async () => [
+// PicoCoreV2 Expo module. Native functions are synchronous; the adapter in
+// ExpoPicoModule.ts wraps them in promises.
+const mockCore = {
+  getInfo: jest.fn(() => ({})),
+  getDeclaredCapabilities: jest.fn(() => mockDeclared.capabilities),
+  getDeclaredRefreshRates: jest.fn(() => [72, 90]),
+  getDeclaredTargetDevices: jest.fn(() => ['pico-4-ultra', 'swan']),
+
+  getCapabilitySnapshot: jest.fn((): unknown => [
     {
       name: 'eyeTracking',
       declared: true,
@@ -44,45 +51,49 @@ const mockModule = {
       fullyAvailable: false,
     },
   ]),
-  isCapabilityAvailable: jest.fn(async () => false),
+  isCapabilityAvailable: jest.fn((): unknown => false),
+};
 
-  getCurrentRefreshRate: jest.fn(async () => 72),
-  getSupportedRefreshRates: jest.fn(async () => [72, 90, 120]),
-  setRefreshRate: jest.fn(async () => true),
-  getFoveationLevel: jest.fn(async () => 'medium'),
-  setFoveationLevel: jest.fn(async () => true),
-  setPassthroughEnabled: jest.fn(async () => true),
-  isPassthroughActive: jest.fn(async () => false),
+// PicoRuntimeV2 Expo module.
+const mockRuntime = {
+  getAvailability: jest.fn(() => ({ hapticsAvailable: true, passthroughAvailable: true })),
+  getCurrentRefreshRate: jest.fn((): unknown => 72),
+  getSupportedRefreshRates: jest.fn((): unknown => [72, 90, 120]),
+  setRefreshRate: jest.fn((): unknown => true),
+  getFoveationLevel: jest.fn((): unknown => 'medium'),
+  setFoveationLevel: jest.fn((): unknown => true),
+  setPassthroughEnabled: jest.fn((): unknown => true),
+  isPassthroughActive: jest.fn((): unknown => false),
 
-  enableEyeTracking: jest.fn(async () => false),
-  disableEyeTracking: jest.fn(async () => false),
-  getEyePose: jest.fn(async () => null),
-  enableFaceTracking: jest.fn(async () => false),
-  disableFaceTracking: jest.fn(async () => false),
-  getFaceWeights: jest.fn(async () => null),
-  enableBodyTracking: jest.fn(async () => false),
-  disableBodyTracking: jest.fn(async () => false),
-  getBodyJoints: jest.fn(async () => null),
-  enableHandTracking: jest.fn(async () => true),
-  disableHandTracking: jest.fn(async () => true),
-  getHandPose: jest.fn(async () => null),
+  enableEyeTracking: jest.fn((): unknown => false),
+  disableEyeTracking: jest.fn((): unknown => false),
+  getEyePose: jest.fn((): unknown => null),
+  enableFaceTracking: jest.fn((): unknown => false),
+  disableFaceTracking: jest.fn((): unknown => false),
+  getFaceWeights: jest.fn((): unknown => null),
+  enableBodyTracking: jest.fn((): unknown => false),
+  disableBodyTracking: jest.fn((): unknown => false),
+  getBodyJoints: jest.fn((): unknown => null),
+  enableHandTracking: jest.fn((): unknown => true),
+  disableHandTracking: jest.fn((): unknown => true),
+  getHandPose: jest.fn((): unknown => null),
 
-  isBoundaryVisible: jest.fn(async () => null),
-  setBoundaryVisible: jest.fn(async () => false),
-  getBoundaryGeometry: jest.fn(async () => null),
-  refreshSceneMesh: jest.fn(async () => false),
-  getSceneMeshTriangleCount: jest.fn(async () => null),
-  getDetectedPlanes: jest.fn(async () => null),
-  refreshScene: jest.fn(async () => false),
+  isBoundaryVisible: jest.fn((): unknown => null),
+  setBoundaryVisible: jest.fn((): unknown => false),
+  getBoundaryGeometry: jest.fn((): unknown => null),
+  refreshSceneMesh: jest.fn((): unknown => false),
+  getSceneMeshTriangleCount: jest.fn((): unknown => null),
+  getDetectedPlanes: jest.fn((): unknown => null),
+  refreshScene: jest.fn((): unknown => false),
 
-  getControllers: jest.fn(async () => [
+  getControllers: jest.fn((): unknown => [
     { hand: 'left', connected: true, batteryPct: 85, model: 'PICO 4 Ultra' },
     { hand: 'right', connected: true, batteryPct: 90, model: 'PICO 4 Ultra' },
   ]),
-  triggerHaptic: jest.fn(async () => true),
-  getMotionTrackers: jest.fn(async () => []),
+  triggerHaptic: jest.fn((): unknown => true),
+  getMotionTrackers: jest.fn((): unknown => []),
 
-  getHighRateSensors: jest.fn(async () => [
+  getHighRateSensors: jest.fn((): unknown => [
     {
       type: 'gyroscope',
       vendor: 'STMicro',
@@ -92,15 +103,17 @@ const mockModule = {
     },
   ]),
 
-  isSpatialAudioEnabled: jest.fn(async () => null),
-  setSpatialAudioEnabled: jest.fn(async () => false),
-  getHrtfProfile: jest.fn(async () => null),
+  isSpatialAudioEnabled: jest.fn((): unknown => null),
+  setSpatialAudioEnabled: jest.fn((): unknown => false),
+  getHrtfProfile: jest.fn((): unknown => null),
 };
 
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => mockModule),
-  },
+jest.mock('expo-modules-core', () => ({
+  requireOptionalNativeModule: jest.fn((name: string) => {
+    if (name === 'PicoCoreV2') return mockCore;
+    if (name === 'PicoRuntimeV2') return mockRuntime;
+    return null;
+  }),
 }));
 
 import {
@@ -131,14 +144,14 @@ describe('declared capabilities mirror', () => {
   });
 
   it('gracefully handles a missing declaredCapabilities field', () => {
-    const saved = mockModule.declaredCapabilities;
-    mockModule.declaredCapabilities = undefined as never;
+    const saved = mockDeclared.capabilities;
+    mockDeclared.capabilities = undefined;
     const caps = getDeclaredCapabilities();
     // Every key must still be present + false so consumers can destructure.
     expect(caps.handTracking).toBe(false);
     expect(caps.eyeTracking).toBe(false);
     expect(caps.openXrLoader).toBe(false);
-    mockModule.declaredCapabilities = saved;
+    mockDeclared.capabilities = saved;
   });
 });
 
@@ -151,13 +164,7 @@ describe('getCapabilitySnapshot', () => {
   });
 
   it('returns empty when native returns null', async () => {
-    mockModule.getCapabilitySnapshot.mockResolvedValueOnce(
-      null as unknown as ReturnType<typeof mockModule.getCapabilitySnapshot> extends Promise<
-        infer T
-      >
-        ? T
-        : never
-    );
+    mockCore.getCapabilitySnapshot.mockReturnValueOnce(null);
     const snap = await getCapabilitySnapshot();
     expect(snap).toEqual([]);
   });
@@ -165,12 +172,12 @@ describe('getCapabilitySnapshot', () => {
 
 describe('isCapabilityAvailable', () => {
   it('forwards the native boolean result', async () => {
-    mockModule.isCapabilityAvailable.mockResolvedValueOnce(true as unknown as false);
+    mockCore.isCapabilityAvailable.mockReturnValueOnce(true);
     expect(await isCapabilityAvailable('handTracking')).toBe(true);
   });
 
   it('returns null when native returns null (unknown capability name)', async () => {
-    mockModule.isCapabilityAvailable.mockResolvedValueOnce(null as unknown as false);
+    mockCore.isCapabilityAvailable.mockReturnValueOnce(null);
     expect(await isCapabilityAvailable('eyeTracking')).toBeNull();
   });
 });
@@ -186,7 +193,7 @@ describe('capabilities.display', () => {
 
   it('forwards refresh rate setter', async () => {
     expect(await capabilities.display.setRefreshRate(90)).toBe(true);
-    expect(mockModule.setRefreshRate).toHaveBeenCalledWith(90);
+    expect(mockRuntime.setRefreshRate).toHaveBeenCalledWith(90);
   });
 
   it('returns foveation level', async () => {
@@ -195,12 +202,12 @@ describe('capabilities.display', () => {
 
   it('forwards foveation setter', async () => {
     expect(await capabilities.display.setFoveationLevel('high')).toBe(true);
-    expect(mockModule.setFoveationLevel).toHaveBeenCalledWith('high');
+    expect(mockRuntime.setFoveationLevel).toHaveBeenCalledWith('high');
   });
 
   it('forwards passthrough toggle', async () => {
     expect(await capabilities.display.setPassthroughEnabled(true)).toBe(true);
-    expect(mockModule.setPassthroughEnabled).toHaveBeenCalledWith(true);
+    expect(mockRuntime.setPassthroughEnabled).toHaveBeenCalledWith(true);
   });
 
   it('returns passthrough state', async () => {
@@ -215,7 +222,7 @@ describe('capabilities.eye / face / body / hand', () => {
 
   it('eye.enable forwards to native', async () => {
     await capabilities.eye.enable();
-    expect(mockModule.enableEyeTracking).toHaveBeenCalled();
+    expect(mockRuntime.enableEyeTracking).toHaveBeenCalled();
   });
 
   it('face.getWeights returns null when SDK absent', async () => {
@@ -258,7 +265,7 @@ describe('capabilities.controllers / motionTracker', () => {
 
   it('triggerHaptic forwards amplitude and duration', async () => {
     await capabilities.controllers.triggerHaptic('right', 0.8, 40);
-    expect(mockModule.triggerHaptic).toHaveBeenCalledWith('right', 0.8, 40);
+    expect(mockRuntime.triggerHaptic).toHaveBeenCalledWith('right', 0.8, 40);
   });
 
   it('motionTracker.list returns empty when no dongles connected', async () => {
@@ -275,9 +282,7 @@ describe('capabilities.sensors', () => {
   });
 
   it('returns empty when native returns null', async () => {
-    mockModule.getHighRateSensors.mockResolvedValueOnce(
-      null as unknown as Awaited<ReturnType<typeof mockModule.getHighRateSensors>>
-    );
+    mockRuntime.getHighRateSensors.mockReturnValueOnce(null);
     expect(await capabilities.sensors.getHighRate()).toEqual([]);
   });
 });

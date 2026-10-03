@@ -43,8 +43,13 @@ class ExpoPicoSubscriptionModule : Module() {
       )
     }
 
-    AsyncFunction("subscribe") { sku: String, promise: Promise ->
+    // JS: subscribe(options: SubscribeOptions { sku, promoCode? })
+    // promoCode is not forwarded: PPS purchaseProduct(product, extras) has no promo-code
+    // parameter, and the bridge takes only the sku.
+    AsyncFunction("subscribe") { options: Map<String, Any?>, promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
+      val sku = options["sku"] as? String
+        ?: return@AsyncFunction promise.reject("INVALID_ARGUMENT", "sku is required", null)
       SubscriptionBridge.subscribe(sku,
         onSuccess = { map -> promise.resolve(map) },
         onError   = { code, msg -> promise.reject(code, msg, null) }

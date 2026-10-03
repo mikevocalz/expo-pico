@@ -37,68 +37,61 @@ public class MainApplication extends Application {
 }
 `;
 
+// What pre-v2 prebuilds injected. Both classes are gone, so leftovers fail to compile.
+const LEGACY_KT = KT_TEMPLATE.replace(
+  'import com.facebook.react.PackageList\n',
+  'import com.facebook.react.PackageList\n' +
+    '// expo-pico-core: PicoCorePackage import\n' +
+    'import expo.modules.pico.PicoCorePackage\n' +
+    'import expo.modules.pico.PicoXRPlatform\n'
+).replace(
+  '        val packages = PackageList(this).packages\n',
+  '        val packages = PackageList(this).packages\n' +
+    '            // expo-pico-core: PicoCorePackage registration\n' +
+    '            add(PicoCorePackage(PicoXRPlatform.PICO_OS5))\n'
+);
+
+const LEGACY_JAVA = JAVA_TEMPLATE.replace(
+  'import com.facebook.react.PackageList;\n',
+  'import com.facebook.react.PackageList;\n' +
+    '// expo-pico-core: PicoCorePackage import\n' +
+    'import expo.modules.pico.PicoCorePackage;\n' +
+    'import expo.modules.pico.PicoXRPlatform;\n'
+).replace(
+  '        List<ReactPackage> packages = new PackageList(this).getPackages();\n',
+  '        List<ReactPackage> packages = new PackageList(this).getPackages();\n' +
+    '      // expo-pico-core: PicoCorePackage registration\n' +
+    '      packages.add(new PicoCorePackage(PicoXRPlatform.PICO_SWAN));\n'
+);
+
 describe('injectIntoKotlinMainApplication', () => {
-  it('registers PicoCorePackage with PICO_OS5 for xrMode=pico-os5', () => {
-    const options = resolveOptions({ xrMode: 'pico-os5' });
-    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options);
-    expect(out).not.toBeNull();
-    expect(out!).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_OS5))');
-    expect(out!).toContain('import expo.modules.pico.PicoCorePackage');
-    expect(out!).toContain('import expo.modules.pico.PicoXRPlatform');
-  });
+  it.each(['pico-os5', 'pico-swan'] as const)(
+    'does not register PicoCorePackage for xrMode=%s (core autolinks)',
+    (xrMode) => {
+      const out = injectIntoKotlinMainApplication(KT_TEMPLATE, resolveOptions({ xrMode }))!;
+      expect(out).not.toContain('PicoCorePackage');
+      expect(out).not.toContain('PicoXRPlatform');
+    }
+  );
 
-  it('registers PicoCorePackage with PICO_SWAN for xrMode=pico-swan', () => {
-    const options = resolveOptions({ xrMode: 'pico-swan' });
-    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options);
-    expect(out!).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_SWAN))');
-  });
-
-  it('does not duplicate the registration on repeat runs with the same xrMode', () => {
-    const options = resolveOptions({ xrMode: 'pico-os5' });
-    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
-    const twice = injectIntoKotlinMainApplication(once, options)!;
-    const count = (twice.match(/add\(PicoCorePackage\(PicoXRPlatform\.PICO_OS5\)\)/g) ?? []).length;
-    expect(count).toBe(1);
-  });
-
-  it('replaces registration when xrMode toggles from PICO_OS5 to PICO_SWAN', () => {
-    const optionsA = resolveOptions({ xrMode: 'pico-os5' });
-    const optionsB = resolveOptions({ xrMode: 'pico-swan' });
-    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, optionsA)!;
-    const twice = injectIntoKotlinMainApplication(once, optionsB)!;
-    expect(twice).toContain('PicoXRPlatform.PICO_SWAN');
-    expect(twice).not.toContain('PicoXRPlatform.PICO_OS5');
-  });
-
-  it('returns null when no PackageList anchor is present', () => {
-    const broken = `package com.example.app\n\nclass MainApplication\n`;
-    const options = resolveOptions({ xrMode: 'pico-os5' });
-    const out = injectIntoKotlinMainApplication(broken, options);
-    expect(out).toBeNull();
-  });
-
-  it('idempotent import: does not duplicate the import on repeat runs', () => {
-    const options = resolveOptions({ xrMode: 'pico-os5' });
-    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
-    const twice = injectIntoKotlinMainApplication(once, options)!;
-    const count = (twice.match(/import expo\.modules\.pico\.PicoCorePackage/g) ?? []).length;
-    expect(count).toBe(1);
+  it('strips the registration and imports left by an older prebuild', () => {
+    const out = injectIntoKotlinMainApplication(LEGACY_KT, resolveOptions({ xrMode: 'pico-os5' }))!;
+    expect(out).not.toContain('PicoCorePackage');
+    expect(out).not.toContain('PicoXRPlatform');
+    expect(out).toContain('val packages = PackageList(this).packages');
+    expect(out).toContain('import com.facebook.react.PackageList');
   });
 });
 
 describe('injectIntoJavaMainApplication', () => {
-  it('registers PicoCorePackage in Java MainApplication', () => {
+  it('leaves a clean Java MainApplication unchanged', () => {
     const options = resolveOptions({ xrMode: 'pico-swan' });
-    const out = injectIntoJavaMainApplication(JAVA_TEMPLATE, options)!;
-    expect(out).toContain('packages.add(new PicoCorePackage(PicoXRPlatform.PICO_SWAN));');
-    expect(out).toContain('import expo.modules.pico.PicoCorePackage;');
-    expect(out).toContain('import expo.modules.pico.PicoXRPlatform;');
+    expect(injectIntoJavaMainApplication(JAVA_TEMPLATE, options)).toBe(JAVA_TEMPLATE);
   });
 
-  it('returns null when Java anchor is missing', () => {
-    const broken = `package com.example.app;\npublic class MainApplication {}\n`;
-    const options = resolveOptions({ xrMode: 'pico-os5' });
-    expect(injectIntoJavaMainApplication(broken, options)).toBeNull();
+  it('strips the registration and imports left by an older prebuild', () => {
+    const options = resolveOptions({ xrMode: 'pico-swan' });
+    expect(injectIntoJavaMainApplication(LEGACY_JAVA, options)).toBe(JAVA_TEMPLATE);
   });
 });
 
@@ -143,8 +136,7 @@ describe('New Architecture flag guard', () => {
 
     const out = injectIntoKotlinMainApplication(noOnCreate, options)!;
 
-    expect(out).toContain('add(PicoCorePackage(PicoXRPlatform.PICO_OS5))');
-    expect(out).not.toContain('dangerouslyForceOverride');
+    expect(out).toBe(noOnCreate);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });

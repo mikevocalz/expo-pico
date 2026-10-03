@@ -1,10 +1,7 @@
-// Mock native module as absent — simulates non-PICO build
-jest.mock('react-native-nitro-modules', () => ({
-  NitroModules: {
-    createHybridObject: jest.fn(() => {
-      throw new Error('HybridObject not available in test environment');
-    }),
-  },
+// Simulates a build with no PICO native library: the Expo module lookup
+// in @expo-pico/platform-service-common returns null.
+jest.mock('expo-modules-core', () => ({
+  requireOptionalNativeModule: jest.fn(() => null),
 }));
 jest.unmock('@expo-pico/platform-service-common');
 
@@ -98,5 +95,12 @@ describe('expo-pico-rtc — SDK family contract', () => {
       expect(api.getRtcServiceStatus).toBeDefined();
       expect(api.getRtcSdkVersion).toBeDefined();
     });
+  });
+});
+
+describe('native module resolution', () => {
+  it('resolves the ExpoPicoRtc Expo module', () => {
+    const { requireOptionalNativeModule } = jest.requireMock('expo-modules-core');
+    expect(requireOptionalNativeModule).toHaveBeenCalledWith('ExpoPicoRtc');
   });
 });

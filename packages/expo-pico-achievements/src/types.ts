@@ -14,6 +14,7 @@ export interface Achievement {
   iconUrl?: string;
   isUnlocked: boolean;
   unlockedAtMs?: number;
+  /** 0–1. Count: count / target. Bitfield: bits set / length. Simple: 0 or 1. */
   progress: number;
 }
 

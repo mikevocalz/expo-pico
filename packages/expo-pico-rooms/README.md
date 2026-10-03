@@ -41,7 +41,7 @@ Creation, joining and membership management are **not** available — see below.
 ## Installation
 
 ```sh
-yarn add @expo-pico/rooms react-native-nitro-modules
+yarn add @expo-pico/rooms
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:

@@ -20,14 +20,14 @@ export interface PicoPluginOptions {
    * `targetProfile` is a runtime hardware family hint, while `xrMode` selects
    * which native runtime is registered at boot.
    *
-   * - 'mobile': No PICO runtime registration. The PicoCorePackage is still
-   *   registered but in a no-op MOBILE platform mode.
+   * - 'mobile': No PICO runtime. Core still autolinks and reports
+   *   `xrMode: 'mobile'` from BuildConfig.
    * - 'pico-os5': Standard PICO OS 6 runtime registration. Default for
    *   `buildVariant: 'pico'` and `'dual'`.
    * - 'pico-swan': Project Swan / next-gen spatial runtime. Adds Swan-only
    *   manifest meta-data, an optional Swan SDK Maven dependency, an optional
    *   Swan runtime Gradle subproject inclusion via settings.gradle, and
-   *   constructs PicoCorePackage with PicoXRPlatform.PICO_SWAN at boot.
+   *   sets BuildConfig.PICO_XR_MODE to 'pico-swan'.
    *
    * @default 'pico-os5' when buildVariant is 'pico' or 'dual', otherwise 'mobile'
    */

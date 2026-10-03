@@ -14,7 +14,7 @@ PICO push notification registration and token APIs for Expo apps.
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts
@@ -35,7 +35,7 @@ if (isAccountAvailable()) {
 ## Install
 
 ```bash
-yarn add @expo-pico/core @expo-pico/notifications react-native-nitro-modules
+yarn add @expo-pico/core @expo-pico/notifications
 ```
 
 ## Configure
