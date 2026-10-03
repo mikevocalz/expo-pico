@@ -1,7 +1,4 @@
-import {
-  NULL_SUBSCRIPTION,
-  type Subscription,
-} from '@expo-pico/platform-service-common';
+import { NULL_SUBSCRIPTION, type Subscription } from '@expo-pico/platform-service-common';
 
 import type { PicoRuntime } from './PicoRuntimeNativeTypes';
 

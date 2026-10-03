@@ -7,13 +7,7 @@ export type PicoSpatialLayoutRole =
   | 'volume'
   | 'immersive';
 
-export type PicoSpatialLayoutPlacement =
-  | 'start'
-  | 'center'
-  | 'end'
-  | 'top'
-  | 'bottom'
-  | 'user';
+export type PicoSpatialLayoutPlacement = 'start' | 'center' | 'end' | 'top' | 'bottom' | 'user';
 
 export type PicoSpatialLayoutPrimitive =
   | 'window-container-planar'

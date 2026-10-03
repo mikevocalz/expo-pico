@@ -32,15 +32,15 @@ That distinction prevents the current problem where "SDK class exists" could acc
 
 The contract mirrors the portable Viro workspace:
 
-| Role | PICO target |
-| --- | --- |
-| master | start/end Subwindow |
-| content | planar WindowContainer |
-| inspector | start/end Subwindow |
-| accessory | Toolbar |
-| popup | SpatialPopup |
-| volume | volumetric WindowContainer |
-| immersive | Stage |
+| Role      | PICO target                |
+| --------- | -------------------------- |
+| master    | start/end Subwindow        |
+| content   | planar WindowContainer     |
+| inspector | start/end Subwindow        |
+| accessory | Toolbar                    |
+| popup     | SpatialPopup               |
+| volume    | volumetric WindowContainer |
+| immersive | Stage                      |
 
 `Augment` and `AttachmentPanelComponent` are adapter-level alternatives for surfaces that need more flexible placement or React Native Android View hosting.
 

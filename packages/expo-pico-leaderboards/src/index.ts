@@ -3,11 +3,7 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type {
-  PicoLeaderboards,
-  GetEntriesOptions,
-  WriteScoreOptions,
-} from './types';
+import type { PicoLeaderboards, GetEntriesOptions, WriteScoreOptions } from './types';
 
 export type {
   Leaderboard,
