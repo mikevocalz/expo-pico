@@ -51,7 +51,7 @@ Kill the dev server once you see the QR code. We're about to switch to the Andro
 ## 2. Install the `expo-pico-core` plugin
 
 ```bash
-yarn add @expo-pico/core react-native-nitro-modules
+yarn add @expo-pico/core
 ```
 
 Only `expo-pico-core` is required for the base build wiring. Add sibling packages (`expo-pico-account`, `expo-pico-iap`, etc.) as you need their surfaces.

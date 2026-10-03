@@ -55,13 +55,13 @@ The template ships only `expo-pico-core`. Add the ones you need:
 
 ```bash
 # Voice + multiplayer:
-yarn add @expo-pico/rtc @expo-pico/rooms @expo-pico/social react-native-nitro-modules
+yarn add @expo-pico/rtc @expo-pico/rooms @expo-pico/social
 
 # Paid apps:
-yarn add @expo-pico/iap @expo-pico/subscription react-native-nitro-modules
+yarn add @expo-pico/iap @expo-pico/subscription
 
 # Live services:
-yarn add @expo-pico/account @expo-pico/notifications @expo-pico/achievements @expo-pico/leaderboards react-native-nitro-modules
+yarn add @expo-pico/account @expo-pico/notifications @expo-pico/achievements @expo-pico/leaderboards
 ```
 
 Each sibling needs a plugin entry in `app.config.ts`:

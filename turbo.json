@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["nitrogen/generated/**", "build/**", "plugin/build/**"]
+      "outputs": ["build/**", "plugin/build/**"]
     },
     "build:plugin": {
       "dependsOn": ["^build"],

@@ -35,7 +35,7 @@ empty results or `SERVICE_UNAVAILABLE` rather than throwing.
 ## Install
 
 ```bash
-yarn add @expo-pico/core @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/core @expo-pico/account
 ```
 
 `expo-pico-core` is a peer dependency. It must be listed before `expo-pico-account` in your `app.config.ts` plugins array so the flavor manifest, launcher categories, and BuildConfig fields land first.

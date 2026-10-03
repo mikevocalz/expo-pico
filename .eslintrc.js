@@ -7,7 +7,6 @@ module.exports = {
   ignorePatterns: [
     '**/node_modules/**',
     '**/build/**',
-    '**/nitrogen/generated/**',
     '**/plugin/build/**',
     '**/cli/build/**',
     'example/android/**',

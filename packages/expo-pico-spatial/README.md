@@ -25,7 +25,7 @@ Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SD
 ## Install
 
 ```bash
-yarn add @expo-pico/core @expo-pico/spatial react-native-nitro-modules
+yarn add @expo-pico/core @expo-pico/spatial
 ```
 
 ## Configure

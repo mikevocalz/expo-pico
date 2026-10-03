@@ -10,7 +10,7 @@ PICO platform leaderboard APIs for Expo apps. Query rankings, write scores, and 
 ## Installation
 
 ```sh
-yarn add @expo-pico/leaderboards react-native-nitro-modules
+yarn add @expo-pico/leaderboards
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account react-native-nitro-modules
+yarn add @expo-pico/account
 ```
 
 ```ts
