@@ -555,6 +555,11 @@ object PicoPlatformSDK {
             val v = asMap?.get(key)
             if (v is List<*>) return v.mapNotNull(::convertItem)
         }
+        // PPS page wrappers name the list after the type (`achievementDefinitionList`,
+        // `achievementProgressList`, ...) next to scalar paging fields. If exactly
+        // one field is a list, that is the payload.
+        val lists = asMap?.values?.filterIsInstance<List<*>>().orEmpty()
+        if (lists.size == 1) return lists.single().mapNotNull(::convertItem)
         return if (asMap != null) listOf(asMap) else emptyList()
     }
 

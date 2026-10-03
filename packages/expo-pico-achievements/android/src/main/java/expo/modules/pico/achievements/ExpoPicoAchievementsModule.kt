@@ -11,6 +11,11 @@ class ExpoPicoAchievementsModule : Module() {
 
     Events("onAchievementUnlocked")
 
+    // PPS has no unlock push listener. Writes from this app that report
+    // justUnlocked emit the event instead.
+    OnCreate { AchievementsBridge.onUnlocked = ::emitAchievementUnlocked }
+    OnDestroy { AchievementsBridge.onUnlocked = null }
+
     Constants {
       mapOf(
         "achievementsSdkAvailable" to AchievementsUtils.isAchievementsSdkAvailable(),
@@ -21,6 +26,16 @@ class ExpoPicoAchievementsModule : Module() {
     AsyncFunction("getAllAchievements") { promise: Promise ->
       guardAvailability(promise) { return@AsyncFunction }
       AchievementsBridge.getAllAchievements(
+        onSuccess = { list -> promise.resolve(list) },
+        onError   = { code, msg -> promise.reject(code, msg, null) }
+      )
+    }
+
+    // Native so JS's definitions-only fallback shim never runs: definitions
+    // carry no unlock state.
+    AsyncFunction("getUnlockedAchievements") { promise: Promise ->
+      guardAvailability(promise) { return@AsyncFunction }
+      AchievementsBridge.getUnlockedAchievements(
         onSuccess = { list -> promise.resolve(list) },
         onError   = { code, msg -> promise.reject(code, msg, null) }
       )
@@ -68,8 +83,7 @@ class ExpoPicoAchievementsModule : Module() {
     }
   }
 
-  /** Called by AchievementsBridge when SDK fires an unlock callback for a push notification */
-  internal fun emitAchievementUnlocked(apiName: String) {
+  private fun emitAchievementUnlocked(apiName: String) {
     sendEvent("onAchievementUnlocked", mapOf(
       "apiName"      to apiName,
       "unlockedAtMs" to System.currentTimeMillis()
