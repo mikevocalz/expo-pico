@@ -180,6 +180,14 @@ describe('expo-pico-spatial — SDK family contract', () => {
     it('isBodyTrackingAvailable() does not throw', () => {
       expect(() => api.isBodyTrackingAvailable()).not.toThrow();
     });
+
+    it('openWindowContainer() returns ok: false instead of throwing', () => {
+      expect(api.openWindowContainer('main').ok).toBe(false);
+    });
+
+    it('closeWindowContainer() returns ok: false instead of throwing', () => {
+      expect(api.closeWindowContainer('main').ok).toBe(false);
+    });
   });
 
   // ── Export completeness ───────────────────────────────────────────────────────
@@ -193,6 +201,9 @@ describe('expo-pico-spatial — SDK family contract', () => {
       'isSceneMeshAvailable',
       'isFaceTrackingAvailable',
       'isBodyTrackingAvailable',
+      'getLayoutBridgeStatus',
+      'openWindowContainer',
+      'closeWindowContainer',
     ];
     const asyncExports = [
       'createSpatialAnchor',

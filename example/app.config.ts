@@ -142,6 +142,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       '@expo-pico/spatial',
       {
+        // Links PICO Spatial SDK 6 into the pico flavor so the WindowContainer
+        // bridge is exercised. On PICO OS 5 it reports spatialPlatform: false.
+        enableSpatialSdk: true,
         anchorPersistence: false,
         sceneMeshEnabled: false,
       },

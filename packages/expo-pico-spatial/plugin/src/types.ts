@@ -1,7 +1,9 @@
 export interface PicoSpatialPluginOptions {
   /**
-   * Whether to inject spatial SDK Gradle dependency when available.
-   * Set to true only when you have access to the PICO Spatial SDK AAR.
+   * Adds `com.pico.spatial.core:core:6.1.9` (PICO Spatial SDK 6, public on the
+   * Volcengine Maven) to the pico and dual flavors so openWindowContainer and
+   * closeWindowContainer can run on PICO OS 6. On PICO OS 5 they still return
+   * false. Linking the SDK also marks the app as spatial on OS 6.
    * @default false
    */
   enableSpatialSdk?: boolean;

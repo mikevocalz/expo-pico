@@ -78,8 +78,24 @@ android {
 repositories {
     mavenCentral()
     google()
+    maven {
+        url "https://artifact.bytedance.com/repository/Volcengine/"
+        content {
+            includeGroup "com.pico.spatial.core"
+            includeGroup "com.pico.spatial.foundation"
+        }
+    }
 }
 
-
+// PICO Spatial SDK 6. compileOnly so the classes never reach an APK through
+// this module: on PICO OS 5 and phones they would load but call into OS 6
+// framework classes that don't exist. Apps opt in to the runtime copy with
+// `enableSpatialSdk: true` on the @expo-pico/spatial config plugin, which adds
+// it to the pico/dual flavors only. Only core + foundation: the ui:* artifacts
+// pull PICO's Compose forks and everything they expose is @Composable.
 dependencies {
+    // reactContextOrNull / currentActivity in the Expo Modules v2 react helpers.
+    implementation "com.facebook.react:react-android"
+    compileOnly "com.pico.spatial.core:core:6.1.9"
+    compileOnly "com.pico.spatial.foundation:foundation:6.1.9"
 }

@@ -3,6 +3,7 @@ import { ConfigPlugin, withAndroidManifest } from '@expo/config-plugins';
 import type { PicoSpatialPluginOptions } from './types';
 import { resolveSpatialOptions } from './types';
 import { withPicoSpatialProjectBuildGradle } from './withPicoSpatialGradle';
+import { withPicoSpatialSdkRuntime } from './withPicoSpatialSdkRuntime';
 
 const FEATURE_SPATIAL_ANCHOR = 'pico.software.spatialanchor';
 const FEATURE_SCENE = 'pico.software.scene';
@@ -20,6 +21,12 @@ const withPicoSpatial: ConfigPlugin<PicoSpatialPluginOptions | void> = (config, 
 
   // 1. Project-level build.gradle — buildscript ext spatialToolsVersion
   config = withPicoSpatialProjectBuildGradle(config, options);
+
+  // 2. PICO Spatial SDK 6 runtime, pico/dual flavors only. Opt-in: the
+  //    native module compiles against it either way.
+  if (options.enableSpatialSdk) {
+    config = withPicoSpatialSdkRuntime(config);
+  }
 
   if (options.anchorPersistence || options.sceneMeshEnabled) {
     config = withAndroidManifest(config, (config) => {

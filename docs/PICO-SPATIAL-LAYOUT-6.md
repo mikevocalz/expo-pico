@@ -24,7 +24,15 @@ This PR adds a modern runtime probe and a stable JavaScript layout contract with
 1. Is the modern PICO Spatial SDK runtime present on the classpath/device?
 2. Has `expo-pico` implemented the corresponding native bridge?
 
-`nativeLayoutBridgeBound` remains `false` until the Kotlin/Expo Module implementation actually owns those calls.
+`nativeLayoutBridgeBound` is `true` only when all three hold:
+
+- the WindowContainer open/close bridge is compiled into `PicoSpatialV2`;
+- the PICO Spatial SDK (`com.pico.spatial.core:core:6.1.9`) is in the APK, via `enableSpatialSdk: true` on the `@expo-pico/spatial` plugin;
+- `SpatialBuild.isSpatialPlatform()` returns `true` at runtime.
+
+`getLayoutBridgeStatus()` returns `{ sdkLinked, spatialPlatform, reason, lastError }` so an app can show why the bridge is off. The `*RuntimePresent` flags also require `spatialPlatform`. Linking the SDK puts `AttachmentPanelComponent` on the classpath of a PICO OS 5 build, and class presence alone reported OS 6 there.
+
+Subwindow, Augment, Toolbar and SpatialPopup are `@Composable`-only in the SDK and stay unbound when `nativeLayoutBridgeBound` is `true`.
 
 That distinction prevents the current problem where "SDK class exists" could accidentally be treated as "feature works."
 
