@@ -278,16 +278,20 @@ export interface PicoPluginOptions {
    * Overlay a PICO-capable `libviro_renderer.so` over the one
    * `@reactvision/react-viro` ships.
    *
-   * Stock Viro's OpenXR input binds only
-   * `/interaction_profiles/oculus/touch_controller`. PICO Sense controllers
-   * advertise `/interaction_profiles/bytedance/pico4_controller` (and
-   * `…/pico_neo3_controller`), which the runtime will not surface unless the
-   * app binds them — so on PICO there is no controller, no pointer ray, and no
-   * controller-driven input at all, whatever the scene declares. The overlaid
-   * build binds all three, so one binary covers PICO and Quest.
+   * The bundled build comes from the mikevocalz/virocore fork's `main`
+   * (`d9b833d8`, CI artifact `viro_renderer-release-aar`). Over stock 3.0.2 it:
+   *   - defaults PICO to a floor origin (`LOCAL_FLOOR`, else STAGE-emulated),
+   *     so y=0 is the real floor instead of eye level, where scenes authored for
+   *     a floor sit at waist height;
+   *   - binds `/interaction_profiles/bytedance/pico4_controller` alongside
+   *     Oculus Touch;
+   *   - routes controller B / Menu to `Activity.onBackPressed()`, so React
+   *     Native's BackHandler sees it in VRActivity.
    *
-   * Interim measure. Remove this option once ReactVision ships PICO interaction
-   * profiles upstream; nothing else in the family depends on it.
+   * Its JNI surface is a strict superset of stock 3.0.2's (only added
+   * natives), so it loads against the stock Java classes. An older overlay
+   * built before 3.0 aborted in `VROPlatformRunTask` on XR entry; if the Viro
+   * pin moves, rebuild this from the fork and re-check the native diff.
    *
    * arm64-v8a only — PICO ships no 32-bit device. Defaults to `false`: it
    * replaces a renderer the app did not ask this package to touch, so it is

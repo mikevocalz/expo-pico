@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
 
-import { getPicoRuntimeInfo } from '@expo-pico/core';
+import { isQuest } from '@reactvision/react-viro';
 
 import { XrLauncher } from '../src/scene/XrLauncher';
 import { XrScreen } from '../src/scene/XrScreen';
@@ -9,19 +9,18 @@ import { XrScreen } from '../src/scene/XrScreen';
 /**
  * XR route.
  *
- * On a headset this mounts `ViroXRSceneNavigator` through `XrLauncher`, which
- * sets the scene intent and starts VRActivity. The navigator renders nothing
- * here — the immersive activity takes the display — so the 2D panel never ends
- * up inside the spatial scene.
+ * On Quest this mounts `ViroXRSceneNavigator` through `XrLauncher`, which sets
+ * the scene intent and starts VRActivity. PICO never reaches it: HomeScreen
+ * enters through `enterImmersiveScene()`, because stock react-viro only takes
+ * the navigator's VR path on Quest branding and on PICO would mount
+ * ViroARSceneNavigator (an ARCore install prompt).
  *
- * On a phone there is no immersive activity to hand off to, so the inline
+ * Everywhere else (a phone, or a build with no VR activity) the inline
  * navigator in `XrScreen` is the whole experience.
  */
 export default function Xr(): React.JSX.Element {
   const router = useRouter();
-  const onHeadset = getPicoRuntimeInfo().xrMode !== 'mobile';
-
-  if (onHeadset) {
+  if (isQuest) {
     return <XrLauncher onExit={() => router.back()} />;
   }
   return <XrScreen onBack={() => router.back()} />;

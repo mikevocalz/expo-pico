@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { getPicoRuntimeInfo } from '@expo-pico/core';
+import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
+import { isQuest } from '@reactvision/react-viro';
 
 import { IsoCube } from './IsoCube';
 import { useLayout } from './useLayout';
@@ -64,14 +65,14 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const L = useLayout();
   const onHeadset = info.xrMode !== 'mobile';
 
-  // The xr route mounts ViroXRSceneNavigator, and mounting it is what starts
-  // the immersive activity: it sets the scene intent and calls
-  // VRLauncher.launchVRScene(). Calling enterImmersiveScene() here instead
-  // would start VRActivity with no intent for ViroQuestEntryPoint to read.
-  // Same route on a phone, where the navigator renders the scene inline.
-  const onEnterXr = useCallback(() => {
+  // Headsets enter through the VR-category activity (registered in index.js).
+  // Quest builds still use ViroXRSceneNavigator via the xr route, since stock
+  // react-viro only takes its VR path on Quest branding. A phone, or a build
+  // without a VR activity, gets the inline route.
+  const onEnterXr = useCallback(async () => {
+    if (onHeadset && !isQuest && (await enterImmersiveScene())) return;
     onNavigate('xr');
-  }, [onNavigate]);
+  }, [onHeadset, onNavigate]);
 
   const hero = (
     <View style={[styles.heroCol, L.twoColumn && styles.heroColWide]}>
