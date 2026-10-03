@@ -30,10 +30,10 @@ import {
  */
 
 const HOME: Viro3DPoint = [0, 1.35, -1.5];
-const EDGE = 0.24;
+export const EDGE = 0.24;
 
 // Cycled on click so a press has a visible, non-destructive result.
-const TINTS = ['cubeIdle', 'cubeViolet', 'cubeMint'] as const;
+export const TINTS = ['cubeIdle', 'cubeViolet', 'cubeMint'] as const;
 
 ViroMaterials.createMaterials({
   cubeIdle: {

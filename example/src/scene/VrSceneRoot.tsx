@@ -4,7 +4,7 @@ import { ViroVRSceneNavigator } from '@reactvision/react-viro';
 
 import { exitImmersiveScene } from '@expo-pico/core';
 
-import { InteractiveCubeScene } from './InteractiveCubeScene';
+import { SpatialWorkspaceScene } from './SpatialWorkspaceScene';
 
 /**
  * Root component for `VRActivity`, registered as `"VRQuestScene"`.
@@ -23,12 +23,17 @@ import { InteractiveCubeScene } from './InteractiveCubeScene';
  * indirection, which only exists to ferry a scene across the panel/activity
  * split that PICO does not use.
  *
+ * The scene is `SpatialWorkspaceScene`: the sample's four layout surfaces
+ * (library, stage, details, controls) placed as Viro panels at the poses
+ * `layout/workspace.ts` resolves. Phones keep `InteractiveCubeScene` via
+ * XrScreen.
+ *
  * Hardware back calls `exitImmersiveScene()` from `@expo-pico/core`, which
  * finishes this activity and returns to the 2D panel, so exit is never more
  * than one press away.
  */
 export function VrSceneRoot(): React.JSX.Element {
-  const initialScene = useMemo(() => ({ scene: InteractiveCubeScene }), []);
+  const initialScene = useMemo(() => ({ scene: SpatialWorkspaceScene }), []);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
