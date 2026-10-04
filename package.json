@@ -1,0 +1,63 @@
+{
+  "name": "@expo-pico/platform-service-common",
+  "version": "1.0.0",
+  "description": "Shared error types, native-module resolution, and pagination helpers used by the @expo-pico/* packages. Published so those packages install standalone; not a stable public API.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./build/index.js",
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./testing": {
+      "require": "./build/testing/contractFactory.js",
+      "import": "./build/testing/contractFactory.js",
+      "types": "./build/testing/contractFactory.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "testing": [
+        "./build/testing/contractFactory.d.ts"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "expo-modules-core": ">=58.0.11 <59"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/internal/pico-platform-service-common"
+  },
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/internal/pico-platform-service-common",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "build"
+  ],
+  "peerDependenciesMeta": {
+    "expo-modules-core": {
+      "optional": false
+    }
+  },
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}
