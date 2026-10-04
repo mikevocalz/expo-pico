@@ -97,9 +97,11 @@ npx expo run:android --variant picoDebug
 
 ### Option 2: add to an existing Expo app
 
+The packages install from GitHub release branches, not npm. [docs/INSTALL-FROM-GITHUB.md](./docs/INSTALL-FROM-GITHUB.md) lists the branch for every package, the peers each one needs, and how to pin a commit.
+
 ```bash
-yarn add @expo-pico/core
-# (add siblings as needed)
+yarn add "github:mikevocalz/expo-pico#release/core"
+# (add siblings as needed, each from its own release/<name> branch)
 ```
 
 ```ts

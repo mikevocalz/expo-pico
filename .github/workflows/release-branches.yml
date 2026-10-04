@@ -1,0 +1,42 @@
+name: Release branches
+
+# Builds every installable package and commits its packed contents to its own
+# `release/<short-name>` branch, so apps install straight from GitHub:
+#
+#   "@expo-pico/core": "github:mikevocalz/expo-pico#release/core"
+#
+# Nothing is published to npm. Each run adds one commit per changed package on
+# top of the previous release commit (linear history, so pinned SHAs stay
+# reachable) and an annotated tag `<name>@<version>+<source-sha>`.
+# Branch map and consumer setup: docs/INSTALL-FROM-GITHUB.md.
+# Local dry run: node scripts/build-release-branches.mjs --out /tmp/release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-branches
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  release-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - name: Commit release branches
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          node scripts/build-release-branches.mjs --out "$RUNNER_TEMP/release-branches" --push

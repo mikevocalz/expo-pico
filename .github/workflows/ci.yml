@@ -24,6 +24,10 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn test:pack
+      # Same staging the release-branches workflow pushes from main, without
+      # the push. Fails on an exports/main entry that the packed output lacks.
+      - name: Release branches dry run
+        run: node scripts/build-release-branches.mjs --out "$RUNNER_TEMP/release-branches"
 
       # Phase G doctor self-smoke — verifies the built CLI binary runs
       # against a minimal fixture so a broken CLI can't ship from green
