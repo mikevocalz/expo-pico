@@ -1,0 +1,58 @@
+{
+  "name": "@expo-pico/account",
+  "version": "1.0.0",
+  "description": "PICO platform account, session, and identity APIs for Expo apps.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "pico-account",
+    "pico-platform",
+    "social"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-account"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "expo": ">=58.0.2 <59",
+    "@expo-pico/core": ">=1.0.0",
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "@expo-pico/platform-service-common": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "@expo-pico/core": {
+      "optional": false
+    }
+  },
+  "files": [
+    "LICENSE",
+    "build",
+    "android"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-account",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}
