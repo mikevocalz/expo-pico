@@ -2,7 +2,7 @@
 import { execFileSync } from 'node:child_process';
 
 const strict = process.argv.includes('--strict');
-const REQUIRED = [0, 9, 2];
+const REQUIRED = [0, 9, 3];
 
 function parseVersion(text) {
   const m = text.match(/(?:eskiu(?:c)?\s+)?v?(\d+)\.(\d+)\.(\d+)/i);
@@ -27,7 +27,7 @@ try {
   console.log(`✓ eskiuc ${version.join('.')} — Expo PICO Eskiu toolchain ready`);
 } catch (error) {
   const message =
-    'Eskiu compiler not ready. Install Eskiu >= 0.9.2 and ensure `eskiuc` is on PATH ' +
+    'Eskiu compiler not ready. Install Eskiu >= 0.9.3 (scripts/install-eskiuc.sh) and ensure `eskiuc` is on PATH ' +
     '(or set ESKIUC=/absolute/path/to/eskiuc).';
   if (strict) {
     console.error(`✗ ${message}\n${error instanceof Error ? error.message : String(error)}`);

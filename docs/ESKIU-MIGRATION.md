@@ -23,7 +23,7 @@ v2 wrappers instead of keeping Nitro just to call Java APIs.
 
 ### Android linking
 
-Eskiu 0.9.2 emits native object files, supports AArch64 and uses the platform C ABI. Its roadmap
+Eskiu 0.9.3 emits native object files, supports AArch64 and uses the platform C ABI. Its roadmap
 still lists per-target Android native-library linking as unfinished. Expo PICO therefore uses
 `eskiuc` as the object compiler and lets CMake/NDK clang link the final shared library.
 
