@@ -13,9 +13,9 @@
     "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js",
     "./plugin": {
-      "import": "./plugin/build/index.js",
-      "require": "./plugin/build/index.js",
-      "types": "./plugin/build/index.d.ts"
+      "import": "./plugin/build/src/index.js",
+      "require": "./plugin/build/src/index.js",
+      "types": "./plugin/build/src/index.d.ts"
     }
   },
   "scripts": {

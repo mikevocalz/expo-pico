@@ -13,5 +13,13 @@ add_library(
 # Eskiu owns allocation-free runtime math/state on PICO arm64. The helper
 # always exposes the stable C ABI headers and falls back cleanly when eskiuc
 # is unavailable for a non-PICO/mobile CI build.
-include(${CMAKE_CURRENT_LIST_DIR}/../../internal/pico-eskiu-runtime/cmake/ExpoPicoEskiu.cmake)
+#
+# Inside the monorepo the runtime lives in packages/internal. A packed copy of
+# this package (git release branch, npm tarball) carries it at
+# android/eskiu-runtime instead, because packages/internal does not ship.
+set(EXPO_PICO_ESKIU_CMAKE "${CMAKE_CURRENT_LIST_DIR}/eskiu-runtime/cmake/ExpoPicoEskiu.cmake")
+if(NOT EXISTS "${EXPO_PICO_ESKIU_CMAKE}")
+  set(EXPO_PICO_ESKIU_CMAKE "${CMAKE_CURRENT_LIST_DIR}/../../internal/pico-eskiu-runtime/cmake/ExpoPicoEskiu.cmake")
+endif()
+include(${EXPO_PICO_ESKIU_CMAKE})
 expo_pico_add_eskiu_runtime(ExpoPicoCore)
