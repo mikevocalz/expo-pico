@@ -1,0 +1,124 @@
+{
+  "name": "@expo-pico/app-kit",
+  "version": "1.0.0",
+  "description": "Orchestration layer for the expo-pico packages: boot probe, capability cache, and no-op-safe wrappers over the sibling modules.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./plugins/withPicoPostpatch": "./plugins/withPicoPostpatch.js",
+    "./plugins/withPicoCompat": "./plugins/withPicoCompat.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "build",
+    "src",
+    "plugins"
+  ],
+  "keywords": [
+    "expo",
+    "pico",
+    "pps",
+    "xr",
+    "vr",
+    "spatial"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@expo-pico/account": ">=1.0.0",
+    "@expo-pico/achievements": ">=1.0.0",
+    "@expo-pico/core": ">=1.0.0",
+    "@expo-pico/iap": ">=1.0.0",
+    "@expo-pico/leaderboards": ">=1.0.0",
+    "@expo-pico/notifications": ">=1.0.0",
+    "@expo-pico/rooms": ">=1.0.0",
+    "@expo-pico/rtc": ">=1.0.0",
+    "@expo-pico/social": ">=1.0.0",
+    "@expo-pico/spatial": ">=1.0.0",
+    "@expo-pico/storage": ">=1.0.0",
+    "@expo-pico/subscription": ">=1.0.0",
+    "@fishjam-cloud/react-native-client": "0.31.0",
+    "@fishjam-cloud/react-native-webrtc": "0.31.0",
+    "@fishjam-cloud/ts-client": "0.31.0",
+    "expo": ">=58.0.0 <59",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "react-native-mmkv": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo-pico/account": {
+      "optional": true
+    },
+    "@expo-pico/achievements": {
+      "optional": true
+    },
+    "@expo-pico/core": {
+      "optional": false
+    },
+    "@expo-pico/iap": {
+      "optional": true
+    },
+    "@expo-pico/leaderboards": {
+      "optional": true
+    },
+    "@expo-pico/notifications": {
+      "optional": true
+    },
+    "@expo-pico/rooms": {
+      "optional": true
+    },
+    "@expo-pico/rtc": {
+      "optional": true
+    },
+    "@expo-pico/social": {
+      "optional": true
+    },
+    "@expo-pico/spatial": {
+      "optional": true
+    },
+    "@expo-pico/storage": {
+      "optional": true
+    },
+    "@expo-pico/subscription": {
+      "optional": true
+    },
+    "@fishjam-cloud/react-native-client": {
+      "optional": true
+    },
+    "@fishjam-cloud/react-native-webrtc": {
+      "optional": true
+    },
+    "@fishjam-cloud/ts-client": {
+      "optional": true
+    },
+    "expo": {
+      "optional": false
+    },
+    "react-native": {
+      "optional": false
+    },
+    "react-native-mmkv": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-app-kit"
+  },
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-app-kit",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}

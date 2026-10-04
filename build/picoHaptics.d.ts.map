@@ -1,0 +1,1 @@
+{"version":3,"file":"picoHaptics.d.ts","sourceRoot":"","sources":["../src/picoHaptics.ts"],"names":[],"mappings":"AAOA,MAAM,MAAM,UAAU,GAAG,MAAM,GAAG,OAAO,GAAG,MAAM,CAAC;AA8CnD,eAAO,MAAM,OAAO;iBACN,UAAU;qBACN,UAAU;kBACb,UAAU;kBACV,UAAU;kBACV,UAAU;kBACT,UAAU,aAAa,MAAM,cAAc,MAAM;;CAGhE,CAAC"}
