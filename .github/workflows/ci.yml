@@ -56,6 +56,28 @@ jobs:
         if: github.event_name == 'pull_request'
         run: yarn changeset status --since=origin/${{ github.base_ref }} || true
 
+  eskiu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+      # Pinned eskiuc release, verified against a checksum committed in the script.
+      - run: bash scripts/install-eskiuc.sh
+      - run: node scripts/eskiu-doctor.mjs --strict
+      # Every lucide-static icon, fetched from npm at the latest version.
+      - run: node scripts/build-lucide-icons.mjs --all --out "$RUNNER_TEMP/lucide-icons.json"
+      # Host tests (parser, arcs, stroke counts, Lucide meshes) plus the
+      # aarch64-linux-android object compile, with PNGs of the curated icons.
+      - run: node scripts/eskiu-icon-test.mjs --out "$RUNNER_TEMP/eskiu-icons" --all-icons "$RUNNER_TEMP/lucide-icons.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eskiu-icon-png
+          path: ${{ runner.temp }}/eskiu-icons/png
+          if-no-files-found: ignore
+
   example-android:
     runs-on: ubuntu-latest
     env:
@@ -71,6 +93,17 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: yarn install --frozen-lockfile
+      # With ESKIUC exported, the arm64 build compiles and links the Eskiu runtime.
+      - run: bash scripts/install-eskiuc.sh
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
       - run: yarn example:assemble:pico
+      - name: Eskiu runtime is linked into the PICO APK
+        run: |
+          so=$(mktemp -d)
+          unzip -o -q example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk \
+            lib/arm64-v8a/libExpoPicoCore.so -d "$so"
+          nm_bin=$(ls "$ANDROID_NDK_ROOT"/toolchains/llvm/prebuilt/*/bin/llvm-nm 2>/dev/null | head -1)
+          nm_bin=${nm_bin:-$(ls "$ANDROID_HOME"/ndk/*/toolchains/llvm/prebuilt/*/bin/llvm-nm | tail -1)}
+          "$nm_bin" -D --defined-only "$so/lib/arm64-v8a/libExpoPicoCore.so" | tee "$so/syms.txt" | grep -E 'expo_pico_icon_mesh_(size|fill)|iconMeshFill'
+          grep -q ' T expo_pico_icon_mesh_fill' "$so/syms.txt"
