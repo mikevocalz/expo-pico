@@ -1,0 +1,44 @@
+export type SubscriptionPeriod = 'weekly' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
+export type EntitlementStatus = 'active' | 'in-grace' | 'paused' | 'cancelled' | 'expired' | 'not-subscribed';
+export interface SubscriptionProduct {
+    sku: string;
+    title: string;
+    description: string;
+    formattedPrice: string;
+    priceMicros: number;
+    currency: string;
+    period: SubscriptionPeriod;
+    trialDays: number;
+    introductoryFormattedPrice?: string;
+}
+export interface ActiveSubscription {
+    sku: string;
+    orderId: string;
+    purchaseToken: string;
+    currentPeriodStartMs: number;
+    currentPeriodEndMs: number;
+    autoRenewing: boolean;
+    status: EntitlementStatus;
+}
+export interface SubscriptionEntitlement {
+    sku: string;
+    status: EntitlementStatus;
+    currentSubscription?: ActiveSubscription;
+    expiresAtMs?: number;
+}
+export interface SubscribeOptions {
+    sku: string;
+    promoCode?: string;
+}
+export interface PicoSubscription {
+    readonly available: boolean;
+    readonly sdkVersion: string;
+    getSubscriptionProducts(skus: string[]): Promise<SubscriptionProduct[]>;
+    getActiveSubscriptions(): Promise<ActiveSubscription[]>;
+    getSubscriptionEntitlement(sku: string): Promise<SubscriptionEntitlement>;
+    /** Seam — PICO requires OS storefront UI. */
+    subscribe(options: SubscribeOptions): Promise<void>;
+    /** Rejects with `NOT_IN_PPS_1_0`; cancelling happens in the PICO Store. */
+    cancelSubscription(sku: string): Promise<void>;
+}
+//# sourceMappingURL=types.d.ts.map
