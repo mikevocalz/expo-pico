@@ -108,18 +108,37 @@ for (const w of workspaces) if (!w.manifest.private) select(w);
 
 function packInto(packArgs, cwd, stageDir) {
   const scratch = mkdtempSync(join(tmpdir(), 'expo-pico-pack-'));
-  // --ignore-scripts: the workflow already ran `yarn build`; npm must not run
-  // prepare/prepack again outside the monorepo.
   const out = run(
     'npm',
     ['pack', ...packArgs, '--ignore-scripts', '--json', '--pack-destination', scratch],
-    { cwd }
+    {
+      cwd,
+    }
   );
   const [{ filename }] = JSON.parse(out);
   run('tar', ['xzf', join(scratch, filename), '-C', scratch]);
   rmSync(stageDir, { recursive: true, force: true });
   cpSync(join(scratch, 'package'), stageDir, { recursive: true });
   rmSync(scratch, { recursive: true, force: true });
+}
+
+// npm 10 (bundled with Node 22) runs `prepare` during `npm pack` even with
+// --ignore-scripts, and its output lands on stdout ahead of the --json report.
+// Pack a copy of the package with `scripts` removed so no npm version can run
+// a lifecycle script. The workflow has already run `yarn build`.
+function packWorkspace(dir, stageDir) {
+  const copy = mkdtempSync(join(tmpdir(), 'expo-pico-src-'));
+  const skip = new Set(['node_modules', '.gradle', '.cxx', '.turbo']);
+  cpSync(dir, copy, {
+    recursive: true,
+    filter: (src) => !skip.has(src.split('/').pop()) && src !== join(dir, 'android/build'),
+  });
+  const manifestFile = join(copy, 'package.json');
+  const manifest = readJson(manifestFile);
+  delete manifest.scripts;
+  writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
+  packInto([], copy, stageDir);
+  rmSync(copy, { recursive: true, force: true });
 }
 
 function rewriteManifest(stageDir) {
@@ -173,7 +192,7 @@ const staged = [];
 
 for (const [name, w] of selected) {
   const stageDir = join(outDir, shortName(name));
-  packInto([], w.dir, stageDir);
+  packWorkspace(w.dir, stageDir);
 
   // @expo-pico/core's CMakeLists includes the Eskiu runtime from
   // packages/internal, which does not exist outside the monorepo. Ship a copy
@@ -200,7 +219,7 @@ for (const [name, w] of selected) {
     throw new Error(`example/package.json must pin expo-horizon-core exactly, got ${version}`);
   }
   const stageDir = join(outDir, shortName('expo-horizon-core'));
-  packInto([`expo-horizon-core@${version}`], ROOT, stageDir);
+  packInto([`expo-horizon-core@${version}`], tmpdir(), stageDir);
 
   // AGP 9 stopped generating BuildConfig by default, and the module reads
   // BuildConfig.META_HORIZON_APP_ID. Same change as the local .vendor checkout.
