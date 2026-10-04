@@ -1,0 +1,82 @@
+{
+  "name": "@expo-pico/core",
+  "version": "1.0.0",
+  "description": "Expo config plugin and runtime module for PICO OS 6 XR devices.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/withPico.js",
+      "require": "./plugin/build/withPico.js",
+      "types": "./plugin/build/withPico.d.ts"
+    },
+    "./plugin/viro": {
+      "import": "./plugin/build/viro/index.js",
+      "require": "./plugin/build/viro/index.js",
+      "types": "./plugin/build/viro/index.d.ts"
+    }
+  },
+  "bin": {
+    "expo-pico-doctor": "./cli/build/doctor.js"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "expo-pico",
+    "pico",
+    "pico-os",
+    "xr",
+    "spatial",
+    "vr"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-core"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "expo": ">=58.0.2 <59",
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "expo-location": "*",
+    "expo-modules-core": ">=58.0.11 <59"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "expo-location": {
+      "optional": true
+    },
+    "expo-modules-core": {
+      "optional": false
+    }
+  },
+  "files": [
+    "LICENSE",
+    "build",
+    "android",
+    "cli/build",
+    "plugin/build",
+    "plugin/assets",
+    "app.plugin.js"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-core",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}

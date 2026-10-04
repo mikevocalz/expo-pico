@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        Intentionally empty.
+
+        This used to declare a PicoAppContextInitProvider ContentProvider that
+        captured the application Context at process start, because the
+        pre-Nitro Bridge.kt files had no Context threaded through to them.
+
+        Nitro supplies one: PicoDevice.context() reads
+        NitroModules.applicationContext, so nothing needs the provider. The
+        class it named was also excluded from the build by
+        `java.srcDirs = ["src/nitro"]`, so the declaration pointed at a class
+        that was never in the AAR — the Android runtime instantiates every
+        <provider> before Application.onCreate, so any app installing this
+        package crashed on launch with ClassNotFoundException.
+    -->
+    <application />
+</manifest>

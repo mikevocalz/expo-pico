@@ -1,0 +1,169 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+expoModule {
+    v2 true
+}
+
+group = 'expo.modules.pico'
+version = '1.0.0'
+
+def safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+/**
+ * ABIs the consuming app builds for. PICO 4 / 4 Ultra / Swan are all
+ * 64-bit ARM, but the `mobile` flavor may target more, so this reads the
+ * app's own `reactNativeArchitectures` instead of hard-coding arm64-v8a.
+ */
+def reactNativeArchitectures() {
+    def value = rootProject.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+// Values written into gradle.properties by the withPicoGradleProperties
+// config plugin. Each has a fallback so this module still compiles when the
+// consuming app has not run prebuild — the Kotlin references resolve in
+// both the `pico` and `mobile` flavors either way.
+def picoAppIdConfigField = "\"${project.findProperty('picoAppId') ?: ''}\""
+def picoAppKeyConfigField = "\"${project.findProperty('picoAppKey') ?: ''}\""
+def picoSpatialModeConfigField = "\"${project.findProperty('picoSpatialMode') ?: '2d'}\""
+def picoTargetProfileConfigField = "\"${project.findProperty('picoTargetProfile') ?: ''}\""
+def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
+def picoXrModeConfigField = "\"${project.findProperty('picoXrMode') ?: 'mobile'}\""
+def picoAppTypeConfigField = "\"${project.findProperty('picoAppType') ?: '2d'}\""
+def picoHasPlatformIdentityConfigField = "${project.findProperty('picoPlatformIdentityEnabled') ?: 'false'}"
+def picoHasIapIdentityConfigField = "${project.findProperty('picoIapIdentityEnabled') ?: 'false'}"
+def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
+def picoHandTrackingConfigField = "${project.findProperty('picoHandTracking') ?: 'false'}"
+def picoPassthroughConfigField = "${project.findProperty('picoPassthrough') ?: 'false'}"
+def picoSceneUnderstandingConfigField = "${project.findProperty('picoSceneUnderstanding') ?: 'false'}"
+def picoEyeTrackingConfigField = "${project.findProperty('picoEyeTracking') ?: 'false'}"
+def picoFaceTrackingConfigField = "${project.findProperty('picoFaceTracking') ?: 'false'}"
+def picoBodyTrackingConfigField = "${project.findProperty('picoBodyTracking') ?: 'false'}"
+def picoSpatialAudioConfigField = "${project.findProperty('picoSpatialAudio') ?: 'false'}"
+def picoFoveatedRenderingConfigField = "${project.findProperty('picoFoveatedRendering') ?: 'false'}"
+def picoHighSamplingRateSensorsConfigField = "${project.findProperty('picoHighSamplingRateSensors') ?: 'false'}"
+def picoBoundaryConfigField = "${project.findProperty('picoBoundary') ?: 'false'}"
+def picoSceneMeshConfigField = "${project.findProperty('picoSceneMesh') ?: 'false'}"
+def picoSenseControllerConfigField = "${project.findProperty('picoSenseController') ?: 'false'}"
+def picoMotionTrackerConfigField = "${project.findProperty('picoMotionTracker') ?: 'false'}"
+def picoControllerHapticsConfigField = "${project.findProperty('picoControllerHaptics') ?: 'false'}"
+def picoOpenxrLoaderConfigField = "${project.findProperty('picoOpenxrLoader') ?: 'false'}"
+def picoNdkAbiFiltersConfigField = "\"${project.findProperty('picoNdkAbiFilters') ?: ''}\""
+def picoDeveloperToolsConfigField = "${project.findProperty('picoDeveloperTools') ?: 'false'}"
+def picoEntitlementCheckConfigField = "${project.findProperty('picoEntitlementCheck') ?: 'false'}"
+def picoRefreshRatesConfigField = "\"${project.findProperty('picoRefreshRates') ?: ''}\""
+def picoTargetDevicesConfigField = "\"${project.findProperty('picoTargetDevices') ?: ''}\""
+
+android {
+    namespace "expo.modules.pico"
+    compileSdk safeExtGet('compileSdkVersion', 36)
+    ndkVersion safeExtGet('ndkVersion', '27.1.12297006')
+
+    defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
+        versionCode 1
+        versionName "0.1.0"
+        buildConfigField "String", "PICO_APP_ID", picoAppIdConfigField
+        buildConfigField "String", "PICO_APP_KEY", picoAppKeyConfigField
+        buildConfigField "String", "PICO_SPATIAL_MODE", picoSpatialModeConfigField
+        buildConfigField "String", "PICO_TARGET_PROFILE", picoTargetProfileConfigField
+        buildConfigField "String", "PICO_CONTAINER_MODE", picoContainerModeConfigField
+        buildConfigField "String", "PICO_XR_MODE", picoXrModeConfigField
+        buildConfigField "String", "PICO_APP_TYPE", picoAppTypeConfigField
+        buildConfigField "boolean", "PICO_HAS_PLATFORM_IDENTITY", picoHasPlatformIdentityConfigField
+        buildConfigField "boolean", "PICO_HAS_IAP_IDENTITY", picoHasIapIdentityConfigField
+        buildConfigField "boolean", "PICO_EMULATOR_OPTIMIZATIONS", picoEmulatorOptimizationsConfigField
+        // Phase K capability flags — both flavors get the same defaults
+        // so Kotlin compiles cleanly even when the consumer app's
+        // prebuild plugin hasn't supplied per-flag values.
+        buildConfigField "boolean", "PICO_HAND_TRACKING", picoHandTrackingConfigField
+        buildConfigField "boolean", "PICO_PASSTHROUGH", picoPassthroughConfigField
+        buildConfigField "boolean", "PICO_SCENE_UNDERSTANDING", picoSceneUnderstandingConfigField
+        buildConfigField "boolean", "PICO_EYE_TRACKING", picoEyeTrackingConfigField
+        buildConfigField "boolean", "PICO_FACE_TRACKING", picoFaceTrackingConfigField
+        buildConfigField "boolean", "PICO_BODY_TRACKING", picoBodyTrackingConfigField
+        buildConfigField "boolean", "PICO_SPATIAL_AUDIO", picoSpatialAudioConfigField
+        buildConfigField "boolean", "PICO_FOVEATED_RENDERING", picoFoveatedRenderingConfigField
+        buildConfigField "boolean", "PICO_HIGH_SAMPLING_RATE_SENSORS", picoHighSamplingRateSensorsConfigField
+        buildConfigField "boolean", "PICO_BOUNDARY", picoBoundaryConfigField
+        buildConfigField "boolean", "PICO_SCENE_MESH", picoSceneMeshConfigField
+        buildConfigField "boolean", "PICO_SENSE_CONTROLLER", picoSenseControllerConfigField
+        buildConfigField "boolean", "PICO_MOTION_TRACKER", picoMotionTrackerConfigField
+        buildConfigField "boolean", "PICO_CONTROLLER_HAPTICS", picoControllerHapticsConfigField
+        buildConfigField "boolean", "PICO_OPENXR_LOADER", picoOpenxrLoaderConfigField
+        buildConfigField "String", "PICO_NDK_ABI_FILTERS", picoNdkAbiFiltersConfigField
+        buildConfigField "boolean", "PICO_DEVELOPER_TOOLS", picoDeveloperToolsConfigField
+        buildConfigField "boolean", "PICO_ENTITLEMENT_CHECK", picoEntitlementCheckConfigField
+        buildConfigField "String", "PICO_REFRESH_RATES", picoRefreshRatesConfigField
+        buildConfigField "String", "PICO_TARGET_DEVICES", picoTargetDevicesConfigField
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions", "-frtti", "-std=c++20"
+                // NDK r27 still defaults to 4KB page alignment; r28 flips it.
+                // PICO OS 5 / Android 14+ refuses to load a 4KB-aligned .so,
+                // which is the same failure the bundled OpenXR loader overlay
+                // exists to work around — these libraries had it too.
+                // Verify with scripts/verify-16kb-alignment.py on the APK.
+                arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+                abiFilters(*reactNativeArchitectures())
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    // expo-pico-core owns the `device` dimension. Every sibling package
+    // declares `missingDimensionStrategy "device", "pico", "mobile"` so it
+    // resolves against these two without duplicating the flavor block.
+    flavorDimensions += "device"
+    productFlavors {
+        pico { dimension "device" }
+        mobile { dimension "device" }
+    }
+
+    buildFeatures {
+        buildConfig true
+        prefab true
+    }
+
+    packagingOptions {
+        // ExpoPicoCore.so is uniquely named, so two @expo-pico packages can
+        // never collide. React Native's shared libraries, however, arrive
+        // from several prefabs at once and must not be packaged twice.
+        excludes += [
+            "META-INF/**",
+            "**/libc++_shared.so",
+            "**/libfbjni.so",
+            "**/libjsi.so",
+            "**/libreactnative.so",
+        ]
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation "com.facebook.react:react-android"
+    // PICO Platform SDK AAR — compile-only for controller haptics, so it is
+    // never bundled into the published npm package. Consumers place the AAR
+    // under vendor/pico-sdk/. See vendor/pico-sdk/README.md.
+    compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
+}
+

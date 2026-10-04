@@ -1,0 +1,332 @@
+# expo-pico-core
+
+[![stable](https://img.shields.io/badge/PPS_1.0.x-stable-0B0B0C?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
+Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project Swan XR devices.
+
+`expo-pico-core` is the foundation of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family. It configures your Expo Android project to build and run on PICO headsets (PICO 4, PICO 4 Ultra, Swan) via Continuous Native Generation. No manual Android project editing required.
+
+## Status
+
+- Maturity: stable candidate
+- Platform: Android only (PICO is Android-only)
+- Runtime target: PICO OS 6 (PICO 4 / 4 Ultra / Swan / Neo3), Android New Architecture
+- Renderer: renderer-agnostic. Works with [`@reactvision/react-viro`](https://github.com/ReactVision/viro) (the example app's renderer), Unity-as-a-Library, and any Android renderer that uses the system OpenXR loader
+
+## Compatibility
+
+| `expo-pico-core` | Expo SDK | React Native | React | Architecture          |
+| ---------------- | -------- | ------------ | ----- | --------------------- |
+| 0.1.x → 1.0      | 56       | 0.86         | 19.2  | New Architecture only |
+
+## Install
+
+```bash
+yarn add @expo-pico/core
+```
+
+## Quick start
+
+```ts
+// app.config.ts
+export default {
+  expo: {
+    name: 'my-pico-app',
+    slug: 'my-pico-app',
+    newArchEnabled: true, // required
+    // 'default' — a locked orientation writes android:screenOrientation onto
+    // MainActivity and overrides the panel dimensions the plugin writes via
+    // defaultWidth/defaultHeight. `expo-pico-doctor` flags anything else.
+    orientation: 'default',
+    plugins: [
+      [
+        '@expo-pico/core',
+        {
+          xrMode: 'pico-swan',
+          appType: 'vr',
+          buildVariant: 'pico',
+          platformService: {
+            picoAppId: process.env.PICO_PLATFORM_APP_ID,
+            picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
+          },
+          handTracking: true,
+          passthrough: true,
+          refreshRates: [72, 90, 120],
+        },
+      ],
+    ],
+  },
+};
+```
+
+Then:
+
+```bash
+npx expo prebuild --clean
+npx expo run:android --variant picoDebug
+```
+
+## Plugin options
+
+Full plugin option reference. All options are optional; defaults shown below.
+
+### Platform mode
+
+| Option             | Type                                                      | Default         | Description                                                              |
+| ------------------ | --------------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
+| `enabled`          | `boolean`                                                 | `true`          | Master toggle for all PICO mutations                                     |
+| `xrMode`           | `'mobile' \| 'pico-os5' \| 'pico-swan'`                   | tracks variant  | Which native runtime `PicoCorePackage` registers at boot                 |
+| `appType`          | `'vr' \| 'mr' \| '2d'`                                    | tracks `xrMode` | Launcher enumeration: drives `pvr.app.type` + immersive categories       |
+| `buildVariant`     | `'mobile' \| 'pico' \| 'dual'`                            | `'pico'`        | Android product flavor strategy                                          |
+| `picoSwan`         | `PicoSwanPluginOptions`                                   | `{}`            | Swan-mode-specific options (subproject path, Maven artifact, source set) |
+| `targetProfile`    | `'auto' \| 'legacy' \| 'pico4' \| 'pico4ultra' \| 'swan'` | `'auto'`        | Hardware family hint for runtime                                         |
+| `targetDevices`    | `PicoDeviceTarget[]`                                      | `[]`            | Declared supported hardware                                              |
+| `minSdkVersion`    | `number`                                                  | `32` / `33`     | Min SDK for the `pico` flavor (Swan bumps to 33)                         |
+| `targetSdkVersion` | `number`                                                  | `34`            | Target SDK for the `pico` flavor                                         |
+
+### Platform SDK identity
+
+| Option                              | Type                                                        | Description                                                                                                                                                                                                                                          |
+| ----------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `platformService.picoAppId`         | `string`                                                    | PICO Platform app ID (writes `pico_app_id` string resource + BuildConfig field)                                                                                                                                                                      |
+| `platformService.picoAppKey`        | `string`                                                    | PICO Platform app key (writes `pico_app_key`)                                                                                                                                                                                                        |
+| `platformService.picoMerchantId`    | `string`                                                    | IAP merchant ID (writes `pico_merchant_id`)                                                                                                                                                                                                          |
+| `platformService.picoPayKey`        | `string`                                                    | IAP payment key (writes `pico_pay_key`)                                                                                                                                                                                                              |
+| `platformService.foreign`           | `{ picoAppId?, picoAppKey?, picoMerchantId?, picoPayKey? }` | Global-region identity siblings (writes `_foreign` resources)                                                                                                                                                                                        |
+| `platformService.declareActivities` | `boolean`                                                   | Declare `com.pico.loginpaysdk.UnityAuthInterface` + `PicoSDKBrowser` activities in flavor manifest. Default: true when any identity field is set.                                                                                                    |
+| `platformService.services`          | `string[]`                                                  | Which `com.pico.pps:platform-service-*` artifacts to put on the classpath. Default: derived from the installed `@expo-pico/*` packages, de-duplicated. Set it to reach `entitlement`, `compliance`, `sport` or `speech`, which no package wraps yet. |
+
+### Hardware capability declarations
+
+All default to `false` / empty. Each emits `uses-feature` (`android:required="false"`), permission(s), and/or meta-data entries.
+
+| Option                    | Surfaces                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| `handTracking`            | `pico.hardware.handtracking`                                                  |
+| `passthrough`             | `pico.hardware.passthrough`                                                   |
+| `sceneUnderstanding`      | `pico.software.scene` (plane-only)                                            |
+| `sceneMesh`               | `pico.software.scenemesh` (distinct from `sceneUnderstanding`)                |
+| `eyeTracking`             | `pico.hardware.eyetracking` + `com.picovr.permission.EYE_TRACKING`            |
+| `faceTracking`            | `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`          |
+| `bodyTracking`            | `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING` _(seam)_ |
+| `spatialAudio`            | `pico.hardware.spatialaudio` _(seam)_                                         |
+| `foveatedRendering`       | `pico.hardware.foveation` + `com.pico.foveation.enabled=true` meta _(seam)_   |
+| `boundary`                | `pico.hardware.boundary` + `com.picovr.permission.BOUNDARY` _(seam)_          |
+| `highSamplingRateSensors` | `android.permission.HIGH_SAMPLING_RATE_SENSORS`                               |
+| `refreshRates`            | `com.pico.refreshRates` meta with comma-separated Hz values _(seam)_          |
+
+Values marked _(seam)_ are best-known key names pending PICO doc confirmation. Emitted with `required="false"` so misnames are install-safe.
+
+### Spatial / runtime
+
+| Option                        | Type                                                                              | Description                                                             |
+| ----------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `spatialMode`                 | `'2d' \| 'windowed' \| 'shared-space' \| 'full-space' \| 'immersive' \| 'volume'` | Spatial rendering mode meta                                             |
+| `defaultContainerMode`        | `'window-container' \| 'stage' \| 'none'`                                         | Spatial container type                                                  |
+| `entitlementCheck`            | `boolean`                                                                         | Enables PICO DRM entitlement check meta                                 |
+| `developerTools`              | `boolean`                                                                         | PICO OS 6 dev-tools overlay opt-in                                      |
+| `enableEmulatorOptimizations` | `boolean`                                                                         | Project Swan emulator tweaks (unrequired VR headtracking feature, etc.) |
+
+### Toolchain
+
+| Option                    | Type      | Default               | Description                                                                |
+| ------------------------- | --------- | --------------------- | -------------------------------------------------------------------------- |
+| `ndkAbiFilters`           | `boolean` | `xrMode !== 'mobile'` | Restrict `pico`/`dual` flavors to `arm64-v8a`. `mobile` is never filtered. |
+| `openXrLoaderDeclaration` | `boolean` | `xrMode !== 'mobile'` | Emit `<uses-native-library>` for `libopenxr_loader.so`                     |
+
+## Build variants
+
+| Variant         | Emitted when                          |
+| --------------- | ------------------------------------- |
+| `mobileDebug`   | always                                |
+| `mobileRelease` | always                                |
+| `picoDebug`     | `buildVariant === 'pico'` or `'dual'` |
+| `picoRelease`   | `buildVariant === 'pico'` or `'dual'` |
+| `dualDebug`     | `buildVariant === 'dual'`             |
+| `dualRelease`   | `buildVariant === 'dual'`             |
+
+```bash
+# Standard Android phone/tablet
+npx expo run:android --variant mobileDebug
+
+# PICO headset
+npx expo run:android --variant picoDebug
+```
+
+## Runtime JS API
+
+```ts
+import {
+  // Platform / device
+  isPicoBuild,
+  isPicoDevice,
+  getPicoTargetProfile,
+  // XR mode + app type
+  getXrMode,
+  isSwanRuntime,
+  getAppType,
+  // Spatial
+  getSpatialMode,
+  // Platform SDK identity
+  hasPlatformIdentity,
+  hasIapIdentity,
+  // Runtime SDK detection
+  isPlatformSdkPresent,
+  getPlatformSdkVersion,
+  getPlatformSdkProbe,
+  // Aggregate info
+  getPicoRuntimeInfo,
+  // Diagnostics
+  getPicoDiagnostics,
+  formatDiagnostics,
+} from '@expo-pico/core';
+
+console.log(getPicoRuntimeInfo());
+// {
+//   isPicoBuild: true,
+//   isPicoDevice: true,
+//   xrMode: 'pico-swan',
+//   appType: 'vr',
+//   spatialMode: 'shared-space',
+//   targetProfile: 'swan',
+//   picoAppId: 'my-app',
+//   hasPlatformIdentity: true,
+//   hasIapIdentity: false,
+//   platformSdkPresent: true,
+//   platformSdkVersion: '3.2.0',
+//   swanRuntimeInitialized: true,
+//   ...
+// }
+
+const report = await getPicoDiagnostics();
+if (report.summary.hasError) {
+  console.error(formatDiagnostics(report));
+}
+```
+
+All device / identity / SDK getters are synchronous. They read compile-time constants and BuildConfig fields resolved at module init.
+
+## Capability runtime
+
+Every prebuild capability flag (eye tracking, passthrough, foveated rendering, boundary, scene mesh, controller haptics, …) has a matching runtime API. Flags that aren't enabled at prebuild time or that the device doesn't support return `null`, `false`, or empty lists, so callers destructure safely without branching.
+
+```ts
+import { capabilities } from 'expo-pico-core';
+
+// Synchronous: what did the prebuild plugin declare?
+const decl = capabilities.getDeclared();
+// { handTracking: true, passthrough: true, eyeTracking: false, ... }
+
+// Three-layer snapshot: declared × systemFeature × sdk × fullyAvailable.
+const snapshot = await capabilities.getSnapshot();
+
+// Display surfaces (OpenXR-backed, no PICO SDK required):
+await capabilities.display.setRefreshRate(90);
+const rates = await capabilities.display.getSupportedRefreshRates();
+await capabilities.display.setFoveationLevel('high');
+await capabilities.display.setPassthroughEnabled(true);
+
+// Tracking surfaces (PICO SDK gated; null when SDK absent):
+if (await capabilities.isAvailable('eyeTracking')) {
+  await capabilities.eye.enable();
+  const pose = await capabilities.eye.getPose();
+}
+const hand = await capabilities.hand.getPose();
+const joints = await capabilities.body.getJoints();
+const weights = await capabilities.face.getWeights();
+
+// Boundary + scene:
+const geom = await capabilities.boundary.getGeometry();
+const planes = await capabilities.scene.getPlanes();
+
+// Controllers + Motion Tracker:
+const ctrls = await capabilities.controllers.list();
+await capabilities.controllers.triggerHaptic('left', 0.8, 40);
+const trackers = await capabilities.motionTracker.list();
+
+// IMU sensor rate report (pure AOSP, no SDK gating):
+const sensors = await capabilities.sensors.getHighRate();
+```
+
+The capability runtime is reflection-gated on the Kotlin side. For the modern PPS surfaces (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) there's nothing to "drop in" — `withPicoGradle` registers the public Bytedance Maven repo and pulls `com.pico.pps:platform-service-*:1.0.0` into the `picoDebug` flavor automatically, so the PPS classes resolve at runtime with no further setup. The reflection layer is what lets sibling packages stay decoupled across PPS / legacy PVR class-name variance and across the `mobile` vs `picoDebug` split. For the narrower legacy surfaces still gated by the older PVR-prefixed SDKs (`PXR_Plugin` programmatic passthrough/haptics, the Spatial SDK) you still drop the legacy AAR into `vendor/pico-sdk/` or `android/app/libs/`; the probes light up the same way.
+
+## CLI: `expo-pico-doctor`
+
+Ships as a binary alongside the JS API. Lints your `app.config` against the checks the prebuild pass emits, without running `npx expo prebuild`, plus three that need the filesystem: a duplicate PPS dependency block, a vendored AAR shadowing the Maven copy, and a `com.pico.pps` coordinate pinned to an unsupported version.
+
+```bash
+npx expo-pico-doctor                  # pretty output
+npx expo-pico-doctor --json           # machine-readable
+npx expo-pico-doctor --fail-on-warning # CI gate
+```
+
+## One copy of the SDK, however many packages you install
+
+`expo-pico-core` declares every `com.pico.pps` coordinate, in the app
+module, **once**. No sibling package declares one — they reach the SDK
+through `implementation project(':expo-pico-core')`. Adding
+`@expo-pico/social` to an app that already has `@expo-pico/account` adds a
+project dependency, never a second Maven coordinate, so there is nothing to
+duplicate.
+
+Which services get declared is derived from the packages actually
+installed, de-duplicated: `social` and `rooms` both need the `friend`
+service and produce one line between them. If detection can't see
+`node_modules`, all eleven are declared — a miss costs APK size, never a
+`ClassNotFoundException`.
+
+Two things outside the plugin's control could still duplicate, and both are
+guarded:
+
+- **A vendored AAR shadowing the Maven copy.** PICO's docs tell you to drop
+  SDK AARs into `android/app/libs/`. The generated `fileTree` over that
+  directory excludes every filename Maven already supplies, so a stray
+  `platform-service-auth-1.0.0.aar` can't trigger `Duplicate class
+com.pico.pps.…`. Unrelated vendored libraries still load normally.
+- **Version skew.** All eleven services share `com.pico.pps:pps_sdk_base`,
+  and the repo publishes newer lines than the one pinned here. Gradle picks
+  the highest version it sees, so one foreign declaration is enough to move
+  the shared base while the services stay behind. A `constraints` block in
+  the app module and a `resolutionStrategy` under `allprojects` hold every
+  pinned coordinate at one version.
+
+`npx expo-pico-doctor` reports all three failure modes. See
+[docs/PPS-ARTIFACTS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-ARTIFACTS.md)
+for the resolved artifact list, the per-package service map, and how to
+reproduce the resolution locally.
+
+## Sibling packages
+
+Each sibling adds a narrow native surface and a matching JS API. All are peer-depend on `expo-pico-core`.
+
+| Package                                                                                                         | Surface                                        |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| [`expo-pico-spatial`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-spatial)             | Spatial anchors, containers, space transitions |
+| [`expo-pico-account`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-account)             | PICO account identity                          |
+| [`expo-pico-iap`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-iap)                     | PICO store in-app purchases                    |
+| [`expo-pico-notifications`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-notifications) | Push registration + tokens                     |
+| [`expo-pico-rtc`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rtc)                     | Real-time voice channels                       |
+| [`expo-pico-rooms`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rooms)                 | Rooms + matchmaking                            |
+| [`expo-pico-achievements`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-achievements)   | Achievements                                   |
+| [`expo-pico-leaderboards`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-leaderboards)   | Leaderboards                                   |
+| [`expo-pico-social`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-social)               | Friends, presence, invites                     |
+| [`expo-pico-storage`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-storage)             | Cloud storage                                  |
+| [`expo-pico-subscription`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-subscription)   | Subscription billing + entitlements            |
+
+## Limitations
+
+- Android / PICO OS 6 only. No iOS. No web.
+- New Architecture only. `newArchEnabled: true` is required.
+- Plugin emits a single `withDangerousMod` when writing the PICO-flavor source-set manifest. That is the only filesystem mutation; every other mutation uses safe structured mods.
+- Some hardware capability keys are best-known seams, flagged in the options table. Emitted with `android:required="false"` so misnames are install-safe.
+- PICO Platform Service SDK (PPS) bindings (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) are live on `picoDebug` builds — `withPicoGradle` pulls `com.pico.pps:platform-service-*:1.0.0` from the public Bytedance Maven automatically, so consumers don't drop any AAR. PPS-backed siblings only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time. A narrower set of legacy surfaces (`expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics and all of `expo-pico-spatial`) still rides the older PVR-prefixed AARs (`com.pvr.platform:platform-sdk:3.2.0`, `com.pvr.spatial:spatial-sdk:1.0.0`) — those are not on public Maven and do require dropping the AAR into `vendor/pico-sdk/` or `android/app/libs/`.
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+- Issues: https://github.com/mikevocalz/expo-pico/issues
+
+## License
+
+MIT
