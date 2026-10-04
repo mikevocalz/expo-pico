@@ -1,0 +1,198 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.withCustomAndroidManifest = void 0;
+const config_plugins_1 = require("@expo/config-plugins");
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const constants_1 = require("./constants");
+/**
+ * Creates a separate AndroidManifest.xml for the Horizon flavor.
+ * This plugin uses withDangerousMod to directly manipulate files and
+ * modifies the app build.gradle to add flavor dimensions.
+ */
+const withCustomAndroidManifest = (config, options = {}) => {
+    // Add flavor dimensions to build.gradle
+    config = withQuestFlavorDimensions(config);
+    // Create Horizon-specific AndroidManifest
+    config = (0, config_plugins_1.withDangerousMod)(config, [
+        'android',
+        async (config) => {
+            const projectRoot = config.modRequest.projectRoot;
+            const androidRoot = path.join(projectRoot, 'android');
+            // Path to the quest flavor AndroidManifest.xml
+            const questManifestDir = path.join(androidRoot, 'app', 'src', 'quest');
+            const questManifestPath = path.join(questManifestDir, 'AndroidManifest.xml');
+            try {
+                // Ensure the quest directory exists
+                if (!fs.existsSync(questManifestDir)) {
+                    fs.mkdirSync(questManifestDir, { recursive: true });
+                }
+                // Create a minimal Horizon manifest with only Horizon-specific additions
+                // This prevents conflicts during manifest merging
+                const questManifest = createQuestManifest(options);
+                // Write the Horizon AndroidManifest
+                await config_plugins_1.AndroidConfig.Manifest.writeAndroidManifestAsync(questManifestPath, questManifest);
+                console.log(`✅ Created Horizon-specific AndroidManifest at: ${questManifestPath}`);
+            }
+            catch (error) {
+                console.error('Error creating Quest AndroidManifest:', error);
+                throw error;
+            }
+            return config;
+        },
+    ]);
+    return config;
+};
+exports.withCustomAndroidManifest = withCustomAndroidManifest;
+/**
+ * Adds flavor dimensions to the app build.gradle
+ */
+const withQuestFlavorDimensions = (config) => {
+    return (0, config_plugins_1.withAppBuildGradle)(config, (config) => {
+        const buildGradle = config.modResults.contents;
+        // Check if flavor dimensions already exist
+        if (buildGradle.includes('flavorDimensions') && buildGradle.includes('productFlavors')) {
+            console.log('⚠️  Flavor dimensions already exist in build.gradle');
+            return config;
+        }
+        // Find the android block
+        const androidBlockRegex = /android\s*{/;
+        const match = buildGradle.match(androidBlockRegex);
+        if (!match) {
+            console.warn('⚠️  Could not find android block in build.gradle');
+            return config;
+        }
+        const flavorConfig = `
+    flavorDimensions += "device"
+    productFlavors {
+        mobile { dimension "device" }
+        quest { dimension "device" }
+    }
+`;
+        // Insert after the android block opening
+        const insertPosition = match.index + match[0].length;
+        config.modResults.contents =
+            buildGradle.slice(0, insertPosition) + flavorConfig + buildGradle.slice(insertPosition);
+        console.log('✅ Added flavor dimensions to app build.gradle');
+        return config;
+    });
+};
+/**
+ * Creates a Horizon-specific AndroidManifest with only Horizon additions.
+ * This manifest will be merged with the main manifest, so we only include
+ * Horizon-specific features to avoid conflicts.
+ */
+function createQuestManifest(options) {
+    const manifest = {
+        manifest: {
+            $: {
+                'xmlns:android': 'http://schemas.android.com/apk/res/android',
+                'xmlns:tools': 'http://schemas.android.com/tools',
+            },
+            queries: [],
+            'uses-permission': [],
+            'uses-feature': [],
+            application: [],
+        },
+    };
+    // Block prohibited permissions
+    for (const permission of constants_1.PROHIBITED_PERMISSIONS) {
+        const fullPermissionName = permission.includes('.')
+            ? permission
+            : `android.permission.${permission}`;
+        manifest.manifest['uses-permission'].push({
+            $: {
+                'android:name': fullPermissionName,
+                'tools:node': 'remove',
+            },
+        });
+    }
+    console.log(`🚫 Blocked ${constants_1.PROHIBITED_PERMISSIONS.length} prohibited permissions in Horizon manifest`);
+    // Add VR headtracking feature (unless disabled)
+    if (options.disableVrHeadtracking !== true) {
+        manifest.manifest['uses-feature'].push({
+            $: {
+                'android:name': 'android.hardware.vr.headtracking',
+                'android:required': 'true',
+                'android:version': '1',
+            },
+        });
+    }
+    // Create application node with only Horizon-specific additions
+    const application = {
+        $: {
+            // Default to false for Horizon (disabled by default for security, recommended by Meta)
+            // User can enable with allowBackup: true option
+            'android:allowBackup': String(options.allowBackup ?? false),
+            // Tell the manifest merger to replace the `allowBackup` value from main manifest
+            'tools:replace': 'android:allowBackup',
+        },
+        'meta-data': [],
+        activity: [],
+    };
+    // Add supported devices meta-data
+    if (options.supportedDevices) {
+        application['meta-data'].push({
+            $: {
+                'android:name': 'com.oculus.supportedDevices',
+                'android:value': options.supportedDevices,
+            },
+        });
+    }
+    // Add MainActivity with panel size
+    if (options.defaultHeight || options.defaultWidth) {
+        const layoutAttrs = {};
+        if (options.defaultHeight) {
+            layoutAttrs['android:defaultHeight'] = options.defaultHeight;
+        }
+        if (options.defaultWidth) {
+            layoutAttrs['android:defaultWidth'] = options.defaultWidth;
+        }
+        application.activity.push({
+            $: {
+                'android:name': '.MainActivity',
+            },
+            layout: [
+                {
+                    $: layoutAttrs,
+                },
+            ],
+        });
+    }
+    manifest.manifest.application.push(application);
+    return manifest;
+}
+exports.default = exports.withCustomAndroidManifest;

@@ -1,0 +1,42 @@
+{
+  "name": "expo-horizon-core",
+  "version": "57.0.2",
+  "description": "ExpoHorizon common features.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build",
+    "plugin/build",
+    "ios",
+    "android/build.gradle",
+    "android/src",
+    "app.plugin.js",
+    "expo-module.config.json",
+    "plugin.js",
+    "plugin.d.ts"
+  ],
+  "keywords": [
+    "react-native",
+    "expo",
+    "expo-horizon",
+    "expo-horizon-core",
+    "ExpoHorizon"
+  ],
+  "repository": "http://github.com/software-mansion-labs/expo-horizon",
+  "bugs": {
+    "url": "http://github.com/software-mansion-labs/expo-horizon/issues"
+  },
+  "author": "Jakub Kosmydel <jakub.kosmydel@swmansion.com> (https://github.com/kosmydel)",
+  "license": "MIT",
+  "homepage": "http://github.com/software-mansion-labs/expo-horizon#readme",
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48",
+    "upstream": "expo-horizon-core@57.0.2"
+  }
+}
