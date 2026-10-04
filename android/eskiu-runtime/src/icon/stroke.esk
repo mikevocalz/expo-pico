@@ -1,0 +1,221 @@
+// Stroke tessellation for icon outlines: round joins, round caps, triangle output.
+//
+// The stroker turns one flattened polyline at a time into triangles. It never
+// allocates: every vertex and index goes through an IconSink, which either
+// counts (size pass) or counts and writes into caller-owned buffers (fill pass).
+// Both passes run the same code, so the counts from the size pass always match
+// what the fill pass writes.
+
+import <math>;
+
+extern double sin(double x);
+extern double cos(double x);
+extern double atan2(double y, double x);
+extern double acos(double x);
+
+const double ICON_PI = 3.14159265358979323846;
+const double ICON_TAU = 6.28318530717958647692;
+
+// Largest vertex or index count the ABI reports. Keeps every count well inside
+// uint32 and makes a runaway tolerance fail loudly instead of allocating gigabytes
+// on the caller side.
+const uint32 ICON_MAX_ELEMENTS = 16777216;
+
+// Hard ceiling on segments for one arc fan or one flattened curve.
+const int ICON_MAX_SEGMENTS = 4096;
+
+double icon_hypot(double x, double y) {
+    return sqrt((x * x) + (y * y));
+}
+
+// Angle step that keeps a circular arc of radius r within `tol` of its chords.
+double icon_arc_step(double r, double tol) {
+    if (r <= tol) { return ICON_PI * 0.5; }
+    double c = 1.0 - (tol / r);
+    double step = 2.0 * acos(c);
+    if (step > ICON_PI * 0.5) { return ICON_PI * 0.5; }
+    if (step < 0.0001) { return 0.0001; }
+    return step;
+}
+
+// Number of chords for an arc sweeping |sweep| radians at the given step.
+int icon_arc_segments(double sweep, double step) {
+    double a = fabs(sweep);
+    int n = (int)ceil((a / step) - 0.000000001);
+    if (n < 1) { n = 1; }
+    if (n > ICON_MAX_SEGMENTS) { n = ICON_MAX_SEGMENTS; }
+    return n;
+}
+
+// Output sink shared by the size and fill passes.
+struct IconSink {
+    *float verts;
+    *uint32 idx;
+    uint32 vcap;
+    uint32 icap;
+    uint32 vcount;
+    uint32 icount;
+    bool write;
+    bool overflow;
+    bool limit;
+
+    uint32 vertex(double x, double y) {
+        uint32 at = self.vcount;
+        if (at >= ICON_MAX_ELEMENTS) {
+            self.limit = true;
+            return at;
+        }
+        if (self.write) {
+            if (at < self.vcap) {
+                self.verts[at * 2] = (float)x;
+                self.verts[(at * 2) + 1] = (float)y;
+            } else {
+                self.overflow = true;
+            }
+        }
+        self.vcount = at + 1;
+        return at;
+    }
+
+    // Emits one triangle. Every triangle gets a negative signed area in SVG
+    // coordinates (y down), which is counter-clockwise once y is negated.
+    void triangle(uint32 a, double ax, double ay,
+                  uint32 b, double bx, double by,
+                  uint32 c, double cx, double cy) {
+        uint32 at = self.icount;
+        if (at + 3 > ICON_MAX_ELEMENTS) {
+            self.limit = true;
+            return;
+        }
+        double cross = ((bx - ax) * (cy - ay)) - ((by - ay) * (cx - ax));
+        uint32 second = b;
+        uint32 third = c;
+        if (cross > 0.0) {
+            second = c;
+            third = b;
+        }
+        if (self.write) {
+            if (at + 3 <= self.icap) {
+                self.idx[at] = a;
+                self.idx[at + 1] = second;
+                self.idx[at + 2] = third;
+            } else {
+                self.overflow = true;
+            }
+        }
+        self.icount = at + 3;
+    }
+}
+
+// Triangle fan around (cx, cy): one centre vertex plus n + 1 rim vertices.
+void icon_fan(*IconSink sink, double cx, double cy, double r,
+              double start, double sweep, double step) {
+    int n = icon_arc_segments(sweep, step);
+    uint32 centre = sink.vertex(cx, cy);
+    double px = cx + (r * cos(start));
+    double py = cy + (r * sin(start));
+    uint32 prev = sink.vertex(px, py);
+    for (int k = 1; k <= n; k++) {
+        double a = start + ((sweep * (double)k) / (double)n);
+        double qx = cx + (r * cos(a));
+        double qy = cy + (r * sin(a));
+        uint32 cur = sink.vertex(qx, qy);
+        sink.triangle(centre, cx, cy, prev, px, py, cur, qx, qy);
+        prev = cur;
+        px = qx;
+        py = qy;
+    }
+}
+
+// Rectangle covering the segment p -> q at half-width hw.
+void icon_segment_quad(*IconSink sink, double px, double py, double qx, double qy, double hw) {
+    double dx = qx - px;
+    double dy = qy - py;
+    double len = icon_hypot(dx, dy);
+    if (len <= 0.0) { return; }
+    double nx = (-dy / len) * hw;
+    double ny = (dx / len) * hw;
+    double ax = px + nx;
+    double ay = py + ny;
+    double bx = px - nx;
+    double by = py - ny;
+    double cx = qx - nx;
+    double cy = qy - ny;
+    double ex = qx + nx;
+    double ey = qy + ny;
+    uint32 a = sink.vertex(ax, ay);
+    uint32 b = sink.vertex(bx, by);
+    uint32 c = sink.vertex(cx, cy);
+    uint32 e = sink.vertex(ex, ey);
+    sink.triangle(a, ax, ay, b, bx, by, c, cx, cy);
+    sink.triangle(a, ax, ay, c, cx, cy, e, ex, ey);
+}
+
+// Round join at vertex (vx, vy) from incoming direction d0 to outgoing d1.
+// Only the outer side of the turn is filled; the inner side is already covered
+// by the two overlapping segment quads.
+void icon_round_join(*IconSink sink, double vx, double vy,
+                     double d0x, double d0y, double d1x, double d1y,
+                     double hw, double step) {
+    double cross = (d0x * d1y) - (d0y * d1x);
+    double dot = (d0x * d1x) + (d0y * d1y);
+    double turn = atan2(cross, dot);
+    if (fabs(turn) < 0.000001) { return; }
+    // Normal of the incoming segment, d0 rotated +90 degrees.
+    double nx = -d0y;
+    double ny = d0x;
+    if (turn > 0.0) {
+        nx = -nx;
+        ny = -ny;
+    }
+    icon_fan(sink, vx, vy, hw, atan2(ny, nx), turn, step);
+}
+
+// Strokes one polyline of `count` points stored as x, y pairs in `pts`.
+// Consecutive duplicates must already be removed by the caller.
+void icon_stroke_polyline(*IconSink sink, *double pts, int count, bool closed,
+                          double hw, double step) {
+    if (count <= 0) { return; }
+    if (count == 1) {
+        // Zero-length subpath with round caps: SVG paints a dot.
+        icon_fan(sink, pts[0], pts[1], hw, 0.0, ICON_TAU, step);
+        return;
+    }
+    int segs = count - 1;
+    if (closed) { segs = count; }
+    for (int s = 0; s < segs; s++) {
+        int j = (s + 1) % count;
+        icon_segment_quad(sink, pts[s * 2], pts[(s * 2) + 1], pts[j * 2], pts[(j * 2) + 1], hw);
+    }
+    int first_join = 1;
+    int last_join = count - 2;
+    if (closed) {
+        first_join = 0;
+        last_join = count - 1;
+    }
+    for (int v = first_join; v <= last_join; v++) {
+        int p = (v + count - 1) % count;
+        int q = (v + 1) % count;
+        double d0x = pts[v * 2] - pts[p * 2];
+        double d0y = pts[(v * 2) + 1] - pts[(p * 2) + 1];
+        double d1x = pts[q * 2] - pts[v * 2];
+        double d1y = pts[(q * 2) + 1] - pts[(v * 2) + 1];
+        double l0 = icon_hypot(d0x, d0y);
+        double l1 = icon_hypot(d1x, d1y);
+        if (l0 > 0.0 && l1 > 0.0) {
+            icon_round_join(sink, pts[v * 2], pts[(v * 2) + 1],
+                            d0x / l0, d0y / l0, d1x / l1, d1y / l1, hw, step);
+        }
+    }
+    if (!closed) {
+        // Start cap: from +n through -d to -n.
+        double sx = pts[2] - pts[0];
+        double sy = pts[3] - pts[1];
+        icon_fan(sink, pts[0], pts[1], hw, atan2(sx, -sy), ICON_PI, step);
+        // End cap: from -n through +d to +n.
+        int e = count - 1;
+        double ex = pts[e * 2] - pts[(e - 1) * 2];
+        double ey = pts[(e * 2) + 1] - pts[((e - 1) * 2) + 1];
+        icon_fan(sink, pts[e * 2], pts[(e * 2) + 1], hw, atan2(-ex, ey), ICON_PI, step);
+    }
+}

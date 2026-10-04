@@ -120,6 +120,21 @@ object PicoRuntimeV2 : Module() {
   @JS fun getHrtfProfile(): String? =
     requireCapability("getHrtfProfile", BuildConfig.PICO_SPATIAL_AUDIO, "spatialAudio")
 
+  /**
+   * Stroke mesh for SVG element markup (e.g. a Lucide icon's children), built by
+   * the Eskiu runtime. Returns `{ vertices: number[] (x, y pairs), indices: number[] }`.
+   */
+  @JS
+  fun getIconMesh(svgElements: String, strokeWidth: Double, tolerance: Double): Map<String, Any> {
+    val mesh = PicoEskiuBridge.iconMesh(svgElements, strokeWidth.toFloat(), tolerance.toFloat())
+    return mapOf(
+      "vertices" to mesh.vertices,
+      "indices" to mesh.indices,
+      "vertexCount" to mesh.vertexCount,
+      "indexCount" to mesh.indexCount,
+    )
+  }
+
   private const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
   private val SENSOR_TYPES = listOf(
     Sensor.TYPE_ACCELEROMETER to "accelerometer",

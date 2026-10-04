@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
+exports.LUCIDE_VERSION = exports.LUCIDE_ICONS = exports.iconMeshToViroGeometry = exports.getLucideIconMesh = exports.getIconMesh = exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
 exports.pulseHaptic = pulseHaptic;
 exports.isHapticsAvailable = isHapticsAvailable;
 exports.addPassthroughDialListener = addPassthroughDialListener;
@@ -352,4 +352,16 @@ async function hasImmersiveActivity() {
 async function exitImmersiveScene() {
     return ExpoPicoModule_1.default.exitImmersiveScene();
 }
+// ─── Icon meshes (Eskiu) ────────────────────────────────────────────────────
+// Lucide icons as triangle meshes for the immersive Viro scene, where there is
+// no SVG renderer. Built natively by the Eskiu runtime.
+var iconMesh_1 = require("./icons/iconMesh");
+Object.defineProperty(exports, "DEFAULT_ICON_STROKE_WIDTH", { enumerable: true, get: function () { return iconMesh_1.DEFAULT_ICON_STROKE_WIDTH; } });
+Object.defineProperty(exports, "DEFAULT_ICON_TOLERANCE", { enumerable: true, get: function () { return iconMesh_1.DEFAULT_ICON_TOLERANCE; } });
+Object.defineProperty(exports, "getIconMesh", { enumerable: true, get: function () { return iconMesh_1.getIconMesh; } });
+Object.defineProperty(exports, "getLucideIconMesh", { enumerable: true, get: function () { return iconMesh_1.getLucideIconMesh; } });
+Object.defineProperty(exports, "iconMeshToViroGeometry", { enumerable: true, get: function () { return iconMesh_1.iconMeshToViroGeometry; } });
+var lucideIcons_generated_1 = require("./icons/lucideIcons.generated");
+Object.defineProperty(exports, "LUCIDE_ICONS", { enumerable: true, get: function () { return lucideIcons_generated_1.LUCIDE_ICONS; } });
+Object.defineProperty(exports, "LUCIDE_VERSION", { enumerable: true, get: function () { return lucideIcons_generated_1.LUCIDE_VERSION; } });
 //# sourceMappingURL=index.js.map

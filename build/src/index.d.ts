@@ -135,4 +135,8 @@ export declare function hasImmersiveActivity(): Promise<boolean>;
  * back handler cannot close the panel by mistake.
  */
 export declare function exitImmersiveScene(): Promise<boolean>;
+export { DEFAULT_ICON_STROKE_WIDTH, DEFAULT_ICON_TOLERANCE, getIconMesh, getLucideIconMesh, iconMeshToViroGeometry, } from './icons/iconMesh';
+export type { IconMesh, IconMeshOptions, ViroIconGeometry, ViroIconGeometryOptions, } from './icons/iconMesh';
+export { LUCIDE_ICONS, LUCIDE_VERSION } from './icons/lucideIcons.generated';
+export type { LucideIconName } from './icons/lucideIcons.generated';
 //# sourceMappingURL=index.d.ts.map
