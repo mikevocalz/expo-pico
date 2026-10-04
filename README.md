@@ -1,0 +1,184 @@
+# expo-pico-storage
+
+[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
+
+Typed seam for PICO platform cloud storage on PICO OS 6.
+
+> Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
+
+> ## Unavailable on PPS 1.0.x
+>
+> **PPS 1.0.x removed cloud storage.** No `platform-service-storage` artifact
+> exists on the PICO repo, so there is nothing to reverse-engineer or wire up.
+> Every async method rejects with `NOT_IN_PPS_1_0` regardless of build flavor
+> or hardware. `ppsArtifacts.ts` maps `@expo-pico/storage` to an empty service
+> list.
+>
+> **Alternatives:**
+>
+> - **Cross-device / per-player state** — run your own backend keyed off
+>   `getUserProfile().userId` from `@expo-pico/account`. That user id is stable
+>   and is the same key PPS cloud saves were scoped to.
+> - **Device-local only** — [`expo-secure-store`](https://docs.expo.dev/versions/latest/sdk/securestore/)
+>   (or `@react-native-async-storage/async-storage` if the data isn't sensitive).
+>
+> The package is kept as a typed seam so a future PPS release can be wired
+> without an API break. Do not build against it today.
+
+## Installation
+
+```sh
+yarn add @expo-pico/storage
+```
+
+Add to `app.config.ts` after `expo-pico-core`:
+
+```ts
+plugins: [
+  ['@expo-pico/core', { ... }],
+  '@expo-pico/storage',
+]
+```
+
+## Status
+
+- Maturity: typed seam, not a working integration.
+- PICO Platform Service SDK (PPS) linkage: **none.** PPS 1.0.x ships no storage
+  artifact, so `expo-pico-core`'s Gradle plugin adds no storage dependency and
+  every method rejects with `NOT_IN_PPS_1_0`. This is unaffected by build
+  flavor, hardware, or Gradle connectivity — the earlier claim that it was
+  "live on `picoDebug` builds" was wrong.
+- Platform: Android only.
+- Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
+
+## Runtime diagnostics
+
+To check whether the `storage` SDK surface is live at runtime:
+
+```ts
+import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
+
+if (isPlatformSdkPresent()) {
+  const probe = await getPlatformSdkProbe();
+  console.log('storage SDK live:', probe.storage);
+}
+```
+
+Or run `npx expo-pico-doctor --fail-on-warning` before prebuild to catch misconfigs early.
+
+### Configure for Android
+
+Add `expo-pico-core` and `expo-pico-storage` to your `app.config.ts` plugins array. `expo-pico-core` must appear first:
+
+```ts
+export default {
+  plugins: [
+    ['@expo-pico/core', { picoAppId: 'your-pico-app-id', buildVariant: 'pico' }],
+    '@expo-pico/storage',
+  ],
+};
+```
+
+Then run:
+
+```
+npx expo prebuild --clean
+```
+
+## Usage
+
+```ts
+import {
+  isStorageAvailable,
+  saveEntry,
+  loadEntry,
+  deleteEntry,
+  listKeys,
+  syncStorage,
+  getStorageQuota,
+  addStorageConflictListener,
+  addStorageSyncCompleteListener,
+} from '@expo-pico/storage';
+
+if (isStorageAvailable()) {
+  // Save a value (server-wins conflict policy by default)
+  const saved = await saveEntry('player_settings', JSON.stringify({ volume: 0.8 }), 'json');
+  console.log('Saved at version:', saved.version);
+
+  // Load a value
+  const result = await loadEntry('player_settings');
+  if (result.found) {
+    const settings = JSON.parse(result.value!);
+  }
+
+  // List all keys
+  const keys = await listKeys();
+
+  // Force a full sync and check quota
+  const syncResult = await syncStorage();
+  console.log('Synced:', syncResult.syncedCount, 'conflicts:', syncResult.conflictCount);
+
+  const quota = await getStorageQuota();
+  console.log(`${quota.usedBytes} / ${quota.totalBytes} bytes used`);
+
+  // Listen for conflict events
+  const conflictSub = addStorageConflictListener((event) => {
+    console.log('Conflict on key:', event.key, 'server wins:', event.serverValue);
+  });
+  // Later: conflictSub.remove();
+}
+```
+
+## API
+
+| Function                                | Description                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `isStorageAvailable()`                  | Returns `true` on a PICO build with the Storage SDK linked                                                       |
+| `getStorageSdkVersion()`                | Returns the PICO Platform SDK version string                                                                     |
+| `getStorageStatus()`                    | Returns `StorageStatus`: `'available'` or `'unavailable'`                                                        |
+| `saveEntry(key, value, type, options?)` | Saves a string value; `type` is `'string' \| 'number' \| 'boolean' \| 'json'`; returns version and conflict info |
+| `loadEntry(key)`                        | Loads a value by key; returns `found: false` if missing                                                          |
+| `deleteEntry(key)`                      | Deletes a key from local and cloud storage                                                                       |
+| `listKeys()`                            | Returns all stored keys                                                                                          |
+| `syncStorage()`                         | Forces a cloud sync; returns counts of synced, conflicted, and errored entries                                   |
+| `getStorageQuota()`                     | Returns byte and entry counts for the current quota                                                              |
+| `clearLocalCache()`                     | Clears the local cache without deleting cloud data                                                               |
+| `addStorageConflictListener(cb)`        | Fires when a server/client conflict is detected; returns `Subscription`                                          |
+| `addStorageSyncProgressListener(cb)`    | Fires during sync with phase and progress; returns `Subscription`                                                |
+| `addStorageSyncCompleteListener(cb)`    | Fires when a sync cycle completes; returns `Subscription`                                                        |
+
+### Conflict policies
+
+`saveEntry` accepts a `conflictPolicy` option:
+
+| Policy                    | Behavior                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `'server-wins'` (default) | Server value is kept when versions conflict                                    |
+| `'client-wins'`           | Client value overwrites the server                                             |
+| `'manual'`                | Conflict is surfaced via `addStorageConflictListener` for app-level resolution |
+
+## Native artifacts
+
+This package declares no Maven coordinate of its own. It has no PICO
+Platform Service artifact behind it — see
+[docs/PPS-WIRING-GAPS.md](https://github.com/mikevocalz/expo-pico/blob/main/docs/PPS-WIRING-GAPS.md)
+— and reaches whatever native code it needs through
+`@expo-pico/core`. Installing it alongside other `@expo-pico/*`
+packages adds nothing to the Android classpath that is not already
+there.
+
+## Limitations
+
+- Android only (PICO is an Android platform)
+- New Architecture only (`newArchEnabled: true` required)
+- Requires `expo-pico-core` as a peer dependency
+- Some bridge methods may surface `NOT_IMPLEMENTED` until the corresponding PPS endpoint ships in a future PPS release. The PPS Maven deps themselves resolve automatically on `picoDebug` builds; no AAR drop is required.
+
+## Links
+
+- Top-level [README](https://github.com/mikevocalz/expo-pico#readme)
+
+## License
+
+MIT
