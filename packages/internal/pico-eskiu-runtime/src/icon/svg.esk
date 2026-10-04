@@ -1,0 +1,535 @@
+// SVG element scanner, path-data parser and the icon C ABI.
+//
+// Input is SVG element markup: the children of a Lucide <svg>, or the whole
+// file. Recognised elements are path, line, circle, ellipse, rect, polyline and
+// polygon. Every other tag (svg, g, title, comments) is skipped, so presentation
+// attributes are ignored and the caller picks stroke width and tolerance.
+
+import "path.esk";
+
+struct IconCursor {
+    *char s;
+    int i;
+    int end;
+
+    bool at_end() {
+        return self.i >= self.end;
+    }
+
+    char peek() {
+        if (self.i >= self.end) { return (char)0; }
+        return self.s[self.i];
+    }
+
+    void skip_sep() {
+        while (self.i < self.end) {
+            char c = self.s[self.i];
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == ',') {
+                self.i = self.i + 1;
+            } else {
+                return;
+            }
+        }
+    }
+
+    // SVG number: sign? digits* ('.' digits*)? exponent?. Stops at a second '.',
+    // so ".5.5" reads as 0.5 then 0.5, and "1-2" reads as 1 then -2.
+    bool number(*double out) {
+        self.skip_sep();
+        int i = self.i;
+        int end = self.end;
+        double sign = 1.0;
+        if (i < end && (self.s[i] == '+' || self.s[i] == '-')) {
+            if (self.s[i] == '-') { sign = -1.0; }
+            i = i + 1;
+        }
+        double mant = 0.0;
+        int frac = 0;
+        bool digits = false;
+        while (i < end && self.s[i] >= '0' && self.s[i] <= '9') {
+            mant = (mant * 10.0) + (double)(self.s[i] - '0');
+            digits = true;
+            i = i + 1;
+        }
+        if (i < end && self.s[i] == '.') {
+            i = i + 1;
+            while (i < end && self.s[i] >= '0' && self.s[i] <= '9') {
+                mant = (mant * 10.0) + (double)(self.s[i] - '0');
+                frac = frac + 1;
+                digits = true;
+                i = i + 1;
+            }
+        }
+        if (!digits) { return false; }
+        int exp = 0;
+        if (i < end && (self.s[i] == 'e' || self.s[i] == 'E')) {
+            int j = i + 1;
+            int esign = 1;
+            if (j < end && (self.s[j] == '+' || self.s[j] == '-')) {
+                if (self.s[j] == '-') { esign = -1; }
+                j = j + 1;
+            }
+            if (j < end && self.s[j] >= '0' && self.s[j] <= '9') {
+                int e = 0;
+                while (j < end && self.s[j] >= '0' && self.s[j] <= '9') {
+                    if (e < 10000) { e = (e * 10) + (int)(self.s[j] - '0'); }
+                    j = j + 1;
+                }
+                exp = esign * e;
+                i = j;
+            }
+        }
+        double value = mant;
+        int p = exp - frac;
+        if (p != 0) { value = mant * pow(10.0, (double)p); }
+        *out = sign * value;
+        self.i = i;
+        return true;
+    }
+
+    // Arc flags are a single '0' or '1' and need no separator ("a1 1 0 01 2 3").
+    bool flag(*bool out) {
+        self.skip_sep();
+        char c = self.peek();
+        if (c == '0') { *out = false; }
+        else if (c == '1') { *out = true; }
+        else { return false; }
+        self.i = self.i + 1;
+        return true;
+    }
+}
+
+bool icon_is_command(char c) {
+    return c == 'M' || c == 'm' || c == 'L' || c == 'l' || c == 'H' || c == 'h' ||
+           c == 'V' || c == 'v' || c == 'C' || c == 'c' || c == 'S' || c == 's' ||
+           c == 'Q' || c == 'q' || c == 'T' || c == 't' || c == 'A' || c == 'a' ||
+           c == 'Z' || c == 'z';
+}
+
+// Parses SVG path data between c.i and c.end into `p`.
+int icon_parse_path(*IconCursor c, *IconPath p) {
+    double cx = 0.0;
+    double cy = 0.0;
+    double sx = 0.0;
+    double sy = 0.0;
+    double lcx = 0.0;
+    double lcy = 0.0;
+    int last = 0; // 0 other, 1 cubic, 2 quadratic
+    char cmd = (char)0;
+    bool started = false;
+    while (true) {
+        if (p.status != ICON_OK) { return p.status; }
+        c.skip_sep();
+        if (c.at_end()) { break; }
+        char ch = c.peek();
+        if (icon_is_command(ch)) {
+            cmd = ch;
+            c.i = c.i + 1;
+        } else if (cmd == (char)0 || cmd == 'Z' || cmd == 'z') {
+            return ICON_ERR_PARSE;
+        }
+        if (!started && cmd != 'M' && cmd != 'm') { return ICON_ERR_PARSE; }
+        bool rel = cmd >= 'a';
+        double ox = 0.0;
+        double oy = 0.0;
+        if (rel) {
+            ox = cx;
+            oy = cy;
+        }
+        if (cmd == 'M' || cmd == 'm') {
+            double x = 0.0;
+            double y = 0.0;
+            if (!c.number(&x) || !c.number(&y)) { return ICON_ERR_PARSE; }
+            cx = ox + x;
+            cy = oy + y;
+            sx = cx;
+            sy = cy;
+            p.begin(cx, cy);
+            started = true;
+            last = 0;
+            // Extra coordinate pairs after a moveto are implicit linetos.
+            if (cmd == 'M') { cmd = 'L'; } else { cmd = 'l'; }
+        } else if (cmd == 'L' || cmd == 'l') {
+            double x = 0.0;
+            double y = 0.0;
+            if (!c.number(&x) || !c.number(&y)) { return ICON_ERR_PARSE; }
+            cx = ox + x;
+            cy = oy + y;
+            p.line(cx, cy);
+            last = 0;
+        } else if (cmd == 'H' || cmd == 'h') {
+            double x = 0.0;
+            if (!c.number(&x)) { return ICON_ERR_PARSE; }
+            cx = ox + x;
+            p.line(cx, cy);
+            last = 0;
+        } else if (cmd == 'V' || cmd == 'v') {
+            double y = 0.0;
+            if (!c.number(&y)) { return ICON_ERR_PARSE; }
+            cy = oy + y;
+            p.line(cx, cy);
+            last = 0;
+        } else if (cmd == 'C' || cmd == 'c' || cmd == 'S' || cmd == 's') {
+            double x1 = cx;
+            double y1 = cy;
+            if (cmd == 'C' || cmd == 'c') {
+                if (!c.number(&x1) || !c.number(&y1)) { return ICON_ERR_PARSE; }
+                x1 = ox + x1;
+                y1 = oy + y1;
+            } else if (last == 1) {
+                x1 = (2.0 * cx) - lcx;
+                y1 = (2.0 * cy) - lcy;
+            }
+            double x2 = 0.0;
+            double y2 = 0.0;
+            double x = 0.0;
+            double y = 0.0;
+            if (!c.number(&x2) || !c.number(&y2) || !c.number(&x) || !c.number(&y)) {
+                return ICON_ERR_PARSE;
+            }
+            x2 = ox + x2;
+            y2 = oy + y2;
+            x = ox + x;
+            y = oy + y;
+            p.cubic(cx, cy, x1, y1, x2, y2, x, y);
+            lcx = x2;
+            lcy = y2;
+            cx = x;
+            cy = y;
+            last = 1;
+        } else if (cmd == 'Q' || cmd == 'q' || cmd == 'T' || cmd == 't') {
+            double qx = cx;
+            double qy = cy;
+            if (cmd == 'Q' || cmd == 'q') {
+                if (!c.number(&qx) || !c.number(&qy)) { return ICON_ERR_PARSE; }
+                qx = ox + qx;
+                qy = oy + qy;
+            } else if (last == 2) {
+                qx = (2.0 * cx) - lcx;
+                qy = (2.0 * cy) - lcy;
+            }
+            double x = 0.0;
+            double y = 0.0;
+            if (!c.number(&x) || !c.number(&y)) { return ICON_ERR_PARSE; }
+            x = ox + x;
+            y = oy + y;
+            p.quad(cx, cy, qx, qy, x, y);
+            lcx = qx;
+            lcy = qy;
+            cx = x;
+            cy = y;
+            last = 2;
+        } else if (cmd == 'A' || cmd == 'a') {
+            double rx = 0.0;
+            double ry = 0.0;
+            double rot = 0.0;
+            bool large = false;
+            bool sweep = false;
+            double x = 0.0;
+            double y = 0.0;
+            if (!c.number(&rx) || !c.number(&ry) || !c.number(&rot) ||
+                !c.flag(&large) || !c.flag(&sweep) || !c.number(&x) || !c.number(&y)) {
+                return ICON_ERR_PARSE;
+            }
+            x = ox + x;
+            y = oy + y;
+            p.arc(cx, cy, rx, ry, rot, large, sweep, x, y);
+            cx = x;
+            cy = y;
+            last = 0;
+        } else {
+            // Z / z: close, then any following segment starts from the subpath start.
+            // A closed zero-length subpath ("M x y z") still paints a round dot.
+            p.drawn = true;
+            p.flush(true);
+            cx = sx;
+            cy = sy;
+            p.begin(cx, cy);
+            last = 0;
+        }
+    }
+    p.flush(false);
+    return p.status;
+}
+
+bool icon_name_char(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+           c == '-' || c == '_' || c == ':';
+}
+
+bool icon_is_space(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f';
+}
+
+bool icon_token_is(*char s, int start, int len, string lit) {
+    int k = 0;
+    while (k < len) {
+        if (lit[k] == (char)0 || lit[k] != s[start + k]) { return false; }
+        k = k + 1;
+    }
+    return lit[len] == (char)0;
+}
+
+// Finds attribute `name` inside the tag body [from, to) and points `out` at its
+// quoted value. Returns false when the attribute is absent.
+bool icon_attr(*char s, int from, int to, string name, *IconCursor out) {
+    int i = from;
+    while (i < to) {
+        while (i < to && (icon_is_space(s[i]) || s[i] == '/')) { i = i + 1; }
+        int ns = i;
+        while (i < to && icon_name_char(s[i])) { i = i + 1; }
+        int nlen = i - ns;
+        if (nlen == 0) { return false; }
+        while (i < to && icon_is_space(s[i])) { i = i + 1; }
+        if (i >= to || s[i] != '=') { continue; }
+        i = i + 1;
+        while (i < to && icon_is_space(s[i])) { i = i + 1; }
+        if (i >= to) { return false; }
+        char q = s[i];
+        if (q != '"' && q != '\'') { return false; }
+        int vs = i + 1;
+        int ve = vs;
+        while (ve < to && s[ve] != q) { ve = ve + 1; }
+        if (ve >= to) { return false; }
+        if (icon_token_is(s, ns, nlen, name)) {
+            out.s = s;
+            out.i = vs;
+            out.end = ve;
+            return true;
+        }
+        i = ve + 1;
+    }
+    return false;
+}
+
+// Reads a numeric attribute. Absent -> `fallback`; present but malformed -> error.
+int icon_attr_number(*char s, int from, int to, string name, double fallback,
+                     *double out, *bool present) {
+    IconCursor c;
+    *out = fallback;
+    *present = false;
+    if (!icon_attr(s, from, to, name, &c)) { return ICON_OK; }
+    double v = 0.0;
+    if (!c.number(&v)) { return ICON_ERR_PARSE; }
+    *out = v;
+    *present = true;
+    return ICON_OK;
+}
+
+int icon_points(*IconCursor c, *IconPath p, bool closed) {
+    bool first = true;
+    while (true) {
+        c.skip_sep();
+        if (c.at_end()) { break; }
+        double x = 0.0;
+        double y = 0.0;
+        if (!c.number(&x) || !c.number(&y)) { return ICON_ERR_PARSE; }
+        if (first) {
+            p.begin(x, y);
+            first = false;
+        } else {
+            p.line(x, y);
+        }
+    }
+    p.flush(closed);
+    return p.status;
+}
+
+int icon_element(*char s, int name_start, int name_len, int from, int to, *IconPath p) {
+    bool has = false;
+    int rc = ICON_OK;
+    if (icon_token_is(s, name_start, name_len, "path")) {
+        IconCursor c;
+        if (!icon_attr(s, from, to, "d", &c)) { return ICON_OK; }
+        return icon_parse_path(&c, p);
+    }
+    if (icon_token_is(s, name_start, name_len, "line")) {
+        double x1 = 0.0;
+        double y1 = 0.0;
+        double x2 = 0.0;
+        double y2 = 0.0;
+        rc = icon_attr_number(s, from, to, "x1", 0.0, &x1, &has);
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "y1", 0.0, &y1, &has); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "x2", 0.0, &x2, &has); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "y2", 0.0, &y2, &has); }
+        if (rc != ICON_OK) { return rc; }
+        p.begin(x1, y1);
+        p.line(x2, y2);
+        p.flush(false);
+        return p.status;
+    }
+    bool is_circle = icon_token_is(s, name_start, name_len, "circle");
+    if (is_circle || icon_token_is(s, name_start, name_len, "ellipse")) {
+        double cx = 0.0;
+        double cy = 0.0;
+        double rx = 0.0;
+        double ry = 0.0;
+        rc = icon_attr_number(s, from, to, "cx", 0.0, &cx, &has);
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "cy", 0.0, &cy, &has); }
+        if (is_circle) {
+            if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "r", 0.0, &rx, &has); }
+            ry = rx;
+        } else {
+            if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "rx", 0.0, &rx, &has); }
+            if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "ry", 0.0, &ry, &has); }
+        }
+        if (rc != ICON_OK) { return rc; }
+        p.ellipse(cx, cy, rx, ry);
+        return p.status;
+    }
+    if (icon_token_is(s, name_start, name_len, "rect")) {
+        double x = 0.0;
+        double y = 0.0;
+        double w = 0.0;
+        double h = 0.0;
+        double rx = 0.0;
+        double ry = 0.0;
+        bool has_rx = false;
+        bool has_ry = false;
+        rc = icon_attr_number(s, from, to, "x", 0.0, &x, &has);
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "y", 0.0, &y, &has); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "width", 0.0, &w, &has); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "height", 0.0, &h, &has); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "rx", 0.0, &rx, &has_rx); }
+        if (rc == ICON_OK) { rc = icon_attr_number(s, from, to, "ry", 0.0, &ry, &has_ry); }
+        if (rc != ICON_OK) { return rc; }
+        p.rect(x, y, w, h, rx, ry, has_rx, has_ry);
+        return p.status;
+    }
+    bool is_polygon = icon_token_is(s, name_start, name_len, "polygon");
+    if (is_polygon || icon_token_is(s, name_start, name_len, "polyline")) {
+        IconCursor c;
+        if (!icon_attr(s, from, to, "points", &c)) { return ICON_OK; }
+        return icon_points(&c, p, is_polygon);
+    }
+    return ICON_OK;
+}
+
+// Walks every tag in `svg` and feeds the recognised ones to `p`.
+int icon_scan(*char svg, *IconPath p) {
+    int i = 0;
+    while (svg[i] != (char)0) {
+        if (svg[i] != '<') {
+            i = i + 1;
+            continue;
+        }
+        int ns = i + 1;
+        int ne = ns;
+        while (svg[ne] != (char)0 && icon_name_char(svg[ne])) { ne = ne + 1; }
+        // Tag end, skipping quoted attribute values.
+        int j = ne;
+        char quote = (char)0;
+        while (svg[j] != (char)0) {
+            char ch = svg[j];
+            if (quote != (char)0) {
+                if (ch == quote) { quote = (char)0; }
+            } else if (ch == '"' || ch == '\'') {
+                quote = ch;
+            } else if (ch == '>') {
+                break;
+            }
+            j = j + 1;
+        }
+        if (svg[j] == (char)0) { return ICON_ERR_PARSE; }
+        if (ne > ns) {
+            int rc = icon_element(svg, ns, ne - ns, ne, j, p);
+            if (rc != ICON_OK) { return rc; }
+        }
+        i = j + 1;
+    }
+    return p.status;
+}
+
+bool icon_param_ok(float v, float max) {
+    if (v != v) { return false; }
+    return v > 0.0 && v <= max;
+}
+
+int icon_mesh_run(*char svg, float stroke_width, float tolerance, *IconSink sink) {
+    if (!icon_param_ok(stroke_width, 1000.0) || !icon_param_ok(tolerance, 1000.0)) {
+        return ICON_ERR_PARAM;
+    }
+    IconPath p;
+    icon_path_init(&p, ICON_MODE_STROKE, sink, (double)stroke_width * 0.5, (double)tolerance);
+    int rc = icon_scan(svg, &p);
+    if (rc != ICON_OK) { return rc; }
+    if (sink.limit) { return ICON_ERR_LIMIT; }
+    return ICON_OK;
+}
+
+// ---------------------------------------------------------------------------
+// C ABI (see include/expo_pico_eskiu.h)
+// ---------------------------------------------------------------------------
+
+uint32 expo_pico_icon_abi_version() {
+    return 1;
+}
+
+int32 expo_pico_icon_mesh_size(*char svg_elements, float stroke_width, float tolerance,
+                               *uint32 out_vertex_count, *uint32 out_index_count) {
+    if (svg_elements == null || out_vertex_count == null || out_index_count == null) {
+        return ICON_ERR_NULL;
+    }
+    *out_vertex_count = 0;
+    *out_index_count = 0;
+    IconSink sink = IconSink { verts: null, idx: null, vcap: 0, icap: 0, vcount: 0, icount: 0,
+                               write: false, overflow: false, limit: false };
+    int rc = icon_mesh_run(svg_elements, stroke_width, tolerance, &sink);
+    if (rc != ICON_OK) { return rc; }
+    *out_vertex_count = sink.vcount;
+    *out_index_count = sink.icount;
+    return ICON_OK;
+}
+
+int32 expo_pico_icon_mesh_fill(*char svg_elements, float stroke_width, float tolerance,
+                               *float vertices_xy, uint32 vertex_capacity,
+                               *uint32 indices, uint32 index_capacity,
+                               *uint32 out_vertex_count, *uint32 out_index_count) {
+    if (svg_elements == null || vertices_xy == null || indices == null ||
+        out_vertex_count == null || out_index_count == null) {
+        return ICON_ERR_NULL;
+    }
+    *out_vertex_count = 0;
+    *out_index_count = 0;
+    IconSink sink = IconSink { verts: vertices_xy, idx: indices, vcap: vertex_capacity,
+                               icap: index_capacity, vcount: 0, icount: 0,
+                               write: true, overflow: false, limit: false };
+    int rc = icon_mesh_run(svg_elements, stroke_width, tolerance, &sink);
+    if (rc != ICON_OK) { return rc; }
+    *out_vertex_count = sink.vcount;
+    *out_index_count = sink.icount;
+    if (sink.overflow) { return ICON_ERR_CAPACITY; }
+    return ICON_OK;
+}
+
+int32 expo_pico_svg_path_flatten(*char path_data, float tolerance, *float out_xy,
+                                 uint32 point_capacity, *uint32 out_point_count,
+                                 *uint32 out_subpath_count) {
+    if (path_data == null || out_point_count == null || out_subpath_count == null) {
+        return ICON_ERR_NULL;
+    }
+    *out_point_count = 0;
+    *out_subpath_count = 0;
+    if (!icon_param_ok(tolerance, 1000.0)) { return ICON_ERR_PARAM; }
+    int len = 0;
+    while (path_data[len] != (char)0) { len = len + 1; }
+    IconPath p;
+    icon_path_init(&p, ICON_MODE_POINTS, null, 1.0, (double)tolerance);
+    p.out_xy = out_xy;
+    p.out_cap = point_capacity;
+    IconCursor c = IconCursor { s: path_data, i: 0, end: len };
+    int rc = icon_parse_path(&c, &p);
+    if (rc != ICON_OK) { return rc; }
+    *out_point_count = p.out_count;
+    *out_subpath_count = (uint32)p.subpaths;
+    if (out_xy == null || p.out_count > point_capacity) { return ICON_ERR_CAPACITY; }
+    return ICON_OK;
+}
+
+int32 expo_pico_svg_arc_center(double x1, double y1, double rx, double ry,
+                               double x_axis_rotation_deg, int32 large_arc, int32 sweep,
+                               double x2, double y2, *ExpoPicoSvgArcCenter out) {
+    if (out == null) { return ICON_ERR_NULL; }
+    return icon_arc_to_center(x1, y1, rx, ry, x_axis_rotation_deg,
+                              large_arc != 0, sweep != 0, x2, y2, out);
+}

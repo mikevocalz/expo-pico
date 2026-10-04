@@ -1,0 +1,277 @@
+// Path building and flattening for icon outlines.
+//
+// IconPath collects one subpath at a time into a fixed stack buffer, then hands
+// it to the stroker (or, for the inspection ABI, copies the points out). Curves
+// are flattened as they arrive:
+//   - quadratic and cubic Beziers use Wang's bound, so each curve gets the fewest
+//     uniform steps that keep it within `tol` of the true curve;
+//   - elliptical arcs are converted from endpoint to centre parameterisation
+//     (SVG 1.1 appendix F.6.5, radii corrected per F.6.6) and stepped by angle.
+
+import "stroke.esk";
+
+// Points per subpath. 2048 points is 32 KiB of stack; a Lucide subpath at
+// tolerance 0.01 stays under 200.
+const int ICON_MAX_POINTS = 2048;
+
+const int ICON_OK = 0;
+const int ICON_ERR_NULL = -1;
+const int ICON_ERR_PARAM = -2;
+const int ICON_ERR_PARSE = -3;
+const int ICON_ERR_LIMIT = -4;
+const int ICON_ERR_CAPACITY = -5;
+
+const int ICON_MODE_STROKE = 0;
+const int ICON_MODE_POINTS = 1;
+
+// Endpoint-to-centre conversion result for one elliptical arc.
+struct ExpoPicoSvgArcCenter {
+    double cx;
+    double cy;
+    double rx;
+    double ry;
+    double theta1;
+    double delta_theta;
+}
+
+// Returns 1 and fills `out` for a drawable arc, 0 when the arc is degenerate:
+// equal endpoints (the arc is omitted) or a zero radius (SVG draws a line).
+int icon_arc_to_center(double x1, double y1, double rx_in, double ry_in, double phi_deg,
+                       bool large_arc, bool sweep, double x2, double y2,
+                       *ExpoPicoSvgArcCenter out) {
+    if (x1 == x2 && y1 == y2) { return 0; }
+    double rx = fabs(rx_in);
+    double ry = fabs(ry_in);
+    if (rx == 0.0 || ry == 0.0) { return 0; }
+    double phi = fmod(phi_deg, 360.0) * (ICON_PI / 180.0);
+    double cp = cos(phi);
+    double sp = sin(phi);
+    double dx2 = (x1 - x2) * 0.5;
+    double dy2 = (y1 - y2) * 0.5;
+    double x1p = (cp * dx2) + (sp * dy2);
+    double y1p = (-sp * dx2) + (cp * dy2);
+    double lambda = ((x1p * x1p) / (rx * rx)) + ((y1p * y1p) / (ry * ry));
+    if (lambda > 1.0) {
+        double s = sqrt(lambda);
+        rx = rx * s;
+        ry = ry * s;
+    }
+    double rx2 = rx * rx;
+    double ry2 = ry * ry;
+    double num = (rx2 * ry2) - (rx2 * y1p * y1p) - (ry2 * x1p * x1p);
+    double den = (rx2 * y1p * y1p) + (ry2 * x1p * x1p);
+    double coef = 0.0;
+    if (den > 0.0 && num > 0.0) { coef = sqrt(num / den); }
+    if (large_arc == sweep) { coef = -coef; }
+    double cxp = coef * ((rx * y1p) / ry);
+    double cyp = coef * (-(ry * x1p) / rx);
+    double ux = (x1p - cxp) / rx;
+    double uy = (y1p - cyp) / ry;
+    double vx = (-x1p - cxp) / rx;
+    double vy = (-y1p - cyp) / ry;
+    double theta1 = atan2(uy, ux);
+    double dtheta = atan2((ux * vy) - (uy * vx), (ux * vx) + (uy * vy));
+    if (!sweep && dtheta > 0.0) { dtheta = dtheta - ICON_TAU; }
+    if (sweep && dtheta < 0.0) { dtheta = dtheta + ICON_TAU; }
+    out.cx = (cp * cxp) - (sp * cyp) + ((x1 + x2) * 0.5);
+    out.cy = (sp * cxp) + (cp * cyp) + ((y1 + y2) * 0.5);
+    out.rx = rx;
+    out.ry = ry;
+    out.theta1 = theta1;
+    out.delta_theta = dtheta;
+    return 1;
+}
+
+struct IconPath {
+    double[4096] pts;
+    int count;
+    bool drawn;
+    int status;
+    int mode;
+    int subpaths;
+    *IconSink sink;
+    double hw;
+    double tol;
+    double step;
+    // ICON_MODE_POINTS output.
+    *float out_xy;
+    uint32 out_cap;
+    uint32 out_count;
+
+    void flush(bool closed) {
+        int n = self.count;
+        if (closed && n > 2) {
+            double fx = self.pts[0];
+            double fy = self.pts[1];
+            double lx = self.pts[(n - 1) * 2];
+            double ly = self.pts[((n - 1) * 2) + 1];
+            if (fabs(fx - lx) < 0.000000001 && fabs(fy - ly) < 0.000000001) { n = n - 1; }
+        }
+        bool paint = n > 1 || (n == 1 && self.drawn);
+        if (paint && self.status == ICON_OK) {
+            self.subpaths = self.subpaths + 1;
+            if (self.mode == ICON_MODE_STROKE) {
+                icon_stroke_polyline(self.sink, &self.pts[0], n, closed && n > 1, self.hw, self.step);
+            } else {
+                for (int k = 0; k < n; k++) {
+                    uint32 at = self.out_count;
+                    if (self.out_xy != null && at < self.out_cap) {
+                        self.out_xy[at * 2] = (float)self.pts[k * 2];
+                        self.out_xy[(at * 2) + 1] = (float)self.pts[(k * 2) + 1];
+                    }
+                    self.out_count = at + 1;
+                }
+            }
+        }
+        self.count = 0;
+        self.drawn = false;
+    }
+
+    void begin(double x, double y) {
+        self.flush(false);
+        self.pts[0] = x;
+        self.pts[1] = y;
+        self.count = 1;
+    }
+
+    void line(double x, double y) {
+        self.drawn = true;
+        int n = self.count;
+        if (n > 0) {
+            double px = self.pts[(n - 1) * 2];
+            double py = self.pts[((n - 1) * 2) + 1];
+            if (fabs(px - x) < 0.000000001 && fabs(py - y) < 0.000000001) { return; }
+        }
+        if (n >= ICON_MAX_POINTS) {
+            self.status = ICON_ERR_LIMIT;
+            return;
+        }
+        self.pts[n * 2] = x;
+        self.pts[(n * 2) + 1] = y;
+        self.count = n + 1;
+    }
+
+    void quad(double x0, double y0, double x1, double y1, double x2, double y2) {
+        double ddx = x0 - (2.0 * x1) + x2;
+        double ddy = y0 - (2.0 * y1) + y2;
+        double m = icon_hypot(ddx, ddy);
+        int n = (int)ceil(sqrt((0.25 * m) / self.tol));
+        if (n < 1) { n = 1; }
+        if (n > ICON_MAX_SEGMENTS) { n = ICON_MAX_SEGMENTS; }
+        for (int k = 1; k < n; k++) {
+            double t = (double)k / (double)n;
+            double u = 1.0 - t;
+            self.line((u * u * x0) + (2.0 * u * t * x1) + (t * t * x2),
+                      (u * u * y0) + (2.0 * u * t * y1) + (t * t * y2));
+        }
+        self.line(x2, y2);
+    }
+
+    void cubic(double x0, double y0, double x1, double y1,
+               double x2, double y2, double x3, double y3) {
+        double ax = x0 - (2.0 * x1) + x2;
+        double ay = y0 - (2.0 * y1) + y2;
+        double bx = x1 - (2.0 * x2) + x3;
+        double by = y1 - (2.0 * y2) + y3;
+        double m = icon_hypot(ax, ay);
+        double mb = icon_hypot(bx, by);
+        if (mb > m) { m = mb; }
+        int n = (int)ceil(sqrt((0.75 * m) / self.tol));
+        if (n < 1) { n = 1; }
+        if (n > ICON_MAX_SEGMENTS) { n = ICON_MAX_SEGMENTS; }
+        for (int k = 1; k < n; k++) {
+            double t = (double)k / (double)n;
+            double u = 1.0 - t;
+            double b0 = u * u * u;
+            double b1 = 3.0 * u * u * t;
+            double b2 = 3.0 * u * t * t;
+            double b3 = t * t * t;
+            self.line((b0 * x0) + (b1 * x1) + (b2 * x2) + (b3 * x3),
+                      (b0 * y0) + (b1 * y1) + (b2 * y2) + (b3 * y3));
+        }
+        self.line(x3, y3);
+    }
+
+    // Appends points along an ellipse in centre form, excluding the start point.
+    void ellipse_arc(double cx, double cy, double rx, double ry, double phi,
+                     double theta1, double dtheta, double ex, double ey) {
+        double r = rx;
+        if (ry > r) { r = ry; }
+        int n = icon_arc_segments(dtheta, icon_arc_step(r, self.tol));
+        double cp = cos(phi);
+        double sp = sin(phi);
+        for (int k = 1; k < n; k++) {
+            double a = theta1 + ((dtheta * (double)k) / (double)n);
+            double ca = cos(a);
+            double sa = sin(a);
+            self.line(cx + (rx * cp * ca) - (ry * sp * sa),
+                      cy + (rx * sp * ca) + (ry * cp * sa));
+        }
+        self.line(ex, ey);
+    }
+
+    void arc(double x1, double y1, double rx, double ry, double phi_deg,
+             bool large_arc, bool sweep, double x2, double y2) {
+        ExpoPicoSvgArcCenter c;
+        if (icon_arc_to_center(x1, y1, rx, ry, phi_deg, large_arc, sweep, x2, y2, &c) == 0) {
+            if (rx == 0.0 || ry == 0.0) { self.line(x2, y2); }
+            return;
+        }
+        double phi = fmod(phi_deg, 360.0) * (ICON_PI / 180.0);
+        self.ellipse_arc(c.cx, c.cy, c.rx, c.ry, phi, c.theta1, c.delta_theta, x2, y2);
+    }
+
+    void ellipse(double cx, double cy, double rx, double ry) {
+        if (rx <= 0.0 || ry <= 0.0) { return; }
+        self.begin(cx + rx, cy);
+        self.ellipse_arc(cx, cy, rx, ry, 0.0, 0.0, ICON_TAU, cx + rx, cy);
+        self.flush(true);
+    }
+
+    void rect(double x, double y, double w, double h, double rx_in, double ry_in,
+              bool has_rx, bool has_ry) {
+        if (w <= 0.0 || h <= 0.0) { return; }
+        double rx = rx_in;
+        double ry = ry_in;
+        if (!has_rx && has_ry) { rx = ry; }
+        if (has_rx && !has_ry) { ry = rx; }
+        if (rx < 0.0) { rx = 0.0; }
+        if (ry < 0.0) { ry = 0.0; }
+        if (rx > w * 0.5) { rx = w * 0.5; }
+        if (ry > h * 0.5) { ry = h * 0.5; }
+        if (rx == 0.0 || ry == 0.0) {
+            self.begin(x, y);
+            self.line(x + w, y);
+            self.line(x + w, y + h);
+            self.line(x, y + h);
+            self.flush(true);
+            return;
+        }
+        double q = ICON_PI * 0.5;
+        self.begin(x + rx, y);
+        self.line(x + w - rx, y);
+        self.ellipse_arc(x + w - rx, y + ry, rx, ry, 0.0, -q, q, x + w, y + ry);
+        self.line(x + w, y + h - ry);
+        self.ellipse_arc(x + w - rx, y + h - ry, rx, ry, 0.0, 0.0, q, x + w - rx, y + h);
+        self.line(x + rx, y + h);
+        self.ellipse_arc(x + rx, y + h - ry, rx, ry, 0.0, q, q, x, y + h - ry);
+        self.line(x, y + ry);
+        self.ellipse_arc(x + rx, y + ry, rx, ry, 0.0, ICON_PI, q, x + rx, y);
+        self.flush(true);
+    }
+}
+
+void icon_path_init(*IconPath p, int mode, *IconSink sink, double hw, double tol) {
+    p.count = 0;
+    p.drawn = false;
+    p.status = ICON_OK;
+    p.mode = mode;
+    p.subpaths = 0;
+    p.sink = sink;
+    p.hw = hw;
+    p.tol = tol;
+    p.step = icon_arc_step(hw, tol);
+    p.out_xy = null;
+    p.out_cap = 0;
+    p.out_count = 0;
+}

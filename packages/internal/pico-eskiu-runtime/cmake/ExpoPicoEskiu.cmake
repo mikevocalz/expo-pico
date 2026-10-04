@@ -19,13 +19,15 @@ function(expo_pico_add_eskiu_runtime target)
 
   if(NOT EXPO_PICO_ESKIUC)
     if(EXPO_PICO_REQUIRE_ESKIU)
-      message(FATAL_ERROR "expo-pico: eskiuc >= 0.9.2 is required for this PICO build")
+      message(FATAL_ERROR "expo-pico: eskiuc >= 0.9.3 is required for this PICO build")
     endif()
     message(STATUS "expo-pico: eskiuc not found; building without Eskiu runtime")
     return()
   endif()
 
   set(ESKIU_SOURCE "${ESKIU_RUNTIME_DIR}/src/runtime.esk")
+  # runtime.esk imports these; list them so an edit to any one recompiles.
+  file(GLOB ESKIU_IMPORTS CONFIGURE_DEPENDS "${ESKIU_RUNTIME_DIR}/src/icon/*.esk")
   set(ESKIU_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/expo_pico_eskiu_runtime.o")
 
   add_custom_command(
@@ -37,7 +39,7 @@ function(expo_pico_add_eskiu_runtime target)
             --freestanding
             -O2
             -o "${ESKIU_OBJECT}"
-    DEPENDS "${ESKIU_SOURCE}"
+    DEPENDS "${ESKIU_SOURCE}" ${ESKIU_IMPORTS}
     COMMENT "Compiling expo-pico Eskiu runtime"
     VERBATIM
   )

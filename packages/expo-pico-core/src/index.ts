@@ -375,3 +375,22 @@ export async function hasImmersiveActivity(): Promise<boolean> {
 export async function exitImmersiveScene(): Promise<boolean> {
   return ExpoPicoModule.exitImmersiveScene();
 }
+
+// ─── Icon meshes (Eskiu) ────────────────────────────────────────────────────
+// Lucide icons as triangle meshes for the immersive Viro scene, where there is
+// no SVG renderer. Built natively by the Eskiu runtime.
+export {
+  DEFAULT_ICON_STROKE_WIDTH,
+  DEFAULT_ICON_TOLERANCE,
+  getIconMesh,
+  getLucideIconMesh,
+  iconMeshToViroGeometry,
+} from './icons/iconMesh';
+export type {
+  IconMesh,
+  IconMeshOptions,
+  ViroIconGeometry,
+  ViroIconGeometryOptions,
+} from './icons/iconMesh';
+export { LUCIDE_ICONS, LUCIDE_VERSION } from './icons/lucideIcons.generated';
+export type { LucideIconName } from './icons/lucideIcons.generated';
