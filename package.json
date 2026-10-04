@@ -1,0 +1,66 @@
+{
+  "name": "@expo-pico/iap",
+  "version": "1.0.0",
+  "description": "PICO store in-app purchase APIs for Expo apps.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/src/withPicoIap.js",
+      "require": "./plugin/build/src/withPicoIap.js",
+      "types": "./plugin/build/src/withPicoIap.d.ts"
+    }
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "iap",
+    "in-app-purchase",
+    "pico-store"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-iap"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "expo": ">=58.0.2 <59",
+    "@expo-pico/core": ">=1.0.0",
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "@expo-pico/platform-service-common": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "@expo-pico/core": {
+      "optional": false
+    }
+  },
+  "files": [
+    "LICENSE",
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-iap",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}
