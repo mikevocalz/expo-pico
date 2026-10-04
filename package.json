@@ -1,0 +1,73 @@
+{
+  "name": "@expo-pico/achievements",
+  "version": "1.0.0",
+  "description": "PICO OS achievements for Expo",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/src/index.js",
+      "require": "./plugin/build/src/index.js",
+      "types": "./plugin/build/src/index.d.ts"
+    }
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "xr",
+    "achievements",
+    "gamification"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-achievements"
+  },
+  "bugs": "https://github.com/your-org/expo-pico/issues",
+  "license": "MIT",
+  "homepage": "https://github.com/your-org/expo-pico/packages/expo-pico-achievements",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "expo": ">=58.0.2 <59",
+    "@expo-pico/core": ">=1.0.0",
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "@expo-pico/platform-service-common": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "@expo-pico/core": {
+      "optional": false
+    }
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "expo-pico-achievements"
+      ]
+    }
+  },
+  "files": [
+    "LICENSE",
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js"
+  ],
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}

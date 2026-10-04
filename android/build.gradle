@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.pico'
+version = '1.0.0'
+
+def safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+android {
+    namespace "expo.modules.pico.achievements"
+    compileSdk safeExtGet('compileSdkVersion', 36)
+
+    defaultConfig {
+        minSdk safeExtGet('minSdkVersion', 24)
+        missingDimensionStrategy "device", "pico", "mobile"
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+    maven {
+        url "https://artifact.bytedance.com/repository/Volcengine/"
+        content { includeGroup "com.pico.pps" }
+    }
+}
+
+dependencies {
+    implementation project(':expo-pico-core')
+    compileOnly "com.pico.pps:platform-service-achievement:1.0.0"
+    compileOnly "com.pico.pps:pps_sdk_base:1.0.0"
+}
