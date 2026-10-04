@@ -1,0 +1,72 @@
+{
+  "name": "@expo-pico/spatial",
+  "version": "1.0.0",
+  "description": "Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js",
+    "./plugin": {
+      "import": "./plugin/build/src/withPicoSpatial.js",
+      "require": "./plugin/build/src/withPicoSpatial.js",
+      "types": "./plugin/build/src/withPicoSpatial.d.ts"
+    }
+  },
+  "keywords": [
+    "expo",
+    "pico",
+    "pico-os",
+    "spatial",
+    "xr",
+    "vr",
+    "mixed-reality"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikevocalz/expo-pico.git",
+    "directory": "packages/expo-pico-spatial"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "expo": ">=58.0.2 <59",
+    "@expo-pico/core": ">=1.0.0",
+    "react": ">=19.3.0 <20",
+    "react-native": ">=0.88.0-rc.3 <0.89",
+    "expo-modules-core": ">=58.0.11 <59",
+    "@expo-pico/platform-service-common": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": false
+    },
+    "@expo-pico/core": {
+      "optional": false
+    },
+    "expo-modules-core": {
+      "optional": false
+    }
+  },
+  "files": [
+    "LICENSE",
+    "build",
+    "android",
+    "plugin/build",
+    "app.plugin.js"
+  ],
+  "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-spatial",
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "gitHead": "a632f08fef7a24812c4a5071408079d0155e7a48",
+  "expoPico": {
+    "sourceCommit": "a632f08fef7a24812c4a5071408079d0155e7a48"
+  }
+}
