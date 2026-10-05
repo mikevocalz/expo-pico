@@ -1,0 +1,11 @@
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -606,7 +606,7 @@
+   }
+ }
+ 
+-def stripBinary = PrebuiltNativeLibs.findLlvmStrip(android.ndkDirectory)
++def stripBinary = PrebuiltNativeLibs.findLlvmStrip(android.ndkPath ? new File(android.ndkPath) : null)
+ def cacheStagingDir = layout.buildDirectory.dir("tmp/cache-prebuilt-natives").get().asFile
+ def variantDescriptors = prebuiltVariants.collect { variant ->
+   def variantCap = variant.capitalize()
