@@ -54,15 +54,19 @@ for (const file of patchFiles) {
   try {
     pkgDir = dirname(require.resolve(`${pkg}/package.json`, { paths: [repoRoot] }));
   } catch {
-    fail(`${pkg} is not installed — the patch has no target. ` +
-      `Restore the dependency or delete scripts/patches/android/${file}.`);
+    fail(
+      `${pkg} is not installed — the patch has no target. ` +
+        `Restore the dependency or delete scripts/patches/android/${file}.`
+    );
     continue;
   }
 
   const installedVersion = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8')).version;
   if (installedVersion !== expectedVersion) {
-    fail(`${pkg}@${installedVersion} installed but the patch targets ${expectedVersion}. ` +
-      `Upstream may have fixed the issue — verify, then update or delete scripts/patches/android/${file}.`);
+    fail(
+      `${pkg}@${installedVersion} installed but the patch targets ${expectedVersion}. ` +
+        `Upstream may have fixed the issue — verify, then update or delete scripts/patches/android/${file}.`
+    );
     continue;
   }
 
@@ -81,8 +85,10 @@ for (const file of patchFiles) {
     console.log(`[patch-android-deps] ${pkg}@${installedVersion}: applied ${file}.`);
   } catch (err) {
     const detail = err.stderr ? err.stderr.toString().trim() : String(err);
-    fail(`${pkg}@${expectedVersion}: patch does not apply cleanly — ` +
-      `the upstream file changed under us. Regenerate scripts/patches/android/${file}.\n${detail}`);
+    fail(
+      `${pkg}@${expectedVersion}: patch does not apply cleanly — ` +
+        `the upstream file changed under us. Regenerate scripts/patches/android/${file}.\n${detail}`
+    );
   }
 }
 
