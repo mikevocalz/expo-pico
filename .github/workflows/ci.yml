@@ -110,6 +110,13 @@ jobs:
           echo "$out" | grep -c 'already applied' | grep -qx "$expected"
       # With ESKIUC exported, the arm64 build compiles and links the Eskiu runtime.
       - run: bash scripts/install-eskiuc.sh
+      # Gradle's NDK auto-installer intermittently fetches a corrupt zip
+      # ("Archive is not a ZIP archive"); install the pinned NDK explicitly.
+      - name: Install Android NDK
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          command -v sdkmanager >/dev/null && SDKMANAGER=sdkmanager
+          yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
       - run: yarn example:assemble:pico
