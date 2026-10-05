@@ -34,6 +34,7 @@ function layoutReadinessFromProbe(probe, bridge) {
         spatialNavigatorRuntimePresent: spatialPlatform && probe.spatialNavigator === true,
         spatialPlatform,
         nativeLayoutBridgeBound: spatialPlatform && bridge?.sdkLinked === true,
+        bridgeReason: bridge?.reason ?? null,
     };
 }
 //# sourceMappingURL=layout.js.map

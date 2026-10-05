@@ -34,6 +34,8 @@ export interface PicoSpatialLayoutReadiness {
      * SpatialPopup and Stage are still unbound even when this is true.
      */
     nativeLayoutBridgeBound: boolean;
+    /** Native-side reason the bridge cannot run, or null when it can. */
+    bridgeReason: string | null;
 }
 export declare function resolvePicoLayoutPrimitive(role: PicoSpatialLayoutRole, placement?: PicoSpatialLayoutPlacement): PicoSpatialLayoutPrimitive;
 /**
