@@ -3,13 +3,13 @@ function(expo_pico_add_eskiu_runtime target)
     return()
   endif()
 
+  set(ESKIU_RUNTIME_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/..")
+  target_include_directories(${target} PRIVATE "${ESKIU_RUNTIME_DIR}/include")
+
   if(NOT CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
     message(STATUS "expo-pico: Eskiu runtime skipped for ${CMAKE_ANDROID_ARCH_ABI}")
     return()
   endif()
-
-  set(ESKIU_RUNTIME_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/..")
-  target_include_directories(${target} PRIVATE "${ESKIU_RUNTIME_DIR}/include")
 
   if(DEFINED ENV{ESKIUC})
     set(EXPO_PICO_ESKIUC "$ENV{ESKIUC}")

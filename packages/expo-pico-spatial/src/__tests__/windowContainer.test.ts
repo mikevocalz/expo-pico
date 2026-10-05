@@ -58,6 +58,7 @@ describe('layoutReadinessFromProbe', () => {
       spatialNavigatorRuntimePresent: false,
       spatialPlatform: false,
       nativeLayoutBridgeBound: false,
+      bridgeReason: null,
     });
   });
 

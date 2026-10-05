@@ -55,6 +55,8 @@ export interface PicoSpatialLayoutReadiness {
    * SpatialPopup and Stage are still unbound even when this is true.
    */
   nativeLayoutBridgeBound: boolean;
+  /** Native-side reason the bridge cannot run, or null when it can. */
+  bridgeReason: string | null;
 }
 
 export function resolvePicoLayoutPrimitive(
@@ -96,5 +98,6 @@ export function layoutReadinessFromProbe(
     spatialNavigatorRuntimePresent: spatialPlatform && probe.spatialNavigator === true,
     spatialPlatform,
     nativeLayoutBridgeBound: spatialPlatform && bridge?.sdkLinked === true,
+    bridgeReason: bridge?.reason ?? null,
   };
 }
