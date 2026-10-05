@@ -172,7 +172,7 @@ function ScaledText({
   align = 'left',
   maxLines = 1,
 }: ScaledTextProps): React.JSX.Element {
-    const style: ViroTextStyle = {
+  const style: ViroTextStyle = {
     fontSize,
     color,
     fontWeight: weight,
@@ -302,7 +302,12 @@ const LibraryPanel = memo(function LibraryPanelView({
         fontSize={TITLE_PT}
         weight="700"
       />
-      <LucideIcon name="star" position={[titleIconX('Library', 0.045, SIDE_TEXT_W), 0.265, Z_TEXT]} size={0.045} accent />
+      <LucideIcon
+        name="star"
+        position={[titleIconX('Library', 0.045, SIDE_TEXT_W), 0.265, Z_TEXT]}
+        size={0.045}
+        accent
+      />
       <ScaledText
         text="Cube colour"
         position={[0, 0.195, Z_TEXT]}
@@ -386,7 +391,12 @@ const DetailsPanel = memo(function DetailsPanelView({
         fontSize={TITLE_PT}
         weight="700"
       />
-      <LucideIcon name="settings" position={[titleIconX('Details', 0.045, SIDE_TEXT_W), 0.265, Z_TEXT]} size={0.045} accent />
+      <LucideIcon
+        name="settings"
+        position={[titleIconX('Details', 0.045, SIDE_TEXT_W), 0.265, Z_TEXT]}
+        size={0.045}
+        accent
+      />
       <ScaledText
         text={`Colour: ${tintName}`}
         position={[0, 0.19, Z_TEXT]}
@@ -475,7 +485,12 @@ const StagePanel = memo(function StagePanelView(): React.JSX.Element {
         fontSize={TITLE_PT}
         weight="700"
       />
-      <LucideIcon name="house" position={[titleIconX('Stage', 0.045, STAGE_W - 0.08), 0.265, Z_TEXT]} size={0.045} accent />
+      <LucideIcon
+        name="house"
+        position={[titleIconX('Stage', 0.045, STAGE_W - 0.08), 0.265, Z_TEXT]}
+        size={0.045}
+        accent
+      />
       <ScaledText
         text="Drag to move, tap to recolour"
         position={[0, 0.2, Z_TEXT]}
