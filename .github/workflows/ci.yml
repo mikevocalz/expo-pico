@@ -97,8 +97,26 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: yarn install --frozen-lockfile
+      # postinstall applies scripts/patches/android/*.patch. A second run
+      # must report every patch as already applied — this fails if a patch
+      # silently didn't apply during install or isn't idempotent. The
+      # assemblePicoDebug step below is the real regression guard: the
+      # patched files are AGP-9 fixes and the build breaks without them.
+      - name: Android dep patches applied and idempotent
+        run: |
+          out="$(node scripts/patch-android-deps.js)"
+          echo "$out"
+          expected="$(ls scripts/patches/android/*.patch | wc -l | tr -d ' ')"
+          echo "$out" | grep -c 'already applied' | grep -qx "$expected"
       # With ESKIUC exported, the arm64 build compiles and links the Eskiu runtime.
       - run: bash scripts/install-eskiuc.sh
+      # Gradle's NDK auto-installer intermittently fetches a corrupt zip
+      # ("Archive is not a ZIP archive"); install the pinned NDK explicitly.
+      - name: Install Android NDK
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          command -v sdkmanager >/dev/null && SDKMANAGER=sdkmanager
+          yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
       - run: yarn example:assemble:pico

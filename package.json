@@ -21,6 +21,7 @@
   ],
   "scripts": {
     "build": "turbo run build build:plugin build:cli",
+    "postinstall": "node scripts/patch-android-deps.js",
     "prepare": "yarn workspaces run prepare",
     "clean": "turbo run clean",
     "lint": "turbo run lint",

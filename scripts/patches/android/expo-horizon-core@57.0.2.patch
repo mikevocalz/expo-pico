@@ -1,0 +1,19 @@
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -11,12 +11,15 @@
+ 
+ android {
+   namespace "expo.modules.horizon"
++  buildFeatures {
++    buildConfig true
++  }
+   defaultConfig {
+     versionCode 1
+     versionName "0.1.0"
+     buildConfigField "String", "META_HORIZON_APP_ID", horizonAppIdConfigField
+   }
+-  lintOptions {
++  lint {
+     abortOnError false
+   }
+ 

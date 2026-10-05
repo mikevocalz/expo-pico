@@ -1,0 +1,58 @@
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -17,17 +17,22 @@
+ }
+ 
+ apply plugin: "com.android.library"
+-apply plugin: "kotlin-android"
+ 
+ if (isNewArchitectureEnabled()) {
+     apply plugin: "com.facebook.react"
+ }
+ 
++// AGP 9 / RN: the react plugin already applies kotlin-android under the new
++// architecture — apply it ourselves only when it isn't already there.
++if (!project.extensions.findByName('kotlin')) {
++    apply plugin: "kotlin-android"
++}
++
+ android {
+     namespace "com.zoontek.rnpermissions"
+ 
+     buildToolsVersion safeExtGet("buildToolsVersion", "35.0.0")
+-    compileSdkVersion safeExtGet("compileSdkVersion", 35)
++    compileSdk = safeExtGet("compileSdkVersion", 35)
+ 
+     buildFeatures {
+         buildConfig true
+@@ -37,17 +42,21 @@
+         minSdkVersion safeExtGet("minSdkVersion", 24)
+         targetSdkVersion safeExtGet("targetSdkVersion", 35)
+     }
+-    lintOptions {
++    lint {
+         abortOnError false
+     }
+-    sourceSets {
+-        main {
+-            if (isNewArchitectureEnabled()) {
+-                java.srcDirs += ["src/newarch"]
+-            } else {
+-                java.srcDirs += ["src/oldarch"]
+-            }
+-        }
++}
++
++// AGP 9: per-variant source wiring via androidComponents — sourceSets
++// java.srcDirs additions don't reach the Kotlin compilation.
++androidComponents {
++    onVariants(selector().all()) { variant ->
++        variant.sources.java.addStaticSourceDirectory(
++            project.file(isNewArchitectureEnabled() ? "src/newarch" : "src/oldarch").absolutePath
++        )
++        variant.sources.java.addStaticSourceDirectory(
++            new File(buildDir, "generated/source/codegen/java").absolutePath
++        )
+     }
+ }
+ 
