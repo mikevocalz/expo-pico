@@ -11,6 +11,7 @@ import type { ResolvedPicoOptions } from './types';
  *   - picoSpatialMode: Available to native code via gradle property
  *   - picoTargetProfile / picoContainerMode / picoEmulatorOptimizations:
  *     keep the library BuildConfig aligned with the app BuildConfig fields
+ *   - picoBuildVariant: lets the library scope PICO_XR_MODE per flavor
  *   - picoBuildEnabled: Signals to sibling packages that PICO build infra is active
  */
 export declare const withPicoGradleProperties: ConfigPlugin<ResolvedPicoOptions>;

@@ -152,10 +152,14 @@ function getPicoTargetProfile() {
 /**
  * Returns the active PICO XR mode. Mirrors the plugin-time `xrMode` option
  * and the native `PicoXRPlatform` enum.
+ *
+ * `'quest'` is the Meta Horizon flavor: an XR build with no PICO runtime. A
+ * check of `getXrMode() !== 'mobile'` is true there, so use {@link isPicoBuild}
+ * when the question is "is the PICO runtime present".
  */
 function getXrMode() {
     const mode = ExpoPicoModule_1.default.xrMode;
-    if (mode === 'pico-os5' || mode === 'pico-swan')
+    if (mode === 'pico-os5' || mode === 'pico-swan' || mode === 'quest')
         return mode;
     return 'mobile';
 }

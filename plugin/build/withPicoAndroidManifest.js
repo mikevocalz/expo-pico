@@ -33,51 +33,56 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withPicoAndroidManifest = exports.withPicoPlatformServiceMainManifest = void 0;
+exports.withPicoAndroidManifest = exports.withPicoPlatformServiceManifest = void 0;
 const config_plugins_1 = require("@expo/config-plugins");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const constants_1 = require("./constants");
 const types_1 = require("./types");
 const withPicoCapabilities_1 = require("./withPicoCapabilities");
+const withPicoFlavorEntries_1 = require("./withPicoFlavorEntries");
 const withPicoLauncherActivity_1 = require("./withPicoLauncherActivity");
 const withPicoVRActivity_1 = require("./withPicoVRActivity");
 const withPicoPlatformService_1 = require("./withPicoPlatformService");
 /**
- * Writes `pvr.app.id` (and other PPS-required metadata) into the **main**
- * AndroidManifest so every build flavor — `pico`, `quest`, `mobile`, `dual`
- * — sees it. The PICO Platform Service SDK reads it at first call via
- * `AppUtils.getAppIdFromManifest("pvr.app.id")`; if the active flavor's
- * merged manifest doesn't have it, the server rejects with 100008
- * "appkey is empty".
+ * Declares `pvr.app.id`, the only PICO Platform Service meta-data core emits.
+ * The PPS SDK reads it via `AppUtils.getAppIdFromManifest("pvr.app.id")` and
+ * rejects calls with 100008 "appkey is empty" when the APK lacks it.
  *
- * Idempotent via `tools:node="replace"` semantics on the meta-data tag.
+ * Routing (see `PicoManifestRoute`): with a pico flavor it goes to the pico,
+ * dual and mobile flavor manifests; with no pico flavor but a quest flavor
+ * (expo-horizon-core next to `buildVariant: 'mobile'`) it goes to the mobile
+ * flavor; a single-variant app gets it in main. The quest flavor targets Meta
+ * Horizon, which has no PPS, so it never gets it, and a copy an older
+ * prebuild left in main or in the mobile flavor is removed when it no longer
+ * belongs there.
+ *
+ * Gated on the same ID withPicoStrings writes to `@string/pico_app_id`
+ * (`platformService.picoAppId`, falling back to `picoAppId`), so the
+ * reference never dangles.
  */
-const withPicoPlatformServiceMainManifest = (config, options) => {
-    if (!options.picoAppId)
-        return config;
-    return (0, config_plugins_1.withAndroidManifest)(config, (config) => {
-        const application = config_plugins_1.AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
-        const metaData = (application['meta-data'] ?? []);
-        const idx = metaData.findIndex((m) => m.$?.['android:name'] === constants_1.MANIFEST_META.PICO_APP_ID);
-        // Reference a string resource (written by withPicoStrings from env)
-        // instead of inlining — the ID is per-environment and shouldn't be
-        // baked into the manifest at config time.
-        const entry = {
-            $: {
-                'android:name': constants_1.MANIFEST_META.PICO_APP_ID,
-                'android:value': '@string/pico_app_id',
-            },
-        };
-        if (idx === -1)
-            metaData.push(entry);
-        else
-            metaData[idx] = entry;
-        application['meta-data'] = metaData;
-        return config;
+const withPicoPlatformServiceManifest = (config, options) => {
+    // Registered even with no ID, so stale copies in the mobile flavor are cleaned.
+    config = (0, withPicoFlavorEntries_1.withPicoMobileFlavorManifest)(config);
+    const appId = options.platformService.picoAppId ?? options.picoAppId;
+    if (!appId) {
+        // Nothing to declare, but drop a copy an older prebuild left in main
+        // unless main is where it belongs.
+        return (0, config_plugins_1.withAndroidManifest)(config, (cfg) => {
+            const application = cfg.modResults.manifest.application?.[0];
+            if ((0, withPicoFlavorEntries_1.resolvePicoManifestRoute)(cfg) !== 'main' && application?.['meta-data']) {
+                application['meta-data'] = application['meta-data'].filter((m) => m.$?.['android:name'] !== constants_1.MANIFEST_META.PICO_APP_ID);
+            }
+            return cfg;
+        });
+    }
+    return (0, withPicoFlavorEntries_1.withPicoFlavorMetaData)(config, {
+        name: constants_1.MANIFEST_META.PICO_APP_ID,
+        value: '@string/pico_app_id',
+        mobileFlavor: true,
     });
 };
-exports.withPicoPlatformServiceMainManifest = withPicoPlatformServiceMainManifest;
+exports.withPicoPlatformServiceManifest = withPicoPlatformServiceManifest;
 function detectExpoDevClient(projectRoot) {
     try {
         const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
@@ -127,6 +132,9 @@ const withPicoAndroidManifest = (config, options) => {
             // meta-data. Each capability is independently gated; all writes
             // are idempotent and toggling off cleans up the entry.
             (0, withPicoCapabilities_1.applyCapabilityContract)(manifest, options);
+            // PICO-only permissions/features recorded by feature plugins through
+            // withPicoFlavorPermission / withPicoFlavorFeature.
+            (0, withPicoFlavorEntries_1.applyPicoFlavorEntries)(manifest, (0, withPicoFlavorEntries_1.getPicoFlavorManifestState)(config));
             await config_plugins_1.AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
             console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
             // If dual variant, also write a dual/ source set manifest
@@ -203,10 +211,8 @@ function buildPicoManifest(options) {
         'meta-data': [],
         activity: [],
     };
-    // pvr.app.id is written to the MAIN manifest by
-    // withPicoPlatformServiceMainManifest so every flavor (pico, quest,
-    // mobile, dual) gets it. Don't duplicate here — would create a
-    // tools:replace conflict during manifest merging.
+    // pvr.app.id is recorded by withPicoPlatformServiceManifest and added
+    // with the other recorded entries by applyPicoFlavorEntries.
     if (options.targetDevices.length > 0) {
         const deviceValues = options.targetDevices.map((d) => constants_1.DEVICE_TARGET_MAP[d] ?? d).join('|');
         application['meta-data'].push({

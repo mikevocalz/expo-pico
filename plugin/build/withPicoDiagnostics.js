@@ -86,7 +86,9 @@ function runDiagnosticChecks(options, env = {}) {
     const findings = [];
     // 1. Immersive without identity — ERROR for PICO builds because the
     // PPS SDK rejects every call with 100008 "appkey is empty" when the
-    // `pvr.app.id` meta-data is missing/blank.
+    // `pvr.app.id` meta-data is missing/blank. Core writes it from the
+    // resolved app ID to the pico, dual and mobile flavor manifests (main in a
+    // single-variant app); the quest flavor never gets it.
     const hasAnyIdentity = options.platformService.hasIdentity || (options.picoAppId?.trim().length ?? 0) > 0;
     if (options.xrMode !== 'mobile' && options.appType !== '2d' && !hasAnyIdentity) {
         const envHint = process.env.PICO_APP_ID

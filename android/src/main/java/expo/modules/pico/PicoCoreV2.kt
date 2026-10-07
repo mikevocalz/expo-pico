@@ -58,7 +58,8 @@ object PicoCoreV2 : Module() {
     val sdkPresent = probe.values.any { it } || PicoPlatformSdkDetector.isAnyPlatformSdkPresent()
     return mapOf(
       "apiVersion" to 2,
-      "isPicoBuild" to (BuildConfig.PICO_XR_MODE != "mobile"),
+      // "quest" is the Meta Horizon flavor: an XR build, but not a PICO one.
+      "isPicoBuild" to BuildConfig.PICO_XR_MODE.startsWith("pico-"),
       "isPicoDevice" to isPicoDevice(),
       "spatialMode" to BuildConfig.PICO_SPATIAL_MODE,
       "containerMode" to BuildConfig.PICO_CONTAINER_MODE,
@@ -234,10 +235,16 @@ object PicoCoreV2 : Module() {
   private const val OS5_RUNTIME_CLASS = "expo.modules.pico.os5.PicoOs5Runtime"
 
   private val DEVICE_FEATURES = listOf("com.pico.device", "picovr.software.vr_mode")
-  private val IMMERSIVE_CATEGORIES = listOf(
-    "com.pico.intent.category.VR",
-    "com.picovr.intent.category.VR",
-  )
+  // react-viro generates VRActivity in the main manifest with only the Meta
+  // category, so every flavor (the phone one included) would resolve it. The
+  // Meta category is therefore searched only in the `quest` flavor (Quest
+  // 3/3S, Meta VR Glasses); PICO keys on its own categories.
+  private val IMMERSIVE_CATEGORIES: List<String> =
+    if (BuildConfig.PICO_XR_MODE == "quest") {
+      listOf("com.oculus.intent.category.VR")
+    } else {
+      listOf("com.pico.intent.category.VR", "com.picovr.intent.category.VR")
+    }
   private val PLATFORM_SDK_PROBES = mapOf(
     "loginPaySdk" to "com.pico.loginpaysdk.UnityAuthInterface",
     "browser" to "com.pico.loginpaysdk.component.PicoSDKBrowser",

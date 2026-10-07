@@ -2,7 +2,7 @@
  * Build identity, prebuild-declared config, and SDK/capability probing.
  * XR runtime surfaces live in PicoRuntime.
  */
-export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan';
+export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan' | 'quest';
 export type PicoAppType = 'vr' | 'mr' | '2d';
 export type PicoTargetProfile = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'unknown';
 export type PicoCapabilityName = 'handTracking' | 'passthrough' | 'sceneUnderstanding' | 'eyeTracking' | 'faceTracking' | 'bodyTracking' | 'spatialAudio' | 'foveatedRendering' | 'highSamplingRateSensors' | 'boundary' | 'sceneMesh' | 'picoSenseController' | 'motionTracker' | 'controllerHaptics' | 'openXrLoader' | 'developerTools' | 'entitlementCheck';

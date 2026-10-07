@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getPicoFlavorManifestState = exports.withPicoFlavorFeature = exports.withPicoFlavorPermission = void 0;
 const types_1 = require("./types");
 const withPicoAndroidManifest_1 = require("./withPicoAndroidManifest");
 const withPicoDiagnostics_1 = require("./withPicoDiagnostics");
+const withPicoFlavorEntries_1 = require("./withPicoFlavorEntries");
 const withPicoGradle_1 = require("./withPicoGradle");
 const withPicoGradleProperties_1 = require("./withPicoGradleProperties");
 const withPicoLocalProperties_1 = require("./withPicoLocalProperties");
@@ -45,13 +47,16 @@ const withPico = (config, rawOptions) => {
     config = (0, withPicoSwan_1.withPicoSwan)(config, options);
     config = (0, withPicoStrings_1.withPicoStrings)(config, options);
     if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
+        // Feature plugins (iap, rooms, social, ...) route their PICO-only
+        // permissions and features to this flavor manifest instead of main.
+        (0, withPicoFlavorEntries_1.markPicoFlavorPresent)(config);
         config = (0, withPicoAndroidManifest_1.withPicoAndroidManifest)(config, options);
     }
-    // pvr.app.id lives in the MAIN manifest (not the pico flavor manifest)
-    // so every build flavor — pico, quest, mobile, dual — exposes it to the
-    // PPS SDK ContentProvider. Without this, non-pico flavors hit
-    // `100008 appkey is empty` at first SDK call.
-    config = (0, withPicoAndroidManifest_1.withPicoPlatformServiceMainManifest)(config, options);
+    // pvr.app.id (PPS app ID) goes to the pico, dual and mobile flavor
+    // manifests, never quest: the quest flavor targets Meta Horizon, which has
+    // no PICO Platform Service. Main gets it only in a single-variant app
+    // (buildVariant 'mobile' with no quest flavor from expo-horizon-core).
+    config = (0, withPicoAndroidManifest_1.withPicoPlatformServiceManifest)(config, options);
     config = (0, withPicoMainApplication_1.withPicoMainApplication)(config, options);
     config = (0, withPicoLocalProperties_1.withPicoLocalProperties)(config, options);
     // 16KB ELF alignment overlay — runs last so it sees the final
@@ -60,4 +65,8 @@ const withPico = (config, rawOptions) => {
     return config;
 };
 exports.default = withPico;
+var withPicoFlavorEntries_2 = require("./withPicoFlavorEntries");
+Object.defineProperty(exports, "withPicoFlavorPermission", { enumerable: true, get: function () { return withPicoFlavorEntries_2.withPicoFlavorPermission; } });
+Object.defineProperty(exports, "withPicoFlavorFeature", { enumerable: true, get: function () { return withPicoFlavorEntries_2.withPicoFlavorFeature; } });
+Object.defineProperty(exports, "getPicoFlavorManifestState", { enumerable: true, get: function () { return withPicoFlavorEntries_2.getPicoFlavorManifestState; } });
 //# sourceMappingURL=withPico.js.map

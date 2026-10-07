@@ -21,4 +21,6 @@ import type { PicoPluginOptions } from './types';
  */
 declare const withPico: ConfigPlugin<PicoPluginOptions | void>;
 export default withPico;
+export { withPicoFlavorPermission, withPicoFlavorFeature, getPicoFlavorManifestState, } from './withPicoFlavorEntries';
+export type { PicoFlavorManifestState, PicoFlavorFeature } from './withPicoFlavorEntries';
 //# sourceMappingURL=withPico.d.ts.map

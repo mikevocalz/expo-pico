@@ -14,6 +14,7 @@ const types_1 = require("./types");
  *   - picoSpatialMode: Available to native code via gradle property
  *   - picoTargetProfile / picoContainerMode / picoEmulatorOptimizations:
  *     keep the library BuildConfig aligned with the app BuildConfig fields
+ *   - picoBuildVariant: lets the library scope PICO_XR_MODE per flavor
  *   - picoBuildEnabled: Signals to sibling packages that PICO build infra is active
  */
 const withPicoGradleProperties = (config, options) => {
@@ -27,6 +28,9 @@ const withPicoGradleProperties = (config, options) => {
         upsertProperty(props, 'picoContainerMode', options.defaultContainerMode);
         upsertProperty(props, 'picoXrMode', options.xrMode);
         upsertProperty(props, 'picoAppType', options.appType);
+        // The library build.gradle reads this to decide whether its `mobile`
+        // flavor is a separate phone APK (pico/dual) or the only variant.
+        upsertProperty(props, 'picoBuildVariant', options.buildVariant);
         upsertProperty(props, 'picoEmulatorOptimizations', String(options.enableEmulatorOptimizations));
         upsertProperty(props, 'picoBuildEnabled', 'true');
         // Sibling plugins gate Swan-specific mutations on this flag.

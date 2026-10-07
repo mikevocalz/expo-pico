@@ -1,8 +1,10 @@
 import { ConfigPlugin } from '@expo/config-plugins';
 /**
- * Opt-in config plugin that adds the OpenXR loader manifest declarations to
- * the **main** AndroidManifest so any flavor (including third-party flavors
- * like ReactVision/Viro's `quest`) inherits them.
+ * Opt-in config plugin that adds the Khronos OpenXR loader declarations to
+ * the **main** AndroidManifest, so every flavor that runs an OpenXR session
+ * inherits them. They are vendor-neutral: the Quest build loads the same
+ * Khronos loader. The one PICO-specific entry, `pvr.app.type=vr`, is routed
+ * through `withPicoFlavorMetaData` and never reaches the quest flavor.
  *
  * Why this exists:
  * `withPico` writes the Pico-flavor manifest at
