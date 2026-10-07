@@ -18,42 +18,58 @@ import {
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
 import { applyCapabilityContract } from './withPicoCapabilities';
+import {
+  applyPicoFlavorEntries,
+  getPicoFlavorManifestState,
+  resolvePicoManifestRoute,
+  withPicoFlavorMetaData,
+  withPicoMobileFlavorManifest,
+} from './withPicoFlavorEntries';
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyVRActivityContract, applyPanelSize } from './withPicoVRActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
 
 /**
- * Writes `pvr.app.id` (and other PPS-required metadata) into the **main**
- * AndroidManifest so every build flavor — `pico`, `quest`, `mobile`, `dual`
- * — sees it. The PICO Platform Service SDK reads it at first call via
- * `AppUtils.getAppIdFromManifest("pvr.app.id")`; if the active flavor's
- * merged manifest doesn't have it, the server rejects with 100008
- * "appkey is empty".
+ * Declares `pvr.app.id`, the only PICO Platform Service meta-data core emits.
+ * The PPS SDK reads it via `AppUtils.getAppIdFromManifest("pvr.app.id")` and
+ * rejects calls with 100008 "appkey is empty" when the APK lacks it.
  *
- * Idempotent via `tools:node="replace"` semantics on the meta-data tag.
+ * Routing (see `PicoManifestRoute`): with a pico flavor it goes to the pico,
+ * dual and mobile flavor manifests; with no pico flavor but a quest flavor
+ * (expo-horizon-core next to `buildVariant: 'mobile'`) it goes to the mobile
+ * flavor; a single-variant app gets it in main. The quest flavor targets Meta
+ * Horizon, which has no PPS, so it never gets it, and a copy an older
+ * prebuild left in main or in the mobile flavor is removed when it no longer
+ * belongs there.
+ *
+ * Gated on the same ID withPicoStrings writes to `@string/pico_app_id`
+ * (`platformService.picoAppId`, falling back to `picoAppId`), so the
+ * reference never dangles.
  */
-export const withPicoPlatformServiceMainManifest: ConfigPlugin<ResolvedPicoOptions> = (
+export const withPicoPlatformServiceManifest: ConfigPlugin<ResolvedPicoOptions> = (
   config,
   options
 ) => {
-  if (!options.picoAppId) return config;
-  return withAndroidManifest(config, (config) => {
-    const application = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
-    const metaData = (application['meta-data'] ?? []) as Array<{ $: Record<string, string> }>;
-    const idx = metaData.findIndex((m) => m.$?.['android:name'] === MANIFEST_META.PICO_APP_ID);
-    // Reference a string resource (written by withPicoStrings from env)
-    // instead of inlining — the ID is per-environment and shouldn't be
-    // baked into the manifest at config time.
-    const entry = {
-      $: {
-        'android:name': MANIFEST_META.PICO_APP_ID,
-        'android:value': '@string/pico_app_id',
-      },
-    };
-    if (idx === -1) metaData.push(entry);
-    else metaData[idx] = entry;
-    application['meta-data'] = metaData as never;
-    return config;
+  // Registered even with no ID, so stale copies in the mobile flavor are cleaned.
+  config = withPicoMobileFlavorManifest(config);
+  const appId = options.platformService.picoAppId ?? options.picoAppId;
+  if (!appId) {
+    // Nothing to declare, but drop a copy an older prebuild left in main
+    // unless main is where it belongs.
+    return withAndroidManifest(config, (cfg) => {
+      const application = cfg.modResults.manifest.application?.[0];
+      if (resolvePicoManifestRoute(cfg) !== 'main' && application?.['meta-data']) {
+        application['meta-data'] = application['meta-data'].filter(
+          (m) => m.$?.['android:name'] !== MANIFEST_META.PICO_APP_ID
+        );
+      }
+      return cfg;
+    });
+  }
+  return withPicoFlavorMetaData(config, {
+    name: MANIFEST_META.PICO_APP_ID,
+    value: '@string/pico_app_id',
+    mobileFlavor: true,
   });
 };
 
@@ -110,6 +126,9 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // meta-data. Each capability is independently gated; all writes
       // are idempotent and toggling off cleans up the entry.
       applyCapabilityContract(manifest, options);
+      // PICO-only permissions/features recorded by feature plugins through
+      // withPicoFlavorPermission / withPicoFlavorFeature.
+      applyPicoFlavorEntries(manifest, getPicoFlavorManifestState(config));
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
       console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
 
@@ -199,10 +218,8 @@ function buildPicoManifest(options: ResolvedPicoOptions): AndroidConfig.Manifest
     activity: [],
   };
 
-  // pvr.app.id is written to the MAIN manifest by
-  // withPicoPlatformServiceMainManifest so every flavor (pico, quest,
-  // mobile, dual) gets it. Don't duplicate here — would create a
-  // tools:replace conflict during manifest merging.
+  // pvr.app.id is recorded by withPicoPlatformServiceManifest and added
+  // with the other recorded entries by applyPicoFlavorEntries.
 
   if (options.targetDevices.length > 0) {
     const deviceValues = options.targetDevices.map((d) => DEVICE_TARGET_MAP[d] ?? d).join('|');

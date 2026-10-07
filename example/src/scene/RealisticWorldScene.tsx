@@ -4,7 +4,6 @@ import {
   ViroAmbientLight,
   ViroAnimations,
   ViroBox,
-  ViroController,
   ViroDirectionalLight,
   ViroMaterials,
   ViroNode,
@@ -14,6 +13,8 @@ import {
   ViroSphere,
   ViroSpotLight,
 } from '@reactvision/react-viro';
+
+import { XrController } from './xrInput';
 
 /**
  * Photorealistic nature world scene — grass clearing, scattered trees, a central lake,
@@ -473,8 +474,8 @@ export function RealisticWorldScene(): React.JSX.Element {
         }}
       />
 
-      {/* Input — PICO controllers + reticle. */}
-      <ViroController reticleVisibility controllerVisibility />
+      {/* Input — reticle, plus controller models where controllers exist. */}
+      <XrController />
 
       <ViroNode position={[0, FLOOR_FROM_HEADSET_Y, 0]}>
         {/* Ambient fill for shadowed areas. */}

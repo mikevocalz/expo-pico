@@ -1,11 +1,24 @@
 # Staged native libraries
 
 Binaries copied into a consuming app's `android/app/src/<flavor>/jniLibs/` by
-`syncPicoOverlays` (`withPicoOpenXrLoaderOverlay.ts`) at prebuild, for the
-`pico` flavor and — under `buildVariant: 'dual'` — `dual` as well. `main`,
-`mobile` and `quest` never receive them. The `pickFirsts` rule emitted by
-`updateOverlayPackaging` in `withPicoGradle.ts` makes the app's own copy win
-over the one an AAR ships.
+`syncPicoOverlays` (`withPicoOpenXrLoaderOverlay.ts`) at prebuild:
+
+| File                  | Flavors                                          |
+| --------------------- | ------------------------------------------------ |
+| `libopenxr_loader.so` | `pico`, plus `dual` under `buildVariant: 'dual'` |
+| `libviro_renderer.so` | `pico`, `dual` (when present) and `quest`        |
+
+`controller_neutral.glb` (from `../androidAssets/`) follows the renderer into
+`src/<flavor>/assets/`. `main` and `mobile` never receive any of them. The
+`pickFirsts` rule emitted by `updateOverlayPackaging` in `withPicoGradle.ts`
+makes the app's own copy win over the one an AAR ships, per flavor.
+
+The renderer goes to `quest` because it is Viro/OpenXR code: the floor origin
+and the controller mesh apply on Quest as well. The loader stays out of
+`quest`. Stock `@reactvision/react-viro` 3.0.2 already ships a 16KB-aligned
+loader (`PT_LOAD` align `0x4000`) that exports all 43 `xr*` symbols the overlay
+renderer imports, and the renderer names it only by soname
+(`DT_NEEDED libopenxr_loader.so`).
 
 **`arm64-v8a` only.** PICO ships no 32-bit device, so an `armeabi-v7a` slice
 buys zero install coverage — and `scripts/verify-16kb-alignment.py` reads
@@ -22,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 046 480 | `7efd15dcc3e7033266f0de4d52b4e4e3d762f6d64d3a60a6e9db3357568d6e90` | `594d58bcae783ba18161ae25bfb3604a6bfc6de6` |
+| `arm64-v8a/libviro_renderer.so` | 7 212 752 | `9468e533a862b5cba98fe18a455136acf4bd6d71337da4e66d1555535b611ca2` | `e76e88a243c81d7ba84ceed728c6720042582dd1` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -66,38 +79,20 @@ declares. `<ViroController>` renders, but there is nothing bound underneath it.
   ReactVision). Modified build; attribution retained.
 - Adds roughly 7MB to the published package.
 
-### Provenance: not established
+### Provenance
 
-This file's build cannot be traced to a `virocore` commit.
+Built from mikevocalz/virocore `main` at `5db9550c` (PR #98) with
+`./gradlew :viroreact:assembleRelease`; the file is the arm64-v8a
+`libviro_renderer.so` from `viroreact-release.aar`. Built without the private
+ReactVisionCCA headers, so ReactVision cloud anchors are compiled out
+(`RVCCA_AVAILABLE=0`), the same as the renderer in the `viro` fork.
 
-An earlier revision of this README named `a6fdd571` ("PICO compat: OpenXR
-scene-renderer + multi-profile controller bindings"). That does not hold up:
-`VROInputControllerOpenXR.cpp` at `a6fdd571` calls `suggestForProfile` for
-three profiles — `oculus/touch_controller`, `bytedance/pico_neo3_controller`,
-`bytedance/pico4_controller` — while the committed binary carries seven
-profile strings, including two that appear nowhere in that tree:
-
-```console
-$ strings -a arm64-v8a/libviro_renderer.so | grep interaction_profiles/ | sort -u
-/interaction_profiles/bytedance/pico4_controller
-/interaction_profiles/bytedance/pico4s_controller     <-- not in a6fdd571
-/interaction_profiles/bytedance/pico_g3_controller    <-- not in a6fdd571
-/interaction_profiles/bytedance/pico_neo3_controller
-/interaction_profiles/ext/eye_gaze_interaction
-/interaction_profiles/khr/simple_controller
-/interaction_profiles/oculus/touch_controller
-```
-
-The binary is stripped and its BuildID matches no build this repo can
-reproduce, so there is no machine-checkable link back to any source revision.
-What _is_ checkable is the delta against the published renderer: the same
-command over `node_modules/@reactvision/react-viro/android/viro_renderer/viro_renderer-release.aar!jni/arm64-v8a/libviro_renderer.so`
-lists only `ext/eye_gaze_interaction` and `oculus/touch_controller`. The four
-`bytedance` profiles are what this overlay adds.
-
-Treat the file as an unreproducible vendored artifact until it is rebuilt from
-a named commit and this section is replaced with that commit plus the sha256
-of its output.
+It exports every `Java_*` symbol of the stock 3.0.2 renderer (605 here, 589
+in stock, none missing), so it runs under the stock `react_viro` Java. Over
+stock it adds the floor-origin ladder (LOCAL_FLOOR, then STAGE-emulated, then
+eye) defaulting to Floor on PICO and Meta runtimes, the controller mesh
+(`controller_neutral.glb`), the PICO `bytedance` interaction profiles, and
+Meta VR Glasses gaze-and-pinch select.
 
 ### Replacing it
 

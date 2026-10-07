@@ -10,6 +10,8 @@ import {
 
 import { getPicoRuntimeInfo } from '@expo-pico/core';
 
+import { isHorizonBuild } from '../platform';
+
 import { GltfModel, type DemoModelStatus } from './GltfModel';
 
 type XrSessionStatus = 'idle' | 'requesting' | 'active' | 'unsupported' | 'failed';
@@ -91,7 +93,9 @@ export function PicoSceneRoot(): React.JSX.Element {
       )}
 
       <View style={styles.overlay} pointerEvents="none">
-        <Text style={styles.overlayTitle}>PICO runtime</Text>
+        <Text style={styles.overlayTitle}>
+          {isHorizonBuild ? 'Meta Horizon runtime' : 'PICO runtime'}
+        </Text>
 
         <Row
           label="xrMode"
@@ -100,7 +104,9 @@ export function PicoSceneRoot(): React.JSX.Element {
               ? 'pico-os5 (PICO 4 / Ultra)'
               : info.xrMode === 'pico-swan'
                 ? 'pico-os6 (Swan)'
-                : info.xrMode
+                : info.xrMode === 'quest'
+                  ? 'quest (Meta Horizon OS)'
+                  : info.xrMode
           }
           accent={
             info.xrMode === 'pico-swan' ? 'good' : info.xrMode === 'pico-os5' ? 'info' : undefined
@@ -119,7 +125,9 @@ export function PicoSceneRoot(): React.JSX.Element {
         />
         <Row
           label="build"
-          value={info.isPicoBuild ? 'pico flavor' : 'mobile flavor'}
+          value={
+            info.isPicoBuild ? 'pico flavor' : isHorizonBuild ? 'quest flavor' : 'mobile flavor'
+          }
           accent={info.isPicoBuild ? 'good' : 'info'}
         />
         {info.deviceModel ? <Row label="model" value={info.deviceModel} /> : null}

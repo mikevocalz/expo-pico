@@ -264,11 +264,26 @@ npx expo prebuild --clean
 npx expo run:android --variant picoDebug
 ```
 
-The example opens on a designed home surface — an isometric cube mark, live `getPicoRuntimeInfo()` status chips, and an **Enter XR Scene** call to action — which routes into a `<ViroVRSceneNavigator>` holding an interactive cube you can drag with the controller ray, hover for a focus ring, and tap to recolour. A live position caption above the cube confirms the drag is real. `DiagnosticsPanel` (build-time and runtime diagnostics plus the SDK probe) and `ValidationHarness` (exercises every sibling module's public API) are reachable from the home screen.
+The example opens on a designed home surface — an isometric cube mark, live `getPicoRuntimeInfo()` status chips, and an **Enter XR Scene** call to action — which opens the immersive `SpatialWorkspaceScene` on a headset (PICO or Meta Horizon) and an interactive cube in a flat preview on a phone. Targets carry a resting outline that brightens on hover or eye gaze, so they read as pressable on devices that send no hover. A live position caption above the cube confirms the drag is real. `DiagnosticsPanel` (build-time and runtime diagnostics plus the SDK probe) and `ValidationHarness` (exercises every sibling module's public API) are reachable from the home screen.
 
 Layout is breakpoint-driven rather than phone-shaped: PICO renders the 2D activity into a WindowContainer panel roughly 1000-1600dp wide, so the home screen goes two-column above 700dp and caps content width so line length stays readable. Every route stays mounted behind `<Freeze>` — unmounting the Viro navigator while its native session is live is the reliable way to crash the app, so inactive routes suspend instead of tearing down.
 
 Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the `libopenxr_loader.so` `<uses-native-library>` declaration. On PICO hardware the example runs as an end-to-end immersive XR app; on a non-XR device the same scene renders through the flat navigator.
+
+### Meta Horizon and Meta VR Glasses
+
+The `quest` flavor (`npm run quest` in `example/`) targets Meta Horizon OS: Quest 3, Quest 3S and Meta VR Glasses. Meta VR Glasses run the same OS but ship without controllers and send no hover events; input is look plus pinch.
+
+- Leave `supportedDevices` at `quest3|quest3s`. Meta's docs say `vrglasses` is not a supported public value for `com.oculus.supportedDevices`, so do not add it to the manifest.
+- To reach Glasses in the Store, select **Future devices** alongside the Quest devices in the app's device targeting.
+- The 2D launcher opens as a 1280x800dp landscape panel (`defaultWidth` / `defaultHeight` in `app.config.ts`). Glasses accept panel widths of 360-1280dp.
+- Test on a Quest 3 or 3S with the Glasses field of view simulated and the controllers switched off, so nothing depends on a controller or on hover:
+
+  ```bash
+  metavr device fov-sim enable
+  ```
+
+At runtime the `quest` flavor reports `xrMode: 'quest'` and `isPicoBuild: false` from `getPicoRuntimeInfo()`, and `enterImmersiveScene()` starts the same VRActivity it uses on PICO.
 
 ## License
 

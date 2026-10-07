@@ -4,9 +4,10 @@ import type { PicoPluginOptions } from './types';
 import { resolveOptions } from './types';
 import {
   withPicoAndroidManifest,
-  withPicoPlatformServiceMainManifest,
+  withPicoPlatformServiceManifest,
 } from './withPicoAndroidManifest';
 import { withPicoDiagnostics } from './withPicoDiagnostics';
+import { markPicoFlavorPresent } from './withPicoFlavorEntries';
 import { withPicoAppBuildGradle, withPicoProjectBuildGradle } from './withPicoGradle';
 import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
@@ -53,14 +54,17 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   config = withPicoStrings(config, options);
 
   if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
+    // Feature plugins (iap, rooms, social, ...) route their PICO-only
+    // permissions and features to this flavor manifest instead of main.
+    markPicoFlavorPresent(config);
     config = withPicoAndroidManifest(config, options);
   }
 
-  // pvr.app.id lives in the MAIN manifest (not the pico flavor manifest)
-  // so every build flavor — pico, quest, mobile, dual — exposes it to the
-  // PPS SDK ContentProvider. Without this, non-pico flavors hit
-  // `100008 appkey is empty` at first SDK call.
-  config = withPicoPlatformServiceMainManifest(config, options);
+  // pvr.app.id (PPS app ID) goes to the pico, dual and mobile flavor
+  // manifests, never quest: the quest flavor targets Meta Horizon, which has
+  // no PICO Platform Service. Main gets it only in a single-variant app
+  // (buildVariant 'mobile' with no quest flavor from expo-horizon-core).
+  config = withPicoPlatformServiceManifest(config, options);
 
   config = withPicoMainApplication(config, options);
   config = withPicoLocalProperties(config, options);
@@ -72,3 +76,10 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
 };
 
 export default withPico;
+
+export {
+  withPicoFlavorPermission,
+  withPicoFlavorFeature,
+  getPicoFlavorManifestState,
+} from './withPicoFlavorEntries';
+export type { PicoFlavorManifestState, PicoFlavorFeature } from './withPicoFlavorEntries';

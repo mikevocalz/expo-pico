@@ -4,14 +4,17 @@ import { ViroSceneNavigator, ViroVRSceneNavigator } from '@reactvision/react-vir
 
 import { getPicoRuntimeInfo } from '@expo-pico/core';
 
+import { isHeadsetBuild, xrModeLabel } from '../platform';
+
 import { InteractiveCubeScene } from './InteractiveCubeScene';
 import { palette, radius, space } from '../ui/theme';
 import { useLayout } from '../ui/useLayout';
 
 /**
- * Immersive route. On PICO / Quest the VR navigator claims the HMD surface;
- * on a phone or a non-XR build the flat navigator renders the same scene in
- * a window, so the route is never a dead end.
+ * Inline scene route. HomeScreen reaches it only when `enterImmersiveScene()`
+ * finds no immersive activity: on a headset build the VR navigator claims the
+ * display, and on a phone the flat navigator renders the same scene in a
+ * window, so the route is never a dead end.
  *
  * The back control stays pinned over the navigator rather than inside the
  * scene — a 2D affordance the user can always reach, per the safety rule
@@ -20,14 +23,18 @@ import { useLayout } from '../ui/useLayout';
 export function XrScreen({ onBack }: { onBack: () => void }): React.JSX.Element {
   const info = useMemo(() => getPicoRuntimeInfo(), []);
   const L = useLayout();
-  const immersive = info.xrMode !== 'mobile';
+  const immersive = isHeadsetBuild(info);
 
   const initialScene = useMemo(() => ({ scene: InteractiveCubeScene }), []);
 
   return (
     <View style={styles.root}>
       {immersive ? (
-        <ViroVRSceneNavigator initialScene={initialScene} style={styles.navigator} />
+        <ViroVRSceneNavigator
+          initialScene={initialScene}
+          handTrackingEnabled
+          style={styles.navigator}
+        />
       ) : (
         <ViroSceneNavigator initialScene={initialScene} style={styles.navigator} />
       )}
@@ -46,7 +53,7 @@ export function XrScreen({ onBack }: { onBack: () => void }): React.JSX.Element 
 
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
-            {immersive ? `${info.xrMode} · immersive` : 'flat preview'}
+            {immersive ? `${xrModeLabel(info.xrMode)} · immersive` : 'flat preview'}
           </Text>
         </View>
       </View>

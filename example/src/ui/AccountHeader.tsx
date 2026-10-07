@@ -7,7 +7,12 @@ import {
   type PicoUserProfile,
 } from '@expo-pico/account';
 
+import { isHorizonBuild } from '../platform';
 import { palette, radius, space } from './theme';
+
+// PICO sign-in has no meaning on a Meta Horizon build, even if the account
+// module happens to be linked there.
+const accountAvailable = (): boolean => !isHorizonBuild && isAccountAvailable();
 
 type State =
   | { kind: 'unavailable' }
@@ -24,12 +29,12 @@ type State =
  * tap, because it can present the account picker and that should never happen
  * unprompted at launch.
  *
- * Off PICO hardware (or on the `mobile` flavor) the account SDK is absent and
- * this renders nothing rather than a broken affordance.
+ * Off PICO hardware (or on the `mobile` and `quest` flavors) the account SDK is
+ * absent and this renders nothing rather than a broken affordance.
  */
 export function AccountHeader(): React.JSX.Element | null {
   const [state, setState] = useState<State>(() =>
-    isAccountAvailable() ? { kind: 'loading' } : { kind: 'unavailable' }
+    accountAvailable() ? { kind: 'loading' } : { kind: 'unavailable' }
   );
 
   const read = useCallback(async () => {
@@ -42,7 +47,7 @@ export function AccountHeader(): React.JSX.Element | null {
   }, []);
 
   useEffect(() => {
-    if (!isAccountAvailable()) return;
+    if (!accountAvailable()) return;
     void read();
   }, [read]);
 

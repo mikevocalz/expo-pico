@@ -6,7 +6,7 @@
       "outputs": ["build/**", "plugin/build/**"]
     },
     "build:plugin": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^build:plugin"],
       "outputs": ["plugin/build/**"]
     },
     "build:cli": {
@@ -14,14 +14,14 @@
       "outputs": ["cli/build/**"]
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^build:plugin"],
       "outputs": []
     },
     "lint": {
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^build:plugin"],
       "outputs": []
     },
     "clean": {

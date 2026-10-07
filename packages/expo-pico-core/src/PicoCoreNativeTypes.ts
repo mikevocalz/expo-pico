@@ -3,7 +3,7 @@
  * XR runtime surfaces live in PicoRuntime.
  */
 
-export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan';
+export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan' | 'quest';
 export type PicoAppType = 'vr' | 'mr' | '2d';
 export type PicoTargetProfile = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'unknown';
 

@@ -2,7 +2,6 @@ import React, { memo, useCallback, useState } from 'react';
 import {
   ViroAmbientLight,
   ViroBox,
-  ViroController,
   ViroDirectionalLight,
   ViroMaterials,
   ViroNode,
@@ -16,11 +15,18 @@ import {
 import { exitImmersiveScene } from '@expo-pico/core';
 import { getSpatialLayoutReadiness, type PicoSpatialLayoutPrimitive } from '@expo-pico/spatial';
 import { LucideIcon } from './LucideIcon';
+import {
+  OUTLINE_ACTIVE,
+  OUTLINE_REST,
+  usePressState,
+  useTargetFocus,
+  XrController,
+} from './xrInput';
 
 import { resolveWorkspace, type ResolvedSurface, type SurfacePose } from '../layout/workspace';
 // Importing from the cube scene also registers its materials (cube tints,
 // focusRing, panelPlate, panelTextWash, floor), which this scene reuses.
-import { EDGE, TINTS } from './InteractiveCubeScene';
+import { CUBE_SHELL_ACTIVE, CUBE_SHELL_REST, EDGE, TINTS } from './InteractiveCubeScene';
 
 /**
  * Spatial workspace scene: the immersive layout for `VrSceneRoot`.
@@ -42,8 +48,10 @@ import { EDGE, TINTS } from './InteractiveCubeScene';
  * 1.5 m, 1 degree of arc is ~26 mm, so nothing is set below 26 pt.
  *
  * Targets: every button is at least 100 mm tall (64 mm minimum for hands at
- * 1.5 m), with a hover state (lighter fill plus focus ring) and a press state
- * (darker fill, 3% inset), the same feedback language as the cube.
+ * 1.5 m) and carries a resting outline, so it reads as pressable on Meta VR
+ * Glasses, which send no hover. Focus (hover or eye gaze) brightens the
+ * outline and fill; press (darker fill, 3% inset) comes from click state only.
+ * See `xrInput.tsx`.
  *
  * Panels are drawn by Viro because the PICO native layout bridge does not open
  * Subwindow/Toolbar primitives yet. When it does, the intents in
@@ -221,8 +229,9 @@ interface PanelButtonProps {
 }
 
 /**
- * Hover: lighter fill and a focus ring. Press: darker fill, 3% inset.
- * Handlers sit on the node; hits on the quad or glyphs bubble up to it.
+ * Rest: outline at low opacity. Focus: lighter fill, brighter outline.
+ * Press: darker fill, 3% inset. Handlers sit on the node; hits on the quad or
+ * glyphs bubble up to it.
  */
 function PanelButton({
   position,
@@ -231,31 +240,26 @@ function PanelButton({
   onPress,
   children,
 }: PanelButtonProps): React.JSX.Element {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { focused, onHover } = useTargetFocus();
+  const [pressed, onClickState] = usePressState();
   const scale: Viro3DPoint = pressed ? [0.97, 0.97, 1] : [1, 1, 1];
-  const fill = pressed ? 'panelTextWash' : hovered ? 'wsButtonHover' : 'wsButton';
+  const fill = pressed ? 'panelTextWash' : focused ? 'wsButtonHover' : 'wsButton';
 
   return (
     <ViroNode
       position={position}
       scale={scale}
-      onHover={(isHovering: boolean) => {
-        setHovered(isHovering);
-        if (!isHovering) setPressed(false);
-      }}
-      onClickState={(state: number) => setPressed(state === 1)}
+      onHover={onHover}
+      onClickState={onClickState}
       onClick={onPress}
     >
-      {(hovered || pressed) && (
-        <ViroQuad
-          width={width + 0.016}
-          height={height + 0.016}
-          position={[0, 0, Z_RING]}
-          materials={['focusRing']}
-          opacity={0.6}
-        />
-      )}
+      <ViroQuad
+        width={width + 0.016}
+        height={height + 0.016}
+        position={[0, 0, Z_RING]}
+        materials={['focusRing']}
+        opacity={focused || pressed ? OUTLINE_ACTIVE : OUTLINE_REST}
+      />
       <ViroQuad width={width} height={height} position={[0, 0, Z_BUTTON]} materials={[fill]} />
       {children}
     </ViroNode>
@@ -568,8 +572,8 @@ const ControlsPanel = memo(function ControlsPanelView({
 export function SpatialWorkspaceScene(): React.JSX.Element {
   const [position, setPosition] = useState<Viro3DPoint>(CUBE_HOME);
   const [tint, setTint] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { focused, onHover } = useTargetFocus();
+  const [pressed, onClickState] = usePressState();
   const [layoutReadiness] = useState(getSpatialLayoutReadiness);
 
   // FixedDistance keeps the cube on the ray at its current depth.
@@ -586,7 +590,7 @@ export function SpatialWorkspaceScene(): React.JSX.Element {
 
   const scale: Viro3DPoint = pressed
     ? [0.97, 0.97, 0.97]
-    : hovered
+    : focused
       ? [1.04, 1.04, 1.04]
       : [1, 1, 1];
 
@@ -612,7 +616,7 @@ export function SpatialWorkspaceScene(): React.JSX.Element {
 
   return (
     <ViroScene>
-      <ViroController reticleVisibility controllerVisibility />
+      <XrController />
 
       <ViroAmbientLight color="#5A6488" intensity={520} />
       <ViroDirectionalLight
@@ -657,15 +661,17 @@ export function SpatialWorkspaceScene(): React.JSX.Element {
       )}
 
       <ViroNode position={position}>
-        {(hovered || pressed) && (
-          <ViroBox
-            width={EDGE * 1.12}
-            height={EDGE * 1.12}
-            length={EDGE * 1.12}
-            materials={['focusRing']}
-            opacity={0.22}
-          />
-        )}
+        {/* Shell: always drawn so the cube reads as a target without hover. */}
+        <ViroBox
+          width={EDGE * 1.12}
+          height={EDGE * 1.12}
+          length={EDGE * 1.12}
+          materials={['focusRing']}
+          opacity={focused || pressed ? CUBE_SHELL_ACTIVE : CUBE_SHELL_REST}
+          // Larger than the cube and always drawn: without this it would take
+          // the ray's hits and the cube's handlers would never fire.
+          ignoreEventHandling
+        />
         <ViroBox
           width={EDGE}
           height={EDGE}
@@ -676,8 +682,8 @@ export function SpatialWorkspaceScene(): React.JSX.Element {
           lightReceivingBitMask={3}
           dragType="FixedDistance"
           onDrag={onDrag}
-          onHover={(isHovering: boolean) => setHovered(isHovering)}
-          onClickState={(state: number) => setPressed(state === 1)}
+          onHover={onHover}
+          onClickState={onClickState}
           onClick={nextTint}
         />
       </ViroNode>

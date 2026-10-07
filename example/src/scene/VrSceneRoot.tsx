@@ -7,7 +7,10 @@ import { exitImmersiveScene } from '@expo-pico/core';
 import { SpatialWorkspaceScene } from './SpatialWorkspaceScene';
 
 /**
- * Root component for `VRActivity`, registered as `"VRQuestScene"`.
+ * Root component for `VRActivity`, registered as `"VRQuestScene"` from
+ * index.js. This is the only immersive scene on PICO and on Meta Horizon
+ * (Quest 3/3S, Meta VR Glasses): HomeScreen starts VRActivity through
+ * `enterImmersiveScene()` on both.
  *
  * Viro auto-registers its own `ViroQuestEntryPoint` under that name on import,
  * but that component renders whatever `VRQuestNavigatorBridge.getIntent()`
@@ -46,7 +49,15 @@ export function VrSceneRoot(): React.JSX.Element {
     return () => sub.remove();
   }, []);
 
-  return <ViroVRSceneNavigator initialScene={initialScene} style={styles.navigator} />;
+  // Meta VR Glasses ship without controllers, so hands are the default input
+  // there; Quest and PICO still accept controllers alongside.
+  return (
+    <ViroVRSceneNavigator
+      initialScene={initialScene}
+      handTrackingEnabled
+      style={styles.navigator}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

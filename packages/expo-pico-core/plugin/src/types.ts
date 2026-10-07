@@ -293,6 +293,9 @@ export interface PicoPluginOptions {
    * built before 3.0 aborted in `VROPlatformRunTask` on XR entry; if the Viro
    * pin moves, rebuild this from the fork and re-check the native diff.
    *
+   * Staged into the `pico`, `dual` and `quest` flavors, never `main` or
+   * `mobile`. Quest gets the same floor origin and controller mesh.
+   *
    * arm64-v8a only — PICO ships no 32-bit device. Defaults to `false`: it
    * replaces a renderer the app did not ask this package to touch, so it is
    * opt-in.

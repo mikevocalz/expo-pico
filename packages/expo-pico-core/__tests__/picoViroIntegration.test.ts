@@ -31,7 +31,7 @@ beforeEach(() => {
 });
 afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
-test('dual flavor overrides stay out of mobile and Quest source sets', () => {
+test('dual flavor loader overrides stay out of mobile and Quest source sets', () => {
   syncPicoOverlays(
     platform,
     resolveOptions({ buildVariant: 'dual', viroRendererOverlay: true }),
@@ -43,6 +43,120 @@ test('dual flavor overrides stay out of mobile and Quest source sets', () => {
   }
   for (const flavor of ['main', 'quest', 'mobile'])
     expect(fs.existsSync(target(`${flavor}/${loader}`))).toBe(false);
+});
+
+describe('renderer overlay in the quest flavor', () => {
+  const glb = 'assets/controller_neutral.glb';
+  const state = () =>
+    JSON.parse(fs.readFileSync(path.join(platform, 'app/src/.expo-pico-overlays.json'), 'utf8'));
+
+  test.each(['pico', 'dual'] as const)(
+    'buildVariant %s stages the renderer and controller mesh into quest, not the loader',
+    (buildVariant) => {
+      syncPicoOverlays(
+        platform,
+        resolveOptions({ buildVariant, viroRendererOverlay: true }),
+        staged
+      );
+      expect(fs.readFileSync(target(`quest/${renderer}`), 'utf8')).toBe('VIRO');
+      expect(fs.readFileSync(target(`quest/${glb}`), 'utf8')).toBe('MESH');
+      expect(fs.existsSync(target(`quest/${loader}`))).toBe(false);
+      expect(fs.readFileSync(target(`pico/${loader}`), 'utf8')).toBe('LOAD');
+      for (const flavor of ['main', 'mobile']) {
+        expect(fs.existsSync(target(flavor))).toBe(false);
+      }
+      expect(Object.keys(state()).filter((k) => k.startsWith('quest/'))).toEqual([
+        path.join('quest', renderer),
+        path.join('quest', glb),
+      ]);
+    }
+  );
+
+  test('writes only jniLibs and assets into quest', () => {
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged);
+    expect(fs.readdirSync(target('quest')).sort()).toEqual(['assets', 'jniLibs']);
+  });
+
+  test('a mobile buildVariant stages nothing, even with xrMode and the option set', () => {
+    syncPicoOverlays(
+      platform,
+      resolveOptions({ buildVariant: 'mobile', xrMode: 'pico-os5', viroRendererOverlay: true }),
+      staged
+    );
+    for (const flavor of ['main', 'mobile', 'pico', 'dual', 'quest']) {
+      expect(fs.existsSync(target(flavor))).toBe(false);
+    }
+    expect(state()).toEqual({});
+  });
+
+  test('turning the overlay off removes the quest copies and their state', () => {
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged);
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: false }), staged);
+    expect(fs.existsSync(target(`quest/${renderer}`))).toBe(false);
+    expect(fs.existsSync(target(`quest/${glb}`))).toBe(false);
+    expect(Object.keys(state()).some((k) => k.startsWith('quest/'))).toBe(false);
+    // The loader overlay is independent and stays in pico.
+    expect(fs.readFileSync(target(`pico/${loader}`), 'utf8')).toBe('LOAD');
+  });
+
+  test('switching to a mobile buildVariant removes the quest copies', () => {
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged);
+    syncPicoOverlays(platform, resolveOptions({ buildVariant: 'mobile' }), staged);
+    expect(fs.existsSync(target(`quest/${renderer}`))).toBe(false);
+    expect(state()).toEqual({});
+  });
+
+  test('a copy matching the staged file is removed even with the state file gone', () => {
+    put(target(`quest/${renderer}`), 'VIRO');
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: false }), staged);
+    expect(fs.existsSync(target(`quest/${renderer}`))).toBe(false);
+  });
+
+  test('is idempotent', () => {
+    const options = resolveOptions({ buildVariant: 'dual', viroRendererOverlay: true });
+    syncPicoOverlays(platform, options, staged);
+    const first = state();
+    const mtime = fs.statSync(target(`quest/${renderer}`)).mtimeMs;
+    syncPicoOverlays(platform, options, staged);
+    expect(state()).toEqual(first);
+    expect(fs.statSync(target(`quest/${renderer}`)).mtimeMs).toBe(mtime);
+    expect(fs.readFileSync(target(`quest/${renderer}`), 'utf8')).toBe('VIRO');
+  });
+
+  test('a user loader in quest is left alone', () => {
+    put(target(`quest/${loader}`), 'USER');
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged);
+    expect(fs.readFileSync(target(`quest/${loader}`), 'utf8')).toBe('USER');
+  });
+
+  test.each([
+    ['the overlay is off', { viroRendererOverlay: false }],
+    ['the buildVariant is mobile', { buildVariant: 'mobile' as const }],
+  ])('a user renderer and mesh in quest are kept when %s', (_, overrides) => {
+    put(target(`quest/${renderer}`), 'USER');
+    put(target(`quest/${glb}`), 'USERMESH');
+    syncPicoOverlays(platform, resolveOptions(overrides), staged);
+    expect(fs.readFileSync(target(`quest/${renderer}`), 'utf8')).toBe('USER');
+    expect(fs.readFileSync(target(`quest/${glb}`), 'utf8')).toBe('USERMESH');
+    expect(Object.keys(state()).some((k) => k.startsWith('quest/'))).toBe(false);
+  });
+
+  test('a recorded quest copy the user edited still stops prebuild', () => {
+    syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged);
+    put(target(`quest/${renderer}`), 'EDIT');
+    expect(() =>
+      syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: false }), staged)
+    ).toThrow('Review custom native override');
+    expect(fs.readFileSync(target(`quest/${renderer}`), 'utf8')).toBe('EDIT');
+  });
+
+  test('a user renderer in quest stops prebuild without being modified', () => {
+    put(target(`quest/${renderer}`), 'USER');
+    expect(() =>
+      syncPicoOverlays(platform, resolveOptions({ viroRendererOverlay: true }), staged)
+    ).toThrow('Review custom native override');
+    expect(fs.readFileSync(target(`quest/${renderer}`), 'utf8')).toBe('USER');
+  });
 });
 
 test('same-size source updates replace previously managed output', () => {
@@ -138,4 +252,35 @@ test('packaging migrates global override, is idempotent, and removes disabled ov
   expect(
     updateOverlayPackaging(generated, resolveOptions({ openXrLoaderOverlay: false }))
   ).not.toContain('pickFirsts');
+});
+
+test('packaging lets the renderer overlay win in quest, and only the renderer', () => {
+  const both = updateOverlayPackaging('', resolveOptions({ viroRendererOverlay: true }));
+  const quest = both.slice(both.indexOf('it.second == "quest"'));
+  expect(quest).toContain('pickFirsts.addAll(["**/libviro_renderer.so"])');
+  expect(quest).not.toContain('libopenxr_loader.so');
+  expect(both).not.toContain('"mobile"');
+
+  const loaderOnly = updateOverlayPackaging('', resolveOptions({}));
+  expect(loaderOnly).toContain('**/libopenxr_loader.so');
+  expect(loaderOnly).not.toContain('"quest"');
+
+  const rendererOnly = updateOverlayPackaging(
+    '',
+    resolveOptions({ openXrLoaderOverlay: false, viroRendererOverlay: true })
+  );
+  expect(rendererOnly).not.toContain('libopenxr_loader.so');
+  expect(rendererOnly).toContain('it.second == "quest"');
+
+  expect(
+    updateOverlayPackaging(
+      '',
+      resolveOptions({ buildVariant: 'mobile', xrMode: 'pico-os5', viroRendererOverlay: true })
+    )
+  ).toBe('');
+
+  for (const options of [resolveOptions({ viroRendererOverlay: true }), resolveOptions({})]) {
+    const once = updateOverlayPackaging('android {}\n', options);
+    expect(updateOverlayPackaging(once, options)).toBe(once);
+  }
 });

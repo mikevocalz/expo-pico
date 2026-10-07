@@ -29,6 +29,7 @@ const HORIZON_BUILD_CONFIG_MARKER =
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
 const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
+const FLAVOR_XR_MODE_MARKER = '// expo-pico-core: per-flavor PICO_XR_MODE / PICO_APP_TYPE';
 
 const LEGACY_HERMES_PATH_PATTERN = /\n\s*hermesCommand\s*=.*\/sdks\/hermesc\/%OS-BIN%\/hermesc"\n/;
 const HERMES_COMMENT_ONLY_PATTERN =
@@ -125,7 +126,44 @@ export function renderFlavorBlock(options: ResolvedPicoOptions): string {
 `;
 }
 
-/** Keep overrides out of Quest/mobile variants and remove our old global rule. */
+/**
+ * Render the per-flavor `PICO_XR_MODE` / `PICO_APP_TYPE` overrides.
+ *
+ * `android.defaultConfig` carries the configured `xrMode` / `appType`, and
+ * every flavor inherits it. Without these overrides the `quest` and `mobile`
+ * APKs report `pico-os5` at runtime. A flavor's `buildConfigField` replaces
+ * the defaultConfig field of the same name, so:
+ *   - `pico` / `dual`: keep the configured values from defaultConfig
+ *   - `quest`: `PICO_XR_MODE = "quest"`, `PICO_APP_TYPE` = configured appType,
+ *     read from gradle.properties (`picoAppType`) at build time so a changed
+ *     appType applies on the next prebuild even though this block is not
+ *     rewritten
+ *   - `mobile`: `PICO_XR_MODE = "mobile"`, `PICO_APP_TYPE = "2d"`
+ *
+ * Only emitted when the app has flavors (`buildVariant` `pico` or `dual`);
+ * a `mobile` buildVariant app has a single variant that keeps the configured
+ * values. The library module applies the same mapping to its own BuildConfig
+ * (see `android/build.gradle`), which is the one `PicoCoreV2` reads.
+ */
+export function renderFlavorXrModeBlock(options: ResolvedPicoOptions): string {
+  return `${FLAVOR_XR_MODE_MARKER}
+android.productFlavors.configureEach { flavor ->
+    if (flavor.name == "quest") {
+        flavor.buildConfigField "String", "PICO_XR_MODE", "\\"quest\\""
+        flavor.buildConfigField "String", "PICO_APP_TYPE", "\\"\${project.findProperty('picoAppType') ?: '${options.appType}'}\\""
+    } else if (flavor.name == "mobile") {
+        flavor.buildConfigField "String", "PICO_XR_MODE", "\\"mobile\\""
+        flavor.buildConfigField "String", "PICO_APP_TYPE", "\\"2d\\""
+    }
+}
+`;
+}
+
+/**
+ * Let the overlay copies win over the AAR's in the variants that get them:
+ * pico/dual take both libraries, quest takes only the renderer (see
+ * `syncPicoOverlays`). Mobile gets neither. Also removes our old global rule.
+ */
 export function updateOverlayPackaging(contents: string, options: ResolvedPicoOptions): string {
   contents = contents.replace(
     /\n[ \t]*\/\/ expo-pico-core: 16KB openxr loader overlay\s+packagingOptions\s*\{\s*jniLibs\s*\{\s*pickFirsts \+= \["\*\*\/libopenxr_loader\.so"\]\s*\}\s*\}/g,
@@ -140,6 +178,12 @@ export function updateOverlayPackaging(contents: string, options: ResolvedPicoOp
     ...(options.viroRendererOverlay ? ['**/libviro_renderer.so'] : []),
   ];
   if (libraries.length === 0 || options.buildVariant === 'mobile') return contents;
+  const questRule = options.viroRendererOverlay
+    ? `
+        if (variant.productFlavors.any { it.first == "device" && it.second == "quest" }) {
+            variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(['**/libviro_renderer.so'])})
+        }`
+    : '';
   return (
     contents +
     `
@@ -148,7 +192,7 @@ androidComponents {
     onVariants(selector().all()) { variant ->
         if (variant.productFlavors.any { it.first == "device" && it.second in ["pico", "dual"] }) {
             variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(libraries)})
-        }
+        }${questRule}
     }
 }
 // expo-pico-core: end flavor overlays
@@ -313,6 +357,12 @@ android.defaultConfig {
 }
 `;
       contents = contents + '\n' + buildConfigBlock;
+    }
+
+    // Separate marker from PICO_SDK_MARKER so an already-prebuilt project
+    // picks this block up on the next incremental prebuild.
+    if (options.buildVariant !== 'mobile' && !gradleContains(contents, FLAVOR_XR_MODE_MARKER)) {
+      contents = contents + '\n' + renderFlavorXrModeBlock(options);
     }
 
     config.modResults.contents = contents;

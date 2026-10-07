@@ -59,7 +59,7 @@
   },
   "peerDependencies": {
     "expo": ">=58.0.2 <59",
-    "@expo-pico/core": ">=1.0.0",
+    "@expo-pico/core": ">=1.1.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0-rc.3 <0.89"
   },

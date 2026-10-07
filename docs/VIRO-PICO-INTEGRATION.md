@@ -45,7 +45,7 @@ Let Viro register `VRQuestScene`. Mount `ViroXRSceneNavigator` from the panel to
 
 PICO-only configuration now generates `VRActivity.kt` without Quest metadata or Quest SDK/ABI overrides. Expo-PICO supplies the PICO contract in `app/src/pico/AndroidManifest.xml` (also `src/dual` when selected). An existing manually edited `VRActivity.kt` is preserved; inspect it when adopting a newer template.
 
-Legacy loader overrides remain enabled by default for compatibility. Renderer overrides remain opt-in. Both are now confined to `src/pico` / `src/dual`, including controller assets and variant packaging rules. Prebuild tracks file hashes, updates same-size content, and removes known obsolete overrides. It stops with the affected path if a custom override cannot be attributed to the plugin. Disable both overrides when validating the new paired native build, so a staged older `.so` cannot mask it. `openXrLoaderDeclaration` is a separate manifest setting.
+Legacy loader overrides remain enabled by default for compatibility. Renderer overrides remain opt-in. The loader override is confined to `src/pico` / `src/dual`. The renderer override and its controller asset also go to `src/quest`, since the floor origin and controller mesh are Viro/OpenXR behaviour; `src/main` and `src/mobile` get neither. Variant packaging rules follow the same split. Prebuild tracks file hashes, updates same-size content, and removes known obsolete overrides. It stops with the affected path if a custom override cannot be attributed to the plugin. Disable both overrides when validating the new paired native build, so a staged older `.so` cannot mask it. `openXrLoaderDeclaration` is a separate manifest setting.
 
 ## Build and verify the native pair
 
