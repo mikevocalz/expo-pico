@@ -45,8 +45,9 @@ export type PicoTargetProfileRuntime = 'legacy' | 'pico4' | 'pico4ultra' | 'swan
  *   - `mobile`:    Standard Android; no PICO runtime registered.
  *   - `pico-os5`:  Standard PICO OS 6 runtime active.
  *   - `pico-swan`: Project Swan / next-gen spatial runtime active.
+ *   - `quest`:     Meta Horizon OS `quest` flavor; no PICO runtime.
  */
-export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan';
+export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan' | 'quest';
 
 export type PicoAppType = 'vr' | 'mr' | '2d';
 

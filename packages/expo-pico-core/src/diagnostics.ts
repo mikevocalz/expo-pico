@@ -131,7 +131,10 @@ export function buildDiagnosticsReport(
   const findings: DiagnosticFinding[] = [];
 
   // ── Identity / platform ──────────────────────────────────────────
-  if (build.xrMode !== 'mobile' && build.appType !== '2d' && !build.hasPlatformIdentity) {
+  // PICO identity only applies to PICO runtimes; the Meta `quest` flavor
+  // never initializes the PICO Platform SDK.
+  const isPicoRuntime = build.xrMode === 'pico-os5' || build.xrMode === 'pico-swan';
+  if (isPicoRuntime && build.appType !== '2d' && !build.hasPlatformIdentity) {
     findings.push({
       id: 'identity.missing',
       severity: 'error',
@@ -292,7 +295,7 @@ export function formatDiagnostics(report: PicoDiagnosticsReport): string {
 }
 
 function normalizeXrMode(value: string | null | undefined): PicoXRMode {
-  if (value === 'pico-os5' || value === 'pico-swan') return value;
+  if (value === 'pico-os5' || value === 'pico-swan' || value === 'quest') return value;
   return 'mobile';
 }
 

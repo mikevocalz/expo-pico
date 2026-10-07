@@ -35,6 +35,7 @@ def picoTargetProfileConfigField = "\"${project.findProperty('picoTargetProfile'
 def picoContainerModeConfigField = "\"${project.findProperty('picoContainerMode') ?: ''}\""
 def picoXrModeConfigField = "\"${project.findProperty('picoXrMode') ?: 'mobile'}\""
 def picoAppTypeConfigField = "\"${project.findProperty('picoAppType') ?: '2d'}\""
+def picoBuildVariant = project.findProperty('picoBuildVariant') ?: 'mobile'
 def picoHasPlatformIdentityConfigField = "${project.findProperty('picoPlatformIdentityEnabled') ?: 'false'}"
 def picoHasIapIdentityConfigField = "${project.findProperty('picoIapIdentityEnabled') ?: 'false'}"
 def picoEmulatorOptimizationsConfigField = "${project.findProperty('picoEmulatorOptimizations') ?: 'false'}"
@@ -128,7 +129,24 @@ android {
     flavorDimensions += "device"
     productFlavors {
         pico { dimension "device" }
-        mobile { dimension "device" }
+        mobile {
+            dimension "device"
+            // In a pico/dual app the mobile flavor is the phone APK, so it
+            // must not report the PICO xrMode. A buildVariant 'mobile' app
+            // consumes only this flavor and keeps the configured values.
+            if (picoBuildVariant in ["pico", "dual"]) {
+                buildConfigField "String", "PICO_XR_MODE", "\"mobile\""
+                buildConfigField "String", "PICO_APP_TYPE", "\"2d\""
+            }
+        }
+        // Matches the app's Meta Horizon `quest` flavor (expo-horizon-core),
+        // which previously fell back to `mobile` and inherited the PICO
+        // xrMode from defaultConfig.
+        quest {
+            dimension "device"
+            buildConfigField "String", "PICO_XR_MODE", "\"quest\""
+            buildConfigField "String", "PICO_APP_TYPE", picoAppTypeConfigField
+        }
     }
 
     buildFeatures {

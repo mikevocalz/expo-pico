@@ -78,6 +78,21 @@ describe('buildDiagnosticsReport — identity', () => {
     expect(report.findings.find((x) => x.id === 'identity.missing')).toBeUndefined();
   });
 
+  it('does not ask a Meta quest build for PICO identity', () => {
+    const report = buildDiagnosticsReport(
+      build({
+        xrMode: 'quest',
+        appType: 'vr',
+        hasPlatformIdentity: false,
+        isPicoBuild: false,
+        isPicoDevice: false,
+        os5RuntimeInitialized: false,
+      }),
+      runtime()
+    );
+    expect(report.findings.find((x) => x.id === 'identity.missing')).toBeUndefined();
+  });
+
   it('does not error for mobile xrMode even without identity', () => {
     const report = buildDiagnosticsReport(
       build({

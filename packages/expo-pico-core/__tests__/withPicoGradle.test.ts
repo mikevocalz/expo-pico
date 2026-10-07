@@ -263,3 +263,81 @@ describe('capability BuildConfig fields', () => {
   // invariants above cover the pure-JS mutation surface.
   void runPluginOn;
 });
+
+describe('per-flavor PICO_XR_MODE / PICO_APP_TYPE', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { renderAppGradle } = require('./support/appBuildGradle');
+  const MARKER = '// expo-pico-core: per-flavor PICO_XR_MODE / PICO_APP_TYPE';
+
+  it('overrides quest and mobile, leaving pico on the configured defaultConfig value', async () => {
+    const out: string = await renderAppGradle({ xrMode: 'pico-os5', appType: 'vr' });
+    expect(out).toContain('buildConfigField "String", "PICO_XR_MODE", picoXrModeValue');
+    expect(out).toContain('def picoXrModeValue = "\\"pico-os5\\""');
+    const block = out.slice(out.indexOf(MARKER));
+    expect(block).toMatch(
+      /flavor\.name == "quest"\) \{\s+flavor\.buildConfigField "String", "PICO_XR_MODE", "\\"quest\\""\s+flavor\.buildConfigField "String", "PICO_APP_TYPE", "\\"\$\{project\.findProperty\('picoAppType'\) \?: 'vr'\}\\""/
+    );
+    expect(block).toMatch(
+      /flavor\.name == "mobile"\) \{\s+flavor\.buildConfigField "String", "PICO_XR_MODE", "\\"mobile\\""\s+flavor\.buildConfigField "String", "PICO_APP_TYPE", "\\"2d\\""/
+    );
+    expect(block).not.toContain('"pico"');
+  });
+
+  it('reads the quest appType from gradle.properties, falling back to the configured one', async () => {
+    const out: string = await renderAppGradle({ xrMode: 'pico-os5', appType: 'mr' });
+    expect(out).toContain(
+      `flavor.buildConfigField "String", "PICO_APP_TYPE", "\\"\${project.findProperty('picoAppType') ?: 'mr'}\\""`
+    );
+  });
+
+  it('is idempotent across re-runs', async () => {
+    const once: string = await renderAppGradle({ xrMode: 'pico-os5' });
+    const twice: string = await renderAppGradle({ xrMode: 'pico-os5' }, once);
+    expect(twice.split(MARKER)).toHaveLength(2);
+    expect(twice.match(/flavor\.name == "quest"/g)).toHaveLength(1);
+  });
+
+  it('is not emitted for a single-variant mobile build', async () => {
+    const out: string = await renderAppGradle({ buildVariant: 'mobile' });
+    expect(out).not.toContain(MARKER);
+  });
+});
+
+describe('withPicoGradleProperties — picoBuildVariant', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { withPicoGradleProperties } = require('../plugin/src/withPicoGradleProperties');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { resolveOptions } = require('../plugin/src/types');
+
+  type Prop = { type: string; key?: string; value?: string };
+  type PropsMod = (config: unknown) => Promise<{ modResults: Prop[] }>;
+
+  async function props(options: object, existing: Prop[] = []): Promise<Prop[]> {
+    const config = withPicoGradleProperties(
+      { name: 'pico', slug: 'pico' } as never,
+      resolveOptions(options) as never
+    ) as unknown as { mods: { android: { gradleProperties: PropsMod } } };
+    const applied = await config.mods.android.gradleProperties({
+      modRequest: { projectRoot: process.cwd(), nextMod: (result: unknown) => result },
+      modResults: existing,
+    });
+    return applied.modResults;
+  }
+
+  const value = (list: Prop[], key: string) => list.filter((p) => p.key === key);
+
+  it.each(['pico', 'dual', 'mobile'] as const)('writes buildVariant %s', async (buildVariant) => {
+    const out = await props({ buildVariant });
+    expect(value(out, 'picoBuildVariant')).toEqual([
+      { type: 'property', key: 'picoBuildVariant', value: buildVariant },
+    ]);
+  });
+
+  it('updates in place on re-run instead of appending', async () => {
+    const first = await props({ buildVariant: 'mobile' });
+    const second = await props({ buildVariant: 'pico' }, first);
+    expect(value(second, 'picoBuildVariant')).toEqual([
+      { type: 'property', key: 'picoBuildVariant', value: 'pico' },
+    ]);
+  });
+});
