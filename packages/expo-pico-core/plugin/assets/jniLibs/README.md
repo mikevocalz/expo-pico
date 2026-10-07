@@ -35,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 250 120 | `0f6c1b6d391ed1efe0ce12772944ef0913a79f399701295a6dd7d14d6ffabdb0` | `92c9e11a0158bf144f4d77bf528fa6474873165b` |
+| `arm64-v8a/libviro_renderer.so` | 7 250 992 | `77c9667b430925d8788a67ddc634e8dd1d046943d3037701ce18933894df2432` | `37905920d2bde686cbf5ede60083636291a5c639` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -81,7 +81,7 @@ declares. `<ViroController>` renders, but there is nothing bound underneath it.
 
 ### Provenance
 
-Built from mikevocalz/virocore `main` at `5aac6b51` (PR #103) with
+Built from mikevocalz/virocore `main` at `3342aa69` (PRs #103 and #104) with
 `./gradlew :viroreact:assembleRelease`; the file is the arm64-v8a
 `libviro_renderer.so` from `viroreact-release.aar`. Built without the private
 ReactVisionCCA headers, so ReactVision cloud anchors are compiled out
@@ -95,6 +95,10 @@ interaction profiles, Meta VR Glasses gaze-and-pinch select, and runtime
 controller models: on Meta it loads the runtime's own controller meshes through
 `XR_FB_render_model`, and falls back to the neutral mesh
 (`controller_neutral.glb`) only where the runtime supplies no model.
+
+It binds the `/interaction_profiles/ext/hand_interaction_ext` profile, so on a
+hands-only headset (Meta VR Glasses) hand pinch and aim reach the app; the
+earlier path without `_ext` was rejected by the runtime.
 
 `XR_FB_render_model` needs Meta's RENDER_MODEL permission. While the overlay is
 staged into `quest`, `withQuestRenderModel` adds
