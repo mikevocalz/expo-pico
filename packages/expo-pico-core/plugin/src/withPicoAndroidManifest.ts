@@ -18,6 +18,7 @@ import {
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
 import { applyCapabilityContract } from './withPicoCapabilities';
+import { applyPicoFlavorEntries, getPicoFlavorManifestState } from './withPicoFlavorEntries';
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyVRActivityContract, applyPanelSize } from './withPicoVRActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
@@ -110,6 +111,9 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // meta-data. Each capability is independently gated; all writes
       // are idempotent and toggling off cleans up the entry.
       applyCapabilityContract(manifest, options);
+      // PICO-only permissions/features recorded by feature plugins through
+      // withPicoFlavorPermission / withPicoFlavorFeature.
+      applyPicoFlavorEntries(manifest, getPicoFlavorManifestState(config));
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
       console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
 

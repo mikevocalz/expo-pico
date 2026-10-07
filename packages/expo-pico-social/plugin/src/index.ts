@@ -1,30 +1,20 @@
-import { ConfigPlugin, withAndroidManifest } from '@expo/config-plugins';
+import { ConfigPlugin } from '@expo/config-plugins';
+import { withPicoFlavorPermission } from '@expo-pico/core/plugin';
 
-const SOCIAL_PERMISSION = 'com.picovr.platform.permission.SOCIAL';
+export const SOCIAL_PERMISSION = 'com.picovr.platform.permission.SOCIAL';
 
 export interface PicoSocialPluginOptions {
   enabled?: boolean;
 }
 
+/**
+ * Declares the PICO social permission, routed by core to the pico flavor
+ * manifest when one exists (main manifest otherwise).
+ */
 const withPicoSocial: ConfigPlugin<PicoSocialPluginOptions | void> = (config, options) => {
   const { enabled = true } = options ?? {};
   if (!enabled) return config;
-
-  config = withAndroidManifest(config, (cfg) => {
-    const manifest = cfg.modResults.manifest;
-    if (!manifest['uses-permission']) manifest['uses-permission'] = [];
-
-    const exists = manifest['uses-permission'].some(
-      (p: any) => p.$?.['android:name'] === SOCIAL_PERMISSION
-    );
-    if (!exists) {
-      manifest['uses-permission'].push({ $: { 'android:name': SOCIAL_PERMISSION } });
-    }
-
-    return cfg;
-  });
-
-  return config;
+  return withPicoFlavorPermission(config, SOCIAL_PERMISSION);
 };
 
 export default withPicoSocial;

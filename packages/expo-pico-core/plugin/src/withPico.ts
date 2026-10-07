@@ -7,6 +7,7 @@ import {
   withPicoPlatformServiceMainManifest,
 } from './withPicoAndroidManifest';
 import { withPicoDiagnostics } from './withPicoDiagnostics';
+import { markPicoFlavorPresent } from './withPicoFlavorEntries';
 import { withPicoAppBuildGradle, withPicoProjectBuildGradle } from './withPicoGradle';
 import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
@@ -53,6 +54,9 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   config = withPicoStrings(config, options);
 
   if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
+    // Feature plugins (iap, rooms, social, ...) route their PICO-only
+    // permissions and features to this flavor manifest instead of main.
+    markPicoFlavorPresent(config);
     config = withPicoAndroidManifest(config, options);
   }
 
@@ -72,3 +76,10 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
 };
 
 export default withPico;
+
+export {
+  withPicoFlavorPermission,
+  withPicoFlavorFeature,
+  getPicoFlavorManifestState,
+} from './withPicoFlavorEntries';
+export type { PicoFlavorManifestState, PicoFlavorFeature } from './withPicoFlavorEntries';

@@ -1,30 +1,17 @@
-import { ConfigPlugin, withAndroidManifest } from '@expo/config-plugins';
+import { ConfigPlugin } from '@expo/config-plugins';
+import { withPicoFlavorPermission } from '@expo-pico/core/plugin';
 
-const PICO_BILLING_PERMISSION = 'com.picovr.payment.BILLING';
+export const PICO_BILLING_PERMISSION = 'com.picovr.payment.BILLING';
 
 /**
  * Config plugin for expo-pico-iap.
  *
- * Adds the PICO billing permission to AndroidManifest.xml.
- * Requires expo-pico-core to be listed first in the plugins array.
+ * Declares the PICO billing permission. With a pico flavor (core
+ * `buildVariant` `pico` or `dual`) it lands in the pico flavor manifest only,
+ * so the quest and mobile APKs don't request it; with `buildVariant: 'mobile'`
+ * it goes into the main manifest. Plugin order does not matter.
  */
-const withPicoIap: ConfigPlugin<void> = (config) => {
-  return withAndroidManifest(config, (config) => {
-    const manifest = config.modResults.manifest;
-    if (!manifest['uses-permission']) manifest['uses-permission'] = [];
-
-    const exists = manifest['uses-permission'].some(
-      (p: any) => p.$?.['android:name'] === PICO_BILLING_PERMISSION
-    );
-
-    if (!exists) {
-      manifest['uses-permission'].push({
-        $: { 'android:name': PICO_BILLING_PERMISSION },
-      } as any);
-    }
-
-    return config;
-  });
-};
+const withPicoIap: ConfigPlugin<void> = (config) =>
+  withPicoFlavorPermission(config, PICO_BILLING_PERMISSION);
 
 export default withPicoIap;
