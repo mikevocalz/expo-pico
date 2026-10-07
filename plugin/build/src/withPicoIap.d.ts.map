@@ -1,1 +1,1 @@
-{"version":3,"file":"withPicoIap.d.ts","sourceRoot":"","sources":["../../src/withPicoIap.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAuB,MAAM,sBAAsB,CAAC;AAIzE;;;;;GAKG;AACH,QAAA,MAAM,WAAW,EAAE,YAAY,CAAC,IAAI,CAiBnC,CAAC;AAEF,eAAe,WAAW,CAAC"}
+{"version":3,"file":"withPicoIap.d.ts","sourceRoot":"","sources":["../../src/withPicoIap.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,sBAAsB,CAAC;AAGpD,eAAO,MAAM,uBAAuB,+BAA+B,CAAC;AAEpE;;;;;;;GAOG;AACH,QAAA,MAAM,WAAW,EAAE,YAAY,CAAC,IAAI,CACuB,CAAC;AAE5D,eAAe,WAAW,CAAC"}
