@@ -107,6 +107,7 @@ export type { PicoBodyJoint, PicoCapabilityName, PicoCapabilitySnapshotEntry, Pi
 export { getPicoLocation, requestLocationPermission, isLocationAvailable } from './location';
 export { registerImmersiveScene, hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT, } from './immersive';
 export type { PicoCoordinates } from './location';
+export { ensureEyeTrackingPermission, eyeTrackingPermissionFor, HORIZON_EYE_TRACKING_PERMISSION, PICO_EYE_TRACKING_PERMISSION, } from './eyeTrackingPermission';
 export default ExpoPicoModule;
 /**
  * Hand the display to this app's immersive activity.
@@ -124,6 +125,12 @@ export default ExpoPicoModule;
  * react-viro` gates its equivalent (`VRLauncher.launchVRScene()`) behind a
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
+ *
+ * Before launching, asks once per process for the eye tracking permission
+ * (`com.oculus.permission.EYE_TRACKING` on the quest flavor,
+ * `com.picovr.permission.EYE_TRACKING` on PICO) when the manifest declares it
+ * and it is not granted. Viro's gaze targeting needs it; a denial still enters
+ * the scene with the hand ray. See {@link ensureEyeTrackingPermission}.
  */
 export declare function enterImmersiveScene(): Promise<boolean>;
 /** Whether this build declares an activity with PICO's VR intent category. */

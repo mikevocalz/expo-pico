@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LUCIDE_VERSION = exports.LUCIDE_ICONS = exports.iconMeshToViroGeometry = exports.getLucideIconMesh = exports.getIconMesh = exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
+exports.LUCIDE_VERSION = exports.LUCIDE_ICONS = exports.iconMeshToViroGeometry = exports.getLucideIconMesh = exports.getIconMesh = exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = exports.PICO_EYE_TRACKING_PERMISSION = exports.HORIZON_EYE_TRACKING_PERMISSION = exports.eyeTrackingPermissionFor = exports.ensureEyeTrackingPermission = exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
 exports.pulseHaptic = pulseHaptic;
 exports.isHapticsAvailable = isHapticsAvailable;
 exports.addPassthroughDialListener = addPassthroughDialListener;
@@ -57,6 +57,7 @@ exports.hasImmersiveActivity = hasImmersiveActivity;
 exports.exitImmersiveScene = exitImmersiveScene;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
 const ExpoPicoModule_1 = __importStar(require("./ExpoPicoModule"));
+const eyeTrackingPermission_1 = require("./eyeTrackingPermission");
 const immersive_1 = require("./immersive");
 // ─── Controller haptics + passthrough dial ──────────────────────────────────
 // Both were separate native modules under Expo Modules (ExpoPicoHaptics,
@@ -307,6 +308,11 @@ var immersive_2 = require("./immersive");
 Object.defineProperty(exports, "registerImmersiveScene", { enumerable: true, get: function () { return immersive_2.registerImmersiveScene; } });
 Object.defineProperty(exports, "hasImmersiveSceneRegistered", { enumerable: true, get: function () { return immersive_2.hasImmersiveSceneRegistered; } });
 Object.defineProperty(exports, "IMMERSIVE_ROOT_COMPONENT", { enumerable: true, get: function () { return immersive_2.IMMERSIVE_ROOT_COMPONENT; } });
+var eyeTrackingPermission_2 = require("./eyeTrackingPermission");
+Object.defineProperty(exports, "ensureEyeTrackingPermission", { enumerable: true, get: function () { return eyeTrackingPermission_2.ensureEyeTrackingPermission; } });
+Object.defineProperty(exports, "eyeTrackingPermissionFor", { enumerable: true, get: function () { return eyeTrackingPermission_2.eyeTrackingPermissionFor; } });
+Object.defineProperty(exports, "HORIZON_EYE_TRACKING_PERMISSION", { enumerable: true, get: function () { return eyeTrackingPermission_2.HORIZON_EYE_TRACKING_PERMISSION; } });
+Object.defineProperty(exports, "PICO_EYE_TRACKING_PERMISSION", { enumerable: true, get: function () { return eyeTrackingPermission_2.PICO_EYE_TRACKING_PERMISSION; } });
 exports.default = ExpoPicoModule_1.default;
 /**
  * Hand the display to this app's immersive activity.
@@ -324,6 +330,12 @@ exports.default = ExpoPicoModule_1.default;
  * react-viro` gates its equivalent (`VRLauncher.launchVRScene()`) behind a
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
+ *
+ * Before launching, asks once per process for the eye tracking permission
+ * (`com.oculus.permission.EYE_TRACKING` on the quest flavor,
+ * `com.picovr.permission.EYE_TRACKING` on PICO) when the manifest declares it
+ * and it is not granted. Viro's gaze targeting needs it; a denial still enters
+ * the scene with the hand ray. See {@link ensureEyeTrackingPermission}.
  */
 async function enterImmersiveScene() {
     if (!(0, immersive_1.hasImmersiveSceneRegistered)()) {
@@ -337,6 +349,7 @@ async function enterImmersiveScene() {
             `to load. Staying on the 2D panel.`);
         return false;
     }
+    await (0, eyeTrackingPermission_1.ensureEyeTrackingPermission)(getXrMode());
     return ExpoPicoModule_1.default.enterImmersiveScene();
 }
 /** Whether this build declares an activity with PICO's VR intent category. */
