@@ -67,8 +67,8 @@
     "plugin/build",
     "app.plugin.js"
   ],
-  "gitHead": "aaa05bf60d4314e4d44cf7a712dd6b07d123b2d1",
+  "gitHead": "95932e52b33e4457db49c53ea9e69257bfbae294",
   "expoPico": {
-    "sourceCommit": "aaa05bf60d4314e4d44cf7a712dd6b07d123b2d1"
+    "sourceCommit": "95932e52b33e4457db49c53ea9e69257bfbae294"
   }
 }
