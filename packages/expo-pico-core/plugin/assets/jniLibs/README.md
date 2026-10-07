@@ -1,11 +1,24 @@
 # Staged native libraries
 
 Binaries copied into a consuming app's `android/app/src/<flavor>/jniLibs/` by
-`syncPicoOverlays` (`withPicoOpenXrLoaderOverlay.ts`) at prebuild, for the
-`pico` flavor and — under `buildVariant: 'dual'` — `dual` as well. `main`,
-`mobile` and `quest` never receive them. The `pickFirsts` rule emitted by
-`updateOverlayPackaging` in `withPicoGradle.ts` makes the app's own copy win
-over the one an AAR ships.
+`syncPicoOverlays` (`withPicoOpenXrLoaderOverlay.ts`) at prebuild:
+
+| File                  | Flavors                                          |
+| --------------------- | ------------------------------------------------ |
+| `libopenxr_loader.so` | `pico`, plus `dual` under `buildVariant: 'dual'` |
+| `libviro_renderer.so` | `pico`, `dual` (when present) and `quest`        |
+
+`controller_neutral.glb` (from `../androidAssets/`) follows the renderer into
+`src/<flavor>/assets/`. `main` and `mobile` never receive any of them. The
+`pickFirsts` rule emitted by `updateOverlayPackaging` in `withPicoGradle.ts`
+makes the app's own copy win over the one an AAR ships, per flavor.
+
+The renderer goes to `quest` because it is Viro/OpenXR code: the floor origin
+and the controller mesh apply on Quest as well. The loader stays out of
+`quest`. Stock `@reactvision/react-viro` 3.0.2 already ships a 16KB-aligned
+loader (`PT_LOAD` align `0x4000`) that exports all 43 `xr*` symbols the overlay
+renderer imports, and the renderer names it only by soname
+(`DT_NEEDED libopenxr_loader.so`).
 
 **`arm64-v8a` only.** PICO ships no 32-bit device, so an `armeabi-v7a` slice
 buys zero install coverage — and `scripts/verify-16kb-alignment.py` reads
@@ -22,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 046 480 | `7efd15dcc3e7033266f0de4d52b4e4e3d762f6d64d3a60a6e9db3357568d6e90` | `594d58bcae783ba18161ae25bfb3604a6bfc6de6` |
+| `arm64-v8a/libviro_renderer.so` | 7 099 720 | `84037128948028f1268f107d85789a4b1f289ca868acfce5194969f22ca08f78` | `63b13f0ce0785328092a6334ad92ae4a2b72530b` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 

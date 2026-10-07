@@ -159,7 +159,11 @@ android.productFlavors.configureEach { flavor ->
 `;
 }
 
-/** Keep overrides out of Quest/mobile variants and remove our old global rule. */
+/**
+ * Let the overlay copies win over the AAR's in the variants that get them:
+ * pico/dual take both libraries, quest takes only the renderer (see
+ * `syncPicoOverlays`). Mobile gets neither. Also removes our old global rule.
+ */
 export function updateOverlayPackaging(contents: string, options: ResolvedPicoOptions): string {
   contents = contents.replace(
     /\n[ \t]*\/\/ expo-pico-core: 16KB openxr loader overlay\s+packagingOptions\s*\{\s*jniLibs\s*\{\s*pickFirsts \+= \["\*\*\/libopenxr_loader\.so"\]\s*\}\s*\}/g,
@@ -174,6 +178,12 @@ export function updateOverlayPackaging(contents: string, options: ResolvedPicoOp
     ...(options.viroRendererOverlay ? ['**/libviro_renderer.so'] : []),
   ];
   if (libraries.length === 0 || options.buildVariant === 'mobile') return contents;
+  const questRule = options.viroRendererOverlay
+    ? `
+        if (variant.productFlavors.any { it.first == "device" && it.second == "quest" }) {
+            variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(['**/libviro_renderer.so'])})
+        }`
+    : '';
   return (
     contents +
     `
@@ -182,7 +192,7 @@ androidComponents {
     onVariants(selector().all()) { variant ->
         if (variant.productFlavors.any { it.first == "device" && it.second in ["pico", "dual"] }) {
             variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(libraries)})
-        }
+        }${questRule}
     }
 }
 // expo-pico-core: end flavor overlays
