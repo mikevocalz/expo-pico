@@ -1,9 +1,13 @@
 import { ConfigPlugin, withAndroidManifest, AndroidConfig } from '@expo/config-plugins';
 
+import { withPicoFlavorMetaData } from '../withPicoFlavorEntries';
+
 /**
- * Opt-in config plugin that adds the OpenXR loader manifest declarations to
- * the **main** AndroidManifest so any flavor (including third-party flavors
- * like ReactVision/Viro's `quest`) inherits them.
+ * Opt-in config plugin that adds the Khronos OpenXR loader declarations to
+ * the **main** AndroidManifest, so every flavor that runs an OpenXR session
+ * inherits them. They are vendor-neutral: the Quest build loads the same
+ * Khronos loader. The one PICO-specific entry, `pvr.app.type=vr`, is routed
+ * through `withPicoFlavorMetaData` and never reaches the quest flavor.
  *
  * Why this exists:
  * `withPico` writes the Pico-flavor manifest at
@@ -52,10 +56,18 @@ import { ConfigPlugin, withAndroidManifest, AndroidConfig } from '@expo/config-p
  *   ```
  */
 export const withPicoOpenXrLoader: ConfigPlugin = (config) => {
-  return withAndroidManifest(config, (config) => {
+  config = withAndroidManifest(config, (config) => {
     config.modResults = applyOpenXrLoader(config.modResults);
     return config;
   });
+  // pvr.app.type=vr is PICO meta-data. PICO's runtime gates xrCreateInstance
+  // on it (XR_ERROR_VALIDATION_FAILURE without it; see docs/VIRO-ON-PICO.md).
+  // Routed by withPicoFlavorMetaData: with a pico flavor, core's launcher
+  // contract always writes pvr.app.type from appType there and that value
+  // wins; the mobile flavor does not get it. With no pico flavor but a quest
+  // flavor (expo-horizon-core) it goes to the mobile flavor manifest; in a
+  // single-variant app, to main. The quest flavor never sees it.
+  return withPicoFlavorMetaData(config, { name: 'pvr.app.type', value: 'vr' });
 };
 
 const OPENXR_PERMISSIONS = [
@@ -105,20 +117,6 @@ function applyOpenXrLoader(
           'android:name': 'libopenxr_loader.so',
           'android:required': 'false',
         },
-      });
-    }
-
-    // 4. pvr.app.type=vr meta-data — REQUIRED. Pico's runtime gates
-    //    xrCreateInstance on this declaration; without it the call returns
-    //    XR_ERROR_VALIDATION_FAILURE (-1) and no immersive session can start.
-    //    See docs/VIRO-ON-PICO.md for the device-validated diagnostic chain.
-    const metaData = ((application as any)['meta-data'] ??= []) as Array<{
-      $: Record<string, string>;
-    }>;
-    const hasPvrAppType = metaData.some((m) => m.$?.['android:name'] === 'pvr.app.type');
-    if (!hasPvrAppType) {
-      metaData.push({
-        $: { 'android:name': 'pvr.app.type', 'android:value': 'vr' },
       });
     }
   }
