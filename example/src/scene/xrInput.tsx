@@ -1,7 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { ViroController, useAnySourceHover, useAnySourcePressed } from '@reactvision/react-viro';
 
-import { isHorizonBuild } from '../platform';
 
 /**
  * Input feedback that does not depend on hover.
@@ -38,44 +37,13 @@ export function useTargetFocus(): TargetFocus {
 /** Pressed while any source holds a click down. */
 export const usePressState = useAnySourcePressed;
 
-// Viro types the payload as `any`. The renderer's ControllerStatus enum
-// (VROEventDelegate.h) is numeric, Connected = 3, and crosses JNI as an int;
-// the name form is accepted too in case the bridge maps it.
-const CONTROLLER_CONNECTED = 3;
-const CONTROLLER_GONE = new Set<unknown>([4, 5, 'DISCONNECTED', 'ERROR']);
-
-function normalize(status: unknown): unknown {
-  return typeof status === 'string' ? status.toUpperCase() : status;
-}
-
-// Shared across scenes: each scene mounts its own XrController, and a status
-// event that arrived under the previous scene must not be lost on the switch.
-let controllerSeenGlobal = false;
-
 /**
- * Reticle always on. Controller models are hidden by default on Meta Horizon
- * builds, where Meta VR Glasses have no controllers, and shown once Viro
- * reports a connected controller; a disconnect or error hides them again.
- * Whether the OpenXR backend emits this status is unverified on device;
- * without it Quest users see the reticle and ray only.
+ * Reticle and controller models always on. The renderer draws a controller
+ * only while the runtime tracks it, so a headset with no controllers in hand
+ * (Meta VR Glasses, or a Quest in hands mode) shows hands and the reticle
+ * without any JS gating. Viro's onControllerStatus never fires on the OpenXR
+ * backend, so gating on it hid Quest controllers entirely.
  */
 export function XrController(): React.JSX.Element {
-  const [controllerSeen, setControllerSeen] = useState(controllerSeenGlobal);
-  const onControllerStatus = useCallback((status: unknown) => {
-    const s = normalize(status);
-    let next: boolean;
-    if (s === CONTROLLER_CONNECTED || s === 'CONNECTED') next = true;
-    else if (CONTROLLER_GONE.has(s)) next = false;
-    else return;
-    controllerSeenGlobal = next;
-    setControllerSeen(next);
-  }, []);
-
-  return (
-    <ViroController
-      reticleVisibility
-      controllerVisibility={!isHorizonBuild || controllerSeen}
-      onControllerStatus={isHorizonBuild ? onControllerStatus : undefined}
-    />
-  );
+  return <ViroController reticleVisibility controllerVisibility />;
 }

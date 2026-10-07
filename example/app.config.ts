@@ -56,7 +56,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       '@reactvision/react-viro',
       {
-        android: { xRMode: ['QUEST', 'PICO'] },
+        // Must match expo-horizon-core's supportedDevices: both plugins write
+        // com.oculus.supportedDevices and the manifest merger rejects a mismatch.
+        android: { xRMode: ['QUEST', 'PICO'], questSupportedDevices: 'quest3|quest3s' },
       },
     ],
     [
