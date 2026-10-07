@@ -3,7 +3,6 @@ import {
   Viro3DPoint,
   ViroAmbientLight,
   ViroBox,
-  ViroController,
   ViroDirectionalLight,
   ViroMaterials,
   ViroNode,
@@ -12,6 +11,8 @@ import {
   ViroSpotLight,
   ViroText,
 } from '@reactvision/react-viro';
+
+import { usePressState, useTargetFocus, XrController } from './xrInput';
 
 /**
  * Interactive cube scene.
@@ -26,7 +27,9 @@ import {
  *   - Floor quad at y=0 grounds the object; it is the only shadow receiver.
  *
  * Input parity: onClick fires on controller trigger, on gaze+pinch, and on
- * tap in the flat mobile fallback — one handler covers all three.
+ * tap in the flat mobile fallback — one handler covers all three. Feedback
+ * does not wait for hover (Meta VR Glasses send none): the shell and the
+ * caption are always drawn. See `xrInput.tsx`.
  */
 
 const HOME: Viro3DPoint = [0, 1.35, -1.5];
@@ -34,6 +37,10 @@ export const EDGE = 0.24;
 
 // Cycled on click so a press has a visible, non-destructive result.
 export const TINTS = ['cubeIdle', 'cubeViolet', 'cubeMint'] as const;
+
+/** Cube shell opacity at rest and when focused or pressed. */
+export const CUBE_SHELL_REST = 0.1;
+export const CUBE_SHELL_ACTIVE = 0.22;
 
 ViroMaterials.createMaterials({
   cubeIdle: {
@@ -84,8 +91,8 @@ function fmt(p: Viro3DPoint): string {
 
 export function InteractiveCubeScene(): React.JSX.Element {
   const [position, setPosition] = useState<Viro3DPoint>(HOME);
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { focused, onHover } = useTargetFocus();
+  const [pressed, onClickState] = usePressState();
   const [tint, setTint] = useState(0);
   const dragCount = useRef(0);
 
@@ -100,11 +107,11 @@ export function InteractiveCubeScene(): React.JSX.Element {
     setTint((t) => (t + 1) % TINTS.length);
   }, []);
 
-  // Hover grows the cube ~4%; pressed insets it ~3%. Both are small enough to
+  // Focus grows the cube ~4%; pressed insets it ~3%. Both are small enough to
   // read as feedback rather than motion.
   const scale: Viro3DPoint = pressed
     ? [0.97, 0.97, 0.97]
-    : hovered
+    : focused
       ? [1.04, 1.04, 1.04]
       : [1, 1, 1];
 
@@ -113,9 +120,9 @@ export function InteractiveCubeScene(): React.JSX.Element {
       {/* Controllers are not drawn unless a ViroController is in the scene.
           Without it the tracked controllers and their pointer ray are simply
           absent, so a scene built around drag/tap has nothing to aim with.
-          The reticle is the aim point; controllerVisibility draws the models
-          themselves. */}
-      <ViroController reticleVisibility controllerVisibility />
+          XrController keeps the reticle and hides controller models on Meta
+          Horizon builds until a controller reports in. */}
+      <XrController />
 
       {/* Lighting: low ambient fill, a key from the upper-left, and a spot
           that pools light on the floor to seat the cube in the space. */}
@@ -154,16 +161,18 @@ export function InteractiveCubeScene(): React.JSX.Element {
       />
 
       <ViroNode position={position}>
-        {/* Focus ring — appears on hover/press only, just behind the cube. */}
-        {(hovered || pressed) && (
-          <ViroBox
-            width={EDGE * 1.12}
-            height={EDGE * 1.12}
-            length={EDGE * 1.12}
-            materials={['focusRing']}
-            opacity={0.22}
-          />
-        )}
+        {/* Shell — always drawn so the cube reads as a target with no hover;
+            focus or press brightens it. */}
+        <ViroBox
+          width={EDGE * 1.12}
+          height={EDGE * 1.12}
+          length={EDGE * 1.12}
+          materials={['focusRing']}
+          opacity={focused || pressed ? CUBE_SHELL_ACTIVE : CUBE_SHELL_REST}
+          // Larger than the cube and always drawn: without this it would take
+          // the ray's hits and the cube's handlers would never fire.
+          ignoreEventHandling
+        />
 
         <ViroBox
           width={EDGE}
@@ -175,8 +184,8 @@ export function InteractiveCubeScene(): React.JSX.Element {
           lightReceivingBitMask={3}
           dragType="FixedDistance"
           onDrag={onDrag}
-          onHover={(isHovering: boolean) => setHovered(isHovering)}
-          onClickState={(state: number) => setPressed(state === 1)}
+          onHover={onHover}
+          onClickState={onClickState}
           onClick={onClick}
         />
       </ViroNode>
@@ -192,7 +201,7 @@ export function InteractiveCubeScene(): React.JSX.Element {
           materials={['panelTextWash']}
         />
         <ViroText
-          text={hovered ? 'Drag to move · tap to recolour' : 'Interactive cube'}
+          text="Pinch to recolour · pinch and drag to move"
           position={[0, 0.042, 0.003]}
           width={0.66}
           height={0.06}
