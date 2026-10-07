@@ -59,8 +59,8 @@
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-notifications",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "646b5c50bc1fc60fb1aafab232bd0a41f379b44d",
+  "gitHead": "aaa05bf60d4314e4d44cf7a712dd6b07d123b2d1",
   "expoPico": {
-    "sourceCommit": "646b5c50bc1fc60fb1aafab232bd0a41f379b44d"
+    "sourceCommit": "aaa05bf60d4314e4d44cf7a712dd6b07d123b2d1"
   }
 }
