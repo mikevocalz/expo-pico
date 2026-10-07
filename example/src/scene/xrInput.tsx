@@ -1,7 +1,6 @@
 import React from 'react';
 import { ViroController, useAnySourceHover, useAnySourcePressed } from '@reactvision/react-viro';
 
-
 /**
  * Input feedback that does not depend on hover.
  *
