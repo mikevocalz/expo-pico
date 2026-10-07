@@ -1,28 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_plugins_1 = require("@expo/config-plugins");
+exports.PICO_SOCIAL_PERMISSION = void 0;
+const plugin_1 = require("@expo-pico/core/plugin");
+exports.PICO_SOCIAL_PERMISSION = 'com.picovr.platform.permission.SOCIAL';
 /**
  * Config plugin for expo-pico-rooms.
  *
  * Declares the PICO social/platform permission needed for room and
- * matchmaking APIs. Does NOT inject flavors or Maven repos — core owns those.
+ * matchmaking APIs, routed by core to the pico flavor manifest when one
+ * exists (main manifest otherwise). Does NOT inject flavors or Maven repos —
+ * core owns those.
  *
  * No config options needed — the permission is always required when using rooms.
  */
-const withPicoRooms = (config) => {
-    return (0, config_plugins_1.withAndroidManifest)(config, (config) => {
-        const manifest = config.modResults.manifest;
-        if (!manifest['uses-permission'])
-            manifest['uses-permission'] = [];
-        const PICO_SOCIAL_PERMISSION = 'com.picovr.platform.permission.SOCIAL';
-        const exists = manifest['uses-permission'].some((p) => p.$?.['android:name'] === PICO_SOCIAL_PERMISSION);
-        if (!exists) {
-            manifest['uses-permission'].push({
-                $: { 'android:name': PICO_SOCIAL_PERMISSION },
-            });
-        }
-        return config;
-    });
-};
+const withPicoRooms = (config) => (0, plugin_1.withPicoFlavorPermission)(config, exports.PICO_SOCIAL_PERMISSION);
 exports.default = withPicoRooms;
 //# sourceMappingURL=withPicoRooms.js.map

@@ -1,1 +1,1 @@
-{"version":3,"file":"withPicoRooms.d.ts","sourceRoot":"","sources":["../../src/withPicoRooms.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAuB,MAAM,sBAAsB,CAAC;AAEzE;;;;;;;GAOG;AACH,QAAA,MAAM,aAAa,EAAE,YAAY,CAAC,IAAI,CAkBrC,CAAC;AAEF,eAAe,aAAa,CAAC"}
+{"version":3,"file":"withPicoRooms.d.ts","sourceRoot":"","sources":["../../src/withPicoRooms.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,sBAAsB,CAAC;AAGpD,eAAO,MAAM,sBAAsB,0CAA0C,CAAC;AAE9E;;;;;;;;;GASG;AACH,QAAA,MAAM,aAAa,EAAE,YAAY,CAAC,IAAI,CACoB,CAAC;AAE3D,eAAe,aAAa,CAAC"}
