@@ -33,11 +33,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-horizon-core',
       {
         horizonAppId: process.env.HORIZON_APP_ID ?? '',
+        // No `vrglasses` here: Meta does not accept it as a public value.
+        // Meta VR Glasses reach the Store through "Future devices" targeting.
         supportedDevices: 'quest3|quest3s',
-        // defaultWidth/defaultHeight intentionally omitted — those are for
-        // 2D panel apps. We're shipping an immersive VR app (Viro
-        // `<ViroVRSceneNavigator>` + `com.oculus.intent.category.VR`)
-        // so Horizon places it as an immersive session, not a flat panel.
+        // The launcher opens first as a 2D panel on MainActivity; the
+        // immersive scene is a separate VRActivity. Horizon accepts panel
+        // widths of 360-1280dp (the Meta VR Glasses range), so 1280x800dp
+        // landscape is the widest panel that still fits there. Written to
+        // app/src/quest/AndroidManifest.xml as
+        // <layout android:defaultWidth="1280dp" android:defaultHeight="800dp"/>.
+        // Keep `orientation: 'default'` above: a fixed orientation that
+        // disagrees with these dimensions letterboxes the panel.
+        defaultWidth: '1280dp',
+        defaultHeight: '800dp',
         disableVrHeadtracking: false,
         allowBackup: false,
       },
@@ -95,6 +103,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         targetDevices: ['pico-4', 'pico-4-ultra', 'swan'],
         spatialMode: 'shared-space',
         defaultContainerMode: 'window-container',
+        // Same landscape panel as the Meta flavor, written to the PICO-flavor
+        // manifest so the launcher never opens as a phone-shaped window.
+        defaultWidth: '1280dp',
+        defaultHeight: '800dp',
         handTracking: true,
         passthrough: true,
         sceneUnderstanding: false,

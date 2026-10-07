@@ -1,9 +1,23 @@
+/**
+ * Launcher home for the 2D panel.
+ *
+ * Structure-only references (Mobbin, web): Base welcome
+ * (https://mobbin.com/screens/d5d2c2c4-aaba-4764-8453-9b622e9aeacb) for the
+ * split with one primary action on the left; Klaviyo empty state
+ * (https://mobbin.com/screens/543b8f44-0434-46bd-ac53-5fe7cd7f55a5) for a
+ * status line directly under the primary button; Replit home
+ * (https://mobbin.com/screens/c38f4614-95ad-4e3a-bc84-0bb1e1b81590) for a
+ * single row of chips under the hero; Dropbox Dash
+ * (https://mobbin.com/screens/31a95e42-7374-4c6e-a4fb-39f1da438580) for a
+ * filled primary above quieter secondary entries. Colours and type come from
+ * ./theme only.
+ */
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
-import { isQuest } from '@reactvision/react-viro';
 
+import { horizonAppId, isHeadsetBuild, isHorizonBuild, xrModeLabel } from '../platform';
 import { IsoCube } from './IsoCube';
 import { SpatialLayoutPreview } from './SpatialLayoutPreview';
 import { useLayout } from './useLayout';
@@ -24,7 +38,7 @@ function Chip({
 }): React.JSX.Element {
   const dot = tone === 'ok' ? palette.ok : tone === 'warn' ? palette.warn : palette.textFaint;
   return (
-    <View style={styles.chip}>
+    <View style={styles.chip} accessible accessibilityLabel={`${label}: ${value}`}>
       <View style={[styles.chipDot, { backgroundColor: dot }]} />
       <View style={styles.chipBody}>
         <Text style={styles.chipLabel}>{label}</Text>
@@ -64,19 +78,22 @@ function Row({
 export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const info = useMemo(() => getPicoRuntimeInfo(), []);
   const L = useLayout();
-  const onHeadset = info.xrMode !== 'mobile';
+  const onHeadset = isHeadsetBuild(info);
 
-  // Headsets enter through the VR-category activity (registered in index.js).
-  // Quest builds still use ViroXRSceneNavigator via the xr route, since stock
-  // react-viro only takes its VR path on Quest branding. A phone, or a build
-  // without a VR activity, gets the inline route.
+  // Every headset build enters through VRActivity, which renders the scene
+  // registered in index.js. If no immersive activity resolves (a phone, or a
+  // build without one), the xr route renders the scene inline instead.
   const onEnterXr = useCallback(async () => {
-    if (onHeadset && !isQuest && (await enterImmersiveScene())) return;
+    if (onHeadset && (await enterImmersiveScene())) return;
     onNavigate('xr');
   }, [onHeadset, onNavigate]);
 
-  const hero = (
-    <View style={[styles.heroCol, L.twoColumn && styles.heroColWide]}>
+  const platformSdk = isHorizonBuild
+    ? { value: horizonAppId ? 'app ID set' : 'no app ID', ok: horizonAppId !== null }
+    : { value: info.platformSdkPresent ? 'live' : 'seam', ok: info.platformSdkPresent };
+
+  const launcher = (
+    <View style={[styles.launcher, L.twoColumn && styles.colWide]}>
       <IsoCube size={L.heroSize} />
       <Text style={[styles.title, { fontSize: L.titleSize }, L.twoColumn && styles.textLeft]}>
         XR Sample
@@ -88,21 +105,18 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
           L.twoColumn && styles.textLeft,
         ]}
       >
-        Platform services, runtime capabilities and an immersive scene, running on PICO OS from an
-        Expo app.
+        {isHorizonBuild
+          ? 'Runtime capabilities and an immersive scene, running on Meta Horizon OS from an Expo app.'
+          : 'Platform services, runtime capabilities and an immersive scene, running on PICO OS from an Expo app.'}
       </Text>
-    </View>
-  );
 
-  const actions = (
-    <View style={[styles.actionCol, L.twoColumn && styles.actionColWide]}>
-      <View style={[styles.chips, !L.twoColumn && styles.chipsRow]}>
-        <Chip label="XR mode" value={info.xrMode} tone={onHeadset ? 'ok' : 'warn'} />
+      <View style={styles.chips}>
+        <Chip label="XR mode" value={xrModeLabel(info.xrMode)} tone={onHeadset ? 'ok' : 'warn'} />
         <Chip label="App type" value={info.appType} />
         <Chip
           label="Platform SDK"
-          value={info.platformSdkPresent ? 'live' : 'seam'}
-          tone={info.platformSdkPresent ? 'ok' : 'warn'}
+          value={platformSdk.value}
+          tone={platformSdk.ok ? 'ok' : 'warn'}
         />
       </View>
 
@@ -115,14 +129,19 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
         <Text style={styles.ctaLabel}>Enter XR Scene</Text>
       </Pressable>
 
-      <Text style={styles.ctaNote}>
+      <Text style={[styles.ctaNote, L.twoColumn && styles.textLeft]}>
         {onHeadset
           ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
           : 'No headset detected — the scene renders as a flat preview.'}
       </Text>
+    </View>
+  );
 
+  const secondary = (
+    <View
+      style={[styles.secondary, L.twoColumn && styles.colWide, L.twoColumn && styles.secondaryWide]}
+    >
       <SpatialLayoutPreview />
-
       <View style={styles.rows}>
         <Row
           title="Diagnostics"
@@ -149,8 +168,8 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
       >
         <View style={[styles.frame, { maxWidth: L.maxContentWidth }]}>
           <View style={L.twoColumn ? styles.split : undefined}>
-            {hero}
-            {actions}
+            {launcher}
+            {secondary}
           </View>
         </View>
       </ScrollView>
@@ -164,10 +183,12 @@ const styles = StyleSheet.create({
   frame: { width: '100%' },
   split: { flexDirection: 'row', alignItems: 'center', gap: space.xl },
 
-  heroCol: { alignItems: 'center' },
-  heroColWide: { flex: 1, alignItems: 'flex-start' },
-  actionCol: { marginTop: space.xl },
-  actionColWide: { flex: 1, marginTop: 0, maxWidth: 460 },
+  launcher: { alignItems: 'center' },
+  // Each column takes half the frame; the launcher's children stretch to it so
+  // the chips and CTA share one left edge.
+  colWide: { flex: 1, alignItems: 'stretch' },
+  secondary: { marginTop: space.xl },
+  secondaryWide: { marginTop: 0 },
 
   textLeft: { textAlign: 'left' },
   title: {
@@ -183,8 +204,7 @@ const styles = StyleSheet.create({
     marginTop: space.sm,
   },
 
-  chips: { gap: space.sm },
-  chipsRow: { flexDirection: 'row' },
+  chips: { flexDirection: 'row', gap: space.sm, marginTop: space.lg, alignSelf: 'stretch' },
   chip: {
     flex: 1,
     flexDirection: 'row',
@@ -203,6 +223,7 @@ const styles = StyleSheet.create({
   chipValue: { color: palette.text, fontSize: 12, fontWeight: '600' },
 
   cta: {
+    alignSelf: 'stretch',
     marginTop: space.lg,
     backgroundColor: palette.text,
     borderRadius: radius.pill,

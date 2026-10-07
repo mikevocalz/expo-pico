@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { isHorizonBuild } from '../platform';
 import { AccountHeader } from './AccountHeader';
 import { PicoWordmark } from './PicoWordmark';
 import { palette, space, type } from './theme';
@@ -20,6 +21,11 @@ import { palette, space, type } from './theme';
  * The row's height is set by the account avatar, so the wordmark is sized as a
  * fraction of that rather than a magic number — it stays optically aligned with
  * the avatar if either changes.
+ *
+ * Meta Horizon builds (`quest` flavor, Quest 3/3S and Meta VR Glasses) show
+ * the platform name as plain text in place of the PICO wordmark: the repo has
+ * no Meta mark asset, and the PICO one does not belong on a Meta device. The
+ * PICO account control is hidden there too.
  */
 const ROW_HEIGHT = 36;
 const WORDMARK_SCALE = 0.96;
@@ -29,11 +35,15 @@ export function AppHeader({ title = 'XR Sample' }: { title?: string }): React.JS
   return (
     <View style={[styles.root, { paddingTop: insets.top + space.sm }]}>
       <View style={styles.lockup}>
-        <PicoWordmark height={ROW_HEIGHT * WORDMARK_SCALE} />
+        {isHorizonBuild ? (
+          <Text style={styles.platform}>Meta Horizon</Text>
+        ) : (
+          <PicoWordmark height={ROW_HEIGHT * WORDMARK_SCALE} />
+        )}
         <View style={styles.divider} />
         <Text style={styles.title}>{title}</Text>
       </View>
-      <AccountHeader />
+      {isHorizonBuild ? null : <AccountHeader />}
     </View>
   );
 }
@@ -55,6 +65,13 @@ const styles = StyleSheet.create({
     width: StyleSheet.hairlineWidth,
     height: ROW_HEIGHT * WORDMARK_SCALE,
     backgroundColor: palette.borderBright,
+  },
+  platform: {
+    color: palette.text,
+    fontSize: type.title.fontSize,
+    fontWeight: '700',
+    letterSpacing: type.title.letterSpacing,
+    lineHeight: ROW_HEIGHT * WORDMARK_SCALE,
   },
   title: {
     color: palette.text,
