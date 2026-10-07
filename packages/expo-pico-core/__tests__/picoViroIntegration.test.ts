@@ -2,7 +2,14 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { resolveOptions } from '../plugin/src/types';
-import { syncPicoOverlays } from '../plugin/src/withPicoOpenXrLoaderOverlay';
+import {
+  syncPicoOverlays,
+  withPicoOpenXrLoaderOverlay,
+} from '../plugin/src/withPicoOpenXrLoaderOverlay';
+import {
+  applyQuestRenderModelEntries,
+  syncQuestRenderModel,
+} from '../plugin/src/withQuestRenderModel';
 import {
   renderFlavorBlock,
   updateOverlayPackaging,
@@ -283,4 +290,115 @@ test('packaging lets the renderer overlay win in quest, and only the renderer', 
     const once = updateOverlayPackaging('android {}\n', options);
     expect(updateOverlayPackaging(once, options)).toBe(once);
   }
+});
+
+describe('RENDER_MODEL entries in the quest manifest', () => {
+  const PERMISSION = 'com.oculus.permission.RENDER_MODEL';
+  const FEATURE = 'com.oculus.feature.RENDER_MODEL';
+  const HORIZON_QUEST = [
+    '<manifest xmlns:android="http://schemas.android.com/apk/res/android">',
+    '  <uses-feature android:name="android.hardware.vr.headtracking" android:required="true"/>',
+    '  <application>',
+    '    <meta-data android:name="com.oculus.supportedDevices" android:value="quest3"/>',
+    '  </application>',
+    '</manifest>',
+  ].join('\n');
+  const manifest = (flavor: string) => target(`${flavor}/AndroidManifest.xml`);
+  const read = (flavor: string) => fs.readFileSync(manifest(flavor), 'utf8');
+  const count = (xml: string, name: string) => xml.split(`android:name="${name}"`).length - 1;
+
+  beforeEach(() => {
+    put(manifest('quest'), HORIZON_QUEST);
+    put(manifest('pico'), '<manifest xmlns:android="http://schemas.android.com/apk/res/android"/>');
+    put(manifest('main'), '<manifest xmlns:android="http://schemas.android.com/apk/res/android"/>');
+  });
+
+  test.each(['pico', 'dual'] as const)(
+    'buildVariant %s with the overlay on adds both entries to quest only',
+    async (buildVariant) => {
+      await syncQuestRenderModel(
+        platform,
+        resolveOptions({ buildVariant, viroRendererOverlay: true })
+      );
+      const quest = read('quest');
+      expect(count(quest, PERMISSION)).toBe(1);
+      expect(quest).toMatch(
+        new RegExp(`<uses-feature android:name="${FEATURE}" android:required="false"/>`)
+      );
+      // Horizon's own entries survive.
+      expect(quest).toContain('android.hardware.vr.headtracking');
+      expect(quest).toContain('com.oculus.supportedDevices');
+      for (const flavor of ['pico', 'main']) expect(read(flavor)).not.toContain('RENDER_MODEL');
+      for (const flavor of ['mobile', 'dual']) expect(fs.existsSync(manifest(flavor))).toBe(false);
+    }
+  );
+
+  test('is idempotent', async () => {
+    const options = resolveOptions({ viroRendererOverlay: true });
+    await syncQuestRenderModel(platform, options);
+    const first = read('quest');
+    const mtime = fs.statSync(manifest('quest')).mtimeMs;
+    await syncQuestRenderModel(platform, options);
+    expect(read('quest')).toBe(first);
+    expect(fs.statSync(manifest('quest')).mtimeMs).toBe(mtime);
+    expect(count(first, PERMISSION)).toBe(1);
+    expect(count(first, FEATURE)).toBe(1);
+  });
+
+  test.each([
+    ['the overlay is off', { viroRendererOverlay: false }],
+    ['the buildVariant is mobile', { buildVariant: 'mobile' as const, viroRendererOverlay: true }],
+    ['xrMode is mobile', { xrMode: 'mobile' as const, viroRendererOverlay: true }],
+  ])('removes a stale copy when %s', async (_, overrides) => {
+    await syncQuestRenderModel(platform, resolveOptions({ viroRendererOverlay: true }));
+    expect(read('quest')).toContain('RENDER_MODEL');
+    await syncQuestRenderModel(platform, resolveOptions(overrides));
+    const quest = read('quest');
+    expect(quest).not.toContain('RENDER_MODEL');
+    expect(quest).toContain('android.hardware.vr.headtracking');
+  });
+
+  test('creates no quest manifest when the overlay is off', async () => {
+    fs.rmSync(manifest('quest'));
+    await syncQuestRenderModel(platform, resolveOptions({}));
+    expect(fs.existsSync(manifest('quest'))).toBe(false);
+  });
+
+  test('pure helper adds, dedupes and removes', () => {
+    const m = {
+      manifest: {
+        $: {},
+        'uses-permission': [{ $: { 'android:name': PERMISSION } }],
+        'uses-feature': [{ $: { 'android:name': FEATURE, 'android:required': 'true' } }],
+      },
+    } as never as Parameters<typeof applyQuestRenderModelEntries>[0];
+    expect(applyQuestRenderModelEntries(m, true)).toBe(true);
+    expect(m.manifest['uses-permission']).toHaveLength(1);
+    expect(m.manifest['uses-feature']).toEqual([
+      { $: { 'android:name': FEATURE, 'android:required': 'false' } },
+    ]);
+    expect(applyQuestRenderModelEntries(m, true)).toBe(false);
+    expect(applyQuestRenderModelEntries(m, false)).toBe(true);
+    expect(m.manifest['uses-permission']).toBeUndefined();
+    expect(m.manifest['uses-feature']).toBeUndefined();
+  });
+
+  test('runs as a finalized mod, after a dangerous mod that rewrites quest', async () => {
+    type Mods = Record<string, (c: unknown) => Promise<unknown>>;
+    let config = { name: 'x', slug: 'x' } as { mods?: { android?: Mods } };
+    config = withPicoOpenXrLoaderOverlay(
+      config as never,
+      resolveOptions({ viroRendererOverlay: true })
+    ) as typeof config;
+    const finalized = config.mods?.android?.finalized;
+    expect(typeof finalized).toBe('function');
+    // Simulate expo-horizon-core's dangerous rewrite, then the finalized phase.
+    put(manifest('quest'), HORIZON_QUEST);
+    await finalized!({
+      ...config,
+      modResults: {},
+      modRequest: { platform: 'android', projectRoot: root, platformProjectRoot: platform },
+    });
+    expect(count(read('quest'), PERMISSION)).toBe(1);
+  });
 });

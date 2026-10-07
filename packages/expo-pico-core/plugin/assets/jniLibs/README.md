@@ -35,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 212 752 | `9468e533a862b5cba98fe18a455136acf4bd6d71337da4e66d1555535b611ca2` | `e76e88a243c81d7ba84ceed728c6720042582dd1` |
+| `arm64-v8a/libviro_renderer.so` | 7 250 120 | `0f6c1b6d391ed1efe0ce12772944ef0913a79f399701295a6dd7d14d6ffabdb0` | `92c9e11a0158bf144f4d77bf528fa6474873165b` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -81,18 +81,28 @@ declares. `<ViroController>` renders, but there is nothing bound underneath it.
 
 ### Provenance
 
-Built from mikevocalz/virocore `main` at `5db9550c` (PR #98) with
+Built from mikevocalz/virocore `main` at `5aac6b51` (PR #103) with
 `./gradlew :viroreact:assembleRelease`; the file is the arm64-v8a
 `libviro_renderer.so` from `viroreact-release.aar`. Built without the private
 ReactVisionCCA headers, so ReactVision cloud anchors are compiled out
 (`RVCCA_AVAILABLE=0`), the same as the renderer in the `viro` fork.
 
-It exports every `Java_*` symbol of the stock 3.0.2 renderer (605 here, 589
+It exports every `Java_*` symbol of the stock 3.0.2 renderer (607 here, 589
 in stock, none missing), so it runs under the stock `react_viro` Java. Over
 stock it adds the floor-origin ladder (LOCAL_FLOOR, then STAGE-emulated, then
-eye) defaulting to Floor on PICO and Meta runtimes, the controller mesh
-(`controller_neutral.glb`), the PICO `bytedance` interaction profiles, and
-Meta VR Glasses gaze-and-pinch select.
+eye) defaulting to Floor on PICO and Meta runtimes, the PICO `bytedance`
+interaction profiles, Meta VR Glasses gaze-and-pinch select, and runtime
+controller models: on Meta it loads the runtime's own controller meshes through
+`XR_FB_render_model`, and falls back to the neutral mesh
+(`controller_neutral.glb`) only where the runtime supplies no model.
+
+`XR_FB_render_model` needs Meta's RENDER_MODEL permission. While the overlay is
+staged into `quest`, `withQuestRenderModel` adds
+`<uses-permission android:name="com.oculus.permission.RENDER_MODEL"/>` and
+`<uses-feature android:name="com.oculus.feature.RENDER_MODEL" android:required="false"/>`
+to `app/src/quest/AndroidManifest.xml`, and removes them when the overlay is
+off. PICO has no such extension, so the pico, dual, mobile and main manifests
+never get them.
 
 ### Replacing it
 
