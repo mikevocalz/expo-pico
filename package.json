@@ -59,8 +59,8 @@
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-iap",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "ef17e0df7d0db666bd298115a81fb4792fa36154",
+  "gitHead": "5109155662da2e57f394466e58bba1910e9f5d19",
   "expoPico": {
-    "sourceCommit": "ef17e0df7d0db666bd298115a81fb4792fa36154"
+    "sourceCommit": "5109155662da2e57f394466e58bba1910e9f5d19"
   }
 }
