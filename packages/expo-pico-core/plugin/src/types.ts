@@ -1,4 +1,5 @@
 import type { PicoPlatformServiceName } from './ppsArtifacts';
+import { normalizeDependencyExclusions, normalizeNames } from './withQuestRemovals';
 import { normalizeStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
 /**
@@ -339,6 +340,31 @@ export interface PicoPluginOptions {
    */
   metaLayoutSdk?: boolean;
   /**
+   * Permissions to strip from the `quest` flavor only, written as
+   * `<uses-permission android:name="..." tools:node="remove"/>` into
+   * `app/src/quest/AndroidManifest.xml`. Use it for permissions another plugin
+   * or library adds to every flavor that the Meta Horizon build never uses;
+   * Meta asks submitters to justify each review-required permission. pico,
+   * mobile and main keep theirs.
+   *
+   * @default []
+   */
+  questRemovePermissions?: string[];
+  /**
+   * `<uses-feature>` names to strip from the `quest` flavor only, the same
+   * way as `questRemovePermissions`.
+   *
+   * @default []
+   */
+  questRemoveFeatures?: string[];
+  /**
+   * Maven `group:module` coordinates excluded from the `quest` compile and
+   * runtime classpaths only. Anything else throws at prebuild.
+   *
+   * @default []
+   */
+  questExcludeDependencies?: string[];
+  /**
    * Use the bundled legacy OpenXR loader override in PICO flavors only.
    * Set false when consuming a rebuilt ViroCore AAR with a verified loader.
    * This is separate from declaring the OpenXR runtime in the manifest.
@@ -577,6 +603,9 @@ export interface ResolvedPicoOptions {
   /** Validated specifiers; `false` removes the entry; `null` derives it. */
   storeDeviceTargets: string | false | null;
   metaLayoutSdk: boolean;
+  questRemovePermissions: string[];
+  questRemoveFeatures: string[];
+  questExcludeDependencies: string[];
   openXrLoaderOverlay: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
@@ -650,6 +679,9 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   viroRendererOverlay: false,
   storeDeviceTargets: null,
   metaLayoutSdk: false,
+  questRemovePermissions: [],
+  questRemoveFeatures: [],
+  questExcludeDependencies: [],
   openXrLoaderOverlay: true,
   developerTools: false,
   enableEmulatorOptimizations: false,
@@ -719,6 +751,9 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     openXrLoaderOverlay,
     storeDeviceTargets: normalizeStoreDeviceTargets(options.storeDeviceTargets),
     metaLayoutSdk: options.metaLayoutSdk === true,
+    questRemovePermissions: normalizeNames(options.questRemovePermissions),
+    questRemoveFeatures: normalizeNames(options.questRemoveFeatures),
+    questExcludeDependencies: normalizeDependencyExclusions(options.questExcludeDependencies),
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,

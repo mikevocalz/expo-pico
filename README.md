@@ -294,6 +294,29 @@ Meta's React Native integration reserves two window slots, so one of the three a
 
 Setup is `metaLayoutSdk: true` on `@expo-pico/core` plus `@metavr/layout-compat` and `@metavr/layout-window-compat` as direct app dependencies. The plugin writes the MetaVRX BOM and both artifacts as `questImplementation`, which survives `expo prebuild --clean`. Each npm package autolinks a library project that declares its AAR as `api`, and the window AAR adds `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`. To keep both out of `pico` and `mobile`, the plugin excludes `com.meta.metavrx.layout` from every non-quest classpath and gives those flavors empty stand-ins for the two `ReactPackage` classes the generated `PackageList` creates. The library projects declare minSdk 29, so the plugin also lists them in the main manifest's `tools:overrideLibrary`; off quest they hold only codegen specs that nothing calls, which keeps the phone flavor at its own minSdk. The library projects stay linked in every flavor because the AAR classes extend their codegen output, so JS must only render Meta's components on Horizon builds. `example/src/layout/metaWindows.ts` checks `isHorizonBuild` and otherwise renders each window's children in place.
 
+### Store submission: review-required permissions
+
+Meta asks submitters to explain each permission on its [review-required list](https://developers.meta.com/horizon/resources/permissions-review-required/). The `quest` flavor of the example keeps six of them. Each is listed below with the package that declares it and its use case:
+
+| Permission               | Declared by                                                                             | Use case                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RECORD_AUDIO`           | `@expo-pico/rtc` (plus the Viro AARs)                                                   | Microphone for RTC voice channels, which Meta lists as a permitted use (VOIP).                                                                |
+| `BLUETOOTH_CONNECT`      | `@expo-pico/rtc`; `androidx.core:core-telecom` via `@fishjam-cloud/react-native-webrtc` | Routes voice-channel audio to a connected Bluetooth headset.                                                                                  |
+| `MODIFY_AUDIO_SETTINGS`  | `@expo-pico/rtc`; `androidx.core:core-telecom` via `@fishjam-cloud/react-native-webrtc` | Call audio routing for voice channels (speaker or Bluetooth headset), managed by `core-telecom`.                                              |
+| `POST_NOTIFICATIONS`     | `@expo-pico/notifications` (plus `firebase-messaging`)                                  | Shows push notifications after the user grants the Android 13 runtime prompt.                                                                 |
+| `RECEIVE_BOOT_COMPLETED` | `@expo-pico/notifications`                                                              | Declared for PICO push. The package ships no boot receiver, so nothing in the app acts on the broadcast; it is the first candidate to strike. |
+| `WAKE_LOCK`              | `com.google.firebase:firebase-messaging` via `@fishjam-cloud/react-native-webrtc`       | Keeps the CPU awake long enough to deliver an incoming push message.                                                                          |
+
+`@expo-pico/rtc` and `@expo-pico/notifications` wrap PICO Platform Services, which Horizon OS does not provide. On a Meta build their calls return no data, so if your app ships on Meta without another voice or push backend, strike these too.
+
+The `quest` flavor removes these, which other packages add to every flavor (`questRemovePermissions`, `questRemoveFeatures` and `questExcludeDependencies` on `@expo-pico/core`):
+
+- `CAMERA`, the `android.hardware.camera` feature and `horizonos.permission.HEADSET_CAMERA`, from `@reactvision/react-viro`'s plugin. They serve AR, `ViroObjectDetector` and the Passthrough Camera API, none of which the example renders.
+- `READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE`, from the Expo template, `expo-file-system` and the Viro AARs. Nothing reads or writes shared storage.
+- `com.google.android.gms:play-services-location`, which Viro adds for ARCore Geospatial. Quest has no ARCore and no Viro class references it.
+
+`pico` and `mobile` keep all of them. `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS` comes from the Meta VR Layout SDK and is not on Meta's review-required list.
+
 ## License
 
 MIT
