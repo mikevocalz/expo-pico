@@ -1,4 +1,12 @@
+import type { ReactElement } from 'react';
 import { AppRegistry } from 'react-native';
+
+// No renderer in this suite: run effects inline so the root can be called as
+// a plain function.
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useEffect: (effect: () => void) => effect(),
+}));
 
 import {
   IMMERSIVE_ROOT_COMPONENT,
@@ -40,6 +48,7 @@ describe('immersive scene registration', () => {
         __getRegistrations: () => Map<string, () => unknown>;
       }
     ).__getRegistrations();
-    expect(provider.get('VRQuestScene')?.()).toBe(Second);
+    const Root = provider.get('VRQuestScene')?.() as (props: object) => ReactElement;
+    expect(Root({}).type).toBe(Second);
   });
 });

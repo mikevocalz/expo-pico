@@ -1,7 +1,13 @@
-// enterImmersiveScene() asks for the eye tracking permission before it starts
-// the immersive activity. The native module and PermissionsAndroid are both
-// mocked; each test loads a fresh copy of the package so the once-per-process
-// guard starts clean.
+// Meta's porting guide: "Hybrid apps that need eye tracking in immersive mode
+// must declare the permission but only request it at runtime when the
+// immersive activity launches." The root registered with
+// registerImmersiveScene() asks when it mounts in the immersive activity;
+// enterImmersiveScene(), which runs on the 2D panel, never asks.
+//
+// The native module and PermissionsAndroid are both mocked; each test loads a
+// fresh copy of the package so the once-per-process guard starts clean.
+
+import type { ReactElement } from 'react';
 
 const mockInfo: Record<string, unknown> = {};
 let mockDeclared: Array<{ name: string; granted: boolean }> = [];
@@ -18,6 +24,13 @@ jest.mock('expo-modules-core', () => ({
         }
       : null
   ),
+}));
+
+// No renderer here: run effects inline so the registered root can be called
+// as a plain function, which is what mounting it does.
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useEffect: (effect: () => void) => effect(),
 }));
 
 const mockCheck = jest.fn<Promise<boolean>, [string]>();
@@ -39,18 +52,38 @@ jest.mock('react-native', () => {
 
 const HORIZON = 'com.oculus.permission.EYE_TRACKING';
 const PICO = 'com.picovr.permission.EYE_TRACKING';
+const HORIZONOS = 'horizonos.permission.EYE_TRACKING';
 
 type Core = typeof import('../index');
+type Root = (props: object) => ReactElement;
+
+const Scene = () => null;
+
+type Registry = { __getRegistrations: () => Map<string, () => Root> };
+
+// The AppRegistry the freshly loaded package registered into.
+let registry: Registry;
 
 function load(xrMode: string): Core {
   mockInfo.xrMode = xrMode;
   let core!: Core;
   jest.isolateModules(() => {
     core = require('../index');
+    registry = (require('react-native') as { AppRegistry: Registry }).AppRegistry;
   });
-  core.registerImmersiveScene(() => null);
+  core.registerImmersiveScene(Scene);
   return core;
 }
+
+/** What VRActivity does: look up the registered root and mount it. */
+function mountImmersiveRoot(): ReactElement {
+  const provider = registry.__getRegistrations().get('VRQuestScene');
+  if (!provider) throw new Error('no immersive root registered');
+  return provider()({});
+}
+
+/** Lets the fire-and-forget request inside the effect run to completion. */
+const settle = () => new Promise((resolve) => setImmediate(resolve));
 
 let warn: jest.SpyInstance;
 
@@ -65,36 +98,72 @@ beforeEach(() => {
 
 afterEach(() => warn.mockRestore());
 
-describe('enterImmersiveScene() eye tracking permission', () => {
-  it('requests the Horizon permission when declared and not granted', async () => {
+describe('enterImmersiveScene() on the 2D panel', () => {
+  it('launches the immersive activity without asking for eye tracking', async () => {
     mockDeclared = [{ name: HORIZON, granted: false }];
     const core = load('quest');
 
     await expect(core.enterImmersiveScene()).resolves.toBe(true);
+    await settle();
 
+    expect(mockEnter).toHaveBeenCalledTimes(1);
+    expect(mockGetDeclaredPermissions).not.toHaveBeenCalled();
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+});
+
+describe('immersive root eye tracking permission', () => {
+  it('requests the Horizon permission on mount when declared and not granted', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    load('quest');
+
+    const element = mountImmersiveRoot();
+    await settle();
+
+    expect(element.type).toBe(Scene);
     expect(mockCheck).toHaveBeenCalledWith(HORIZON);
     expect(mockRequest).toHaveBeenCalledWith(HORIZON);
-    expect(mockRequest.mock.invocationCallOrder[0]).toBeLessThan(
-      mockEnter.mock.invocationCallOrder[0]
-    );
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('never requests horizonos.permission.EYE_TRACKING, even when declared', async () => {
+    mockDeclared = [
+      { name: HORIZONOS, granted: false },
+      { name: HORIZON, granted: false },
+    ];
+    load('quest');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockRequest.mock.calls).toEqual([[HORIZON]]);
+  });
+
+  it('renders the scene before the user answers the dialog', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    mockRequest.mockReturnValue(new Promise<string>(() => {}));
+    load('quest');
+
+    expect(mountImmersiveRoot().type).toBe(Scene);
   });
 
   it('does not request when the permission is already granted', async () => {
     mockDeclared = [{ name: HORIZON, granted: true }];
     mockCheck.mockResolvedValue(true);
-    const core = load('quest');
+    load('quest');
 
-    await expect(core.enterImmersiveScene()).resolves.toBe(true);
+    mountImmersiveRoot();
+    await settle();
 
     expect(mockRequest).not.toHaveBeenCalled();
   });
 
   it('does not request when the manifest does not declare it', async () => {
     mockDeclared = [{ name: 'android.permission.CAMERA', granted: false }];
-    const core = load('quest');
+    load('quest');
 
-    await core.enterImmersiveScene();
+    mountImmersiveRoot();
+    await settle();
 
     expect(mockCheck).not.toHaveBeenCalled();
     expect(mockRequest).not.toHaveBeenCalled();
@@ -105,9 +174,10 @@ describe('enterImmersiveScene() eye tracking permission', () => {
       { name: HORIZON, granted: false },
       { name: PICO, granted: false },
     ];
-    const core = load('mobile');
+    load('mobile');
 
-    await core.enterImmersiveScene();
+    mountImmersiveRoot();
+    await settle();
 
     expect(mockGetDeclaredPermissions).not.toHaveBeenCalled();
     expect(mockRequest).not.toHaveBeenCalled();
@@ -116,9 +186,10 @@ describe('enterImmersiveScene() eye tracking permission', () => {
   it('never requests off Android', async () => {
     mockPlatform.OS = 'ios';
     mockDeclared = [{ name: HORIZON, granted: false }];
-    const core = load('quest');
+    load('quest');
 
-    await core.enterImmersiveScene();
+    mountImmersiveRoot();
+    await settle();
 
     expect(mockRequest).not.toHaveBeenCalled();
   });
@@ -128,46 +199,61 @@ describe('enterImmersiveScene() eye tracking permission', () => {
       { name: HORIZON, granted: false },
       { name: PICO, granted: false },
     ];
-    const core = load('pico-os5');
+    load('pico-os5');
 
-    await core.enterImmersiveScene();
+    mountImmersiveRoot();
+    await settle();
 
     expect(mockRequest).toHaveBeenCalledTimes(1);
     expect(mockRequest).toHaveBeenCalledWith(PICO);
   });
 
-  it('still enters the scene after a denial, and logs it', async () => {
+  it('logs a denial and keeps the scene', async () => {
     mockDeclared = [{ name: HORIZON, granted: false }];
     mockRequest.mockResolvedValue('denied');
-    const core = load('quest');
+    load('quest');
 
-    await expect(core.enterImmersiveScene()).resolves.toBe(true);
+    expect(mountImmersiveRoot().type).toBe(Scene);
+    await settle();
 
-    expect(mockEnter).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining(`${HORIZON} was denied`));
   });
 
-  it('still enters the scene when the request throws', async () => {
+  it('logs a thrown request instead of rejecting', async () => {
     mockDeclared = [{ name: HORIZON, granted: false }];
     mockRequest.mockRejectedValue(new Error('no activity'));
-    const core = load('quest');
+    load('quest');
 
-    await expect(core.enterImmersiveScene()).resolves.toBe(true);
+    mountImmersiveRoot();
+    await settle();
 
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
-  it('retries on the next launch when the request failed before reaching the user', async () => {
+  it('retries on the next mount when the request failed before reaching the user', async () => {
     mockDeclared = [{ name: HORIZON, granted: false }];
     mockRequest.mockRejectedValueOnce(new Error('no activity'));
-    const core = load('quest');
+    load('quest');
 
-    await core.enterImmersiveScene();
-    await core.enterImmersiveScene();
-    await core.enterImmersiveScene();
+    for (let i = 0; i < 3; i++) {
+      mountImmersiveRoot();
+      await settle();
+    }
 
     expect(mockRequest).toHaveBeenCalledTimes(2);
-    expect(mockEnter).toHaveBeenCalledTimes(3);
+  });
+
+  it('asks once per process, so "never ask again" is not re-prompted on re-entry', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    mockRequest.mockResolvedValue('never_ask_again');
+    load('quest');
+
+    for (let i = 0; i < 3; i++) {
+      mountImmersiveRoot();
+      await settle();
+    }
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
   });
 
   it('keeps one request per permission across direct calls with different modes', async () => {
@@ -182,34 +268,5 @@ describe('enterImmersiveScene() eye tracking permission', () => {
     await core.ensureEyeTrackingPermission('quest');
 
     expect(mockRequest.mock.calls).toEqual([[HORIZON], [PICO]]);
-  });
-
-  it('asks once per process, so "never ask again" is not re-prompted', async () => {
-    mockDeclared = [{ name: HORIZON, granted: false }];
-    mockRequest.mockResolvedValue('never_ask_again');
-    const core = load('quest');
-
-    await core.enterImmersiveScene();
-    await core.enterImmersiveScene();
-    await core.enterImmersiveScene();
-
-    expect(mockRequest).toHaveBeenCalledTimes(1);
-    expect(mockEnter).toHaveBeenCalledTimes(3);
-  });
-
-  it('does not ask when no scene is registered and the launch is refused', async () => {
-    mockDeclared = [{ name: HORIZON, granted: false }];
-    mockInfo.xrMode = 'quest';
-    // An isolated registry gets a fresh AppRegistry with nothing registered.
-    let core!: Core;
-    jest.isolateModules(() => {
-      core = require('../index');
-    });
-    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-    await expect(core.enterImmersiveScene()).resolves.toBe(false);
-
-    expect(mockRequest).not.toHaveBeenCalled();
-    error.mockRestore();
   });
 });
