@@ -4,6 +4,7 @@ exports.PICO_OPTION_DEFAULTS = exports.PICO_SWAN_DEFAULTS = exports.PICO_PLATFOR
 exports.resolveOptions = resolveOptions;
 exports.resolveTargetProfile = resolveTargetProfile;
 exports.xrModeToNativeEnum = xrModeToNativeEnum;
+const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 /**
  * Default resolved platform-service state for an app with no identity
  * wired. `declareActivities` is `false` here because the resolver
@@ -66,6 +67,7 @@ exports.PICO_OPTION_DEFAULTS = {
     ndkAbiFilters: true,
     openXrLoaderDeclaration: true,
     viroRendererOverlay: false,
+    storeDeviceTargets: null,
     openXrLoaderOverlay: true,
     developerTools: false,
     enableEmulatorOptimizations: false,
@@ -120,6 +122,7 @@ function resolveOptions(options = {}) {
         openXrLoaderDeclaration,
         viroRendererOverlay,
         openXrLoaderOverlay,
+        storeDeviceTargets: (0, withQuestStoreDeviceTargets_1.normalizeStoreDeviceTargets)(options.storeDeviceTargets),
         targetDevices: options.targetDevices ?? exports.PICO_OPTION_DEFAULTS.targetDevices,
         defaultWidth: nonEmpty(options.defaultWidth) ?? exports.PICO_OPTION_DEFAULTS.defaultWidth,
         defaultHeight: nonEmpty(options.defaultHeight) ?? exports.PICO_OPTION_DEFAULTS.defaultHeight,

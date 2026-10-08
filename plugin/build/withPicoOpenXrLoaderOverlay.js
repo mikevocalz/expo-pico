@@ -40,6 +40,7 @@ const crypto_1 = require("crypto");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const withQuestRenderModel_1 = require("./withQuestRenderModel");
+const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 const digest = (file) => (0, crypto_1.createHash)('sha256').update(fs.readFileSync(file)).digest('hex');
 /**
  * The only ABI these overlays are staged for.
@@ -189,7 +190,8 @@ const withPicoOpenXrLoaderOverlay = (config, options) => {
             return cfg;
         },
     ]);
-    return (0, withQuestRenderModel_1.withQuestRenderModel)(config, options);
+    config = (0, withQuestRenderModel_1.withQuestRenderModel)(config, options);
+    return (0, withQuestStoreDeviceTargets_1.withQuestStoreDeviceTargets)(config, options);
 };
 exports.withPicoOpenXrLoaderOverlay = withPicoOpenXrLoaderOverlay;
 //# sourceMappingURL=withPicoOpenXrLoaderOverlay.js.map
