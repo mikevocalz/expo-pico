@@ -5,6 +5,7 @@ import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
 import { withQuestRenderModel } from './withQuestRenderModel';
+import { withQuestStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
 const digest = (file: string): string =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -176,5 +177,6 @@ export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (c
       return cfg;
     },
   ]);
-  return withQuestRenderModel(config, options);
+  config = withQuestRenderModel(config, options);
+  return withQuestStoreDeviceTargets(config, options);
 };

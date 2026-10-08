@@ -11,6 +11,11 @@ import {
   syncQuestRenderModel,
 } from '../plugin/src/withQuestRenderModel';
 import {
+  deriveStoreDeviceTargets,
+  normalizeStoreDeviceTargets,
+  syncQuestStoreDeviceTargets,
+} from '../plugin/src/withQuestStoreDeviceTargets';
+import {
   renderFlavorBlock,
   updateOverlayPackaging,
   withPicoProjectBuildGradle,
@@ -400,5 +405,135 @@ describe('RENDER_MODEL entries in the quest manifest', () => {
       modRequest: { platform: 'android', projectRoot: root, platformProjectRoot: platform },
     });
     expect(count(read('quest'), PERMISSION)).toBe(1);
+  });
+});
+
+describe('Meta Store default device targets in the quest manifest', () => {
+  const META = 'com.meta.store.defaultDeviceTargets';
+  const horizonQuest = (devices: string) =>
+    [
+      '<manifest xmlns:android="http://schemas.android.com/apk/res/android">',
+      '  <uses-feature android:name="android.hardware.vr.headtracking" android:required="true"/>',
+      '  <application>',
+      `    <meta-data android:name="com.oculus.supportedDevices" android:value="${devices}"/>`,
+      '  </application>',
+      '</manifest>',
+    ].join('\n');
+  const EMPTY = '<manifest xmlns:android="http://schemas.android.com/apk/res/android"/>';
+  const manifest = (flavor: string) => target(`${flavor}/AndroidManifest.xml`);
+  const read = (flavor: string) => fs.readFileSync(manifest(flavor), 'utf8');
+  const count = (xml: string) => xml.split(`android:name="${META}"`).length - 1;
+  const valueOf = (xml: string) =>
+    xml.match(new RegExp(`android:name="${META}" android:value="([^"]*)"`))?.[1];
+
+  beforeEach(() => {
+    put(manifest('quest'), horizonQuest('quest3|quest3s'));
+    for (const flavor of ['pico', 'main', 'mobile', 'dual']) put(manifest(flavor), EMPTY);
+  });
+
+  test.each(['pico', 'dual', 'mobile'] as const)(
+    'buildVariant %s writes quest3+ into the quest <application> only',
+    async (buildVariant) => {
+      await syncQuestStoreDeviceTargets(platform, resolveOptions({ buildVariant }));
+      const quest = read('quest');
+      expect(count(quest)).toBe(1);
+      expect(valueOf(quest)).toBe('quest3+');
+      expect(quest).toMatch(/<application>[\s\S]*defaultDeviceTargets[\s\S]*<\/application>/);
+      expect(quest).toContain('android:value="quest3|quest3s"');
+      for (const flavor of ['pico', 'main', 'mobile', 'dual']) expect(read(flavor)).toBe(EMPTY);
+    }
+  );
+
+  test('an explicit value wins over the derived one', async () => {
+    await syncQuestStoreDeviceTargets(
+      platform,
+      resolveOptions({ storeDeviceTargets: 'quest3only|questpro+' })
+    );
+    expect(valueOf(read('quest'))).toBe('quest3only|questpro+');
+  });
+
+  test('is idempotent', async () => {
+    const options = resolveOptions({ storeDeviceTargets: 'quest3+' });
+    await syncQuestStoreDeviceTargets(platform, options);
+    const first = read('quest');
+    const mtime = fs.statSync(manifest('quest')).mtimeMs;
+    await syncQuestStoreDeviceTargets(platform, options);
+    expect(read('quest')).toBe(first);
+    expect(fs.statSync(manifest('quest')).mtimeMs).toBe(mtime);
+    expect(count(first)).toBe(1);
+  });
+
+  test.each([
+    ['false', false as const],
+    ['an empty string', ''],
+  ])('setting it to %s removes a stale entry', async (_, storeDeviceTargets) => {
+    await syncQuestStoreDeviceTargets(platform, resolveOptions({}));
+    expect(count(read('quest'))).toBe(1);
+    await syncQuestStoreDeviceTargets(platform, resolveOptions({ storeDeviceTargets }));
+    const quest = read('quest');
+    expect(count(quest)).toBe(0);
+    expect(quest).toContain('com.oculus.supportedDevices');
+  });
+
+  test('never creates a quest manifest', async () => {
+    fs.rmSync(manifest('quest'));
+    await syncQuestStoreDeviceTargets(platform, resolveOptions({ storeDeviceTargets: 'quest3+' }));
+    expect(fs.existsSync(manifest('quest'))).toBe(false);
+  });
+
+  test.each([
+    ['quest3|quest3s', 'quest3+'],
+    ['quest3s', 'quest3+'],
+    ['questpro|quest3', 'questpro+'],
+    ['quest2|quest3', 'quest2+'],
+    ['vrglasses', null],
+    [null, null],
+  ])('derives %s -> %s', (devices, expected) => {
+    expect(deriveStoreDeviceTargets(devices)).toBe(expected);
+  });
+
+  test('a supportedDevices list with no Quest headset writes nothing and warns', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    put(manifest('quest'), horizonQuest('vrglasses'));
+    await syncQuestStoreDeviceTargets(platform, resolveOptions({}));
+    expect(count(read('quest'))).toBe(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('vrglasses'));
+    warn.mockRestore();
+  });
+
+  test('never adds an <application> to a quest manifest without one', async () => {
+    put(manifest('quest'), EMPTY);
+    await syncQuestStoreDeviceTargets(platform, resolveOptions({ storeDeviceTargets: 'quest3+' }));
+    expect(read('quest')).toBe(EMPTY);
+  });
+
+  test.each(['quest3', 'quest3+|vrglasses', 'quest3+|', 'Quest3+'])(
+    'rejects %j with the documented specifier list',
+    (storeDeviceTargets) => {
+      expect(() => resolveOptions({ storeDeviceTargets })).toThrow(
+        /storeDeviceTargets has unknown specifier.*quest2only, questproonly, quest3only, quest2\+, questpro\+, quest3\+, questpro-/
+      );
+    }
+  );
+
+  test('normalizes whitespace and duplicates', () => {
+    expect(normalizeStoreDeviceTargets(' quest3+ | quest3+ |questpro- ')).toBe('quest3+|questpro-');
+    expect(normalizeStoreDeviceTargets(undefined)).toBeNull();
+    expect(normalizeStoreDeviceTargets('  ')).toBe(false);
+  });
+
+  test('runs as a finalized mod, after a dangerous mod that rewrites quest', async () => {
+    type Mods = Record<string, (c: unknown) => Promise<unknown>>;
+    let config = { name: 'x', slug: 'x' } as { mods?: { android?: Mods } };
+    config = withPicoOpenXrLoaderOverlay(config as never, resolveOptions({})) as typeof config;
+    const finalized = config.mods?.android?.finalized;
+    expect(typeof finalized).toBe('function');
+    put(manifest('quest'), horizonQuest('quest3|quest3s'));
+    await finalized!({
+      ...config,
+      modResults: {},
+      modRequest: { platform: 'android', projectRoot: root, platformProjectRoot: platform },
+    });
+    expect(valueOf(read('quest'))).toBe('quest3+');
   });
 });

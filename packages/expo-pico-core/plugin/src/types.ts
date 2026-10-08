@@ -1,4 +1,5 @@
 import type { PicoPlatformServiceName } from './ppsArtifacts';
+import { normalizeStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
 /**
  * Configuration options for the expo-pico-core config plugin.
@@ -302,6 +303,24 @@ export interface PicoPluginOptions {
    */
   viroRendererOverlay?: boolean;
   /**
+   * Default Meta Store device targeting for the `quest` flavor, written as
+   * `com.meta.store.defaultDeviceTargets` in `app/src/quest/AndroidManifest.xml`.
+   * Meta uses it to initialize the build's Device Targeting in the Developer
+   * Dashboard; `ovr-platform-util --channel "alpha:quest3+"` overrides it per
+   * upload. Specifiers, joined with `|`: `quest2only`, `questproonly`,
+   * `quest3only`, `quest2+`, `questpro+`, `quest3+`, `questpro-`. Anything
+   * else throws at prebuild.
+   *
+   * `quest3+` covers the Quest 3 family, Meta VR Glasses and future devices.
+   * Set `false` or `''` to remove the entry. pico, dual, mobile and main
+   * manifests never get it.
+   *
+   * @default derived from the quest manifest's `com.oculus.supportedDevices`:
+   * `quest3+` when it lists quest3 or quest3s (`questpro+` / `quest2+` when it
+   * lists an older headset); nothing when it lists none of them.
+   */
+  storeDeviceTargets?: string | false;
+  /**
    * Use the bundled legacy OpenXR loader override in PICO flavors only.
    * Set false when consuming a rebuilt ViroCore AAR with a verified loader.
    * This is separate from declaring the OpenXR runtime in the manifest.
@@ -537,6 +556,8 @@ export interface ResolvedPicoOptions {
   ndkAbiFilters: boolean;
   openXrLoaderDeclaration: boolean;
   viroRendererOverlay: boolean;
+  /** Validated specifiers; `false` removes the entry; `null` derives it. */
+  storeDeviceTargets: string | false | null;
   openXrLoaderOverlay: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
@@ -608,6 +629,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   ndkAbiFilters: true,
   openXrLoaderDeclaration: true,
   viroRendererOverlay: false,
+  storeDeviceTargets: null,
   openXrLoaderOverlay: true,
   developerTools: false,
   enableEmulatorOptimizations: false,
@@ -675,6 +697,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     openXrLoaderDeclaration,
     viroRendererOverlay,
     openXrLoaderOverlay,
+    storeDeviceTargets: normalizeStoreDeviceTargets(options.storeDeviceTargets),
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,
