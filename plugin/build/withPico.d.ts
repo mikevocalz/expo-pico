@@ -21,6 +21,7 @@ import type { PicoPluginOptions } from './types';
  *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
  *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
  *      questExcludeDependencies)
+ *  13. Meta-only entries removed from the pico, dual and mobile flavors
  */
 declare const withPico: ConfigPlugin<PicoPluginOptions | void>;
 export default withPico;

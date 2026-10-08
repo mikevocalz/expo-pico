@@ -37,6 +37,7 @@ exports.withPicoMobileFlavorManifest = exports.withPicoFlavorMetaData = exports.
 exports.getPicoFlavorManifestState = getPicoFlavorManifestState;
 exports.markPicoFlavorPresent = markPicoFlavorPresent;
 exports.resolvePicoManifestRoute = resolvePicoManifestRoute;
+exports.hasQuestFlavor = hasQuestFlavor;
 exports.applyPicoFlavorEntries = applyPicoFlavorEntries;
 exports.applyMobileFlavorEntries = applyMobileFlavorEntries;
 const config_plugins_1 = require("@expo/config-plugins");
@@ -80,9 +81,13 @@ function resolvePicoManifestRoute(config) {
     const state = getPicoFlavorManifestState(config);
     if (state.hasPicoFlavor)
         return 'pico-flavor';
-    if (state.hasQuestFlavor || listsQuestFlavorPlugin(config))
+    if (hasQuestFlavor(config))
         return 'mobile-flavor';
     return 'main';
+}
+/** True when the app has a `quest` product flavor (see {@link PicoFlavorManifestState.hasQuestFlavor}). */
+function hasQuestFlavor(config) {
+    return getPicoFlavorManifestState(config).hasQuestFlavor || listsQuestFlavorPlugin(config);
 }
 function listsQuestFlavorPlugin(config) {
     return (config.plugins ?? []).some((entry) => {

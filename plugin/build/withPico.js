@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPicoFlavorManifestState = exports.withPicoFlavorFeature = exports.withPicoFlavorPermission = void 0;
 const types_1 = require("./types");
 const withPicoAndroidManifest_1 = require("./withPicoAndroidManifest");
+const withMetaEntryRemovals_1 = require("./withMetaEntryRemovals");
 const withPicoDiagnostics_1 = require("./withPicoDiagnostics");
 const withPicoFlavorEntries_1 = require("./withPicoFlavorEntries");
 const withPicoGradle_1 = require("./withPicoGradle");
@@ -37,6 +38,7 @@ const withQuestRemovals_1 = require("./withQuestRemovals");
  *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
  *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
  *      questExcludeDependencies)
+ *  13. Meta-only entries removed from the pico, dual and mobile flavors
  */
 const withPico = (config, rawOptions) => {
     const options = (0, types_1.resolveOptions)(rawOptions ?? {});
@@ -68,6 +70,9 @@ const withPico = (config, rawOptions) => {
     config = (0, withQuestMetaLayout_1.withQuestMetaLayout)(config, options);
     // Quest-only permission, feature and dependency removals.
     config = (0, withQuestRemovals_1.withQuestRemovals)(config, options);
+    // Meta-only entries Viro writes to main (and its AAR declares) get removal
+    // markers in the pico, dual and mobile flavor manifests. Quest keeps them.
+    config = (0, withMetaEntryRemovals_1.withMetaEntryRemovals)(config);
     // 16KB ELF alignment overlay — runs last so it sees the final
     // android/ tree (jniLibs are merged at packaging time).
     config = (0, withPicoOpenXrLoaderOverlay_1.withPicoOpenXrLoaderOverlay)(config, options);

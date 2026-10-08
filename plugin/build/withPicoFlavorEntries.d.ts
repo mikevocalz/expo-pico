@@ -54,6 +54,8 @@ export declare function getPicoFlavorManifestState(config: ConfigLike): PicoFlav
 /** Called by `withPico` when it writes a pico (and dual) flavor manifest. */
 export declare function markPicoFlavorPresent(config: ConfigLike): void;
 export declare function resolvePicoManifestRoute(config: ConfigLike): PicoManifestRoute;
+/** True when the app has a `quest` product flavor (see {@link PicoFlavorManifestState.hasQuestFlavor}). */
+export declare function hasQuestFlavor(config: ConfigLike): boolean;
 /**
  * Declares a PICO-only `<uses-permission>`, routed per
  * {@link PicoManifestRoute}. The quest flavor never gets it.
