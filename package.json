@@ -51,8 +51,8 @@
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-account",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "e388e80d31e69fe3f78833e7a687b45ed281f16d",
+  "gitHead": "ef17e0df7d0db666bd298115a81fb4792fa36154",
   "expoPico": {
-    "sourceCommit": "e388e80d31e69fe3f78833e7a687b45ed281f16d"
+    "sourceCommit": "ef17e0df7d0db666bd298115a81fb4792fa36154"
   }
 }
