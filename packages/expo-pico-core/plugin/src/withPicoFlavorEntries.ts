@@ -102,8 +102,13 @@ export function markPicoFlavorPresent(config: ConfigLike): void {
 export function resolvePicoManifestRoute(config: ConfigLike): PicoManifestRoute {
   const state = getPicoFlavorManifestState(config);
   if (state.hasPicoFlavor) return 'pico-flavor';
-  if (state.hasQuestFlavor || listsQuestFlavorPlugin(config)) return 'mobile-flavor';
+  if (hasQuestFlavor(config)) return 'mobile-flavor';
   return 'main';
+}
+
+/** True when the app has a `quest` product flavor (see {@link PicoFlavorManifestState.hasQuestFlavor}). */
+export function hasQuestFlavor(config: ConfigLike): boolean {
+  return getPicoFlavorManifestState(config).hasQuestFlavor || listsQuestFlavorPlugin(config);
 }
 
 function listsQuestFlavorPlugin(config: ConfigLike): boolean {

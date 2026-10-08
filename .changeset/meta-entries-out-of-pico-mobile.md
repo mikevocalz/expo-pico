@@ -1,0 +1,5 @@
+---
+'@expo-pico/core': minor
+---
+
+Meta Horizon OS entries no longer reach the PICO or phone APK. `@reactvision/react-viro` 3.0.2 with `xRMode: ['QUEST', ...]` writes Horizon OS permissions (`com.oculus.permission.*`, `horizonos.permission.*`), features (`com.oculus.feature.PASSTHROUGH`, `oculus.software.*`), `com.oculus.supportedDevices`, and VRActivity's `com.oculus.intent.category.VR` filter and `com.oculus.vr.focusaware` meta-data into the main manifest, and its `viro_renderer` AAR declares the eye-tracking permission and feature. Every flavor merged them. A finalized mod now reads the written main manifest, collects every entry named `com.oculus.*`, `oculus.*`, `horizonos.*` or `com.meta.*`, adds the AAR's two entries, and writes a `tools:node="remove"` marker for each into the pico and dual flavor manifests (with a pico flavor) and the mobile flavor manifest (when a quest flavor exists, created if missing). The quest flavor manifest is not touched. `android.hardware.vr.headtracking` is left alone: the PICO flavor declares it itself.
