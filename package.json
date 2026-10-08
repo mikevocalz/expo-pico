@@ -60,8 +60,8 @@
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rtc",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "95932e52b33e4457db49c53ea9e69257bfbae294",
+  "gitHead": "abeae054014a3362fb0a3ad706741dce307ac87e",
   "expoPico": {
-    "sourceCommit": "95932e52b33e4457db49c53ea9e69257bfbae294"
+    "sourceCommit": "abeae054014a3362fb0a3ad706741dce307ac87e"
   }
 }
