@@ -126,11 +126,10 @@ export default ExpoPicoModule;
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
  *
- * Before launching, asks once per process for the eye tracking permission
- * (`com.oculus.permission.EYE_TRACKING` on the quest flavor,
- * `com.picovr.permission.EYE_TRACKING` on PICO) when the manifest declares it
- * and it is not granted. Viro's gaze targeting needs it; a denial still enters
- * the scene with the hand ray. See {@link ensureEyeTrackingPermission}.
+ * Does not ask for eye tracking. Meta wants a hybrid app to request it only
+ * once the immersive activity launches, so the root registered with
+ * `registerImmersiveScene()` asks when it mounts there. See
+ * {@link ensureEyeTrackingPermission}.
  */
 export declare function enterImmersiveScene(): Promise<boolean>;
 /** Whether this build declares an activity with PICO's VR intent category. */

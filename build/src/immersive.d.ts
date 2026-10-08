@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { type ComponentType } from 'react';
 /**
  * Root component name PICO's immersive activity mounts.
  *

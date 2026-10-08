@@ -20,10 +20,11 @@ export type StoreDeviceTargetSpecifier = (typeof STORE_DEVICE_TARGET_SPECIFIERS)
 export declare function normalizeStoreDeviceTargets(value: string | false | null | undefined): string | false | null;
 /**
  * Picks a default from the quest manifest's `com.oculus.supportedDevices`:
- * the `+` specifier for the oldest listed headset family, so the Store build
+ * the `+` specifier for the oldest listed device family, so the Store build
  * also reaches newer devices in that line (Meta: "`quest3+` includes Quest 3
- * family, Meta VR Glasses, and future devices"). Returns null when the list
- * names no Quest 2, Pro or 3-family device.
+ * family, Meta VR Glasses, and future devices"). `vrglasses` alone maps to
+ * `quest3+` for the same reason. Returns null when the list names no Quest 2,
+ * Pro, 3-family or Meta VR Glasses device.
  */
 export declare function deriveStoreDeviceTargets(supportedDevices: string | null): string | null;
 /** Reads `com.oculus.supportedDevices` from a parsed quest manifest. */

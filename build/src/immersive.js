@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IMMERSIVE_ROOT_COMPONENT = void 0;
 exports.registerImmersiveScene = registerImmersiveScene;
 exports.hasImmersiveSceneRegistered = hasImmersiveSceneRegistered;
+const react_1 = require("react");
 const react_native_1 = require("react-native");
+const eyeTrackingPermission_1 = require("./eyeTrackingPermission");
 /**
  * Root component name PICO's immersive activity mounts.
  *
@@ -38,7 +40,29 @@ exports.IMMERSIVE_ROOT_COMPONENT = 'VRQuestScene';
  * helper with their own renderer integration.
  */
 function registerImmersiveScene(component) {
-    react_native_1.AppRegistry.registerComponent(exports.IMMERSIVE_ROOT_COMPONENT, () => component);
+    const root = withImmersiveEyeTracking(component);
+    react_native_1.AppRegistry.registerComponent(exports.IMMERSIVE_ROOT_COMPONENT, () => root);
+}
+/**
+ * Wraps the scene so the eye tracking request happens on mount, inside the
+ * immersive activity. Meta: "Hybrid apps that need eye tracking in immersive
+ * mode must declare the permission but only request it at runtime when the
+ * immersive activity launches." The 2D panel never asks.
+ *
+ * Fire-and-forget: the scene renders right away, and a denial leaves
+ * selection on the hand ray. The once-per-process guard in
+ * `ensureEyeTrackingPermission` keeps re-entries from prompting again.
+ */
+function withImmersiveEyeTracking(Scene) {
+    function ImmersiveSceneRoot(props) {
+        (0, react_1.useEffect)(() => {
+            // Never rejects; nothing to await.
+            (0, eyeTrackingPermission_1.ensureEyeTrackingPermission)((0, eyeTrackingPermission_1.buildXrMode)()).catch(() => undefined);
+        }, []);
+        return (0, react_1.createElement)(Scene, props);
+    }
+    ImmersiveSceneRoot.displayName = `ImmersiveSceneRoot(${Scene.displayName ?? Scene.name ?? 'Scene'})`;
+    return ImmersiveSceneRoot;
 }
 /**
  * Whether a root component is registered for the immersive activity.

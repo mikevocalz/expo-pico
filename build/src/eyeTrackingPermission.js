@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PICO_EYE_TRACKING_PERMISSION = exports.HORIZON_EYE_TRACKING_PERMISSION = void 0;
+exports.buildXrMode = buildXrMode;
 exports.eyeTrackingPermissionFor = eyeTrackingPermissionFor;
 exports.ensureEyeTrackingPermission = ensureEyeTrackingPermission;
 const react_native_1 = require("react-native");
@@ -12,6 +13,16 @@ const ExpoPicoModule_1 = __importDefault(require("./ExpoPicoModule"));
 exports.HORIZON_EYE_TRACKING_PERMISSION = 'com.oculus.permission.EYE_TRACKING';
 /** PICO's eye tracking permission, written by the `eyeTracking` plugin option. */
 exports.PICO_EYE_TRACKING_PERMISSION = 'com.picovr.permission.EYE_TRACKING';
+/**
+ * The XR mode this build was made for, read from the native module. Same
+ * normalization as `getXrMode()` in the package entry, which delegates here.
+ */
+function buildXrMode() {
+    const mode = ExpoPicoModule_1.default.xrMode;
+    if (mode === 'pico-os5' || mode === 'pico-swan' || mode === 'quest')
+        return mode;
+    return 'mobile';
+}
 /**
  * The eye tracking permission a build of this XR mode asks for, or `null` for
  * the phone build.
@@ -47,12 +58,20 @@ const pending = new Map();
  * scene opens. A failure before the request reached the user (no activity yet,
  * a native error) is retried on the next call.
  *
- * The promise settles when the user answers the system dialog. There is no
- * timeout: launching the immersive activity over an open dialog would dismiss
- * it unanswered.
+ * Call it from the immersive activity, never from the 2D panel. Meta's
+ * porting guide: "Hybrid apps that need eye tracking in immersive mode must
+ * declare the permission but only request it at runtime when the immersive
+ * activity launches." A request from the panel fails the Look and Pinch
+ * review, which is why `enterImmersiveScene()` does not ask.
  *
- * `enterImmersiveScene()` calls this before launching the immersive activity.
- * Call it yourself only when you start the scene some other way.
+ * The root registered with `registerImmersiveScene()` calls this when it
+ * mounts in the immersive activity. Call it yourself only when the immersive
+ * activity mounts a root of its own, such as Viro's `ViroQuestEntryPoint`:
+ * `useEffect(() => { ensureEyeTrackingPermission(getXrMode()); }, [])`
+ * in that scene.
+ *
+ * The promise never rejects. It settles when the user answers the system
+ * dialog, so do not hold the scene's first frame on it.
  */
 function ensureEyeTrackingPermission(mode) {
     if (react_native_1.Platform.OS !== 'android')
