@@ -156,6 +156,28 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // Controls open as Horizon OS windows around the launcher panel. The
         // JS side (src/layout/metaWindows.ts) stays inline off Horizon.
         metaLayoutSdk: true,
+        // Quest-only strikes. Each one is added to every flavor by another
+        // package, and nothing in this app uses it on Meta Horizon:
+        //  - CAMERA + android.hardware.camera and HEADSET_CAMERA come from
+        //    @reactvision/react-viro's plugin for AR, ViroObjectDetector and
+        //    the Passthrough Camera API. The immersive root is
+        //    ViroVRSceneNavigator without passthroughEnabled, and nothing
+        //    renders ViroXRSceneNavigator, ViroCameraTexture or
+        //    ViroObjectDetector.
+        //  - READ/WRITE_EXTERNAL_STORAGE come from the Expo template,
+        //    expo-file-system and the Viro AARs. No code reads or writes
+        //    shared storage or opens a picker.
+        //  - play-services-location is Viro's ARCore Geospatial dependency.
+        //    Quest has no ARCore, and no Viro class references it.
+        // pico and mobile keep all of them.
+        questRemovePermissions: [
+          'android.permission.READ_EXTERNAL_STORAGE',
+          'android.permission.WRITE_EXTERNAL_STORAGE',
+          'android.permission.CAMERA',
+          'horizonos.permission.HEADSET_CAMERA',
+        ],
+        questRemoveFeatures: ['android.hardware.camera'],
+        questExcludeDependencies: ['com.google.android.gms:play-services-location'],
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
