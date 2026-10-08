@@ -19,8 +19,10 @@ import type { ResolvedPicoOptions } from './types';
  *   `app/src/quest` is always a real source set here. Without it, Quest builds
  *   get the stock renderer: floor at eye level and no controller models.
  *
- * `main` and `mobile` never get either. Only files under `jniLibs/` and
- * `assets/` are written; no manifest entry follows the renderer into quest.
+ * `main` and `mobile` never get either. This function writes only files under
+ * `jniLibs/` and `assets/`. The quest manifest's RENDER_MODEL entries, which
+ * the renderer needs for Meta's runtime controller models, are handled by
+ * `withQuestRenderModel` under the same condition.
  */
 export declare function syncPicoOverlays(platformRoot: string, options: ResolvedPicoOptions, stagedRoot?: string): void;
 export declare const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions>;

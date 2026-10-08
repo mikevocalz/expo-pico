@@ -39,6 +39,7 @@ const config_plugins_1 = require("@expo/config-plugins");
 const crypto_1 = require("crypto");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const withQuestRenderModel_1 = require("./withQuestRenderModel");
 const digest = (file) => (0, crypto_1.createHash)('sha256').update(fs.readFileSync(file)).digest('hex');
 /**
  * The only ABI these overlays are staged for.
@@ -85,8 +86,10 @@ function picoFlavors(options) {
  *   `app/src/quest` is always a real source set here. Without it, Quest builds
  *   get the stock renderer: floor at eye level and no controller models.
  *
- * `main` and `mobile` never get either. Only files under `jniLibs/` and
- * `assets/` are written; no manifest entry follows the renderer into quest.
+ * `main` and `mobile` never get either. This function writes only files under
+ * `jniLibs/` and `assets/`. The quest manifest's RENDER_MODEL entries, which
+ * the renderer needs for Meta's runtime controller models, are handled by
+ * `withQuestRenderModel` under the same condition.
  */
 function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dirname, '../assets')) {
     const sourceRoot = path.join(platformRoot, 'app/src');
@@ -178,12 +181,15 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
     fs.mkdirSync(sourceRoot, { recursive: true });
     fs.writeFileSync(statePath, JSON.stringify(next, null, 2) + '\n');
 }
-const withPicoOpenXrLoaderOverlay = (config, options) => (0, config_plugins_1.withDangerousMod)(config, [
-    'android',
-    (cfg) => {
-        syncPicoOverlays(cfg.modRequest.platformProjectRoot, options);
-        return cfg;
-    },
-]);
+const withPicoOpenXrLoaderOverlay = (config, options) => {
+    config = (0, config_plugins_1.withDangerousMod)(config, [
+        'android',
+        (cfg) => {
+            syncPicoOverlays(cfg.modRequest.platformProjectRoot, options);
+            return cfg;
+        },
+    ]);
+    return (0, withQuestRenderModel_1.withQuestRenderModel)(config, options);
+};
 exports.withPicoOpenXrLoaderOverlay = withPicoOpenXrLoaderOverlay;
 //# sourceMappingURL=withPicoOpenXrLoaderOverlay.js.map
