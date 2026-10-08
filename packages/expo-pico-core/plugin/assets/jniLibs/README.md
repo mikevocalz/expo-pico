@@ -35,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 541 208 | `db5db409faf4e08abe3369dc0131a5cb057cc9c782e4f862673c08e7d654fae8` | `cf54042b1516374574896ea7016df64207b80386` |
+| `arm64-v8a/libviro_renderer.so` | 7 542 552 | `0d6d8ee103c478765951d1c76a10bdfe4e884aaf602dc6649b7eacf86846938f` | `537521ed90299918caad7cb4fb3abc3bd35ec226` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -81,7 +81,7 @@ declares. `<ViroController>` renders, but there is nothing bound underneath it.
 
 ### Provenance
 
-Built from mikevocalz/virocore `main` at `f9304078` (PRs #103, #104 and #105) with
+Built from mikevocalz/virocore `main` at `a346988f` (PRs #103 through #109) with
 `./gradlew :viroreact:assembleRelease`; the file is the arm64-v8a
 `libviro_renderer.so` from `viroreact-release.aar`. Built without the private
 ReactVisionCCA headers, so ReactVision cloud anchors are compiled out
@@ -94,7 +94,21 @@ eye) defaulting to Floor on PICO and Meta runtimes, the PICO `bytedance`
 interaction profiles, Meta VR Glasses gaze-and-pinch select, and runtime
 controller models: on Meta it loads the runtime's own controller meshes through
 `XR_FB_render_model`, and falls back to the neutral mesh
-(`controller_neutral.glb`) only where the runtime supplies no model.
+(`controller_neutral.glb`) only where the runtime supplies no model. If the
+runtime still reports no model about 8 seconds (640 frames) after the
+controller is tracked, as happens when `com.oculus.permission.RENDER_MODEL` is
+missing, the hand shows the neutral mesh and keeps polling, and switches to the
+runtime model if one appears (#108). Before #108 the hand stayed empty in
+that case.
+
+The other PRs since `f9304078`: #106 moves the OpenXR input controller's
+platform calls behind `VROOpenXRPlatform` (`VROOpenXRPlatformAndroid.cpp` on
+Android) so the desktop simulator host runs the same controller code; #107
+changes only the Metal backend and the desktop host, which this build does not
+compile. #108 and #109 also move the `RENDER_MODEL` and `EYE_TRACKING`
+declarations out of the AAR manifest, which does not affect this `.so`. In the example's quest build,
+`RENDER_MODEL` comes from `withQuestRenderModel` and `EYE_TRACKING` from
+`@reactvision/react-viro`'s config plugin.
 
 It binds the `/interaction_profiles/ext/hand_interaction_ext` profile, so on a
 hands-only headset (Meta VR Glasses) hand pinch and aim reach the app; the
