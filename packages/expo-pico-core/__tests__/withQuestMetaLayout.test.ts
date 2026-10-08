@@ -153,10 +153,13 @@ describe('syncMetaLayoutStubs', () => {
   it('is idempotent and leaves unchanged files alone', () => {
     syncMetaLayoutStubs(appRoot, true);
     const file = stubFile(META_LAYOUT_STUB_CLASSES[0]);
-    const past = new Date(Date.now() - 60_000);
+    // Back-date by whole seconds, then compare the file to itself: a stat
+    // round-trip need not equal the Date that was set at sub-ms precision.
+    const past = new Date(Math.floor(Date.now() / 1000) * 1000 - 60_000);
     fs.utimesSync(file, past, past);
+    const before = fs.statSync(file).mtimeMs;
     syncMetaLayoutStubs(appRoot, true);
-    expect(fs.statSync(file).mtimeMs).toBe(past.getTime());
+    expect(fs.statSync(file).mtimeMs).toBe(before);
   });
 
   it('removes the stub source set when switched off', () => {
