@@ -319,6 +319,23 @@ export interface PicoPluginOptions {
      */
     storeDeviceTargets?: string | false;
     /**
+     * Link the Meta VR Layout SDK (`@metavr/layout-compat` and
+     * `@metavr/layout-window-compat`) into the `quest` flavor so the app can
+     * open Horizon OS spatial windows around its main panel.
+     *
+     * Writes the MetaVRX BOM and both React Native artifacts as
+     * `questImplementation`, strips the SDK from every other flavor's classpath
+     * (its autolinked projects declare it as `api`, and the window AAR adds
+     * `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`), and gives the other
+     * flavors empty stand-ins for the two ReactPackages the generated
+     * PackageList instantiates. Both npm packages must be direct app
+     * dependencies. JS must only render Meta's components when
+     * `isHorizonBuild` is true.
+     *
+     * @default false
+     */
+    metaLayoutSdk?: boolean;
+    /**
      * Use the bundled legacy OpenXR loader override in PICO flavors only.
      * Set false when consuming a rebuilt ViroCore AAR with a verified loader.
      * This is separate from declaring the OpenXR runtime in the manifest.
@@ -543,6 +560,7 @@ export interface ResolvedPicoOptions {
     viroRendererOverlay: boolean;
     /** Validated specifiers; `false` removes the entry; `null` derives it. */
     storeDeviceTargets: string | false | null;
+    metaLayoutSdk: boolean;
     openXrLoaderOverlay: boolean;
     developerTools: boolean;
     enableEmulatorOptimizations: boolean;

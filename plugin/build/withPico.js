@@ -14,6 +14,7 @@ const withPicoOpenXrLoaderOverlay_1 = require("./withPicoOpenXrLoaderOverlay");
 const withPicoSettingsGradle_1 = require("./withPicoSettingsGradle");
 const withPicoStrings_1 = require("./withPicoStrings");
 const withPicoSwan_1 = require("./withPicoSwan");
+const withQuestMetaLayout_1 = require("./withQuestMetaLayout");
 /**
  * Main config plugin entrypoint for expo-pico-core.
  *
@@ -32,6 +33,7 @@ const withPicoSwan_1 = require("./withPicoSwan");
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
  *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
+ *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
  */
 const withPico = (config, rawOptions) => {
     const options = (0, types_1.resolveOptions)(rawOptions ?? {});
@@ -59,6 +61,8 @@ const withPico = (config, rawOptions) => {
     config = (0, withPicoAndroidManifest_1.withPicoPlatformServiceManifest)(config, options);
     config = (0, withPicoMainApplication_1.withPicoMainApplication)(config, options);
     config = (0, withPicoLocalProperties_1.withPicoLocalProperties)(config, options);
+    // Meta VR Layout SDK: quest flavor only, removed again when switched off.
+    config = (0, withQuestMetaLayout_1.withQuestMetaLayout)(config, options);
     // 16KB ELF alignment overlay — runs last so it sees the final
     // android/ tree (jniLibs are merged at packaging time).
     config = (0, withPicoOpenXrLoaderOverlay_1.withPicoOpenXrLoaderOverlay)(config, options);
