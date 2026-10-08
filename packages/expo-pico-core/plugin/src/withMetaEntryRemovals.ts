@@ -27,6 +27,7 @@ import { getPicoFlavorManifestState, hasQuestFlavor } from './withPicoFlavorEntr
  * entries in {@link LIBRARY_META_ENTRIES}, and writes a `tools:node="remove"`
  * marker for each into the pico and dual flavor manifests (when core has a
  * pico flavor) and the mobile flavor manifest (when a quest flavor exists).
+ * The mobile manifest also gets the markers in {@link MOBILE_ONLY_REMOVALS}.
  * The quest flavor manifest is never touched.
  */
 
@@ -51,6 +52,29 @@ export const LIBRARY_META_ENTRIES: Readonly<MetaEntries> = {
   applicationMetaData: [],
   activities: [],
 };
+
+/**
+ * Entries removed from the mobile flavor only. Viro's QUEST mode declares
+ * `android.hardware.vr.headtracking` with `required="true"` in the main
+ * manifest, and Play and the package installer refuse that APK on any phone.
+ * The name is not Meta-only (PICO OS reads it too, and the pico flavor
+ * declares its own), so the prefix match cannot catch it. The entry is
+ * removed rather than flipped to `required="false"`: no phone has VR head
+ * tracking, and nothing in the mobile build reads the declaration. Runtime
+ * checks go through `PackageManager.hasSystemFeature`, which does not depend
+ * on it.
+ */
+export const MOBILE_ONLY_REMOVALS: Readonly<MetaEntries> = {
+  permissions: [],
+  features: ['android.hardware.vr.headtracking'],
+  applicationMetaData: [],
+  activities: [],
+};
+
+/** The removals a flavor manifest gets: the shared Meta set, plus the mobile-only set on mobile. */
+export function removalsForFlavor(flavor: string, entries: MetaEntries): MetaEntries {
+  return flavor === 'mobile' ? mergeMetaEntries(entries, MOBILE_ONLY_REMOVALS) : entries;
+}
 
 export interface MetaIntentFilter {
   actions: string[];
@@ -295,7 +319,7 @@ export async function syncMetaEntryRemovals(
     const manifest: Manifest = exists
       ? await AndroidConfig.Manifest.readAndroidManifestAsync(flavorPath)
       : { manifest: { $: { 'xmlns:android': ANDROID_NS } } as Manifest['manifest'] };
-    if (!applyMetaEntryRemovals(manifest, entries)) continue;
+    if (!applyMetaEntryRemovals(manifest, removalsForFlavor(flavor, entries))) continue;
     if (!exists) fs.mkdirSync(path.dirname(flavorPath), { recursive: true });
     await AndroidConfig.Manifest.writeAndroidManifestAsync(flavorPath, manifest);
   }
