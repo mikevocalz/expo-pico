@@ -35,7 +35,7 @@ Both files below are tracked in git; a clean checkout has them.
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
 | `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
-| `arm64-v8a/libviro_renderer.so` | 7 250 992 | `77c9667b430925d8788a67ddc634e8dd1d046943d3037701ce18933894df2432` | `37905920d2bde686cbf5ede60083636291a5c639` |
+| `arm64-v8a/libviro_renderer.so` | 7 541 208 | `db5db409faf4e08abe3369dc0131a5cb057cc9c782e4f862673c08e7d654fae8` | `cf54042b1516374574896ea7016df64207b80386` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
 
@@ -81,7 +81,7 @@ declares. `<ViroController>` renders, but there is nothing bound underneath it.
 
 ### Provenance
 
-Built from mikevocalz/virocore `main` at `3342aa69` (PRs #103 and #104) with
+Built from mikevocalz/virocore `main` at `f9304078` (PRs #103, #104 and #105) with
 `./gradlew :viroreact:assembleRelease`; the file is the arm64-v8a
 `libviro_renderer.so` from `viroreact-release.aar`. Built without the private
 ReactVisionCCA headers, so ReactVision cloud anchors are compiled out
@@ -99,6 +99,11 @@ controller models: on Meta it loads the runtime's own controller meshes through
 It binds the `/interaction_profiles/ext/hand_interaction_ext` profile, so on a
 hands-only headset (Meta VR Glasses) hand pinch and aim reach the app; the
 earlier path without `_ext` was rejected by the runtime.
+
+It decodes `KHR_texture_basisu` (KTX2, Basis Universal UASTC/ETC1S with Zstd)
+in glTF, so Meta's Touch Plus controller models render with their textures:
+ASTC 4x4 where the GPU supports it, ETC2 otherwise. The transcoder is
+BinomialLLC/basis_universal `v1_60` (Apache-2.0) with its Zstd decoder (BSD-3).
 
 `XR_FB_render_model` needs Meta's RENDER_MODEL permission. While the overlay is
 staged into `quest`, `withQuestRenderModel` adds
