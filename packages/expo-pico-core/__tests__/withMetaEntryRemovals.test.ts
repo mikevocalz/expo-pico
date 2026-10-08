@@ -5,11 +5,13 @@ import * as path from 'path';
 
 import {
   LIBRARY_META_ENTRIES,
+  MOBILE_ONLY_REMOVALS,
   applyMetaEntryRemovals,
   collectMetaEntries,
   isMetaOnlyName,
   mergeMetaEntries,
   metaFreeFlavors,
+  removalsForFlavor,
   syncMetaEntryRemovals,
 } from '../plugin/src/withMetaEntryRemovals';
 
@@ -279,6 +281,23 @@ describe('metaFreeFlavors', () => {
   });
 });
 
+describe('removalsForFlavor', () => {
+  const entries = () =>
+    mergeMetaEntries(collectMetaEntries(viroMainManifest()), LIBRARY_META_ENTRIES);
+
+  it('adds vr.headtracking for mobile only', () => {
+    expect(MOBILE_ONLY_REMOVALS.features).toEqual(['android.hardware.vr.headtracking']);
+    expect(removalsForFlavor('mobile', entries()).features).toContain(
+      'android.hardware.vr.headtracking'
+    );
+    for (const flavor of ['pico', 'dual', 'quest']) {
+      expect(removalsForFlavor(flavor, entries()).features).not.toContain(
+        'android.hardware.vr.headtracking'
+      );
+    }
+  });
+});
+
 describe('syncMetaEntryRemovals', () => {
   let root: string;
   const file = (flavor: string) => path.join(root, 'app', 'src', flavor, 'AndroidManifest.xml');
@@ -318,6 +337,41 @@ describe('syncMetaEntryRemovals', () => {
         '<meta-data android:name="com.oculus.vr.focusaware" tools:node="remove"/>'
       );
     }
+  });
+
+  it('removes vr.headtracking from mobile only; pico keeps required="false"', async () => {
+    const questBefore = fs.readFileSync(file('quest'), 'utf8');
+    await syncMetaEntryRemovals(root, metaFreeFlavors({ hasPicoFlavor: true }, true));
+
+    const mobile = fs.readFileSync(file('mobile'), 'utf8');
+    expect(mobile).toContain(
+      '<uses-feature android:name="android.hardware.vr.headtracking" tools:node="remove"/>'
+    );
+    const pico = fs.readFileSync(file('pico'), 'utf8');
+    expect(pico).toContain(
+      '<uses-feature android:name="android.hardware.vr.headtracking" android:required="false"/>'
+    );
+    expect(pico).not.toMatch(/vr\.headtracking"[^>]*tools:node="remove"/);
+    expect(fs.readFileSync(file('quest'), 'utf8')).toBe(questBefore);
+  });
+
+  it('turns an existing mobile headtracking declaration into one removal', async () => {
+    await write('mobile', {
+      manifest: {
+        $: { 'xmlns:android': 'http://schemas.android.com/apk/res/android' },
+        'uses-feature': [
+          {
+            $: { 'android:name': 'android.hardware.vr.headtracking', 'android:required': 'true' },
+          },
+        ],
+      },
+    } as unknown as Manifest);
+    await syncMetaEntryRemovals(root, ['mobile']);
+    const xml = fs.readFileSync(file('mobile'), 'utf8');
+    expect(xml.match(/android\.hardware\.vr\.headtracking/g)).toHaveLength(1);
+    expect(xml).toContain(
+      '<uses-feature android:name="android.hardware.vr.headtracking" tools:node="remove"/>'
+    );
   });
 
   it('is idempotent on disk', async () => {
