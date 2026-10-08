@@ -33,7 +33,8 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withMetaEntryRemovals = exports.LIBRARY_META_ENTRIES = exports.META_NAME_PREFIXES = void 0;
+exports.withMetaEntryRemovals = exports.MOBILE_ONLY_REMOVALS = exports.LIBRARY_META_ENTRIES = exports.META_NAME_PREFIXES = void 0;
+exports.removalsForFlavor = removalsForFlavor;
 exports.isMetaOnlyName = isMetaOnlyName;
 exports.collectMetaEntries = collectMetaEntries;
 exports.mergeMetaEntries = mergeMetaEntries;
@@ -63,6 +64,27 @@ exports.LIBRARY_META_ENTRIES = {
     applicationMetaData: [],
     activities: [],
 };
+/**
+ * Entries removed from the mobile flavor only. Viro's QUEST mode declares
+ * `android.hardware.vr.headtracking` with `required="true"` in the main
+ * manifest, and Play and the package installer refuse that APK on any phone.
+ * The name is not Meta-only (PICO OS reads it too, and the pico flavor
+ * declares its own), so the prefix match cannot catch it. The entry is
+ * removed rather than flipped to `required="false"`: no phone has VR head
+ * tracking, and nothing in the mobile build reads the declaration. Runtime
+ * checks go through `PackageManager.hasSystemFeature`, which does not depend
+ * on it.
+ */
+exports.MOBILE_ONLY_REMOVALS = {
+    permissions: [],
+    features: ['android.hardware.vr.headtracking'],
+    applicationMetaData: [],
+    activities: [],
+};
+/** The removals a flavor manifest gets: the shared Meta set, plus the mobile-only set on mobile. */
+function removalsForFlavor(flavor, entries) {
+    return flavor === 'mobile' ? mergeMetaEntries(entries, exports.MOBILE_ONLY_REMOVALS) : entries;
+}
 /** True for an `android:name` that only means something on Meta Horizon OS. */
 function isMetaOnlyName(name) {
     return !!name && exports.META_NAME_PREFIXES.some((prefix) => name.startsWith(prefix));
@@ -286,7 +308,7 @@ async function syncMetaEntryRemovals(platformRoot, flavors) {
         const manifest = exists
             ? await config_plugins_1.AndroidConfig.Manifest.readAndroidManifestAsync(flavorPath)
             : { manifest: { $: { 'xmlns:android': ANDROID_NS } } };
-        if (!applyMetaEntryRemovals(manifest, entries))
+        if (!applyMetaEntryRemovals(manifest, removalsForFlavor(flavor, entries)))
             continue;
         if (!exists)
             fs.mkdirSync(path.dirname(flavorPath), { recursive: true });
