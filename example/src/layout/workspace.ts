@@ -33,6 +33,74 @@ export const WORKSPACE: readonly WorkspaceSurface[] = [
   { id: 'controls', title: 'Controls', role: 'accessory', placement: 'bottom' },
 ];
 
+/**
+ * Meta Horizon OS (quest flavor): how each 2D-capable surface opens as a Meta
+ * VR Layout SDK spatial window around the launcher's main panel. Stage has no
+ * entry: on Meta it stays the immersive Viro scene in VRActivity.
+ *
+ * Anchors are the semantic edges from Meta's anchoring doc: Library on the
+ * start edge, Details on the end edge, Controls under the main panel. The side
+ * windows sit one semantic step (~8 dp) toward the user, as in Meta's own
+ * end-anchored example.
+ *
+ * Priority (Meta's window-priority doc): the React Native integration reserves
+ * two spatial slots, so one of the three always renders inline in the main
+ * panel. Controls holds the Enter XR button, the launcher's one primary
+ * action, and Meta's best practices keep the core experience in the main
+ * window, so Controls takes the lowest tier and stays inline unless a slot
+ * frees up. Library (navigation) outranks Details (read-only status). Tiers
+ * step by 10 so a new window can slot between them.
+ *
+ * Sizes are dp, fixed for the session: Meta asks for stable window geometry
+ * because every change crosses into the platform window manager.
+ */
+export type MetaWindowAnchor = 'start' | 'end' | 'bottom';
+
+export interface MetaWindowSpec {
+  /** Stable label; Meta keys placement state on it. */
+  label: string;
+  width: number;
+  height: number;
+  anchor: MetaWindowAnchor;
+  /** Semantic z step toward the user, -5..5 (Meta's OffsetNear is 1). */
+  zStep: number;
+  priority: number;
+}
+
+export const META_WINDOW_PRIORITY = {
+  navigation: 20,
+  status: 10,
+  actions: 0,
+} as const;
+
+export const META_WINDOWS: Readonly<Record<Exclude<WorkspaceSurfaceId, 'stage'>, MetaWindowSpec>> =
+  {
+    library: {
+      label: 'library',
+      width: 360,
+      height: 320,
+      anchor: 'start',
+      zStep: 1,
+      priority: META_WINDOW_PRIORITY.navigation,
+    },
+    details: {
+      label: 'details',
+      width: 440,
+      height: 600,
+      anchor: 'end',
+      zStep: 1,
+      priority: META_WINDOW_PRIORITY.status,
+    },
+    controls: {
+      label: 'controls',
+      width: 560,
+      height: 168,
+      anchor: 'bottom',
+      zStep: 0,
+      priority: META_WINDOW_PRIORITY.actions,
+    },
+  };
+
 /** Metres, user at the floor origin looking down -Z. */
 export interface SurfacePose {
   position: [number, number, number];

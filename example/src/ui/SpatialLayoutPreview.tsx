@@ -3,7 +3,14 @@ import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { getSpatialLayoutReadiness, type PicoSpatialLayoutPrimitive } from '@expo-pico/spatial';
 
-import { resolveWorkspace, type ResolvedSurface, type SurfacePose } from '../layout/workspace';
+import { metaWindows } from '../layout/metaWindows';
+import {
+  META_WINDOWS,
+  resolveWorkspace,
+  type ResolvedSurface,
+  type SurfacePose,
+} from '../layout/workspace';
+import { metaStatus, metaSurfaceDetail, type MetaPlacements } from './spatialLayoutCopy';
 import { palette, radius, space } from './theme';
 
 /** Plain-language name for each PICO Spatial SDK 6 primitive. */
@@ -147,10 +154,26 @@ function Diagram({ surfaces }: { surfaces: readonly ResolvedSurface[] }): React.
   );
 }
 
-export function SpatialLayoutPreview(): React.JSX.Element {
-  const surfaces = useMemo(() => resolveWorkspace(), []);
-  const bound = useMemo(() => getSpatialLayoutReadiness().nativeLayoutBridgeBound, []);
+interface CardRow {
+  id: string;
+  title: string;
+  detail: string;
+}
 
+interface CardStatus {
+  text: string;
+  tone: 'ok' | 'warn';
+}
+
+function Card({
+  surfaces,
+  rows,
+  status,
+}: {
+  surfaces: readonly ResolvedSurface[];
+  rows: readonly CardRow[];
+  status: CardStatus;
+}): React.JSX.Element {
   return (
     <View style={styles.card}>
       <Text style={styles.heading} accessibilityRole="header">
@@ -160,24 +183,68 @@ export function SpatialLayoutPreview(): React.JSX.Element {
       <Diagram surfaces={surfaces} />
 
       <View style={styles.list}>
-        {surfaces.map((s, i) => (
-          <View key={s.id} style={[styles.item, i > 0 && styles.itemDivider]}>
-            <Text style={styles.itemTitle}>{s.title}</Text>
-            <Text style={styles.itemDetail}>{describePrimitive(s.primitive)}</Text>
+        {rows.map((r, i) => (
+          <View key={r.id} style={[styles.item, i > 0 && styles.itemDivider]}>
+            <Text style={styles.itemTitle}>{r.title}</Text>
+            <Text style={styles.itemDetail}>{r.detail}</Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.status}>
-        <View style={[styles.statusDot, { backgroundColor: bound ? palette.ok : palette.warn }]} />
-        <Text style={styles.statusText}>
-          {bound
-            ? 'The panels open as PICO windows.'
-            : 'The panels are drawn in the Viro scene for now and will open as PICO windows once the native layout bridge ships.'}
-        </Text>
+      <View style={styles.status} accessibilityLiveRegion="polite">
+        <View
+          style={[
+            styles.statusDot,
+            { backgroundColor: status.tone === 'ok' ? palette.ok : palette.warn },
+          ]}
+        />
+        <Text style={styles.statusText}>{status.text}</Text>
       </View>
     </View>
   );
+}
+
+/** PICO and phone builds: the panels are Viro panels in the immersive scene. */
+function PicoLayoutPreview(): React.JSX.Element {
+  const surfaces = useMemo(() => resolveWorkspace(), []);
+  const bound = useMemo(() => getSpatialLayoutReadiness().nativeLayoutBridgeBound, []);
+  const rows = surfaces.map((s) => ({
+    id: s.id,
+    title: s.title,
+    detail: describePrimitive(s.primitive),
+  }));
+  const status: CardStatus = bound
+    ? { text: 'The panels open as PICO windows.', tone: 'ok' }
+    : {
+        text: 'The panels are drawn in the Viro scene for now and will open as PICO windows once the native layout bridge ships.',
+        tone: 'warn',
+      };
+  return <Card surfaces={surfaces} rows={rows} status={status} />;
+}
+
+/**
+ * Meta Horizon OS builds: Library, Details and Controls are Layout SDK
+ * windows around the launcher, so each row reports where that window is right
+ * now. The diagram still shows the immersive scene's arrangement.
+ */
+function MetaLayoutPreview(): React.JSX.Element {
+  const surfaces = useMemo(() => resolveWorkspace(), []);
+  const available = metaWindows.useSpatialAvailable();
+  const placements: MetaPlacements = {
+    library: metaWindows.usePlacement(META_WINDOWS.library.label),
+    details: metaWindows.usePlacement(META_WINDOWS.details.label),
+    controls: metaWindows.usePlacement(META_WINDOWS.controls.label),
+  };
+  const rows = surfaces.map((s) => ({
+    id: s.id,
+    title: s.title,
+    detail: metaSurfaceDetail(s.id, s.id === 'stage' ? null : placements[s.id]),
+  }));
+  return <Card surfaces={surfaces} rows={rows} status={metaStatus(available, placements)} />;
+}
+
+export function SpatialLayoutPreview(): React.JSX.Element {
+  return metaWindows.linked ? <MetaLayoutPreview /> : <PicoLayoutPreview />;
 }
 
 const styles = StyleSheet.create({

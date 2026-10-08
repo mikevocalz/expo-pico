@@ -152,6 +152,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         viroRendererOverlay: true,
         // Meta: "The `quest3+` specifier includes Quest 3 family, Meta VR Glasses, and future devices."
         storeDeviceTargets: 'quest3+',
+        // Meta VR Layout SDK in the quest flavor only: Library, Details and
+        // Controls open as Horizon OS windows around the launcher panel. The
+        // JS side (src/layout/metaWindows.ts) stays inline off Horizon.
+        metaLayoutSdk: true,
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
