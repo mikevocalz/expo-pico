@@ -3,7 +3,7 @@ import { NULL_SUBSCRIPTION, type Subscription } from '@expo-pico/platform-servic
 import type { PicoRuntime } from './PicoRuntimeNativeTypes';
 
 import ExpoPicoModule, { getPicoRuntimeAdapter } from './ExpoPicoModule';
-import { ensureEyeTrackingPermission } from './eyeTrackingPermission';
+import { buildXrMode } from './eyeTrackingPermission';
 import { hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT } from './immersive';
 import type {
   PicoAppType,
@@ -145,9 +145,7 @@ export function getPicoTargetProfile(): PicoTargetProfileRuntime {
  * when the question is "is the PICO runtime present".
  */
 export function getXrMode(): PicoXRMode {
-  const mode = ExpoPicoModule.xrMode;
-  if (mode === 'pico-os5' || mode === 'pico-swan' || mode === 'quest') return mode;
-  return 'mobile';
+  return buildXrMode();
 }
 
 /** Convenience: `true` when the active runtime is Project Swan. */
@@ -351,11 +349,10 @@ export default ExpoPicoModule;
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
  *
- * Before launching, asks once per process for the eye tracking permission
- * (`com.oculus.permission.EYE_TRACKING` on the quest flavor,
- * `com.picovr.permission.EYE_TRACKING` on PICO) when the manifest declares it
- * and it is not granted. Viro's gaze targeting needs it; a denial still enters
- * the scene with the hand ray. See {@link ensureEyeTrackingPermission}.
+ * Does not ask for eye tracking. Meta wants a hybrid app to request it only
+ * once the immersive activity launches, so the root registered with
+ * `registerImmersiveScene()` asks when it mounts there. See
+ * {@link ensureEyeTrackingPermission}.
  */
 export async function enterImmersiveScene(): Promise<boolean> {
   if (!hasImmersiveSceneRegistered()) {
@@ -371,7 +368,6 @@ export async function enterImmersiveScene(): Promise<boolean> {
     );
     return false;
   }
-  await ensureEyeTrackingPermission(getXrMode());
   return ExpoPicoModule.enterImmersiveScene();
 }
 

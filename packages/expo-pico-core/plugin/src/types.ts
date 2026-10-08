@@ -316,8 +316,9 @@ export interface PicoPluginOptions {
    * manifests never get it.
    *
    * @default derived from the quest manifest's `com.oculus.supportedDevices`:
-   * `quest3+` when it lists quest3 or quest3s (`questpro+` / `quest2+` when it
-   * lists an older headset); nothing when it lists none of them.
+   * `quest3+` when it lists quest3, quest3s or vrglasses (`questpro+` /
+   * `quest2+` when it lists an older headset); nothing when it lists none of
+   * them.
    */
   storeDeviceTargets?: string | false;
   /**

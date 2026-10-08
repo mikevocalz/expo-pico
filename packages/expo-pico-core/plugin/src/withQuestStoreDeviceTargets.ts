@@ -67,10 +67,11 @@ export function normalizeStoreDeviceTargets(
 
 /**
  * Picks a default from the quest manifest's `com.oculus.supportedDevices`:
- * the `+` specifier for the oldest listed headset family, so the Store build
+ * the `+` specifier for the oldest listed device family, so the Store build
  * also reaches newer devices in that line (Meta: "`quest3+` includes Quest 3
- * family, Meta VR Glasses, and future devices"). Returns null when the list
- * names no Quest 2, Pro or 3-family device.
+ * family, Meta VR Glasses, and future devices"). `vrglasses` alone maps to
+ * `quest3+` for the same reason. Returns null when the list names no Quest 2,
+ * Pro, 3-family or Meta VR Glasses device.
  */
 export function deriveStoreDeviceTargets(supportedDevices: string | null): string | null {
   if (!supportedDevices) return null;
@@ -82,7 +83,7 @@ export function deriveStoreDeviceTargets(supportedDevices: string | null): strin
   );
   if (devices.has('quest2')) return 'quest2+';
   if (devices.has('questpro')) return 'questpro+';
-  if (devices.has('quest3') || devices.has('quest3s')) return 'quest3+';
+  if (devices.has('quest3') || devices.has('quest3s') || devices.has('vrglasses')) return 'quest3+';
   return null;
 }
 

@@ -486,7 +486,10 @@ describe('Meta Store default device targets in the quest manifest', () => {
     ['quest3s', 'quest3+'],
     ['questpro|quest3', 'questpro+'],
     ['quest2|quest3', 'quest2+'],
-    ['vrglasses', null],
+    ['quest3|quest3s|vrglasses', 'quest3+'],
+    ['vrglasses', 'quest3+'],
+    ['questpro|vrglasses', 'questpro+'],
+    ['eureka', null],
     [null, null],
   ])('derives %s -> %s', (devices, expected) => {
     expect(deriveStoreDeviceTargets(devices)).toBe(expected);
@@ -494,10 +497,10 @@ describe('Meta Store default device targets in the quest manifest', () => {
 
   test('a supportedDevices list with no Quest headset writes nothing and warns', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    put(manifest('quest'), horizonQuest('vrglasses'));
+    put(manifest('quest'), horizonQuest('eureka'));
     await syncQuestStoreDeviceTargets(platform, resolveOptions({}));
     expect(count(read('quest'))).toBe(0);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('vrglasses'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('eureka'));
     warn.mockRestore();
   });
 

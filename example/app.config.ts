@@ -33,9 +33,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-horizon-core',
       {
         horizonAppId: process.env.HORIZON_APP_ID ?? '',
-        // No `vrglasses` here: Meta does not accept it as a public value.
-        // Meta VR Glasses reach the Store through `storeDeviceTargets` below.
-        supportedDevices: 'quest3|quest3s',
+        // Meta's canonical identifiers (port-an-existing-app, 2026-09-14):
+        // quest2, questpro, quest3, quest3s, vrglasses. This app targets the
+        // Quest 3 family and Meta VR Glasses, matching `storeDeviceTargets:
+        // 'quest3+'` below.
+        supportedDevices: 'quest3|quest3s|vrglasses',
         // The launcher opens first as a 2D panel on MainActivity; the
         // immersive scene is a separate VRActivity. Horizon accepts panel
         // widths of 360-1280dp (the Meta VR Glasses range), so 1280x800dp
@@ -58,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         // Must match expo-horizon-core's supportedDevices: both plugins write
         // com.oculus.supportedDevices and the manifest merger rejects a mismatch.
-        android: { xRMode: ['QUEST', 'PICO'], questSupportedDevices: 'quest3|quest3s' },
+        android: { xRMode: ['QUEST', 'PICO'], questSupportedDevices: 'quest3|quest3s|vrglasses' },
       },
     ],
     [

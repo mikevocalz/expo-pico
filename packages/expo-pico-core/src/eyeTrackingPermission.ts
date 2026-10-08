@@ -10,6 +10,16 @@ export const HORIZON_EYE_TRACKING_PERMISSION = 'com.oculus.permission.EYE_TRACKI
 export const PICO_EYE_TRACKING_PERMISSION = 'com.picovr.permission.EYE_TRACKING';
 
 /**
+ * The XR mode this build was made for, read from the native module. Same
+ * normalization as `getXrMode()` in the package entry, which delegates here.
+ */
+export function buildXrMode(): PicoXRMode {
+  const mode = ExpoPicoModule.xrMode;
+  if (mode === 'pico-os5' || mode === 'pico-swan' || mode === 'quest') return mode;
+  return 'mobile';
+}
+
+/**
  * The eye tracking permission a build of this XR mode asks for, or `null` for
  * the phone build.
  */
@@ -46,12 +56,20 @@ const pending = new Map<string, Promise<void>>();
  * scene opens. A failure before the request reached the user (no activity yet,
  * a native error) is retried on the next call.
  *
- * The promise settles when the user answers the system dialog. There is no
- * timeout: launching the immersive activity over an open dialog would dismiss
- * it unanswered.
+ * Call it from the immersive activity, never from the 2D panel. Meta's
+ * porting guide: "Hybrid apps that need eye tracking in immersive mode must
+ * declare the permission but only request it at runtime when the immersive
+ * activity launches." A request from the panel fails the Look and Pinch
+ * review, which is why `enterImmersiveScene()` does not ask.
  *
- * `enterImmersiveScene()` calls this before launching the immersive activity.
- * Call it yourself only when you start the scene some other way.
+ * The root registered with `registerImmersiveScene()` calls this when it
+ * mounts in the immersive activity. Call it yourself only when the immersive
+ * activity mounts a root of its own, such as Viro's `ViroQuestEntryPoint`:
+ * `useEffect(() => { ensureEyeTrackingPermission(getXrMode()); }, [])`
+ * in that scene.
+ *
+ * The promise never rejects. It settles when the user answers the system
+ * dialog, so do not hold the scene's first frame on it.
  */
 export function ensureEyeTrackingPermission(mode: PicoXRMode): Promise<void> {
   if (Platform.OS !== 'android') return Promise.resolve();
