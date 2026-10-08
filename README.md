@@ -286,6 +286,14 @@ The `quest` flavor (`npm run quest` in `example/`) targets Meta Horizon OS: Ques
 
 At runtime the `quest` flavor reports `xrMode: 'quest'` and `isPicoBuild: false` from `getPicoRuntimeInfo()`, and `enterImmersiveScene()` starts the same VRActivity it uses on PICO.
 
+#### Spatial windows (Meta VR Layout SDK)
+
+In the `quest` flavor, the launcher opens Library, Details and Controls as [Meta VR Layout SDK](https://developers.meta.com/horizon/documentation/android-apps/meta-vr-layout-sdk) windows around its main panel: Library on the start edge, Details on the end edge, Controls below. Stage remains the immersive Viro scene. Each window uses `fallback="inline"`, so on Horizon OS releases before v207 (and on PICO and phone builds) the same content renders inside the main panel.
+
+Meta's React Native integration reserves two window slots, so one of the three always stays inline. Priorities decide which: Library (20) beats Details (10) beats Controls (0). Controls holds **Enter XR Scene**, so the primary action stays in the main panel unless a third slot opens. Sizes, anchors and priorities live in `example/src/layout/workspace.ts` (`META_WINDOWS`).
+
+Setup is `metaLayoutSdk: true` on `@expo-pico/core` plus `@metavr/layout-compat` and `@metavr/layout-window-compat` as direct app dependencies. The plugin writes the MetaVRX BOM and both artifacts as `questImplementation`, which survives `expo prebuild --clean`. Each npm package autolinks a library project that declares its AAR as `api`, and the window AAR adds `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`. To keep both out of `pico` and `mobile`, the plugin excludes `com.meta.metavrx.layout` from every non-quest classpath and gives those flavors empty stand-ins for the two `ReactPackage` classes the generated `PackageList` creates. The library projects declare minSdk 29, so the plugin also lists them in the main manifest's `tools:overrideLibrary`; off quest they hold only codegen specs that nothing calls, which keeps the phone flavor at its own minSdk. The library projects stay linked in every flavor because the AAR classes extend their codegen output, so JS must only render Meta's components on Horizon builds. `example/src/layout/metaWindows.ts` checks `isHorizonBuild` and otherwise renders each window's children in place.
+
 ## License
 
 MIT

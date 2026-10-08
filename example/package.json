@@ -16,7 +16,8 @@
     "demo:model": "node scripts/download-demo-model.js --force --verbose",
     "demo:model:clean": "node -e \"require('fs').rmSync(require('path').join('assets','models','pico-demo.glb'), { force: true }); console.log('removed')\"",
     "postinstall": "node scripts/download-demo-model.js --post-install",
-    "prepare": "echo 'No prepare needed for example app'"
+    "prepare": "echo 'No prepare needed for example app'",
+    "test": "jest --config jest.config.js"
   },
   "dependencies": {
     "@expo-pico/account": "*",
@@ -35,6 +36,8 @@
     "@fishjam-cloud/react-native-client": "0.31.0",
     "@fishjam-cloud/react-native-webrtc": "0.31.0",
     "@fishjam-cloud/ts-client": "0.31.0",
+    "@metavr/layout-compat": "1.0.0",
+    "@metavr/layout-window-compat": "1.0.0",
     "@reactvision/react-viro": "3.0.2",
     "expo": "58.0.2",
     "expo-asset": "58.0.8",
@@ -42,6 +45,7 @@
     "expo-file-system": "58.0.0",
     "expo-horizon-core": "57.0.2",
     "expo-linking": "58.0.9",
+    "expo-modules-core": "58.0.11",
     "expo-router": "58.0.10",
     "react": "19.3.0",
     "react-freeze": "^1.0.4",
@@ -50,8 +54,7 @@
     "react-native-permissions": "^5.6.0",
     "react-native-safe-area-context": "5.10.0",
     "react-native-screens": "4.28.0",
-    "react-native-svg": "15.15.4",
-    "expo-modules-core": "58.0.11"
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",

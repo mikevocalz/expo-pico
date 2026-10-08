@@ -11,16 +11,33 @@
  * (https://mobbin.com/screens/31a95e42-7374-4c6e-a4fb-39f1da438580) for a
  * filled primary above quieter secondary entries. Colours and type come from
  * ./theme only.
+ *
+ * On Meta Horizon OS builds, Library, Details and Controls are Layout SDK
+ * windows around this panel (src/layout/workspace.ts, META_WINDOWS).
+ * Structure-only references for that split: fal Assets
+ * (https://mobbin.com/screens/44620b3b-7939-4ba5-97c5-cef1c0473387) for a
+ * library list on the start side and a details column on the end side of the
+ * main content; Replit's design canvas
+ * (https://mobbin.com/screens/24dd99de-1b70-4eea-a245-2c4a151875bb) and
+ * Recraft (https://mobbin.com/screens/12bf793a-4693-452c-82f3-488aed6d2c54)
+ * for actions in a bar under the main surface; Gumloop
+ * (https://mobbin.com/screens/41397256-f780-4071-b0e4-afbcf02f5f26) for a
+ * status overview card beside the content; Shopify's image editor
+ * (https://mobbin.com/screens/5ec9f2d9-dd23-4551-897a-653b312f0256) for a
+ * stacked end-side inspector.
  */
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
 
+import { metaWindows } from '../layout/metaWindows';
+import { META_WINDOWS } from '../layout/workspace';
 import { horizonAppId, isHeadsetBuild, isHorizonBuild, xrModeLabel } from '../platform';
 import { IsoCube } from './IsoCube';
 import { SpatialLayoutPreview } from './SpatialLayoutPreview';
 import { useLayout } from './useLayout';
+import { WorkspaceWindow } from './WorkspaceWindow';
 import { palette, radius, space } from './theme';
 
 export type HomeRoute = 'xr' | 'diagnostics' | 'harness';
@@ -79,6 +96,13 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const info = useMemo(() => getPicoRuntimeInfo(), []);
   const L = useLayout();
   const onHeadset = isHeadsetBuild(info);
+  // With Library and Details both in their own windows the secondary column
+  // is empty, so the launcher takes the panel on its own instead of sitting in
+  // the left half. The column stays mounted: it declares those windows.
+  const libraryOut = metaWindows.usePlacement(META_WINDOWS.library.label) === 'spatial';
+  const detailsOut = metaWindows.usePlacement(META_WINDOWS.details.label) === 'spatial';
+  const sideColumnEmpty = libraryOut && detailsOut;
+  const twoColumn = L.twoColumn && !sideColumnEmpty;
 
   // Every headset build enters through VRActivity, which renders the scene
   // registered in index.js. If no immersive activity resolves (a phone, or a
@@ -93,16 +117,22 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
     : { value: info.platformSdkPresent ? 'live' : 'seam', ok: info.platformSdkPresent };
 
   const launcher = (
-    <View style={[styles.launcher, L.twoColumn && styles.colWide]}>
+    <View
+      style={[
+        styles.launcher,
+        twoColumn && styles.colWide,
+        sideColumnEmpty && L.twoColumn && styles.launcherSolo,
+      ]}
+    >
       <IsoCube size={L.heroSize} />
-      <Text style={[styles.title, { fontSize: L.titleSize }, L.twoColumn && styles.textLeft]}>
+      <Text style={[styles.title, { fontSize: L.titleSize }, twoColumn && styles.textLeft]}>
         XR Sample
       </Text>
       <Text
         style={[
           styles.subtitle,
           { fontSize: L.bodySize, lineHeight: L.bodySize * 1.5 },
-          L.twoColumn && styles.textLeft,
+          twoColumn && styles.textLeft,
         ]}
       >
         {isHorizonBuild
@@ -120,40 +150,51 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
         />
       </View>
 
-      <Pressable
-        onPress={onEnterXr}
-        style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-        accessibilityRole="button"
-        accessibilityLabel="Enter the XR scene"
-      >
-        <Text style={styles.ctaLabel}>Enter XR Scene</Text>
-      </Pressable>
+      <WorkspaceWindow id="controls">
+        <Pressable
+          onPress={onEnterXr}
+          style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Enter the XR scene"
+        >
+          <Text style={styles.ctaLabel}>Enter XR Scene</Text>
+        </Pressable>
 
-      <Text style={[styles.ctaNote, L.twoColumn && styles.textLeft]}>
-        {onHeadset
-          ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
-          : 'No headset detected — the scene renders as a flat preview.'}
-      </Text>
+        <Text style={[styles.ctaNote, twoColumn && styles.textLeft]}>
+          {onHeadset
+            ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
+            : 'No headset detected — the scene renders as a flat preview.'}
+        </Text>
+      </WorkspaceWindow>
     </View>
   );
 
   const secondary = (
     <View
-      style={[styles.secondary, L.twoColumn && styles.colWide, L.twoColumn && styles.secondaryWide]}
+      style={[
+        styles.secondary,
+        twoColumn && styles.colWide,
+        twoColumn && styles.secondaryWide,
+        sideColumnEmpty && styles.secondaryEmpty,
+      ]}
     >
-      <SpatialLayoutPreview />
-      <View style={styles.rows}>
-        <Row
-          title="Diagnostics"
-          detail="Build-time and runtime report, SDK probe table"
-          onPress={() => onNavigate('diagnostics')}
-        />
-        <Row
-          title="Validation harness"
-          detail="Exercises every sibling package's public API"
-          onPress={() => onNavigate('harness')}
-        />
-      </View>
+      <WorkspaceWindow id="details">
+        <SpatialLayoutPreview />
+      </WorkspaceWindow>
+      <WorkspaceWindow id="library" title="Library">
+        <View style={styles.rows}>
+          <Row
+            title="Diagnostics"
+            detail="Build-time and runtime report, SDK probe table"
+            onPress={() => onNavigate('diagnostics')}
+          />
+          <Row
+            title="Validation harness"
+            detail="Exercises every sibling package's public API"
+            onPress={() => onNavigate('harness')}
+          />
+        </View>
+      </WorkspaceWindow>
     </View>
   );
 
@@ -167,7 +208,7 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.frame, { maxWidth: L.maxContentWidth }]}>
-          <View style={L.twoColumn ? styles.split : undefined}>
+          <View style={twoColumn ? styles.split : undefined}>
             {launcher}
             {secondary}
           </View>
@@ -189,6 +230,10 @@ const styles = StyleSheet.create({
   colWide: { flex: 1, alignItems: 'stretch' },
   secondary: { marginTop: space.xl },
   secondaryWide: { marginTop: 0 },
+  // Both side surfaces are in their own windows; nothing here takes space.
+  secondaryEmpty: { marginTop: 0 },
+  // Launcher alone on a wide panel: keep the single-column measure.
+  launcherSolo: { alignSelf: 'center', width: '100%', maxWidth: 560 },
 
   textLeft: { textAlign: 'left' },
   title: {

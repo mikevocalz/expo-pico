@@ -1927,6 +1927,18 @@
     globby "^11.0.0"
     read-yaml-file "^1.1.0"
 
+"@metavr/layout-compat@1.0.0", "@metavr/layout-compat@>=1.0.0 <1.1.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@metavr/layout-compat/-/layout-compat-1.0.0.tgz#4024152d4b2c3c3132b73e7145c3b8e6fc52dcd7"
+  integrity sha512-GK42zUeXXVYC7nEtAUnzN+Vb8qrAZCdrAGHAmUwpopIRTTk6OUyNJ/64Iwug1h88hOGjo24CrgECJwJ54xGeJA==
+
+"@metavr/layout-window-compat@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@metavr/layout-window-compat/-/layout-window-compat-1.0.0.tgz#1dd13916a2b14943f64a3dfd813d1981f93b5519"
+  integrity sha512-XAIgsDVaJA90X2tp1CRmepfnLGT2b29zgmVZLRAHPhvUgBdp/hCppbW9U2QBJ7ktkTVfATA6S/OyKP2Gzo+3vw==
+  dependencies:
+    "@metavr/layout-compat" ">=1.0.0 <1.1.0"
+
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
   resolved "https://registry.npmjs.org/@nicolo-ribaudo/eslint-scope-5-internals/-/eslint-scope-5-internals-5.1.1-v1.tgz"
