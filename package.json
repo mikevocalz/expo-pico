@@ -60,8 +60,8 @@
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rooms",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "27f69c380c3a6b4be417d35f870458da9e247a4b",
+  "gitHead": "dd0bd71e6c335a4cd35c600ee2caedcab372a7f4",
   "expoPico": {
-    "sourceCommit": "27f69c380c3a6b4be417d35f870458da9e247a4b"
+    "sourceCommit": "dd0bd71e6c335a4cd35c600ee2caedcab372a7f4"
   }
 }
