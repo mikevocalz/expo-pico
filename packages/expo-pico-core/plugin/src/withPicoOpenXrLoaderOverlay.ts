@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
+import { withQuestRenderModel } from './withQuestRenderModel';
 
 const digest = (file: string): string =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -56,8 +57,10 @@ function picoFlavors(options: ResolvedPicoOptions): string[] {
  *   `app/src/quest` is always a real source set here. Without it, Quest builds
  *   get the stock renderer: floor at eye level and no controller models.
  *
- * `main` and `mobile` never get either. Only files under `jniLibs/` and
- * `assets/` are written; no manifest entry follows the renderer into quest.
+ * `main` and `mobile` never get either. This function writes only files under
+ * `jniLibs/` and `assets/`. The quest manifest's RENDER_MODEL entries, which
+ * the renderer needs for Meta's runtime controller models, are handled by
+ * `withQuestRenderModel` under the same condition.
  */
 export function syncPicoOverlays(
   platformRoot: string,
@@ -165,11 +168,13 @@ export function syncPicoOverlays(
   fs.writeFileSync(statePath, JSON.stringify(next, null, 2) + '\n');
 }
 
-export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (config, options) =>
-  withDangerousMod(config, [
+export const withPicoOpenXrLoaderOverlay: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+  config = withDangerousMod(config, [
     'android',
     (cfg) => {
       syncPicoOverlays(cfg.modRequest.platformProjectRoot, options);
       return cfg;
     },
   ]);
+  return withQuestRenderModel(config, options);
+};
