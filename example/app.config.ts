@@ -34,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         horizonAppId: process.env.HORIZON_APP_ID ?? '',
         // No `vrglasses` here: Meta does not accept it as a public value.
-        // Meta VR Glasses reach the Store through "Future devices" targeting.
+        // Meta VR Glasses reach the Store through `storeDeviceTargets` below.
         supportedDevices: 'quest3|quest3s',
         // The launcher opens first as a 2D panel on MainActivity; the
         // immersive scene is a separate VRActivity. Horizon accepts panel
@@ -148,6 +148,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // the integration guide.
         openXrLoaderOverlay: true,
         viroRendererOverlay: true,
+        // Meta: "The `quest3+` specifier includes Quest 3 family, Meta VR Glasses, and future devices."
+        storeDeviceTargets: 'quest3+',
         entitlementCheck: false,
         developerTools: true,
         enableEmulatorOptimizations: true,
