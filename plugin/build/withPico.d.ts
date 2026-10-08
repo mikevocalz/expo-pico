@@ -19,6 +19,8 @@ import type { PicoPluginOptions } from './types';
  *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
  *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
+ *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
+ *      questExcludeDependencies)
  */
 declare const withPico: ConfigPlugin<PicoPluginOptions | void>;
 export default withPico;

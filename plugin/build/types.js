@@ -4,6 +4,7 @@ exports.PICO_OPTION_DEFAULTS = exports.PICO_SWAN_DEFAULTS = exports.PICO_PLATFOR
 exports.resolveOptions = resolveOptions;
 exports.resolveTargetProfile = resolveTargetProfile;
 exports.xrModeToNativeEnum = xrModeToNativeEnum;
+const withQuestRemovals_1 = require("./withQuestRemovals");
 const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 /**
  * Default resolved platform-service state for an app with no identity
@@ -69,6 +70,9 @@ exports.PICO_OPTION_DEFAULTS = {
     viroRendererOverlay: false,
     storeDeviceTargets: null,
     metaLayoutSdk: false,
+    questRemovePermissions: [],
+    questRemoveFeatures: [],
+    questExcludeDependencies: [],
     openXrLoaderOverlay: true,
     developerTools: false,
     enableEmulatorOptimizations: false,
@@ -125,6 +129,9 @@ function resolveOptions(options = {}) {
         openXrLoaderOverlay,
         storeDeviceTargets: (0, withQuestStoreDeviceTargets_1.normalizeStoreDeviceTargets)(options.storeDeviceTargets),
         metaLayoutSdk: options.metaLayoutSdk === true,
+        questRemovePermissions: (0, withQuestRemovals_1.normalizeNames)(options.questRemovePermissions),
+        questRemoveFeatures: (0, withQuestRemovals_1.normalizeNames)(options.questRemoveFeatures),
+        questExcludeDependencies: (0, withQuestRemovals_1.normalizeDependencyExclusions)(options.questExcludeDependencies),
         targetDevices: options.targetDevices ?? exports.PICO_OPTION_DEFAULTS.targetDevices,
         defaultWidth: nonEmpty(options.defaultWidth) ?? exports.PICO_OPTION_DEFAULTS.defaultWidth,
         defaultHeight: nonEmpty(options.defaultHeight) ?? exports.PICO_OPTION_DEFAULTS.defaultHeight,
