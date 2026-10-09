@@ -160,6 +160,46 @@ android.productFlavors.configureEach { flavor ->
 }
 
 /**
+ * Fail every pico/dual Gradle build when the APK would ship without
+ * `pvr.app.id`. On PICO OS that APK never starts: XRShell shows "No
+ * entitlement info in the local cache" and ends the process (PICO 4 Ultra,
+ * Android 14). A prebuild warning was not enough, so the build stops here.
+ *
+ * Rewritten on every prebuild from the ID that prebuild resolved, so setting
+ * `PICO_APP_ID` and re-running prebuild removes it. Hooked on `pre<Variant>Build`
+ * so quest, mobile, iOS and `expo start` never hit it. `appType: '2d'` is
+ * exempt: it opts out of the immersive launcher on purpose.
+ */
+export function updateIdentityGate(contents: string, options: ResolvedPicoOptions): string {
+  contents = contents.replace(
+    /\n\/\/ expo-pico-core: begin identity gate[\s\S]*?\/\/ expo-pico-core: end identity gate\n?/g,
+    ''
+  );
+  if (
+    options.buildVariant === 'mobile' ||
+    options.xrMode === 'mobile' ||
+    options.appType === '2d' ||
+    options.platformService.picoAppId
+  ) {
+    return contents;
+  }
+  return (
+    contents +
+    `
+// expo-pico-core: begin identity gate
+tasks.configureEach { t ->
+    if (t.name ==~ /pre(Pico|Dual)\\w*Build/) {
+        t.doFirst {
+            throw new GradleException("[expo-pico] PICO_APP_ID is empty, so this APK has no pvr.app.id and PICO OS will close it at launch. Put PICO_APP_ID=<id from the PICO Developer Console> in .env.local (or the EAS env) and re-run expo prebuild.")
+        }
+    }
+}
+// expo-pico-core: end identity gate
+`
+  );
+}
+
+/**
  * Let the overlay copies win over the AAR's in the variants that get them:
  * pico/dual take both libraries, quest takes only the renderer (see
  * `syncPicoOverlays`). Mobile gets neither. Also removes our old global rule.
@@ -287,6 +327,7 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // Upgrade the old generated global pickFirst block, including when users
     // turn an overlay off without a clean prebuild. Other packaging stays intact.
     contents = updateOverlayPackaging(contents, options);
+    contents = updateIdentityGate(contents, options);
 
     // Also repair already-generated flavor blocks during incremental prebuild.
     const fallbackMarker = '// expo-pico-core: device flavor fallbacks';
