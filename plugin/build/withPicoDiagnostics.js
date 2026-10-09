@@ -89,11 +89,14 @@ function runDiagnosticChecks(options, env = {}) {
     // `pvr.app.id` meta-data is missing/blank. Core writes it from the
     // resolved app ID to the pico, dual and mobile flavor manifests (main in a
     // single-variant app); the quest flavor never gets it.
-    const hasAnyIdentity = options.platformService.hasIdentity || (options.picoAppId?.trim().length ?? 0) > 0;
-    if (options.xrMode !== 'mobile' && options.appType !== '2d' && !hasAnyIdentity) {
+    // Same test as the Gradle identity gate: the ID that becomes `pvr.app.id`.
+    // A foreign ID or app key alone does not write it.
+    if (options.xrMode !== 'mobile' &&
+        options.appType !== '2d' &&
+        !options.platformService.picoAppId) {
         const envHint = process.env.PICO_APP_ID
             ? 'PICO_APP_ID env var is set but picoAppId resolved to empty — check that app.config reads it (e.g. `picoAppId: process.env.PICO_APP_ID`).'
-            : 'PICO_APP_ID env var is NOT set in this shell. Either: (a) export PICO_APP_ID=<your-app-id> from .env.local before prebuild, or (b) hardcode picoAppId in the plugin config (NOT recommended — secrets in source).';
+            : 'PICO_APP_ID env var is NOT set in this shell. Either: (a) export PICO_APP_ID=<your-app-id> from .env.local before prebuild, or (b) set picoAppId in app.config — it is an identifier, not a secret (the app key is the secret).';
         findings.push({
             id: 'identity.missing',
             severity: 'error',
@@ -104,6 +107,7 @@ function runDiagnosticChecks(options, env = {}) {
                 'panel on its own display, so adb cannot dismiss it, and pressing Confirm with the ' +
                 'controller does not let the app run. Nothing is testable on device until this is set — ' +
                 'not only PPS, which would separately fail with error 100008 "appkey is empty". ' +
+                'pico/dual Gradle builds now fail until it is set. ' +
                 envHint,
         });
     }

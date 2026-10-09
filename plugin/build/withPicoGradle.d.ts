@@ -38,6 +38,18 @@ export declare function renderFlavorBlock(options: ResolvedPicoOptions): string;
  */
 export declare function renderFlavorXrModeBlock(options: ResolvedPicoOptions): string;
 /**
+ * Fail every pico/dual Gradle build when the APK would ship without
+ * `pvr.app.id`. On PICO OS that APK never starts: XRShell shows "No
+ * entitlement info in the local cache" and ends the process (PICO 4 Ultra,
+ * Android 14). A prebuild warning was not enough, so the build stops here.
+ *
+ * Rewritten on every prebuild from the ID that prebuild resolved, so setting
+ * `PICO_APP_ID` and re-running prebuild removes it. Hooked on `pre<Variant>Build`
+ * so quest, mobile, iOS and `expo start` never hit it. `appType: '2d'` is
+ * exempt: it opts out of the immersive launcher on purpose.
+ */
+export declare function updateIdentityGate(contents: string, options: ResolvedPicoOptions): string;
+/**
  * Let the overlay copies win over the AAR's in the variants that get them:
  * pico/dual take both libraries, quest takes only the renderer (see
  * `syncPicoOverlays`). Mobile gets neither. Also removes our old global rule.
