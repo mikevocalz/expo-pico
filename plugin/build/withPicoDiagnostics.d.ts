@@ -29,10 +29,9 @@ export interface DiagnosticCheckFinding {
  *
  * Covered checks (each has a stable id):
  *
- *   1. `identity.missing` — xrMode is 'pico-os5' or 'pico-swan' and
- *      `appType !== '2d'` but no `picoAppId` /
- *      `platformService.picoAppId` is set. Platform SDK calls will
- *      silently fail at runtime.
+ *   1. `identity.missing` (info) — no `picoAppId` /
+ *      `platformService.picoAppId`, so PICO is off and no pico flavor is
+ *      built. The only finding returned in that case.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive

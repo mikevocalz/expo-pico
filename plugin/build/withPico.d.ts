@@ -18,10 +18,12 @@ import type { PicoPluginOptions } from './types';
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
  *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
- *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
- *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
- *      questExcludeDependencies)
- *  13. Meta-only entries removed from the pico, dual and mobile flavors
+ *  11. Meta-only entries removed from the pico, dual and mobile flavors
+ *  12. PICO renderer and loader overlays (pico and dual flavors)
+ *
+ * The Meta Horizon `quest` flavor and everything in it belong to the
+ * expo-horizon-core plugin entry. With no PICO app ID this plugin builds no
+ * pico flavor (see `ResolvedPicoOptions.isPicoEnabled`).
  */
 declare const withPico: ConfigPlugin<PicoPluginOptions | void>;
 export default withPico;

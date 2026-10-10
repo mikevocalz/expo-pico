@@ -1,6 +1,6 @@
 import { AndroidConfig, ConfigPlugin } from '@expo/config-plugins';
 /**
- * Keeps Meta Horizon OS entries out of the pico, dual and mobile APKs.
+ * Keeps Meta Horizon OS entries out of the pico and dual APKs.
  *
  * `@reactvision/react-viro` with `xRMode: ['QUEST', ...]` writes Horizon OS
  * permissions, features, `com.oculus.supportedDevices` and VRActivity's
@@ -13,7 +13,8 @@ import { AndroidConfig, ConfigPlugin } from '@expo/config-plugins';
  * entry whose name starts with one of {@link META_NAME_PREFIXES}, adds the AAR
  * entries in {@link LIBRARY_META_ENTRIES}, and writes a `tools:node="remove"`
  * marker for each into the pico and dual flavor manifests (when core has a
- * pico flavor) and the mobile flavor manifest (when a quest flavor exists).
+ * pico flavor). The mobile flavor gets the same markers from the
+ * expo-horizon-core plugin entry.
  * The mobile manifest also gets the markers in {@link MOBILE_ONLY_REMOVALS}.
  * The quest flavor manifest is never touched.
  */
@@ -73,10 +74,13 @@ export declare function mergeMetaEntries(a: MetaEntries, b: MetaEntries): MetaEn
  * manifest changed. Idempotent.
  */
 export declare function applyMetaEntryRemovals(manifest: Manifest, entries: MetaEntries): boolean;
-/** Flavor source sets that must not carry Meta entries, per the config. */
+/**
+ * PICO flavor source sets that must not carry Meta entries. The mobile flavor
+ * is the quest flavor owner's (the expo-horizon-core plugin entry).
+ */
 export declare function metaFreeFlavors(state: {
     hasPicoFlavor: boolean;
-}, questFlavor: boolean): string[];
+}): string[];
 /**
  * Reads `app/src/main/AndroidManifest.xml` and writes the removal markers
  * into each flavor manifest in `flavors`. The pico and dual manifests are

@@ -39,8 +39,6 @@ const config_plugins_1 = require("@expo/config-plugins");
 const crypto_1 = require("crypto");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-const withQuestRenderModel_1 = require("./withQuestRenderModel");
-const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 const digest = (file) => (0, crypto_1.createHash)('sha256').update(fs.readFileSync(file)).digest('hex');
 /**
  * The only ABI these overlays are staged for.
@@ -58,12 +56,11 @@ const OVERLAY_ABI = 'arm64-v8a';
 /**
  * Source sets whose copy of an overlay this plugin owns: it writes there when
  * enabled and removes its own copy otherwise. `main` holds copies from plugin
- * versions before flavor-scoped overlays. The loader never goes to quest, so
- * a user's own loader in `app/src/quest` is not this plugin's to judge. A
- * user's own renderer there is only an error when the overlay would replace it.
+ * versions before flavor-scoped overlays. `app/src/quest` belongs to the
+ * expo-horizon-core plugin entry, so copies an older core recorded there are
+ * dropped from this plugin's state without touching the files.
  */
-const LOADER_MANAGED_FLAVORS = ['main', 'pico', 'dual'];
-const RENDERER_MANAGED_FLAVORS = ['main', 'pico', 'dual', 'quest'];
+const MANAGED_FLAVORS = ['main', 'pico', 'dual'];
 /** Flavor source sets that receive PICO-only overlays. */
 function picoFlavors(options) {
     return options.buildVariant === 'dual' ? ['pico', 'dual'] : ['pico'];
@@ -74,34 +71,26 @@ function picoFlavors(options) {
  * alignment must be checked in the resulting artifact, independent of OS name.
  * Record hashes so incremental prebuild updates and removals preserve user files.
  *
- * The two overlays go to different flavors:
- * - `libopenxr_loader.so` goes to pico (and dual) only. It is the generic
- *   Khronos loader, but stock Viro 3.0.2 already ships a 16KB-aligned loader
- *   that exports every `xr*` symbol the overlay renderer imports, so Quest has
- *   no reason to swap it.
+ * Both overlays go to the pico (and dual) flavor only:
+ * - `libopenxr_loader.so` is the generic Khronos loader.
  * - `libviro_renderer.so` and the assets it loads (`controller_neutral.glb`)
- *   replace Viro's OpenXR renderer for every headset, and the floor origin and
- *   controller mesh apply on Quest as well. They go to pico, dual and quest. Core
- *   declares the `quest` flavor itself whenever these overlays can be active
- *   (`buildVariant` `pico` or `dual`; see `renderFlavorBlock`), so
- *   `app/src/quest` is always a real source set here. Without it, Quest builds
- *   get the stock renderer: floor at eye level and no controller models.
+ *   replace Viro's OpenXR renderer: floor-level origin and controller meshes.
  *
- * `main` and `mobile` never get either. This function writes only files under
- * `jniLibs/` and `assets/`. The quest manifest's RENDER_MODEL entries, which
- * the renderer needs for Meta's runtime controller models, are handled by
- * `withQuestRenderModel` under the same condition.
+ * The quest copy of the renderer, and the RENDER_MODEL manifest entries it
+ * needs on Meta Horizon, are set on the expo-horizon-core plugin entry.
+ * `main`, `mobile` and `quest` never get anything from here. This function
+ * writes only files under `jniLibs/` and `assets/`.
  */
 function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dirname, '../assets')) {
     const sourceRoot = path.join(platformRoot, 'app/src');
     const statePath = path.join(sourceRoot, '.expo-pico-overlays.json');
-    const previous = fs.existsSync(statePath)
+    const recorded = fs.existsSync(statePath)
         ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
         : {};
+    const previous = Object.fromEntries(Object.entries(recorded).filter(([relative]) => MANAGED_FLAVORS.includes(relative.split(path.sep)[0])));
     const next = {};
     const active = options.xrMode !== 'mobile' && options.buildVariant !== 'mobile';
-    const loaderFlavors = picoFlavors(options);
-    const rendererFlavors = [...loaderFlavors, 'quest'];
+    const flavors = picoFlavors(options);
     const staged = [];
     for (const library of ['libopenxr_loader.so', 'libviro_renderer.so']) {
         const isLoader = library === 'libopenxr_loader.so';
@@ -116,8 +105,8 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
                 relative,
                 source,
                 enabled,
-                flavors: isLoader ? loaderFlavors : rendererFlavors,
-                managed: isLoader ? LOADER_MANAGED_FLAVORS : RENDERER_MANAGED_FLAVORS,
+                flavors,
+                managed: MANAGED_FLAVORS,
             });
         }
     }
@@ -130,8 +119,8 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
                     relative: path.join('assets', name),
                     source,
                     enabled: active && options.viroRendererOverlay,
-                    flavors: rendererFlavors,
-                    managed: RENDERER_MANAGED_FLAVORS,
+                    flavors,
+                    managed: MANAGED_FLAVORS,
                 });
         }
     }
@@ -145,12 +134,6 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
                 desired.set(relative, entry.source);
         }
     }
-    // `src/quest` was not ours before 1.1. A file there that we neither recorded
-    // nor want to write belongs to the app, unless it is byte-for-byte our copy.
-    const foreign = (relative, target) => relative.startsWith('quest' + path.sep) &&
-        !desired.has(relative) &&
-        previous[relative] === undefined &&
-        digest(target) !== known.get(relative);
     // Clean only content we can attribute to this plugin. Unknown legacy files
     // must be reviewed explicitly; silently keeping them can mask a new AAR.
     for (const relative of new Set([...Object.keys(previous), ...known.keys()])) {
@@ -158,7 +141,7 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
         if (!target.startsWith(path.resolve(sourceRoot) + path.sep)) {
             throw new Error('[expo-pico-core] Invalid overlay state path');
         }
-        if (fs.existsSync(target) && !foreign(relative, target)) {
+        if (fs.existsSync(target)) {
             const current = digest(target);
             if (current !== previous[relative] && current !== known.get(relative)) {
                 throw new Error(`[expo-pico-core] Review custom native override ${target} before prebuild; it was not modified.`);
@@ -168,7 +151,7 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
     for (const relative of new Set([...Object.keys(previous), ...known.keys()])) {
         const target = path.resolve(sourceRoot, relative);
         const source = desired.get(relative);
-        if (fs.existsSync(target) && !source && !foreign(relative, target)) {
+        if (fs.existsSync(target) && !source) {
             fs.unlinkSync(target);
         }
         if (source) {
@@ -183,15 +166,13 @@ function syncPicoOverlays(platformRoot, options, stagedRoot = path.resolve(__dir
     fs.writeFileSync(statePath, JSON.stringify(next, null, 2) + '\n');
 }
 const withPicoOpenXrLoaderOverlay = (config, options) => {
-    config = (0, config_plugins_1.withDangerousMod)(config, [
+    return (0, config_plugins_1.withDangerousMod)(config, [
         'android',
         (cfg) => {
             syncPicoOverlays(cfg.modRequest.platformProjectRoot, options);
             return cfg;
         },
     ]);
-    config = (0, withQuestRenderModel_1.withQuestRenderModel)(config, options);
-    return (0, withQuestStoreDeviceTargets_1.withQuestStoreDeviceTargets)(config, options);
 };
 exports.withPicoOpenXrLoaderOverlay = withPicoOpenXrLoaderOverlay;
 //# sourceMappingURL=withPicoOpenXrLoaderOverlay.js.map

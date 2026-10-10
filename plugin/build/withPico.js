@@ -15,8 +15,6 @@ const withPicoOpenXrLoaderOverlay_1 = require("./withPicoOpenXrLoaderOverlay");
 const withPicoSettingsGradle_1 = require("./withPicoSettingsGradle");
 const withPicoStrings_1 = require("./withPicoStrings");
 const withPicoSwan_1 = require("./withPicoSwan");
-const withQuestMetaLayout_1 = require("./withQuestMetaLayout");
-const withQuestRemovals_1 = require("./withQuestRemovals");
 /**
  * Main config plugin entrypoint for expo-pico-core.
  *
@@ -35,10 +33,12 @@ const withQuestRemovals_1 = require("./withQuestRemovals");
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
  *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
- *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
- *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
- *      questExcludeDependencies)
- *  13. Meta-only entries removed from the pico, dual and mobile flavors
+ *  11. Meta-only entries removed from the pico, dual and mobile flavors
+ *  12. PICO renderer and loader overlays (pico and dual flavors)
+ *
+ * The Meta Horizon `quest` flavor and everything in it belong to the
+ * expo-horizon-core plugin entry. With no PICO app ID this plugin builds no
+ * pico flavor (see `ResolvedPicoOptions.isPicoEnabled`).
  */
 const withPico = (config, rawOptions) => {
     const options = (0, types_1.resolveOptions)(rawOptions ?? {});
@@ -66,10 +66,6 @@ const withPico = (config, rawOptions) => {
     config = (0, withPicoAndroidManifest_1.withPicoPlatformServiceManifest)(config, options);
     config = (0, withPicoMainApplication_1.withPicoMainApplication)(config, options);
     config = (0, withPicoLocalProperties_1.withPicoLocalProperties)(config, options);
-    // Meta VR Layout SDK: quest flavor only, removed again when switched off.
-    config = (0, withQuestMetaLayout_1.withQuestMetaLayout)(config, options);
-    // Quest-only permission, feature and dependency removals.
-    config = (0, withQuestRemovals_1.withQuestRemovals)(config, options);
     // Meta-only entries Viro writes to main (and its AAR declares) get removal
     // markers in the pico, dual and mobile flavor manifests. Quest keeps them.
     config = (0, withMetaEntryRemovals_1.withMetaEntryRemovals)(config);

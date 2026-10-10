@@ -4,8 +4,6 @@ exports.PICO_OPTION_DEFAULTS = exports.PICO_SWAN_DEFAULTS = exports.PICO_PLATFOR
 exports.resolveOptions = resolveOptions;
 exports.resolveTargetProfile = resolveTargetProfile;
 exports.xrModeToNativeEnum = xrModeToNativeEnum;
-const withQuestRemovals_1 = require("./withQuestRemovals");
-const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 /**
  * Default resolved platform-service state for an app with no identity
  * wired. `declareActivities` is `false` here because the resolver
@@ -37,6 +35,7 @@ exports.PICO_SWAN_DEFAULTS = {
 };
 exports.PICO_OPTION_DEFAULTS = {
     enabled: true,
+    isPicoEnabled: false,
     picoAppId: '',
     buildVariant: 'pico',
     xrMode: 'pico-os5',
@@ -68,19 +67,37 @@ exports.PICO_OPTION_DEFAULTS = {
     ndkAbiFilters: true,
     openXrLoaderDeclaration: true,
     viroRendererOverlay: false,
-    storeDeviceTargets: null,
-    metaLayoutSdk: false,
-    questRemovePermissions: [],
-    questRemoveFeatures: [],
-    questExcludeDependencies: [],
     openXrLoaderOverlay: true,
     developerTools: false,
     enableEmulatorOptimizations: false,
     minSdkVersion: 32,
     targetSdkVersion: 34,
 };
+/**
+ * Options that configure the Meta Horizon `quest` flavor. They belong on the
+ * `expo-horizon-core` plugin entry; core no longer owns that flavor.
+ */
+const QUEST_OPTION_KEYS = [
+    'metaLayoutSdk',
+    'storeDeviceTargets',
+    'questRemovePermissions',
+    'questRemoveFeatures',
+    'questExcludeDependencies',
+];
 function resolveOptions(options = {}) {
-    const buildVariant = options.buildVariant ?? exports.PICO_OPTION_DEFAULTS.buildVariant;
+    const misplaced = QUEST_OPTION_KEYS.filter((key) => key in options);
+    if (misplaced.length > 0) {
+        throw new Error(`[expo-pico-core] ${misplaced.join(', ')} configure the Meta Horizon quest flavor. ` +
+            'Move them to the expo-horizon-core plugin entry.');
+    }
+    const platformService = resolvePlatformServiceOptions(options.platformService, 
+    /* legacyPicoAppId */ options.picoAppId);
+    // No app ID, no PICO build: the pico flavor exists only once the app asks
+    // for it with an ID. Everything below then resolves as a mobile build.
+    const isPicoEnabled = platformService.picoAppId !== null;
+    const buildVariant = isPicoEnabled
+        ? (options.buildVariant ?? exports.PICO_OPTION_DEFAULTS.buildVariant)
+        : 'mobile';
     const defaultXrMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os5';
     const swan = {
         ...exports.PICO_SWAN_DEFAULTS,
@@ -92,13 +109,13 @@ function resolveOptions(options = {}) {
             ? (options.picoSwan.swanSdkArtifact ?? null)
             : exports.PICO_SWAN_DEFAULTS.swanSdkArtifact,
     };
-    const xrMode = options.xrMode ?? defaultXrMode;
+    const xrMode = isPicoEnabled ? (options.xrMode ?? defaultXrMode) : 'mobile';
     // appType default tracks xrMode. Mobile builds default to 2d (no immersive
     // launcher categories injected); PICO modes default to vr. The user can
     // override with 'mr' for passthrough-first apps.
-    const appType = options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
-    const platformService = resolvePlatformServiceOptions(options.platformService, 
-    /* legacyPicoAppId */ options.picoAppId);
+    const appType = isPicoEnabled
+        ? (options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr'))
+        : '2d';
     // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
     // documented requirement unless the user explicitly overrides it.
     const minSdkVersion = options.minSdkVersion ??
@@ -117,6 +134,7 @@ function resolveOptions(options = {}) {
     return {
         ...exports.PICO_OPTION_DEFAULTS,
         ...options,
+        isPicoEnabled,
         buildVariant,
         xrMode,
         picoSwan: swan,
@@ -127,11 +145,6 @@ function resolveOptions(options = {}) {
         openXrLoaderDeclaration,
         viroRendererOverlay,
         openXrLoaderOverlay,
-        storeDeviceTargets: (0, withQuestStoreDeviceTargets_1.normalizeStoreDeviceTargets)(options.storeDeviceTargets),
-        metaLayoutSdk: options.metaLayoutSdk === true,
-        questRemovePermissions: (0, withQuestRemovals_1.normalizeNames)(options.questRemovePermissions),
-        questRemoveFeatures: (0, withQuestRemovals_1.normalizeNames)(options.questRemoveFeatures),
-        questExcludeDependencies: (0, withQuestRemovals_1.normalizeDependencyExclusions)(options.questExcludeDependencies),
         targetDevices: options.targetDevices ?? exports.PICO_OPTION_DEFAULTS.targetDevices,
         defaultWidth: nonEmpty(options.defaultWidth) ?? exports.PICO_OPTION_DEFAULTS.defaultWidth,
         defaultHeight: nonEmpty(options.defaultHeight) ?? exports.PICO_OPTION_DEFAULTS.defaultHeight,

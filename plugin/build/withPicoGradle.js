@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.withPicoProjectBuildGradle = exports.withPicoAppBuildGradle = void 0;
 exports.renderFlavorBlock = renderFlavorBlock;
 exports.renderFlavorXrModeBlock = renderFlavorXrModeBlock;
-exports.updateIdentityGate = updateIdentityGate;
+exports.removeIdentityGate = removeIdentityGate;
 exports.updateOverlayPackaging = updateOverlayPackaging;
 const config_plugins_1 = require("@expo/config-plugins");
 const constants_1 = require("./constants");
@@ -16,7 +16,6 @@ const PICO_SDK_MARKER = '// expo-pico-core: pico sdk config';
 const PICO_REPO_MARKER = '// expo-pico-core: pico maven repo';
 const HERMES_PATH_MARKER = '// expo-pico-core: hermesc path compatibility';
 const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-dim fallback';
-const HORIZON_BUILD_CONFIG_MARKER = '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 const APP_LIBS_AAR_MARKER = '// expo-pico-core: auto-include app/libs/*.aar (PICO Platform SDK)';
 const PPS_DEPS_MARKER = '// expo-pico-core: PICO Platform Service SDK (com.pico.pps:*) deps';
 const PPS_PIN_MARKER = '// expo-pico-core: single-version pin for com.pico.pps:*';
@@ -77,17 +76,6 @@ function renderFlavorBlock(options) {
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
         }`
         : '';
-    // Horizon and Expo-PICO share the device dimension. A missing flavor in
-    // that dimension needs matchingFallbacks, not missingDimensionStrategy.
-    const questFlavor = options.buildVariant === 'pico' || options.buildVariant === 'dual'
-        ? `
-        quest {
-            dimension "device"
-            minSdkVersion 29
-            targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}
-            matchingFallbacks = ['mobile']
-        }`
-        : '';
     const picoMissingDimensionLine = options.buildVariant === 'pico' || options.buildVariant === 'dual'
         ? `
             matchingFallbacks = ['mobile']`
@@ -101,7 +89,7 @@ function renderFlavorBlock(options) {
             dimension "device"
             minSdkVersion ${options.minSdkVersion}
             targetSdkVersion ${options.targetSdkVersion}${abiFiltersLine}${picoMissingDimensionLine}
-        }${dualFlavor}${questFlavor}
+        }${dualFlavor}
     }
 `;
 }
@@ -138,36 +126,12 @@ android.productFlavors.configureEach { flavor ->
 `;
 }
 /**
- * Fail every pico/dual Gradle build when the APK would ship without
- * `pvr.app.id`. On PICO OS that APK never starts: XRShell shows "No
- * entitlement info in the local cache" and ends the process (PICO 4 Ultra,
- * Android 14). A prebuild warning was not enough, so the build stops here.
- *
- * Rewritten on every prebuild from the ID that prebuild resolved, so setting
- * `PICO_APP_ID` and re-running prebuild removes it. Hooked on `pre<Variant>Build`
- * so quest, mobile, iOS and `expo start` never hit it. `appType: '2d'` is
- * exempt: it opts out of the immersive launcher on purpose.
+ * Removes the identity gate an earlier plugin version wrote into
+ * app/build.gradle. PICO is now off until a picoAppId is set, so there is
+ * nothing to gate.
  */
-function updateIdentityGate(contents, options) {
-    contents = contents.replace(/\n\/\/ expo-pico-core: begin identity gate[\s\S]*?\/\/ expo-pico-core: end identity gate\n?/g, '');
-    if (options.buildVariant === 'mobile' ||
-        options.xrMode === 'mobile' ||
-        options.appType === '2d' ||
-        options.platformService.picoAppId) {
-        return contents;
-    }
-    return (contents +
-        `
-// expo-pico-core: begin identity gate
-tasks.configureEach { t ->
-    if (t.name ==~ /pre(Pico|Dual)\\w*Build/) {
-        t.doFirst {
-            throw new GradleException("[expo-pico] PICO_APP_ID is empty, so this APK has no pvr.app.id and PICO OS will close it at launch. Put PICO_APP_ID=<id from the PICO Developer Console> in .env.local (or the EAS env) and re-run expo prebuild.")
-        }
-    }
-}
-// expo-pico-core: end identity gate
-`);
+function removeIdentityGate(contents) {
+    return contents.replace(/\n\/\/ expo-pico-core: begin identity gate[\s\S]*?\/\/ expo-pico-core: end identity gate\n?/g, '');
 }
 /**
  * Let the overlay copies win over the AAR's in the variants that get them:
@@ -183,12 +147,6 @@ function updateOverlayPackaging(contents, options) {
     ];
     if (libraries.length === 0 || options.buildVariant === 'mobile')
         return contents;
-    const questRule = options.viroRendererOverlay
-        ? `
-        if (variant.productFlavors.any { it.first == "device" && it.second == "quest" }) {
-            variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(['**/libviro_renderer.so'])})
-        }`
-        : '';
     return (contents +
         `
 // expo-pico-core: begin flavor overlays
@@ -196,7 +154,7 @@ androidComponents {
     onVariants(selector().all()) { variant ->
         if (variant.productFlavors.any { it.first == "device" && it.second in ["pico", "dual"] }) {
             variant.packaging.jniLibs.pickFirsts.addAll(${JSON.stringify(libraries)})
-        }${questRule}
+        }
     }
 }
 // expo-pico-core: end flavor overlays
@@ -284,7 +242,7 @@ const withPicoAppBuildGradle = (config, options) => {
         // Upgrade the old generated global pickFirst block, including when users
         // turn an overlay off without a clean prebuild. Other packaging stays intact.
         contents = updateOverlayPackaging(contents, options);
-        contents = updateIdentityGate(contents, options);
+        contents = removeIdentityGate(contents);
         // Also repair already-generated flavor blocks during incremental prebuild.
         const fallbackMarker = '// expo-pico-core: device flavor fallbacks';
         if (options.buildVariant !== 'mobile' && !contents.includes(fallbackMarker)) {
@@ -292,7 +250,7 @@ const withPicoAppBuildGradle = (config, options) => {
 ${fallbackMarker}
 android.productFlavors.configureEach { flavor ->
     def fallbacks = flavor.name == "dual" ? ["pico", "mobile"] :
-        (flavor.name in ["pico", "quest"] ? ["mobile"] : [])
+        (flavor.name == "pico" ? ["mobile"] : [])
     flavor.matchingFallbacks.addAll(fallbacks.findAll { !flavor.matchingFallbacks.contains(it) })
 }
 `;
@@ -386,22 +344,6 @@ ${PICO_REPO_BLOCK}
             else {
                 contents = result;
             }
-        }
-        // expo-horizon-core 57.0.2 declares a custom BuildConfig field but was
-        // authored before AGP 9 disabled generated BuildConfig classes by default.
-        // Configure only that library when present; withId runs early enough to
-        // enable the feature before its build.gradle evaluates buildConfigField.
-        if (!(0, utils_1.gradleContains)(contents, HORIZON_BUILD_CONFIG_MARKER)) {
-            contents += `
-${HORIZON_BUILD_CONFIG_MARKER}
-subprojects { sub ->
-    if (sub.name == "expo-horizon-core") {
-        sub.plugins.withId("com.android.library") {
-            sub.android.buildFeatures.buildConfig = true
-        }
-    }
-}
-`;
         }
         // Global `subprojects { missingDimensionStrategy 'device', 'mobile' }`
         // fallback. Without this, every autolinked module that doesn't declare

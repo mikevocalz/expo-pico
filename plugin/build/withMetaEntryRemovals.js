@@ -277,14 +277,12 @@ function applyMetaEntryRemovals(manifest, entries) {
     }
     return JSON.stringify(manifest) !== before;
 }
-/** Flavor source sets that must not carry Meta entries, per the config. */
-function metaFreeFlavors(state, questFlavor) {
-    const flavors = [];
-    if (state.hasPicoFlavor)
-        flavors.push('pico', 'dual');
-    if (questFlavor)
-        flavors.push('mobile');
-    return flavors;
+/**
+ * PICO flavor source sets that must not carry Meta entries. The mobile flavor
+ * is the quest flavor owner's (the expo-horizon-core plugin entry).
+ */
+function metaFreeFlavors(state) {
+    return state.hasPicoFlavor ? ['pico', 'dual'] : [];
 }
 /**
  * Reads `app/src/main/AndroidManifest.xml` and writes the removal markers
@@ -323,7 +321,7 @@ async function syncMetaEntryRemovals(platformRoot, flavors) {
 const withMetaEntryRemovals = (config) => withFinalizedMod(config, [
     'android',
     async (cfg) => {
-        const flavors = metaFreeFlavors((0, withPicoFlavorEntries_1.getPicoFlavorManifestState)(cfg), (0, withPicoFlavorEntries_1.hasQuestFlavor)(cfg));
+        const flavors = metaFreeFlavors((0, withPicoFlavorEntries_1.getPicoFlavorManifestState)(cfg));
         await syncMetaEntryRemovals(cfg.modRequest.platformProjectRoot, flavors);
         return cfg;
     },
