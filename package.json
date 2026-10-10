@@ -13,7 +13,8 @@
     "app.plugin.js",
     "expo-module.config.json",
     "plugin.js",
-    "plugin.d.ts"
+    "plugin.d.ts",
+    "quest"
   ],
   "keywords": [
     "react-native",
@@ -34,9 +35,9 @@
     "react": "*",
     "react-native": "*"
   },
-  "gitHead": "d50d52a548e637d21da361b9f998f94f5deebd12",
+  "gitHead": "5edd6b44496ce9b3c568b060d17eeef962b7c412",
   "expoPico": {
-    "sourceCommit": "d50d52a548e637d21da361b9f998f94f5deebd12",
+    "sourceCommit": "5edd6b44496ce9b3c568b060d17eeef962b7c412",
     "upstream": "expo-horizon-core@57.0.2"
   }
 }
