@@ -10,7 +10,7 @@ const withFinalizedMod = finalizedModExports.withFinalizedMod as (
 import * as fs from 'fs';
 import * as path from 'path';
 
-import type { ResolvedPicoOptions } from './types';
+import type { ResolvedQuestOptions } from './types';
 
 /**
  * Quest-flavor removals: permissions, features and Maven dependencies that
@@ -40,7 +40,7 @@ export function normalizeDependencyExclusions(values: readonly string[] | undefi
     const parts = v.split(':');
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       throw new Error(
-        `[expo-pico-core] questExcludeDependencies entries must be "group:module", got ${JSON.stringify(raw)}.`
+        `[expo-horizon-quest] questExcludeDependencies entries must be "group:module", got ${JSON.stringify(raw)}.`
       );
     }
     if (!out.includes(v)) out.push(v);
@@ -104,7 +104,7 @@ export function applyQuestManifestRemovals(
  */
 export async function syncQuestManifestRemovals(
   platformRoot: string,
-  options: Pick<ResolvedPicoOptions, 'questRemovePermissions' | 'questRemoveFeatures'>
+  options: Pick<ResolvedQuestOptions, 'questRemovePermissions' | 'questRemoveFeatures'>
 ): Promise<void> {
   const questPath = path.join(platformRoot, 'app', 'src', 'quest', 'AndroidManifest.xml');
   if (!fs.existsSync(questPath)) return;
@@ -162,12 +162,12 @@ export function applyQuestExclusionsGradle(
   return stripped.replace(/\n*$/, '\n\n') + renderQuestExclusionsBlock(coordinates);
 }
 
-export const withQuestRemovals: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
+export const withQuestRemovals: ConfigPlugin<ResolvedQuestOptions> = (config, options) => {
   config = withAppBuildGradle(config, (cfg) => {
     if (cfg.modResults.language !== 'groovy') {
       if (options.questExcludeDependencies.length > 0) {
         console.warn(
-          '[expo-pico-core] questExcludeDependencies needs a Groovy app/build.gradle; skipping.'
+          '[expo-horizon-quest] questExcludeDependencies needs a Groovy app/build.gradle; skipping.'
         );
       }
       return cfg;

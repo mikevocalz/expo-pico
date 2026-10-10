@@ -84,8 +84,6 @@ jobs:
 
   example-android:
     runs-on: ubuntu-latest
-    env:
-      PICO_APP_ID: ci-placeholder-app-id
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -100,8 +98,8 @@ jobs:
       # postinstall applies scripts/patches/android/*.patch. A second run
       # must report every patch as already applied — this fails if a patch
       # silently didn't apply during install or isn't idempotent. The
-      # assemblePicoDebug step below is the real regression guard: the
-      # patched files are AGP-9 fixes and the build breaks without them.
+      # assemble steps below are the real regression guard: the patched
+      # files are AGP-9 fixes and the build breaks without them.
       - name: Android dep patches applied and idempotent
         run: |
           out="$(node scripts/patch-android-deps.js)"
@@ -119,11 +117,24 @@ jobs:
           yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
-      - run: yarn example:assemble:pico
-      - name: Eskiu runtime is linked into the PICO APK
+      # The example's PICO config is commented out, so there is no picoDebug.
+      - run: yarn example:assemble:quest
+      - name: No pico variant without a PICO app ID
+        run: |
+          cd example/android
+          ! ./gradlew -q :app:tasks --all | grep -i picoDebug
+      - name: Quest APK has no PICO entries, mobile APK has no Meta entries
+        run: |
+          aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | tail -1)
+          apks=example/android/app/build/outputs/apk
+          "$aapt2" dump xmltree --file AndroidManifest.xml "$apks/quest/debug/app-quest-debug.apk" > quest.txt
+          "$aapt2" dump xmltree --file AndroidManifest.xml "$apks/mobile/debug/app-mobile-debug.apk" > mobile.txt
+          ! grep -iE '"(pvr\.|com\.pico|com\.pvr)' quest.txt
+          ! grep -iE '"(com\.oculus|oculus\.|horizonos|com\.meta\.)' mobile.txt
+      - name: Eskiu runtime is linked into the quest APK
         run: |
           so=$(mktemp -d)
-          unzip -o -q example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk \
+          unzip -o -q example/android/app/build/outputs/apk/quest/debug/app-quest-debug.apk \
             lib/arm64-v8a/libExpoPicoCore.so -d "$so"
           nm_bin=$(ls "$ANDROID_NDK_ROOT"/toolchains/llvm/prebuilt/*/bin/llvm-nm 2>/dev/null | head -1)
           nm_bin=${nm_bin:-$(ls "$ANDROID_HOME"/ndk/*/toolchains/llvm/prebuilt/*/bin/llvm-nm | tail -1)}

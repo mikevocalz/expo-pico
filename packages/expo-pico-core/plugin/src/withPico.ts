@@ -18,8 +18,6 @@ import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
 import { withPicoSwan } from './withPicoSwan';
-import { withQuestMetaLayout } from './withQuestMetaLayout';
-import { withQuestRemovals } from './withQuestRemovals';
 
 /**
  * Main config plugin entrypoint for expo-pico-core.
@@ -39,10 +37,12 @@ import { withQuestRemovals } from './withQuestRemovals';
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
  *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
  *  10. local.properties (node binary path + optional PICO SDK paths)
- *  11. Meta VR Layout SDK (quest flavor only, opt-in via metaLayoutSdk)
- *  12. Quest-only removals (questRemovePermissions / questRemoveFeatures /
- *      questExcludeDependencies)
- *  13. Meta-only entries removed from the pico, dual and mobile flavors
+ *  11. Meta-only entries removed from the pico, dual and mobile flavors
+ *  12. PICO renderer and loader overlays (pico and dual flavors)
+ *
+ * The Meta Horizon `quest` flavor and everything in it belong to the
+ * expo-horizon-core plugin entry. With no PICO app ID this plugin builds no
+ * pico flavor (see `ResolvedPicoOptions.isPicoEnabled`).
  */
 const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) => {
   const options = resolveOptions(rawOptions ?? {});
@@ -75,10 +75,6 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
 
   config = withPicoMainApplication(config, options);
   config = withPicoLocalProperties(config, options);
-  // Meta VR Layout SDK: quest flavor only, removed again when switched off.
-  config = withQuestMetaLayout(config, options);
-  // Quest-only permission, feature and dependency removals.
-  config = withQuestRemovals(config, options);
   // Meta-only entries Viro writes to main (and its AAR declares) get removal
   // markers in the pico, dual and mobile flavor manifests. Quest keeps them.
   config = withMetaEntryRemovals(config);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 import { syncPicoOverlays } from '../plugin/src/withPicoOpenXrLoaderOverlay';
 
 /**

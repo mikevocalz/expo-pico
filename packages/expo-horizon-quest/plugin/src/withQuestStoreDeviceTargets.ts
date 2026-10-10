@@ -10,7 +10,7 @@ const withFinalizedMod = finalizedModExports.withFinalizedMod as (
 import * as fs from 'fs';
 import * as path from 'path';
 
-import type { ResolvedPicoOptions } from './types';
+import type { ResolvedQuestOptions } from './types';
 
 type Manifest = AndroidConfig.Manifest.AndroidManifest;
 
@@ -47,7 +47,7 @@ export function normalizeStoreDeviceTargets(
   if (value === false) return false;
   if (typeof value !== 'string') {
     throw new Error(
-      `[expo-pico-core] storeDeviceTargets must be a string or false, got ${typeof value}.`
+      `[expo-horizon-quest] storeDeviceTargets must be a string or false, got ${typeof value}.`
     );
   }
   if (value.trim() === '') return false;
@@ -56,7 +56,7 @@ export function normalizeStoreDeviceTargets(
   const unknown = parts.filter((p) => !allowed.includes(p));
   if (unknown.length > 0) {
     throw new Error(
-      `[expo-pico-core] storeDeviceTargets has unknown specifier(s): ${unknown
+      `[expo-horizon-quest] storeDeviceTargets has unknown specifier(s): ${unknown
         .map((p) => JSON.stringify(p))
         .join(', ')}. Use one or more of ${STORE_DEVICE_TARGET_SPECIFIERS.join(', ')}, ` +
         `joined with "|".`
@@ -131,7 +131,7 @@ export function applyStoreDeviceTargets(manifest: Manifest, value: string | null
  */
 export async function syncQuestStoreDeviceTargets(
   platformRoot: string,
-  options: ResolvedPicoOptions
+  options: ResolvedQuestOptions
 ): Promise<void> {
   const questPath = path.join(platformRoot, 'app', 'src', 'quest', 'AndroidManifest.xml');
   if (!fs.existsSync(questPath)) return;
@@ -145,7 +145,7 @@ export async function syncQuestStoreDeviceTargets(
     value = deriveStoreDeviceTargets(supported);
     if (value === null && supported) {
       console.warn(
-        `[expo-pico-core] No Meta Store device targets derived from com.oculus.supportedDevices="${supported}"; ` +
+        `[expo-horizon-quest] No Meta Store device targets derived from com.oculus.supportedDevices="${supported}"; ` +
           'set storeDeviceTargets to write com.meta.store.defaultDeviceTargets.'
       );
     }
@@ -163,7 +163,7 @@ export async function syncQuestStoreDeviceTargets(
  * Runs as a finalized mod for the same reason as withQuestRenderModel:
  * expo-horizon-core rewrites the quest manifest in a dangerous mod.
  */
-export const withQuestStoreDeviceTargets: ConfigPlugin<ResolvedPicoOptions> = (config, options) =>
+export const withQuestStoreDeviceTargets: ConfigPlugin<ResolvedQuestOptions> = (config, options) =>
   withFinalizedMod(config, [
     'android',
     async (cfg) => {

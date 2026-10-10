@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "types": ["jest", "node"],
+    "typeRoots": ["../../node_modules/@types"],
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["plugin/src/**/*.ts", "__tests__/**/*.ts"],
+  "exclude": ["node_modules", "plugin/build"]
+}

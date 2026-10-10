@@ -1,4 +1,4 @@
-import { resolveOptions } from '../../plugin/src/types';
+import { resolveOptions } from './picoOptions';
 import type { PicoPluginOptions } from '../../plugin/src/types';
 import { withPicoAppBuildGradle } from '../../plugin/src/withPicoGradle';
 
