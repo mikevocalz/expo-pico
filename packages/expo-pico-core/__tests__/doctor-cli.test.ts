@@ -62,7 +62,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     expect(out.stdout).toContain('No issues');
   });
 
-  it('reports identity.missing as ERROR (exit 1) when picoAppId is empty on an immersive build', () => {
+  it('reports identity.missing as INFO (exit 0) when no picoAppId is set: PICO is off', () => {
     const dir = writeFixture({
       expo: {
         name: 't',
@@ -72,8 +72,8 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     });
     const out = runDoctor(dir);
     expect(out.stdout).toContain('identity.missing');
-    expect(out.stdout).toContain('ERROR');
-    expect(out.status).toBe(1);
+    expect(out.stdout).not.toContain('ERROR');
+    expect(out.status).toBe(0);
   });
 
   it('--fail-on-warning flips warning into exit code 1', () => {
@@ -81,7 +81,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: {
         name: 't',
         slug: 't',
-        plugins: [['@expo-pico/core', { xrMode: 'pico-swan', appType: 'vr' }]],
+        plugins: [['@expo-pico/core', { picoAppId: 'APP', buildVariant: 'mobile', appType: 'vr' }]],
       },
     });
     const out = runDoctor(dir, ['--fail-on-warning']);
@@ -99,8 +99,9 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     const out = runDoctor(dir, ['--json']);
     const parsed = JSON.parse(out.stdout);
     expect(parsed.findings.some((f: any) => f.id === 'identity.missing')).toBe(true);
-    expect(parsed.summary.errorCount).toBeGreaterThanOrEqual(1);
-    expect(parsed.resolvedOptions.xrMode).toBe('pico-swan');
+    expect(parsed.summary.errorCount).toBe(0);
+    expect(parsed.resolvedOptions.isPicoEnabled).toBe(false);
+    expect(parsed.resolvedOptions.xrMode).toBe('mobile');
   });
 
   it('exits 2 when expo-pico-core plugin is missing from app.config', () => {
@@ -121,10 +122,9 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: { name: 't', slug: 't', plugins: ['@expo-pico/core'] },
     });
     const out = runDoctor(dir);
-    // Default xrMode is pico-os5, appType vr, no identity → expect
-    // identity.missing error (PPS would reject runtime calls with 100008).
+    // No app ID, so PICO is off: one identity.missing info line.
     expect(out.stdout).toContain('identity.missing');
-    expect(out.status).toBe(1);
+    expect(out.status).toBe(0);
   });
 
   it('reports multiple findings with stable order', () => {

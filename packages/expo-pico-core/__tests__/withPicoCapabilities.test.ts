@@ -1,7 +1,7 @@
 import type { AndroidConfig } from '@expo/config-plugins';
 
 import { MANIFEST_META, PICO_FEATURES, PICO_PERMISSIONS } from '../plugin/src/constants';
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 import { applyCapabilityContract } from '../plugin/src/withPicoCapabilities';
 
 type Manifest = AndroidConfig.Manifest.AndroidManifest;

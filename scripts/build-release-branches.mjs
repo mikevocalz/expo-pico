@@ -211,7 +211,8 @@ for (const [name, w] of selected) {
 }
 
 // expo-horizon-core: the example app pins it; ship that exact upstream release
-// (software-mansion-labs/expo-horizon) with the one patch this repo needs.
+// (software-mansion-labs/expo-horizon) with the one patch this repo needs, plus
+// the quest-flavor extras.
 {
   const exampleManifest = readJson(join(ROOT, 'example/package.json'));
   const version = exampleManifest.dependencies?.['expo-horizon-core'];
@@ -234,7 +235,19 @@ for (const [name, w] of selected) {
     if (patched === gradle) throw new Error('expo-horizon-core: android { anchor not found');
     writeFileSync(gradleFile, patched);
   }
+  // Quest-flavor extras (packages/expo-horizon-quest) ride along under quest/,
+  // and app.plugin.js runs upstream first, then them, from one plugin entry.
+  const questDir = join(ROOT, 'packages/expo-horizon-quest');
+  for (const part of ['plugin/build', 'plugin/assets']) {
+    if (!existsSync(join(questDir, part))) {
+      throw new Error(`expo-horizon-quest: ${part} missing. Run \`yarn build\` first.`);
+    }
+    cpSync(join(questDir, part), join(stageDir, 'quest', part), { recursive: true });
+  }
+  cpSync(join(questDir, 'release/app.plugin.js'), join(stageDir, 'app.plugin.js'));
+
   const m = rewriteManifest(stageDir);
+  m.files = [...new Set([...(m.files ?? []), 'quest'])];
   m.expoPico.upstream = `expo-horizon-core@${version}`;
   writeFileSync(join(stageDir, 'package.json'), JSON.stringify(m, null, 2) + '\n');
   assertEntryPoints(stageDir, m);

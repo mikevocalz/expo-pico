@@ -6,7 +6,7 @@ import {
   MANIFEST_META,
   PICO_QUERY_PACKAGES,
 } from '../plugin/src/constants';
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 import { applyLauncherContract } from '../plugin/src/withPicoLauncherActivity';
 
 type Manifest = AndroidConfig.Manifest.AndroidManifest;

@@ -109,7 +109,7 @@ describe('renderFlavorBlock — NDK ABI filter', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { renderFlavorBlock } = require('../plugin/src/withPicoGradle');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { resolveOptions } = require('../plugin/src/types');
+  const { resolveOptions } = require('./support/picoOptions');
 
   it('injects ndk abiFilters arm64-v8a on the pico flavor when enabled', () => {
     const out: string = renderFlavorBlock(
@@ -148,8 +148,9 @@ describe('renderFlavorBlock — NDK ABI filter', () => {
       resolveOptions({ xrMode: 'pico-swan', buildVariant: 'dual', ndkAbiFilters: true })
     );
     const matches = out.match(/ndk \{ abiFilters 'arm64-v8a' \}/g) ?? [];
-    // pico, dual, and the quest fallback flavor should each carry the filter.
-    expect(matches).toHaveLength(3);
+    // pico and dual carry the filter; the quest flavor is not core's.
+    expect(matches).toHaveLength(2);
+    expect(out).not.toContain('quest');
   });
 });
 
@@ -157,7 +158,7 @@ describe('capability BuildConfig fields', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { withPicoAppBuildGradle } = require('../plugin/src/withPicoGradle');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { resolveOptions } = require('../plugin/src/types');
+  const { resolveOptions } = require('./support/picoOptions');
 
   // Minimal mock of the @expo/config-plugins' withAppBuildGradle adapter
   // so we can drive the plugin against an in-memory build.gradle string.
@@ -307,7 +308,7 @@ describe('withPicoGradleProperties — picoBuildVariant', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { withPicoGradleProperties } = require('../plugin/src/withPicoGradleProperties');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { resolveOptions } = require('../plugin/src/types');
+  const { resolveOptions } = require('./support/picoOptions');
 
   type Prop = { type: string; key?: string; value?: string };
   type PropsMod = (config: unknown) => Promise<{ modResults: Prop[] }>;

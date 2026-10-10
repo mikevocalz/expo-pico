@@ -1,4 +1,4 @@
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 import { runDiagnosticChecks } from '../plugin/src/withPicoDiagnostics';
 
 type WarnCall = { tag: string; message: string };
@@ -36,21 +36,16 @@ describe('withPicoDiagnostics — clean config', () => {
   });
 });
 
-describe('withPicoDiagnostics — immersive without identity', () => {
-  it('warns when xrMode=pico-os5 and no picoAppId is set', () => {
-    const calls = runDiagnostics({ xrMode: 'pico-os5' });
-    expect(calls.length).toBeGreaterThanOrEqual(1);
-    expect(calls[0].message).toMatch(/picoAppId is empty/);
+describe('withPicoDiagnostics — no app ID', () => {
+  it('says once that PICO is off', () => {
+    const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: undefined, handTracking: true });
+    expect(calls).toHaveLength(1);
+    expect(calls[0].message).toMatch(/PICO is off/);
   });
 
-  it('warns when xrMode=pico-swan and no picoAppId is set', () => {
-    const calls = runDiagnostics({ xrMode: 'pico-swan' });
-    expect(calls.some((c) => c.message.includes('picoAppId'))).toBe(true);
-  });
-
-  it('does not warn when legacy top-level picoAppId is set', () => {
+  it('says nothing about identity when legacy top-level picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
-    expect(calls.some((c) => c.message.includes('picoAppId is empty'))).toBe(false);
+    expect(calls.some((c) => c.message.includes('PICO is off'))).toBe(false);
   });
 });
 

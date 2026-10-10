@@ -1,4 +1,4 @@
-import { resolveOptions } from '../plugin/src/types';
+import { resolveQuestOptions as resolveOptions } from '../plugin/src/types';
 import {
   QUEST_EXCLUSIONS_MARKER,
   applyQuestExclusionsGradle,

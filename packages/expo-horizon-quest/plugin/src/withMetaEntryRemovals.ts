@@ -10,10 +10,10 @@ const withFinalizedMod = finalizedModExports.withFinalizedMod as (
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { getPicoFlavorManifestState } from './withPicoFlavorEntries';
-
 /**
- * Keeps Meta Horizon OS entries out of the pico and dual APKs.
+ * Keeps Meta Horizon OS entries out of the mobile APK. A copy of
+ * @expo-pico/core's module of the same name, which does the same for the pico
+ * and dual flavors; the quest flavor owner keeps its entries out of mobile.
  *
  * `@reactvision/react-viro` with `xRMode: ['QUEST', ...]` writes Horizon OS
  * permissions, features, `com.oculus.supportedDevices` and VRActivity's
@@ -26,8 +26,7 @@ import { getPicoFlavorManifestState } from './withPicoFlavorEntries';
  * entry whose name starts with one of {@link META_NAME_PREFIXES}, adds the AAR
  * entries in {@link LIBRARY_META_ENTRIES}, and writes a `tools:node="remove"`
  * marker for each into the pico and dual flavor manifests (when core has a
- * pico flavor). The mobile flavor gets the same markers from the
- * expo-horizon-core plugin entry.
+ * pico flavor) and the mobile flavor manifest (when a quest flavor exists).
  * The mobile manifest also gets the markers in {@link MOBILE_ONLY_REMOVALS}.
  * The quest flavor manifest is never touched.
  */
@@ -289,14 +288,6 @@ export function applyMetaEntryRemovals(manifest: Manifest, entries: MetaEntries)
 }
 
 /**
- * PICO flavor source sets that must not carry Meta entries. The mobile flavor
- * is the quest flavor owner's (the expo-horizon-core plugin entry).
- */
-export function metaFreeFlavors(state: { hasPicoFlavor: boolean }): string[] {
-  return state.hasPicoFlavor ? ['pico', 'dual'] : [];
-}
-
-/**
  * Reads `app/src/main/AndroidManifest.xml` and writes the removal markers
  * into each flavor manifest in `flavors`. The pico and dual manifests are
  * edited only when they exist (core writes them); the mobile one is created
@@ -335,8 +326,7 @@ export const withMetaEntryRemovals: ConfigPlugin = (config) =>
   withFinalizedMod(config, [
     'android',
     async (cfg) => {
-      const flavors = metaFreeFlavors(getPicoFlavorManifestState(cfg as unknown as typeof config));
-      await syncMetaEntryRemovals(cfg.modRequest.platformProjectRoot, flavors);
+      await syncMetaEntryRemovals(cfg.modRequest.platformProjectRoot, ['mobile']);
       return cfg;
     },
   ]) as typeof config;

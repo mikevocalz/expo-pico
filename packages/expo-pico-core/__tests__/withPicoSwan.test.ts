@@ -1,5 +1,6 @@
 import { applySwanGradleTransform } from '../plugin/src/withPicoSwan';
-import { resolveOptions, xrModeToNativeEnum } from '../plugin/src/types';
+import { xrModeToNativeEnum } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 
 const BASE_GRADLE = `apply plugin: "com.android.application"
 android {

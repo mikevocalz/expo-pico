@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import withPico from '../plugin/src/withPico';
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 import { withPicoOpenXrLoader } from '../plugin/src/viro/withPicoOpenXrLoader';
 import {
   withPicoAndroidManifest,
@@ -102,7 +102,7 @@ describe('withPicoFlavorPermission / withPicoFlavorFeature', () => {
       ['dual', true],
       ['mobile', false],
     ] as const) {
-      const config = withPico(baseConfig() as never, { buildVariant });
+      const config = withPico(baseConfig() as never, { buildVariant, picoAppId: 'TEST' });
       expect(getPicoFlavorManifestState(config).hasPicoFlavor).toBe(expected);
     }
   });

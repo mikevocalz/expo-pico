@@ -1,5 +1,5 @@
 import { applySettingsGradleTransform } from '../plugin/src/withPicoSettingsGradle';
-import { resolveOptions } from '../plugin/src/types';
+import { resolveOptions } from './support/picoOptions';
 
 const BASE_SETTINGS = `rootProject.name = 'example'
 include ':app'

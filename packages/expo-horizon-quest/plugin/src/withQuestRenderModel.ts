@@ -11,7 +11,7 @@ const withFinalizedMod = finalizedModExports.withFinalizedMod as (
 import * as fs from 'fs';
 import * as path from 'path';
 
-import type { ResolvedPicoOptions } from './types';
+import type { ResolvedQuestOptions } from './types';
 
 type Manifest = AndroidConfig.Manifest.AndroidManifest;
 
@@ -19,16 +19,6 @@ type Manifest = AndroidConfig.Manifest.AndroidManifest;
 export const RENDER_MODEL_PERMISSION = 'com.oculus.permission.RENDER_MODEL';
 /** Meta feature declared next to the permission; optional so the APK installs anywhere. */
 export const RENDER_MODEL_FEATURE = 'com.oculus.feature.RENDER_MODEL';
-
-/**
- * True when `syncPicoOverlays` stages `libviro_renderer.so` into the quest
- * flavor. The RENDER_MODEL entries follow the same condition.
- */
-export function rendererOverlayActive(options: ResolvedPicoOptions): boolean {
-  return (
-    options.xrMode !== 'mobile' && options.buildVariant !== 'mobile' && options.viroRendererOverlay
-  );
-}
 
 /**
  * Adds (enabled) or removes (disabled) the RENDER_MODEL permission and
@@ -67,9 +57,9 @@ export function applyQuestRenderModelEntries(manifest: Manifest, enabled: boolea
  */
 export async function syncQuestRenderModel(
   platformRoot: string,
-  options: ResolvedPicoOptions
+  options: Pick<ResolvedQuestOptions, 'viroRendererOverlay'>
 ): Promise<void> {
-  const enabled = rendererOverlayActive(options);
+  const enabled = options.viroRendererOverlay;
   const questPath = path.join(platformRoot, 'app', 'src', 'quest', 'AndroidManifest.xml');
   const exists = fs.existsSync(questPath);
   if (!exists && !enabled) return;
@@ -97,7 +87,7 @@ export async function syncQuestRenderModel(
  * scratch in a dangerous mod, and dangerous mods registered later run
  * earlier, so a dangerous mod here could be overwritten.
  */
-export const withQuestRenderModel: ConfigPlugin<ResolvedPicoOptions> = (config, options) =>
+export const withQuestRenderModel: ConfigPlugin<ResolvedQuestOptions> = (config, options) =>
   withFinalizedMod(config, [
     'android',
     async (cfg) => {

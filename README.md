@@ -122,6 +122,7 @@ export default {
           xrMode: 'pico-os5',
           appType: 'vr',
           buildVariant: 'pico',
+          // Required for a PICO build. Without it core adds no pico flavor.
           picoAppId: process.env.PICO_APP_ID,
           platformService: {
             picoAppId: process.env.PICO_PLATFORM_APP_ID,
@@ -275,7 +276,7 @@ Viro's OpenXR binding composes with `expo-pico-core`'s launcher contract and the
 The `quest` flavor (`npm run quest` in `example/`) targets Meta Horizon OS: Quest 3, Quest 3S and Meta VR Glasses. Meta VR Glasses run the same OS but ship without controllers and send no hover events; input is look plus pinch.
 
 - `supportedDevices` is `quest3|quest3s|vrglasses`, set twice in `app.config.ts`: on `expo-horizon-core` and as react-viro's `android.questSupportedDevices`. Both plugins write `com.oculus.supportedDevices`, and the manifest merger fails the build when the two values differ. Meta's canonical identifiers are `quest2`, `questpro`, `quest3`, `quest3s` and `vrglasses`.
-- `@expo-pico/core` writes `<meta-data android:name="com.meta.store.defaultDeviceTargets" android:value="quest3+"/>` into the quest flavor manifest, which sets the build's initial Device Targeting in the Developer Dashboard. Meta's docs say `quest3+` covers the Quest 3 family, Meta VR Glasses and future devices. The value comes from `storeDeviceTargets` in `app.config.ts`; without it, the oldest family in `supportedDevices` decides: `quest3`, `quest3s` or `vrglasses` alone give `quest3+`, and a list that also names `questpro` or `quest2` gives `questpro+` or `quest2+`. Set `storeDeviceTargets: false` to leave targeting to the Dashboard.
+- The `expo-horizon-core` plugin entry writes `<meta-data android:name="com.meta.store.defaultDeviceTargets" android:value="quest3+"/>` into the quest flavor manifest, which sets the build's initial Device Targeting in the Developer Dashboard. Meta's docs say `quest3+` covers the Quest 3 family, Meta VR Glasses and future devices. The value comes from `storeDeviceTargets` in `app.config.ts`; without it, the oldest family in `supportedDevices` decides: `quest3`, `quest3s` or `vrglasses` alone give `quest3+`, and a list that also names `questpro` or `quest2` gives `questpro+` or `quest2+`. Set `storeDeviceTargets: false` to leave targeting to the Dashboard.
 - To override it for one upload, add a suffix to the channel: `ovr-platform-util upload-quest-build ... --channel "alpha:quest3+"`.
 - The 2D launcher opens as a 1280x800dp landscape panel (`defaultWidth` / `defaultHeight` in `app.config.ts`). Glasses accept panel widths of 360-1280dp.
 - Test on a Quest 3 or 3S with the Glasses field of view simulated and the controllers switched off, so nothing depends on a controller or on hover:
@@ -292,7 +293,7 @@ In the `quest` flavor, the launcher opens Library, Details and Controls as [Meta
 
 Meta's React Native integration reserves two window slots, so one of the three always stays inline. Priorities decide which: Library (20) beats Details (10) beats Controls (0). Controls holds **Enter XR Scene**, so the primary action stays in the main panel unless a third slot opens. Sizes, anchors and priorities live in `example/src/layout/workspace.ts` (`META_WINDOWS`).
 
-Setup is `metaLayoutSdk: true` on `@expo-pico/core` plus `@metavr/layout-compat` and `@metavr/layout-window-compat` as direct app dependencies. The plugin writes the MetaVRX BOM and both artifacts as `questImplementation`, which survives `expo prebuild --clean`. Each npm package autolinks a library project that declares its AAR as `api`, and the window AAR adds `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`. To keep both out of `pico` and `mobile`, the plugin excludes `com.meta.metavrx.layout` from every non-quest classpath and gives those flavors empty stand-ins for the two `ReactPackage` classes the generated `PackageList` creates. The library projects declare minSdk 29, so the plugin also lists them in the main manifest's `tools:overrideLibrary`; off quest they hold only codegen specs that nothing calls, which keeps the phone flavor at its own minSdk. The library projects stay linked in every flavor because the AAR classes extend their codegen output, so JS must only render Meta's components on Horizon builds. `example/src/layout/metaWindows.ts` checks `isHorizonBuild` and otherwise renders each window's children in place.
+Setup is `metaLayoutSdk: true` on the `expo-horizon-core` plugin entry plus `@metavr/layout-compat` and `@metavr/layout-window-compat` as direct app dependencies. The plugin writes the MetaVRX BOM and both artifacts as `questImplementation`, which survives `expo prebuild --clean`. Each npm package autolinks a library project that declares its AAR as `api`, and the window AAR adds `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`. To keep both out of `pico` and `mobile`, the plugin excludes `com.meta.metavrx.layout` from every non-quest classpath and gives those flavors empty stand-ins for the two `ReactPackage` classes the generated `PackageList` creates. The library projects declare minSdk 29, so the plugin also lists them in the main manifest's `tools:overrideLibrary`; off quest they hold only codegen specs that nothing calls, which keeps the phone flavor at its own minSdk. The library projects stay linked in every flavor because the AAR classes extend their codegen output, so JS must only render Meta's components on Horizon builds. `example/src/layout/metaWindows.ts` checks `isHorizonBuild` and otherwise renders each window's children in place.
 
 ### Store submission: review-required permissions
 
@@ -309,7 +310,7 @@ Meta asks submitters to explain each permission on its [review-required list](ht
 
 `@expo-pico/rtc` and `@expo-pico/notifications` wrap PICO Platform Services, which Horizon OS does not provide. On a Meta build their calls return no data, so if your app ships on Meta without another voice or push backend, strike these too.
 
-The `quest` flavor removes these, which other packages add to every flavor (`questRemovePermissions`, `questRemoveFeatures` and `questExcludeDependencies` on `@expo-pico/core`):
+The `quest` flavor removes these, which other packages add to every flavor (`questRemovePermissions`, `questRemoveFeatures` and `questExcludeDependencies` on the `expo-horizon-core` plugin entry):
 
 - `CAMERA`, the `android.hardware.camera` feature and `horizonos.permission.HEADSET_CAMERA`, from `@reactvision/react-viro`'s plugin. They serve AR, `ViroObjectDetector` and the Passthrough Camera API, none of which the example renders.
 - `READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE`, from the Expo template, `expo-file-system` and the Viro AARs. Nothing reads or writes shared storage.

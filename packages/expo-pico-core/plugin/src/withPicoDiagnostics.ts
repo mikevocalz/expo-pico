@@ -37,10 +37,9 @@ export interface DiagnosticCheckFinding {
  *
  * Covered checks (each has a stable id):
  *
- *   1. `identity.missing` — xrMode is 'pico-os5' or 'pico-swan' and
- *      `appType !== '2d'` but no `picoAppId` /
- *      `platformService.picoAppId` is set. Platform SDK calls will
- *      silently fail at runtime.
+ *   1. `identity.missing` (info) — no `picoAppId` /
+ *      `platformService.picoAppId`, so PICO is off and no pico flavor is
+ *      built. The only finding returned in that case.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive
@@ -81,35 +80,21 @@ export function runDiagnosticChecks(
 ): DiagnosticCheckFinding[] {
   const findings: DiagnosticCheckFinding[] = [];
 
-  // 1. Immersive without identity — ERROR for PICO builds because the
-  // PPS SDK rejects every call with 100008 "appkey is empty" when the
-  // `pvr.app.id` meta-data is missing/blank. Core writes it from the
-  // resolved app ID to the pico, dual and mobile flavor manifests (main in a
-  // single-variant app); the quest flavor never gets it.
-  // Same test as the Gradle identity gate: the ID that becomes `pvr.app.id`.
-  // A foreign ID or app key alone does not write it.
-  if (
-    options.xrMode !== 'mobile' &&
-    options.appType !== '2d' &&
-    !options.platformService.picoAppId
-  ) {
-    const envHint = process.env.PICO_APP_ID
-      ? 'PICO_APP_ID env var is set but picoAppId resolved to empty — check that app.config reads it (e.g. `picoAppId: process.env.PICO_APP_ID`).'
-      : 'PICO_APP_ID env var is NOT set in this shell. Either: (a) export PICO_APP_ID=<your-app-id> from .env.local before prebuild, or (b) set picoAppId in app.config — it is an identifier, not a secret (the app key is the secret).';
-    findings.push({
-      id: 'identity.missing',
-      severity: 'error',
-      message:
-        `xrMode '${options.xrMode}' is an immersive build but picoAppId is empty. ` +
-        'On PICO OS the app will not start: the entitlement service puts a system dialog over it ' +
-        '("No entitlement info in the local cache") and the OS ends the process about 40ms later, ' +
-        'with no crash in logcat. Observed on PICO 4 Ultra, Android 14. The dialog is an XRShell ' +
-        'panel on its own display, so adb cannot dismiss it, and pressing Confirm with the ' +
-        'controller does not let the app run. Nothing is testable on device until this is set — ' +
-        'not only PPS, which would separately fail with error 100008 "appkey is empty". ' +
-        'pico/dual Gradle builds now fail until it is set. ' +
-        envHint,
-    });
+  // PICO is off until the app sets an app ID. Say so once and skip the
+  // PICO checks: none of them apply to a build with no pico flavor.
+  if (!options.isPicoEnabled) {
+    return [
+      {
+        id: 'identity.missing',
+        severity: 'info',
+        message:
+          'PICO is off: no picoAppId is set, so prebuild adds no pico flavor. ' +
+          'Set picoAppId (from the PICO Developer Console) to build for PICO.' +
+          (process.env.PICO_APP_ID
+            ? ' PICO_APP_ID is set in this shell but app.config does not pass it as picoAppId.'
+            : ''),
+      },
+    ];
   }
 
   // 2. 2d appType with PICO xrMode

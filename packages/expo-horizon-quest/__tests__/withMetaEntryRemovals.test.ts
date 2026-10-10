@@ -10,7 +10,6 @@ import {
   collectMetaEntries,
   isMetaOnlyName,
   mergeMetaEntries,
-  metaFreeFlavors,
   removalsForFlavor,
   syncMetaEntryRemovals,
 } from '../plugin/src/withMetaEntryRemovals';
@@ -272,13 +271,6 @@ describe('applyMetaEntryRemovals', () => {
   });
 });
 
-describe('metaFreeFlavors', () => {
-  it('lists the PICO flavors only, never quest or mobile', () => {
-    expect(metaFreeFlavors({ hasPicoFlavor: true })).toEqual(['pico', 'dual']);
-    expect(metaFreeFlavors({ hasPicoFlavor: false })).toEqual([]);
-  });
-});
-
 describe('removalsForFlavor', () => {
   const entries = () =>
     mergeMetaEntries(collectMetaEntries(viroMainManifest()), LIBRARY_META_ENTRIES);
@@ -383,7 +375,7 @@ describe('syncMetaEntryRemovals', () => {
   });
 
   it('does nothing for a single-variant app', async () => {
-    await syncMetaEntryRemovals(root, metaFreeFlavors({ hasPicoFlavor: false }));
+    await syncMetaEntryRemovals(root, []);
     expect(fs.existsSync(file('mobile'))).toBe(false);
     expect(fs.readFileSync(file('pico'), 'utf8')).not.toContain('com.oculus');
   });

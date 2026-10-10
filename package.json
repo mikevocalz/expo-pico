@@ -4,6 +4,7 @@
   "workspaces": [
     "packages/internal/pico-platform-service-common",
     "packages/expo-pico-core",
+    "packages/expo-horizon-quest",
     "packages/expo-pico-spatial",
     "packages/expo-pico-account",
     "packages/expo-pico-iap",
@@ -38,8 +39,10 @@
     "test:pack": "for dir in packages/expo-pico-*; do (cd \"$dir\" && npm pack --dry-run >/dev/null); done",
     "example:prebuild:android": "cd example && npx expo prebuild --platform android --no-install",
     "example:assemble:mobile": "cd example/android && rm -rf app/build/outputs/apk/mobile && ./gradlew assembleMobileDebug",
+    "example:assemble:quest": "cd example/android && rm -rf app/build/outputs/apk/quest && ./gradlew assembleQuestDebug -PreactNativeArchitectures=arm64-v8a && cd ../.. && yarn verify:apk:quest",
     "example:assemble:pico": "yarn example:clean:cache && cd example/android && rm -rf app/build/outputs/apk/pico && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a && cd ../.. && yarn verify:apk:pico",
     "verify:apk:pico": "python3 scripts/verify-16kb-alignment.py example/android/app/build/outputs/apk/pico/debug/app-pico-debug.apk --allow libpxrplatformloader.so --allow libpxrplatformloader4j.so",
+    "verify:apk:quest": "python3 scripts/verify-16kb-alignment.py example/android/app/build/outputs/apk/quest/debug/app-quest-debug.apk",
     "validate:device": "bash scripts/validate-device.sh",
     "validate:device:no-adb": "bash scripts/validate-device.sh --skip-adb",
     "studio": "open -a 'Android Studio' example/android",

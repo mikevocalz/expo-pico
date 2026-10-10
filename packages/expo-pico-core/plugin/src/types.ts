@@ -1,6 +1,4 @@
 import type { PicoPlatformServiceName } from './ppsArtifacts';
-import { normalizeDependencyExclusions, normalizeNames } from './withQuestRemovals';
-import { normalizeStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
 /**
  * Configuration options for the expo-pico-core config plugin.
@@ -295,75 +293,14 @@ export interface PicoPluginOptions {
    * built before 3.0 aborted in `VROPlatformRunTask` on XR entry; if the Viro
    * pin moves, rebuild this from the fork and re-check the native diff.
    *
-   * Staged into the `pico`, `dual` and `quest` flavors, never `main` or
-   * `mobile`. Quest gets the same floor origin and controller mesh.
+   * Staged into the `pico` and `dual` flavors, never `main` or `mobile`. The
+   * `quest` copy is set on the `expo-horizon-core` plugin entry.
    *
    * arm64-v8a only — PICO ships no 32-bit device. Defaults to `false`: it
    * replaces a renderer the app did not ask this package to touch, so it is
    * opt-in.
    */
   viroRendererOverlay?: boolean;
-  /**
-   * Default Meta Store device targeting for the `quest` flavor, written as
-   * `com.meta.store.defaultDeviceTargets` in `app/src/quest/AndroidManifest.xml`.
-   * Meta uses it to initialize the build's Device Targeting in the Developer
-   * Dashboard; `ovr-platform-util --channel "alpha:quest3+"` overrides it per
-   * upload. Specifiers, joined with `|`: `quest2only`, `questproonly`,
-   * `quest3only`, `quest2+`, `questpro+`, `quest3+`, `questpro-`. Anything
-   * else throws at prebuild.
-   *
-   * `quest3+` covers the Quest 3 family, Meta VR Glasses and future devices.
-   * Set `false` or `''` to remove the entry. pico, dual, mobile and main
-   * manifests never get it.
-   *
-   * @default derived from the quest manifest's `com.oculus.supportedDevices`:
-   * `quest3+` when it lists quest3, quest3s or vrglasses (`questpro+` /
-   * `quest2+` when it lists an older headset); nothing when it lists none of
-   * them.
-   */
-  storeDeviceTargets?: string | false;
-  /**
-   * Link the Meta VR Layout SDK (`@metavr/layout-compat` and
-   * `@metavr/layout-window-compat`) into the `quest` flavor so the app can
-   * open Horizon OS spatial windows around its main panel.
-   *
-   * Writes the MetaVRX BOM and both React Native artifacts as
-   * `questImplementation`, strips the SDK from every other flavor's classpath
-   * (its autolinked projects declare it as `api`, and the window AAR adds
-   * `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`), and gives the other
-   * flavors empty stand-ins for the two ReactPackages the generated
-   * PackageList instantiates. Both npm packages must be direct app
-   * dependencies. JS must only render Meta's components when
-   * `isHorizonBuild` is true.
-   *
-   * @default false
-   */
-  metaLayoutSdk?: boolean;
-  /**
-   * Permissions to strip from the `quest` flavor only, written as
-   * `<uses-permission android:name="..." tools:node="remove"/>` into
-   * `app/src/quest/AndroidManifest.xml`. Use it for permissions another plugin
-   * or library adds to every flavor that the Meta Horizon build never uses;
-   * Meta asks submitters to justify each review-required permission. pico,
-   * mobile and main keep theirs.
-   *
-   * @default []
-   */
-  questRemovePermissions?: string[];
-  /**
-   * `<uses-feature>` names to strip from the `quest` flavor only, the same
-   * way as `questRemovePermissions`.
-   *
-   * @default []
-   */
-  questRemoveFeatures?: string[];
-  /**
-   * Maven `group:module` coordinates excluded from the `quest` compile and
-   * runtime classpaths only. Anything else throws at prebuild.
-   *
-   * @default []
-   */
-  questExcludeDependencies?: string[];
   /**
    * Use the bundled legacy OpenXR loader override in PICO flavors only.
    * Set false when consuming a rebuilt ViroCore AAR with a verified loader.
@@ -569,6 +506,12 @@ export interface ResolvedPicoSwanOptions {
 
 export interface ResolvedPicoOptions {
   enabled: boolean;
+  /**
+   * True when a PICO app ID resolved (`platformService.picoAppId`, falling
+   * back to `picoAppId`). Without one the plugin builds no pico or dual
+   * flavor and behaves as `buildVariant: 'mobile'`, `xrMode: 'mobile'`.
+   */
+  isPicoEnabled: boolean;
   picoAppId: string;
   buildVariant: 'mobile' | 'pico' | 'dual';
   xrMode: PicoXRMode;
@@ -600,12 +543,6 @@ export interface ResolvedPicoOptions {
   ndkAbiFilters: boolean;
   openXrLoaderDeclaration: boolean;
   viroRendererOverlay: boolean;
-  /** Validated specifiers; `false` removes the entry; `null` derives it. */
-  storeDeviceTargets: string | false | null;
-  metaLayoutSdk: boolean;
-  questRemovePermissions: string[];
-  questRemoveFeatures: string[];
-  questExcludeDependencies: string[];
   openXrLoaderOverlay: boolean;
   developerTools: boolean;
   enableEmulatorOptimizations: boolean;
@@ -646,6 +583,7 @@ export const PICO_SWAN_DEFAULTS: ResolvedPicoSwanOptions = {
 
 export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   enabled: true,
+  isPicoEnabled: false,
   picoAppId: '',
   buildVariant: 'pico',
   xrMode: 'pico-os5',
@@ -677,11 +615,6 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   ndkAbiFilters: true,
   openXrLoaderDeclaration: true,
   viroRendererOverlay: false,
-  storeDeviceTargets: null,
-  metaLayoutSdk: false,
-  questRemovePermissions: [],
-  questRemoveFeatures: [],
-  questExcludeDependencies: [],
   openXrLoaderOverlay: true,
   developerTools: false,
   enableEmulatorOptimizations: false,
@@ -689,8 +622,38 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   targetSdkVersion: 34,
 };
 
+/**
+ * Options that configure the Meta Horizon `quest` flavor. They belong on the
+ * `expo-horizon-core` plugin entry; core no longer owns that flavor.
+ */
+const QUEST_OPTION_KEYS = [
+  'metaLayoutSdk',
+  'storeDeviceTargets',
+  'questRemovePermissions',
+  'questRemoveFeatures',
+  'questExcludeDependencies',
+] as const;
+
 export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOptions {
-  const buildVariant = options.buildVariant ?? PICO_OPTION_DEFAULTS.buildVariant;
+  const misplaced = QUEST_OPTION_KEYS.filter((key) => key in (options as object));
+  if (misplaced.length > 0) {
+    throw new Error(
+      `[expo-pico-core] ${misplaced.join(', ')} configure the Meta Horizon quest flavor. ` +
+        'Move them to the expo-horizon-core plugin entry.'
+    );
+  }
+
+  const platformService = resolvePlatformServiceOptions(
+    options.platformService,
+    /* legacyPicoAppId */ options.picoAppId
+  );
+  // No app ID, no PICO build: the pico flavor exists only once the app asks
+  // for it with an ID. Everything below then resolves as a mobile build.
+  const isPicoEnabled = platformService.picoAppId !== null;
+
+  const buildVariant = isPicoEnabled
+    ? (options.buildVariant ?? PICO_OPTION_DEFAULTS.buildVariant)
+    : 'mobile';
   const defaultXrMode: PicoXRMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os5';
 
   const swan: ResolvedPicoSwanOptions = {
@@ -706,17 +669,14 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
         : PICO_SWAN_DEFAULTS.swanSdkArtifact,
   };
 
-  const xrMode = options.xrMode ?? defaultXrMode;
+  const xrMode = isPicoEnabled ? (options.xrMode ?? defaultXrMode) : 'mobile';
 
   // appType default tracks xrMode. Mobile builds default to 2d (no immersive
   // launcher categories injected); PICO modes default to vr. The user can
   // override with 'mr' for passthrough-first apps.
-  const appType: PicoAppType = options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
-
-  const platformService = resolvePlatformServiceOptions(
-    options.platformService,
-    /* legacyPicoAppId */ options.picoAppId
-  );
+  const appType: PicoAppType = isPicoEnabled
+    ? (options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr'))
+    : '2d';
 
   // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
   // documented requirement unless the user explicitly overrides it.
@@ -739,6 +699,7 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   return {
     ...PICO_OPTION_DEFAULTS,
     ...options,
+    isPicoEnabled,
     buildVariant,
     xrMode,
     picoSwan: swan,
@@ -749,11 +710,6 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     openXrLoaderDeclaration,
     viroRendererOverlay,
     openXrLoaderOverlay,
-    storeDeviceTargets: normalizeStoreDeviceTargets(options.storeDeviceTargets),
-    metaLayoutSdk: options.metaLayoutSdk === true,
-    questRemovePermissions: normalizeNames(options.questRemovePermissions),
-    questRemoveFeatures: normalizeNames(options.questRemoveFeatures),
-    questExcludeDependencies: normalizeDependencyExclusions(options.questExcludeDependencies),
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,
