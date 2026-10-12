@@ -9,12 +9,33 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import horizon.platform.users.Users
+import horizon.core.android.driver.coroutines.HorizonServiceConnection
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * Expo Modules v2 native boundary. No Nitro/JSI dependency and no raw web UI.
  * Meta platform classes are compileOnly here and shipped only by the quest flavor.
  */
 class ExpoSpatialAuthModule : Module() {
+    private val metaConnectionMutex = Mutex()
+    @Volatile private var metaConnected = false
+
+    private suspend fun ensureMetaConnected() {
+        if (!isMeta()) error("Meta Horizon OS identity is unavailable on this device")
+        val appId = BuildConfig.META_HORIZON_APP_ID
+        if (appId.isBlank()) error("Meta Horizon App ID is missing; configure expo-horizon-core")
+        val context = appContext.reactContext?.applicationContext
+            ?: error("React context is unavailable")
+        metaConnectionMutex.lock()
+        try {
+            if (!metaConnected) {
+                HorizonServiceConnection.connect(appId, context)
+                metaConnected = true
+            }
+        } finally {
+            metaConnectionMutex.unlock()
+        }
+    }
     private fun isMeta(): Boolean {
         val maker = Build.MANUFACTURER.lowercase()
         val brand = Build.BRAND.lowercase()
@@ -36,7 +57,7 @@ class ExpoSpatialAuthModule : Module() {
         }
 
         AsyncFunction("getMetaUserProfile") {
-            if (!isMeta()) error("Meta Horizon OS identity is unavailable on this device")
+            ensureMetaConnected()
             val user = Users().getLoggedInUser()
             if (user.id.isBlank()) error("No Meta Horizon account is signed in")
             mapOf(
@@ -47,7 +68,7 @@ class ExpoSpatialAuthModule : Module() {
         }
 
         AsyncFunction("getMetaUserProof") {
-            if (!isMeta()) error("Meta Horizon OS identity is unavailable on this device")
+            ensureMetaConnected()
             // Fetch proof only when requested. A Meta proof nonce is one-use.
             val users = Users()
             val user = users.getLoggedInUser()

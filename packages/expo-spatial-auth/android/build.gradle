@@ -14,6 +14,8 @@ android {
     namespace "expo.modules.spatialauth"
     compileSdk safeExtGet('compileSdkVersion', 36)
     defaultConfig {
+        def metaAppId = project.findProperty("horizonAppId") ?: ""
+        buildConfigField "String", "META_HORIZON_APP_ID", "\\\"${metaAppId}\\\""
         minSdk safeExtGet('minSdkVersion', 24)
         missingDimensionStrategy "device", "mobile"
     }

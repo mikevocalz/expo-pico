@@ -2,7 +2,7 @@
 
 Expo Modules **v2** native platform adapter for Spatial Auth. This package targets Expo SDK 58 and Android builds, without Nitro. The Better Auth server plugin is the separate `spatial-auth` package.
 
-- **Meta Quest / Horizon OS:** native Kotlin `Users().getLoggedInUser()` and `Users().getUserProof()` from Meta Horizon Platform SDK v0.2.2. Returned one-time proof MUST go to a trusted Better Auth server running `createMetaUserProofVerifier()`.
+- **Meta Quest / Horizon OS:** initialize Horizon Platform SDK using the public `horizonAppId` Gradle property provided by `expo-horizon-core`, then use native Kotlin `Users().getLoggedInUser()` and `Users().getUserProof()` from Meta Horizon Platform SDK v0.2.2. Returned one-time proof MUST go to a trusted Better Auth server running `createMetaUserProofVerifier()`.
 - **Google Android XR:** native Credential Manager + Google ID SDK. `getGoogleIdToken(webClientId, nonce)` returns a token that must be passed to Better Auth's **Google** provider, with verification of audience, issuer, expiry and nonce. Google on-device login is not necessarily automatic approval to your app.
 - **PICO:** use existing `@expo-pico/account`. Spatial Auth server plugin exchanges its auth-code on the backend.
 - **Snap Specs:** Lens Studio is a separate runtime, not an Android Expo app. Use a separately verified Snap Cloud/Mobile Kit account handoff, not an imaginary Expo native method.
