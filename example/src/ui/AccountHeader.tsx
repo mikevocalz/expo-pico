@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { getMetaUserProfile, getSpatialPlatform } from 'expo-spatial-auth';
 import {
   getUserProfile,
   isAccountAvailable,
@@ -10,9 +11,10 @@ import {
 import { isHorizonBuild } from '../platform';
 import { palette, radius, space } from './theme';
 
-// PICO sign-in has no meaning on a Meta Horizon build, even if the account
-// module happens to be linked there.
-const accountAvailable = (): boolean => !isHorizonBuild && isAccountAvailable();
+// Each OS identity is read only from its platform SDK. Neither implies that
+// a Better Auth session already exists.
+const accountAvailable = (): boolean =>
+  isHorizonBuild ? getSpatialPlatform() === 'meta-horizon' : isAccountAvailable();
 
 type State =
   | { kind: 'unavailable' }
@@ -21,7 +23,7 @@ type State =
   | { kind: 'signed-in'; profile: PicoUserProfile };
 
 /**
- * Signed-in PICO identity for the app header.
+ * Platform OS identity for PICO and Meta Quest 3; app Better Auth sign-in is separate.
  *
  * `getUserProfile()` reads the *current* session and rejects when nobody is
  * signed in — it is not a way to test for one, so a rejection is treated as
@@ -29,8 +31,8 @@ type State =
  * tap, because it can present the account picker and that should never happen
  * unprompted at launch.
  *
- * Off PICO hardware (or on the `mobile` and `quest` flavors) the account SDK is
- * absent and this renders nothing rather than a broken affordance.
+ * On unsupported mobile hardware both OS account SDKs are unavailable,
+ * so the header renders nothing rather than a broken affordance.
  */
 export function AccountHeader(): React.JSX.Element | null {
   const [state, setState] = useState<State>(() =>
@@ -39,8 +41,20 @@ export function AccountHeader(): React.JSX.Element | null {
 
   const read = useCallback(async () => {
     try {
-      const profile = await getUserProfile();
-      setState({ kind: 'signed-in', profile });
+      if (isHorizonBuild) {
+        const native = await getMetaUserProfile();
+        setState({
+          kind: 'signed-in',
+          profile: {
+            userId: native.userId,
+            displayName: native.displayName || 'Meta Quest user',
+            avatarUrl: native.avatarUrl,
+          },
+        });
+      } else {
+        const profile = await getUserProfile();
+        setState({ kind: 'signed-in', profile });
+      }
     } catch {
       setState({ kind: 'signed-out' });
     }
@@ -54,7 +68,7 @@ export function AccountHeader(): React.JSX.Element | null {
   const onSignIn = useCallback(async () => {
     setState({ kind: 'loading' });
     try {
-      await login();
+      if (!isHorizonBuild) await login();
     } catch {
       // Cancelled or failed — fall through to the profile read, which is the
       // authority on whether a session actually exists now.
@@ -77,13 +91,15 @@ export function AccountHeader(): React.JSX.Element | null {
       <Pressable
         onPress={onSignIn}
         accessibilityRole="button"
-        accessibilityLabel="Sign in to PICO"
+        accessibilityLabel={isHorizonBuild ? 'Check Meta Quest account' : 'Sign in to PICO'}
         style={({ pressed }) => [styles.root, pressed && styles.pressed]}
       >
         <View style={[styles.avatar, styles.avatarEmpty]} />
         <View>
           <Text style={styles.name}>Not signed in</Text>
-          <Text style={styles.sub}>Tap to connect your PICO account</Text>
+          <Text style={styles.sub}>
+            {isHorizonBuild ? 'Check your Meta Horizon OS account' : 'Tap to connect your PICO account'}
+          </Text>
         </View>
       </Pressable>
     );
@@ -107,7 +123,9 @@ export function AccountHeader(): React.JSX.Element | null {
         <Text style={styles.name} numberOfLines={1}>
           {profile.displayName || 'PICO user'}
         </Text>
-        <Text style={styles.sub}>Signed in</Text>
+        <Text style={styles.sub}>
+          {isHorizonBuild ? 'Meta Horizon OS account' : 'PICO OS account'}
+        </Text>
       </View>
     </View>
   );
