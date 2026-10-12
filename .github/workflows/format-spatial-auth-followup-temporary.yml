@@ -1,0 +1,32 @@
+name: Format Spatial Auth follow-up (temporary)
+
+on:
+  pull_request:
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/better-auth-xr-identity'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+      - run: yarn install --frozen-lockfile --ignore-scripts
+      - run: yarn prettier --write packages/expo-spatial-auth/plugin/index.ts example/src/ui/AccountHeader.tsx
+      - name: Commit scoped formatting
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/expo-spatial-auth/plugin/index.ts example/src/ui/AccountHeader.tsx
+          git commit -m "style(spatial-auth): format platform config and account header"
+          git push origin HEAD:${{ github.head_ref }}
