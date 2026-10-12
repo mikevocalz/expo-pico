@@ -22,8 +22,7 @@ package:
 | `@expo-pico/social`        | friends and presence are per-account                    |
 | `@expo-pico/notifications` | push registration binds the token to the signed-in user |
 
-Call `login()` once at boot before any of them. Without it those packages return
-empty results or `SERVICE_UNAVAILABLE` rather than throwing.
+Ensure the PICO OS identity session is available at boot; call `login()` when interactive authorization is needed before these services. On unsupported builds, calls report `SERVICE_UNAVAILABLE`.
 
 ## Status
 
@@ -97,9 +96,9 @@ async function loadUser() {
 | `getAccountSdkVersion()`    | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
 | `getUserProfile()`          | Fetches the logged-in PICO user profile.                                                              |
 | `getAccountLinkStatus()`    | Returns link status across external identity providers.                                               |
-| `login()` _(seam)_          | PICO OS owns the account session. No programmatic login path. Throws `notImplementedError`.           |
-| `getAccessToken()` _(seam)_ | OAuth token exchange. Throws `notImplementedError` until wired.                                       |
-| `logout()` _(seam)_         | Managed by PICO OS. Throws `notImplementedError`.                                                     |
+| `login()`                 | Calls the PPS `PicoSignInClient.signIn` interactive sign-in flow and returns a platform login result. |
+| `getAccessToken()`        | Returns the platform access token; a backend must validate it before using it as authentication. |
+| `logout()`                | Calls the PPS `signOut()` bridge; it does not sign out any Better Auth app session. |
 
 Types: `PicoUserProfile`, `PicoLoginResult`, `PicoAccountLinkStatus`.
 
@@ -135,7 +134,8 @@ for the full artifact list and the two cases that can still duplicate
 ## Limitations
 
 - Account bindings ride the modern PPS Maven artifact (`com.pico.pps:platform-service-auth:1.0.0`), which `withPicoGradle` resolves from public Maven on `picoDebug` builds. No AAR drop is required; bridge methods return real data automatically on PICO hardware.
-- `login()` / `logout()` are deliberately `notImplementedError`: PICO OS owns the account session at device level. Apps receive an already-authenticated session on launch.
+- `login()` and `logout()` call the native PPS `signIn` and `signOut` methods. PICO OS session state and application Better Auth sessions are different; use `@expo-pico/better-auth-xr` to bridge a **server-verified** identity into the app session.
+- `getAccountLinkStatus()` reports `unsupported` because PPS does not supply the app's Better Auth account-link status. Read Better Auth `listAccounts()` instead.
 
 ## Links
 

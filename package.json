@@ -7,6 +7,7 @@
     "packages/expo-horizon-quest",
     "packages/expo-pico-spatial",
     "packages/expo-pico-account",
+    "packages/expo-pico-better-auth-xr",
     "packages/expo-pico-iap",
     "packages/expo-pico-notifications",
     "packages/expo-pico-rtc",
