@@ -6,13 +6,13 @@ A Better Auth plugin for spatial identities, with a separate Expo Modules v2 bri
 
 ## Auth provider matrix
 
-| Platform | How the proof is acquired | Server verification |
-| --- | --- | --- |
-| Meta Quest 3 / Horizon | `expo-spatial-auth.getMetaUserProof()` | Meta one-time user nonce via `user_nonce_validate` |
-| PICO 4 / Ultra / Swan | `@expo-pico/account.sendAuthScopesRequest([], 'auth-code')` | Developer-approved PICO code exchange and subject lookup callback; must be configured |
-| Android XR (Samsung / Google) | `expo-spatial-auth.getGoogleIdToken()` using Credential Manager | Better Auth built-in Google ID token verification. Reuses the **google** provider, not an invented android-xr identity |
-| Snap Specs / Lens Studio | Snap Cloud automatically provides a project-scoped OIDC-backed session | Trusted Snap Cloud / Mobile Kit backend issues a one-use account-handoff ticket; only the backend can attest the wearer |
-| Web / iOS / Android | Better Auth social provider, passkeys, email | Better Auth |
+| Platform                      | How the proof is acquired                                              | Server verification                                                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Meta Quest 3 / Horizon        | `expo-spatial-auth.getMetaUserProof()`                                 | Meta one-time user nonce via `user_nonce_validate`                                                                      |
+| PICO 4 / Ultra / Swan         | `@expo-pico/account.sendAuthScopesRequest([], 'auth-code')`            | Developer-approved PICO code exchange and subject lookup callback; must be configured                                   |
+| Android XR (Samsung / Google) | `expo-spatial-auth.getGoogleIdToken()` using Credential Manager        | Better Auth built-in Google ID token verification. Reuses the **google** provider, not an invented android-xr identity  |
+| Snap Specs / Lens Studio      | Snap Cloud automatically provides a project-scoped OIDC-backed session | Trusted Snap Cloud / Mobile Kit backend issues a one-use account-handoff ticket; only the backend can attest the wearer |
+| Web / iOS / Android           | Better Auth social provider, passkeys, email                           | Better Auth                                                                                                             |
 
 The `snap-specs` adapter does **not** access Snap OS tokens from a Lens. A verified backend handoff is required, and the callback fails closed until implemented.
 

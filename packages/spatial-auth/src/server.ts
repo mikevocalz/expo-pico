@@ -41,7 +41,9 @@ async function verify(proof: Proof, options: XRVerification) {
       verified = await options.verifyPicoAuthCode(proof.authCode);
     } else if (proof.provider === 'snap-specs') {
       if (!options.verifySnapSpecsTicket) {
-        throw new APIError('FORBIDDEN', { message: 'Snap Specs handoff verification is not configured' });
+        throw new APIError('FORBIDDEN', {
+          message: 'Snap Specs handoff verification is not configured',
+        });
       }
       verified = await options.verifySnapSpecsTicket(proof.ticket);
     } else {

@@ -7,6 +7,7 @@ import type { XRProof } from './types';
  * Never use display names or a client-supplied Snapchat UID as identity.
  */
 export function getSnapSpecsProof(ticket: string): Extract<XRProof, { provider: 'snap-specs' }> {
-  if (!ticket || ticket.trim().length < 24) throw new Error('A one-use server-issued handoff ticket is required');
+  if (!ticket || ticket.trim().length < 24)
+    throw new Error('A one-use server-issued handoff ticket is required');
   return { provider: 'snap-specs', ticket };
 }
