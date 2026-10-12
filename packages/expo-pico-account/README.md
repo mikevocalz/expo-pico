@@ -134,7 +134,7 @@ for the full artifact list and the two cases that can still duplicate
 ## Limitations
 
 - Account bindings ride the modern PPS Maven artifact (`com.pico.pps:platform-service-auth:1.0.0`), which `withPicoGradle` resolves from public Maven on `picoDebug` builds. No AAR drop is required; bridge methods return real data automatically on PICO hardware.
-- `login()` and `logout()` call the native PPS `signIn` and `signOut` methods. PICO OS session state and application Better Auth sessions are different; use `@expo-pico/better-auth-xr` to bridge a **server-verified** identity into the app session.
+- `login()` and `logout()` call the native PPS `signIn` and `signOut` methods. PICO OS session state and application Better Auth sessions are different; use `spatial-auth` to bridge a **server-verified** identity into the app session.
 - `getAccountLinkStatus()` reports `unsupported` because PPS does not supply the app's Better Auth account-link status. Read Better Auth `listAccounts()` instead.
 
 ## Links

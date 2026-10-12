@@ -19,12 +19,13 @@ const proofSchema = z.discriminatedUnion('provider', [
       nonce: z.string().min(8).max(8192),
     })
     .strict(),
+  z.object({ provider: z.literal('snap-specs'), ticket: z.string().min(24).max(8192) }).strict(),
 ]);
 
 type Proof = z.infer<typeof proofSchema>;
 
 function accountKey(provider: Proof['provider']) {
-  return provider === 'pico' ? 'pico' : 'meta-horizon';
+  return provider;
 }
 
 /** Never substitute an SDK user id, name, or user-supplied claim for server verification. */
@@ -38,6 +39,11 @@ async function verify(proof: Proof, options: XRVerification) {
         });
       }
       verified = await options.verifyPicoAuthCode(proof.authCode);
+    } else if (proof.provider === 'snap-specs') {
+      if (!options.verifySnapSpecsTicket) {
+        throw new APIError('FORBIDDEN', { message: 'Snap Specs handoff verification is not configured' });
+      }
+      verified = await options.verifySnapSpecsTicket(proof.ticket);
     } else {
       if (!options.verifyMetaUserProof) {
         throw new APIError('FORBIDDEN', {
@@ -48,7 +54,7 @@ async function verify(proof: Proof, options: XRVerification) {
     }
   } catch {
     // No provider credentials, codes, or upstream error text enter the response.
-    throw new APIError('UNAUTHORIZED', { message: 'XR platform identity could not be verified' });
+    throw new APIError('UNAUTHORIZED', { message: 'Spatial identity could not be verified' });
   }
   const subject = verified?.subject;
   if (!subject || !subject.trim() || subject.length > 256) {
@@ -60,22 +66,22 @@ async function verify(proof: Proof, options: XRVerification) {
 type AccountOwner = { userId: string };
 
 /**
- * Better Auth plugin for PICO and Meta identities.
+ * Better Auth plugin for device-bound spatial identities.
  *
- * PICO and Meta proof verification is ALWAYS performed by trusted backend callbacks.
+ * Every identity is ALWAYS verified by trusted backend callbacks.
  * This intentionally does not implement OAuth token exchange based on undocumented
  * PICO endpoints. Configure a real verifier or the request fails closed.
  */
-export function xrIdentity(options: XRVerification) {
+export function spatialAuth(options: XRVerification) {
   return {
-    id: 'xr-identity',
+    id: 'spatial-auth',
     rateLimit: [
-      { pathMatcher: (path) => path === '/xr-identity/sign-in', window: 60, max: 10 },
-      { pathMatcher: (path) => path === '/xr-identity/link', window: 60, max: 10 },
+      { pathMatcher: (path) => path === '/spatial-auth/sign-in', window: 60, max: 10 },
+      { pathMatcher: (path) => path === '/spatial-auth/link', window: 60, max: 10 },
     ],
     endpoints: {
       xrSignIn: createAuthEndpoint(
-        '/xr-identity/sign-in',
+        '/spatial-auth/sign-in',
         { method: 'POST', body: proofSchema },
         async (ctx) => {
           const { providerId, accountId, verified } = await verify(ctx.body, options);
@@ -99,7 +105,7 @@ export function xrIdentity(options: XRVerification) {
             // An atomic user+account write avoids orphan users after failed provisioning.
             const created = await ctx.context.internalAdapter.createOAuthUser(
               {
-                name: verified.name?.trim() || 'XR user',
+                name: verified.name?.trim() || 'Spatial user',
                 email: `xr-${randomUUID()}@accounts.invalid`,
                 emailVerified: false,
                 image: verified.image || null,
@@ -120,7 +126,7 @@ export function xrIdentity(options: XRVerification) {
         }
       ),
       xrLink: createAuthEndpoint(
-        '/xr-identity/link',
+        '/spatial-auth/link',
         { method: 'POST', body: proofSchema },
         async (ctx) => {
           const current = await getSessionFromCtx(ctx, { disableRefresh: true });
@@ -141,7 +147,7 @@ export function xrIdentity(options: XRVerification) {
             if (owner.userId !== current.user.id) {
               throw new APIError('CONFLICT', {
                 message:
-                  'This headset identity belongs to another account. Verify both accounts before requesting a merge.',
+                  'This spatial identity belongs to another account. Verify both accounts before requesting a merge.',
               });
             }
             return ctx.json({ linked: true, alreadyLinked: true });

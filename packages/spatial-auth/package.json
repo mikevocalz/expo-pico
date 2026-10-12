@@ -1,7 +1,7 @@
 {
-  "name": "@expo-pico/better-auth-xr",
+  "name": "spatial-auth",
   "version": "0.1.0",
-  "description": "Verified PICO and Meta Horizon sign-in and account linking for Better Auth.",
+  "description": "Better Auth plugin for verified spatial-platform identities, account linking and XR sessions",
   "main": "build/src/server.js",
   "types": "build/src/server.d.ts",
   "exports": {
@@ -21,7 +21,11 @@
       "types": "./build/src/types.d.ts",
       "default": "./build/src/types.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./snap": {
+      "types": "./build/src/snap.d.ts",
+      "default": "./build/src/snap.js"
+    }
   },
   "scripts": {
     "build": "tsc",
@@ -54,7 +58,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/mikevocalz/expo-pico.git",
-    "directory": "packages/expo-pico-better-auth-xr"
+    "directory": "packages/spatial-auth"
   },
   "files": [
     "build",

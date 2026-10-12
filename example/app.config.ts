@@ -103,6 +103,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         questExcludeDependencies: ['com.google.android.gms:play-services-location'],
       },
     ],
+    // Spatial Auth Expo Modules v2: native Meta Quest account proof and Android Google ID.
+    ['expo-spatial-auth', { metaHorizon: true }],
     // PICO: uncomment and set your PICO Developer Console app ID to add the pico flavor.
     // Everything from @expo-pico/core down to @expo-pico/leaderboards is the PICO
     // config; with it commented out the app builds mobile and quest only.
