@@ -12,14 +12,10 @@ import expo.modules.kotlin.modules.ModuleDefinition
  */
 class ExpoSpatialAuthModule : Module() {
     private fun isMeta(): Boolean {
-        val manufacturer = Build.MANUFACTURER.lowercase()
-        val brand = Build.BRAND.lowercase()
-        val metaDevice = manufacturer.contains("oculus") ||
-            manufacturer.contains("meta") ||
-            brand.contains("oculus") ||
-            brand.contains("meta")
-        return metaDevice &&
-            runCatching { Class.forName("horizon.platform.users.Users") }.isSuccess
+        // Quest/Simulator detection uses runtime capability, not manufacturer
+        // strings: simulator builds do not necessarily report Meta hardware.
+        if (BuildConfig.META_HORIZON_APP_ID.isBlank()) return false
+        return runCatching { Class.forName("horizon.platform.users.Users") }.isSuccess
     }
 
     override fun definition() = ModuleDefinition {
