@@ -98,7 +98,9 @@ export function AccountHeader(): React.JSX.Element | null {
         <View>
           <Text style={styles.name}>Not signed in</Text>
           <Text style={styles.sub}>
-            {isHorizonBuild ? 'Check your Meta Horizon OS account' : 'Tap to connect your PICO account'}
+            {isHorizonBuild
+              ? 'Check your Meta Horizon OS account'
+              : 'Tap to connect your PICO account'}
           </Text>
         </View>
       </Pressable>

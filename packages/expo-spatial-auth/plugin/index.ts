@@ -37,10 +37,18 @@ export const withSpatialAuth: ConfigPlugin<SpatialAuthOptions> = (config, option
         ]
       : [];
     const googleDependencies = options.googleAndroidXR
-      ? GOOGLE_COORDINATES.map((coordinate) => '    ' + googleConfiguration + ' "' + coordinate + '"')
+      ? GOOGLE_COORDINATES.map(
+          (coordinate) => '    ' + googleConfiguration + ' "' + coordinate + '"'
+        )
       : [];
-    mod.modResults.contents += '\n' + MARKER + '\n' + questGradle +
-      'dependencies {\n' + [...metaDependencies, ...googleDependencies].join('\n') + '\n}\n';
+    mod.modResults.contents +=
+      '\n' +
+      MARKER +
+      '\n' +
+      questGradle +
+      'dependencies {\n' +
+      [...metaDependencies, ...googleDependencies].join('\n') +
+      '\n}\n';
     return mod;
   });
 };
