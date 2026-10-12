@@ -28,8 +28,8 @@ dependencies {
     compileOnly "com.meta.horizon.platform.sdk:core-kotlin:0.2.2"
     compileOnly "com.meta.horizon.platform.sdk:users-kotlin:0.2.2"
 
-    // Latest stable Credential Manager and Google ID at 2026-10-12.
+    // Credential Manager 1.6.0; Google ID pinned to 1.1.1 for Expo Kotlin 2.2 metadata compatibility.
     compileOnly "androidx.credentials:credentials:1.6.0"
     compileOnly "androidx.credentials:credentials-play-services-auth:1.6.0"
-    compileOnly "com.google.android.libraries.identity.googleid:googleid:1.2.1"
+    compileOnly "com.google.android.libraries.identity.googleid:googleid:1.1.1"
 }

@@ -30,21 +30,21 @@ class ExpoSpatialAuthModule : Module() {
             }
         }
 
-        AsyncFunction("getMetaUserProfile") {
+        AsyncFunction("getMetaUserProfile") Coroutine {
             if (!isMeta()) error("Meta Horizon OS identity is unavailable on this device")
             val context = appContext.reactContext?.applicationContext
                 ?: error("React context is unavailable")
             MetaHorizonBridge.getProfile(context, BuildConfig.META_HORIZON_APP_ID)
         }
 
-        AsyncFunction("getMetaUserProof") {
+        AsyncFunction("getMetaUserProof") Coroutine {
             if (!isMeta()) error("Meta Horizon OS identity is unavailable on this device")
             val context = appContext.reactContext?.applicationContext
                 ?: error("React context is unavailable")
             MetaHorizonBridge.getProof(context, BuildConfig.META_HORIZON_APP_ID)
         }
 
-        AsyncFunction("getGoogleIdToken") { webClientId: String, nonce: String ->
+        AsyncFunction("getGoogleIdToken") Coroutine { webClientId: String, nonce: String ->
             if (webClientId.isBlank() || nonce.isBlank()) {
                 error("Google web client ID and nonce are required")
             }

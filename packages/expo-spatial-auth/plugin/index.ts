@@ -10,7 +10,7 @@ const MARKER = '// expo-spatial-auth: platform runtime';
 const GOOGLE_COORDINATES = [
   'androidx.credentials:credentials:1.6.0',
   'androidx.credentials:credentials-play-services-auth:1.6.0',
-  'com.google.android.libraries.identity.googleid:googleid:1.2.1',
+  'com.google.android.libraries.identity.googleid:googleid:1.1.1',
 ];
 
 /** Keep Meta SDK out of mobile/PICO and Google Play Services out of Quest/PICO. */
