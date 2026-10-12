@@ -101,7 +101,12 @@ const select = (w) => {
     if (byName.has(dep)) select(byName.get(dep));
   }
 };
-for (const w of workspaces) if (!w.manifest.private) select(w);
+// Spatial Auth has its own publish lifecycle: it is incubating in this
+// monorepo but is not an @expo-pico release branch package.
+const EXTERNAL_PUBLISH_PACKAGES = new Set(['spatial-auth', 'expo-spatial-auth']);
+for (const w of workspaces) {
+  if (!w.manifest.private && !EXTERNAL_PUBLISH_PACKAGES.has(w.manifest.name)) select(w);
+}
 
 // ---------------------------------------------------------------------------
 // 2. Pack and stage.
