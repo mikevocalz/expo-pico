@@ -23,13 +23,13 @@ android {
 }
 
 dependencies {
-    // Native compilation only. The config plugin adds Meta runtime classes
+    // Native compilation only. The config plugin adds platform runtime classes
     // into QUEST builds, never into PICO/mobile.
     compileOnly "com.meta.horizon.platform.sdk:core-kotlin:0.2.2"
     compileOnly "com.meta.horizon.platform.sdk:users-kotlin:0.2.2"
 
     // Latest stable Credential Manager and Google ID at 2026-10-12.
-    implementation "androidx.credentials:credentials:1.6.0"
-    implementation "androidx.credentials:credentials-play-services-auth:1.6.0"
-    implementation "com.google.android.libraries.identity.googleid:googleid:1.2.1"
+    compileOnly "androidx.credentials:credentials:1.6.0"
+    compileOnly "androidx.credentials:credentials-play-services-auth:1.6.0"
+    compileOnly "com.google.android.libraries.identity.googleid:googleid:1.2.1"
 }

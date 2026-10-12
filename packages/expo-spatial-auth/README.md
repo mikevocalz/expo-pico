@@ -13,12 +13,12 @@ Expo Modules **v2** native platform adapter for Spatial Auth. This package targe
 {
   "plugins": [
     ["expo-horizon-core", { "horizonAppId": "YOUR_APP_ID" }],
-    ["expo-spatial-auth", { "metaHorizon": true }]
+    ["expo-spatial-auth", { "metaHorizon": true, "googleAndroidXR": true }]
   ]
 }
 ```
 
-`metaHorizon: true` only applies to projects defining a `quest` Gradle flavor. The plugin adds Meta Kotlin Users/Core SDK **only** to that flavor and raises the Quest flavor's minimum Android SDK to 34. PICO and phone flavors do not receive the Meta runtime.
+`metaHorizon: true` only applies to projects defining a `quest` Gradle flavor. The plugin adds the Meta SDK only to Quest and Google Credential Manager only to the mobile flavor when googleAndroidXR is enabled. Neither Meta SDK nor Google Play Services is packaged into PICO. For standalone Android XR without Quest, enable only googleAndroidXR; for custom Android flavors, use googleFlavor. The Quest flavor targets minSdk 34.
 
 ```ts
 import { getMetaUserProof, getGoogleIdToken } from 'expo-spatial-auth';
