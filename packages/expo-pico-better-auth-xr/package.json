@@ -5,10 +5,22 @@
   "main": "build/src/server.js",
   "types": "build/src/server.d.ts",
   "exports": {
-    "./server": { "types": "./build/src/server.d.ts", "default": "./build/src/server.js" },
-    "./pico": { "types": "./build/src/pico.d.ts", "default": "./build/src/pico.js" },
-    "./meta": { "types": "./build/src/meta.d.ts", "default": "./build/src/meta.js" },
-    "./types": { "types": "./build/src/types.d.ts", "default": "./build/src/types.js" },
+    "./server": {
+      "types": "./build/src/server.d.ts",
+      "default": "./build/src/server.js"
+    },
+    "./pico": {
+      "types": "./build/src/pico.d.ts",
+      "default": "./build/src/pico.js"
+    },
+    "./meta": {
+      "types": "./build/src/meta.d.ts",
+      "default": "./build/src/meta.js"
+    },
+    "./types": {
+      "types": "./build/src/types.d.ts",
+      "default": "./build/src/types.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -23,7 +35,9 @@
     "@expo-pico/account": ">=1.0.0"
   },
   "peerDependenciesMeta": {
-    "@expo-pico/account": { "optional": true }
+    "@expo-pico/account": {
+      "optional": true
+    }
   },
   "dependencies": {
     "zod": "^4.1.0"
@@ -42,8 +56,16 @@
     "url": "https://github.com/mikevocalz/expo-pico.git",
     "directory": "packages/expo-pico-better-auth-xr"
   },
-  "files": ["build", "README.md"],
-  "publishConfig": { "access": "public", "provenance": true },
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "license": "MIT",
-  "engines": { "node": ">=22.0.0" }
+  "engines": {
+    "node": ">=22.0.0"
+  }
 }

@@ -90,15 +90,15 @@ async function loadUser() {
 
 ## API
 
-| Function                    | Description                                                                                           |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `isAccountAvailable()`      | `true` on a `picoDebug` build with the PPS auth client resolved.                                      |
-| `getAccountSdkVersion()`    | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
-| `getUserProfile()`          | Fetches the logged-in PICO user profile.                                                              |
-| `getAccountLinkStatus()`    | Returns link status across external identity providers.                                               |
-| `login()`                 | Calls the PPS `PicoSignInClient.signIn` interactive sign-in flow and returns a platform login result. |
-| `getAccessToken()`        | Returns the platform access token; a backend must validate it before using it as authentication. |
-| `logout()`                | Calls the PPS `signOut()` bridge; it does not sign out any Better Auth app session. |
+| Function                 | Description                                                                                           |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `isAccountAvailable()`   | `true` on a `picoDebug` build with the PPS auth client resolved.                                      |
+| `getAccountSdkVersion()` | `'unavailable'` on a `mobile`-flavor build or when PPS wasn't resolved; otherwise the version string. |
+| `getUserProfile()`       | Fetches the logged-in PICO user profile.                                                              |
+| `getAccountLinkStatus()` | Returns link status across external identity providers.                                               |
+| `login()`                | Calls the PPS `PicoSignInClient.signIn` interactive sign-in flow and returns a platform login result. |
+| `getAccessToken()`       | Returns the platform access token; a backend must validate it before using it as authentication.      |
+| `logout()`               | Calls the PPS `signOut()` bridge; it does not sign out any Better Auth app session.                   |
 
 Types: `PicoUserProfile`, `PicoLoginResult`, `PicoAccountLinkStatus`.
 

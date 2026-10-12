@@ -7,8 +7,12 @@ export interface MetaUserProof {
   nonce: string;
 }
 
-export function getMetaXRProof({ userId, nonce }: MetaUserProof): Extract<XRProof, { provider: 'meta-horizon' }> {
-  if (!userId?.trim() || !nonce?.trim()) throw new Error('Both a Meta user ID and user proof are required');
+export function getMetaXRProof({
+  userId,
+  nonce,
+}: MetaUserProof): Extract<XRProof, { provider: 'meta-horizon' }> {
+  if (!userId?.trim() || !nonce?.trim())
+    throw new Error('Both a Meta user ID and user proof are required');
   return { provider: 'meta-horizon', userId, nonce };
 }
 
@@ -22,7 +26,8 @@ export function createMetaUserProofVerifier(options: {
   appSecret: string;
   fetcher?: typeof fetch;
 }): (proof: MetaUserProof) => Promise<VerifiedXRIdentity> {
-  if (!options.appId || !options.appSecret) throw new Error('Meta platform credentials are required');
+  if (!options.appId || !options.appSecret)
+    throw new Error('Meta platform credentials are required');
   const fetcher = options.fetcher || fetch;
   return async ({ userId, nonce }) => {
     if (!userId?.trim() || !nonce?.trim()) throw new Error('Meta proof missing');

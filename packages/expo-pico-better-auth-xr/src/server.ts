@@ -6,15 +6,19 @@ import { z } from 'zod';
 import type { VerifiedXRIdentity, XRVerification } from './types';
 
 const proofSchema = z.discriminatedUnion('provider', [
-  z.object({
-    provider: z.literal('pico'),
-    authCode: z.string().min(8).max(8192),
-  }).strict(),
-  z.object({
-    provider: z.literal('meta-horizon'),
-    userId: z.string().min(1).max(256),
-    nonce: z.string().min(8).max(8192),
-  }).strict(),
+  z
+    .object({
+      provider: z.literal('pico'),
+      authCode: z.string().min(8).max(8192),
+    })
+    .strict(),
+  z
+    .object({
+      provider: z.literal('meta-horizon'),
+      userId: z.string().min(1).max(256),
+      nonce: z.string().min(8).max(8192),
+    })
+    .strict(),
 ]);
 
 type Proof = z.infer<typeof proofSchema>;
@@ -29,12 +33,16 @@ async function verify(proof: Proof, options: XRVerification) {
   try {
     if (proof.provider === 'pico') {
       if (!options.verifyPicoAuthCode) {
-        throw new APIError('FORBIDDEN', { message: 'PICO identity verification is not configured' });
+        throw new APIError('FORBIDDEN', {
+          message: 'PICO identity verification is not configured',
+        });
       }
       verified = await options.verifyPicoAuthCode(proof.authCode);
     } else {
       if (!options.verifyMetaUserProof) {
-        throw new APIError('FORBIDDEN', { message: 'Meta identity verification is not configured' });
+        throw new APIError('FORBIDDEN', {
+          message: 'Meta identity verification is not configured',
+        });
       }
       verified = await options.verifyMetaUserProof({ userId: proof.userId, nonce: proof.nonce });
     }
@@ -96,7 +104,7 @@ export function xrIdentity(options: XRVerification) {
                 emailVerified: false,
                 image: verified.image || null,
               },
-              { providerId, accountId },
+              { providerId, accountId }
             );
             user = created.user;
           }
@@ -109,7 +117,7 @@ export function xrIdentity(options: XRVerification) {
           // Mobile clients should use the Better Auth Expo client integration to
           // persist sessions securely; never put platform credentials into cookies.
           return ctx.json({ token: session.token, user: { id: user.id, name: user.name } });
-        },
+        }
       ),
       xrLink: createAuthEndpoint(
         '/xr-identity/link',
@@ -117,7 +125,9 @@ export function xrIdentity(options: XRVerification) {
         async (ctx) => {
           const current = await getSessionFromCtx(ctx, { disableRefresh: true });
           if (!current?.user?.id) {
-            throw new APIError('UNAUTHORIZED', { message: 'Sign in before connecting a headset account' });
+            throw new APIError('UNAUTHORIZED', {
+              message: 'Sign in before connecting a headset account',
+            });
           }
           const { providerId, accountId } = await verify(ctx.body, options);
           const owner = await ctx.context.adapter.findOne<AccountOwner>({
@@ -130,7 +140,8 @@ export function xrIdentity(options: XRVerification) {
           if (owner) {
             if (owner.userId !== current.user.id) {
               throw new APIError('CONFLICT', {
-                message: 'This headset identity belongs to another account. Verify both accounts before requesting a merge.',
+                message:
+                  'This headset identity belongs to another account. Verify both accounts before requesting a merge.',
               });
             }
             return ctx.json({ linked: true, alreadyLinked: true });
@@ -142,7 +153,7 @@ export function xrIdentity(options: XRVerification) {
             accountId,
           });
           return ctx.json({ linked: true, alreadyLinked: false });
-        },
+        }
       ),
     },
   } satisfies BetterAuthPlugin;

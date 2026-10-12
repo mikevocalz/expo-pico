@@ -6,7 +6,9 @@ import type { XRProof } from './types';
  * Request an authorization code and send it ONLY to a trusted Better Auth
  * backend configured with verifyPicoAuthCode. Never treat userId as proof.
  */
-export async function getPicoXRProof(scopes: string[] = []): Promise<Extract<XRProof, { provider: 'pico' }>> {
+export async function getPicoXRProof(
+  scopes: string[] = []
+): Promise<Extract<XRProof, { provider: 'pico' }>> {
   if (!isAccountAvailable()) {
     throw new Error('PICO Platform Service account is unavailable on this device/build');
   }
