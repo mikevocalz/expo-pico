@@ -62,8 +62,8 @@ export function xrIdentity(options: XRVerification) {
   return {
     id: 'xr-identity',
     rateLimit: [
-      { pathMatcher: (path) => path === '/xr-identity/sign-in', window: 60, limit: 10 },
-      { pathMatcher: (path) => path === '/xr-identity/link', window: 60, limit: 10 },
+      { pathMatcher: (path) => path === '/xr-identity/sign-in', window: 60, max: 10 },
+      { pathMatcher: (path) => path === '/xr-identity/link', window: 60, max: 10 },
     ],
     endpoints: {
       xrSignIn: createAuthEndpoint(
