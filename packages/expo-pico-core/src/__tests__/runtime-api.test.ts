@@ -12,7 +12,11 @@ const mockModule = {
 
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: {
-    createHybridObject: jest.fn(() => mockModule),
+    // Nitro V1: `new PicoCore()` / `new PicoRuntime()` resolve the class
+    // through getHybridClass; a constructor returning the mock stands in.
+    getHybridClass: jest.fn(() => function () {
+      return mockModule;
+    }),
   },
 }));
 

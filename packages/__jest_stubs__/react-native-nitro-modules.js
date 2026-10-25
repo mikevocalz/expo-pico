@@ -7,5 +7,9 @@ module.exports = {
     createHybridObject: function () {
       throw new Error('HybridObject not available in test environment');
     },
+    // Nitro V1: generated `#nitro/*` modules resolve classes through this.
+    getHybridClass: function () {
+      throw new Error('HybridObject not available in test environment');
+    },
   },
 };
