@@ -3,6 +3,7 @@ package com.margelo.nitro.expopico.picocore
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 import expo.modules.pico.BuildConfig
 
@@ -219,7 +220,7 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
    * stays uniform; nothing is emitted.
    */
   override fun addPassthroughDialListener(
-    listener: (event: PassthroughLevelEvent) -> Unit
+    listener: Callback<(event: PassthroughLevelEvent) -> Unit>
   ): Double {
     listenerCounter += 1.0
     return listenerCounter
@@ -263,7 +264,11 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
       )
     )
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoRuntime()`),
+  // so it is no longer private.
+  companion object : HybridPicoRuntimeSpec.Companion {
+    override fun constructor(): HybridPicoRuntime = HybridPicoRuntime()
+
     const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
 
     val SENSOR_TYPES = listOf(

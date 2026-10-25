@@ -301,7 +301,11 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   private val FeatureInfo.isRequired: Boolean
     get() = (flags and FeatureInfo.FLAG_REQUIRED) != 0
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoCore()`),
+  // so it is no longer private.
+  companion object : HybridPicoCoreSpec.Companion {
+    override fun constructor(): HybridPicoCore = HybridPicoCore()
+
     /** PICO's VR intent categories, current first then the OS 5 legacy name. */
     private val IMMERSIVE_CATEGORIES = listOf(
       "com.pico.intent.category.VR",
