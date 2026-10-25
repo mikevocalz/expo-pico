@@ -1,10 +1,8 @@
-import {
-  resolveHybridObject,
-  NULL_SUBSCRIPTION,
-  type Subscription,
-} from '@expo-pico/platform-service-common';
+import 'react-native-nitro-modules';
+import { NULL_SUBSCRIPTION, type Subscription } from './subscription';
 
 import type { PicoRuntime } from './PicoRuntime.nitro';
+import { resolvePicoRuntime } from './hybrid';
 
 import ExpoPicoModule from './ExpoPicoModule';
 import { hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT } from './immersive';
@@ -38,7 +36,7 @@ export type { Subscription };
 // the exported functions below are unchanged.
 
 function runtime(): PicoRuntime | null {
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
+  return resolvePicoRuntime();
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 /**
  * Build identity, prebuild-declared config, and SDK/capability probing.
@@ -75,7 +75,12 @@ export interface PicoDeclaredPermission {
   granted: boolean;
 }
 
-export interface PicoCore extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoCore()` throws,
+// which the JS resolver turns into the native-absent defaults.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoCore' } })
+export declare class PicoCore extends HybridObject {
+  constructor();
+
   readonly isPicoBuild: boolean;
   readonly isPicoDevice: boolean;
   readonly spatialMode: string;
@@ -146,3 +151,5 @@ export interface PicoCore extends HybridObject<{ android: 'kotlin' }> {
   /** Undefined when the capability has no system-feature key to check. */
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | undefined>;
 }
+
+export * from '#nitro/PicoCore';

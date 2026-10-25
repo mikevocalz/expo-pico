@@ -1,26 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "picocore"],
-  "ios": {
-    "iosModuleName": "ExpoPicoCore"
+  "apple": {
+    "moduleName": "ExpoPicoCore"
   },
   "android": {
-    "androidNamespace": ["expopico", "picocore"],
-    "androidCxxLibName": "ExpoPicoCore"
-  },
-  "autolinking": {
-    "PicoCore": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoCore"
-      }
-    },
-    "PicoRuntime": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoRuntime"
-      }
-    }
+    "namespace": ["expopico", "picocore"],
+    "cxxLibName": "ExpoPicoCore"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin", "cli"]
 }

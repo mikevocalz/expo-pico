@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 /**
  * XR display, tracking, spatial, controller and sensor surfaces.
@@ -110,7 +110,12 @@ export interface PassthroughLevelEvent {
   enabled: boolean;
 }
 
-export interface PicoRuntime extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoRuntime()` throws,
+// which the JS resolver turns into the native-absent defaults.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoRuntime' } })
+export declare class PicoRuntime extends HybridObject {
+  constructor();
+
   getCurrentRefreshRate(): Promise<number | undefined>;
   getSupportedRefreshRates(): Promise<number[] | undefined>;
   setRefreshRate(hz: number): Promise<boolean>;
@@ -165,3 +170,5 @@ export interface PicoRuntime extends HybridObject<{ android: 'kotlin' }> {
   addPassthroughDialListener(listener: (event: PassthroughLevelEvent) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoRuntime';

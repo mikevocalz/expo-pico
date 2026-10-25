@@ -1,4 +1,4 @@
-import { resolveHybridObject } from '@expo-pico/platform-service-common';
+import { resolvePicoCore, resolvePicoRuntime } from './hybrid';
 
 import type { PicoCore } from './PicoCore.nitro';
 import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntime.nitro';
@@ -26,11 +26,11 @@ import type {
  */
 
 function core(): PicoCore | null {
-  return resolveHybridObject<PicoCore>('PicoCore');
+  return resolvePicoCore();
 }
 
 function runtime(): PicoRuntime | null {
-  return resolveHybridObject<PicoRuntime>('PicoRuntime');
+  return resolvePicoRuntime();
 }
 
 const nn = <T>(v: T | undefined): T | null => (v === undefined ? null : v);

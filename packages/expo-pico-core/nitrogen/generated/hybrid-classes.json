@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoCore": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoCore"
+        },
+        "language": "kotlin"
+      }
+    },
+    "PicoRuntime": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoRuntime"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}
