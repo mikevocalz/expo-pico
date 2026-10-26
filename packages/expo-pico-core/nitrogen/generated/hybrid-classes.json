@@ -9,10 +9,26 @@
         "language": "kotlin"
       }
     },
+    "PicoPanelHost": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoPanelHost"
+        },
+        "language": "kotlin"
+      }
+    },
     "PicoRuntime": {
       "android": {
         "implementation": {
           "className": "HybridPicoRuntime"
+        },
+        "language": "kotlin"
+      }
+    },
+    "PicoWindows": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoWindows"
         },
         "language": "kotlin"
       }

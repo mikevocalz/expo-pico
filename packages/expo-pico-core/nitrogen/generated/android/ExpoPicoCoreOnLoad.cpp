@@ -8,16 +8,28 @@
 #include <ExpoPicoCore/private/ExpoPicoCoreOnLoad.hpp>
 #include <NitroModules/HybridClassRegistry.hpp>
 #include <ExpoPicoCore/private/JHybridPicoCoreSpec.hpp>
+#include <ExpoPicoCore/private/JHybridPicoPanelHostSpec.hpp>
+#include <ExpoPicoCore/private/JCallback_void.hpp>
+#include <ExpoPicoCore/private/JCallback_void_PanelOpenedEvent.hpp>
+#include <ExpoPicoCore/private/JCallback_void_PanelClosedEvent.hpp>
 #include <ExpoPicoCore/private/JHybridPicoRuntimeSpec.hpp>
 #include <ExpoPicoCore/private/JCallback_void_PassthroughLevelEvent.hpp>
+#include <ExpoPicoCore/private/JHybridPicoWindowsSpec.hpp>
 
 namespace margelo::nitro::expopico::picocore {
   void registerAllNatives() {
     margelo::nitro::expopico::picocore::JHybridPicoCoreSpec::CxxPart::registerNatives();
+    margelo::nitro::expopico::picocore::JHybridPicoPanelHostSpec::CxxPart::registerNatives();
+    margelo::nitro::expopico::picocore::JCallback_void::registerNatives();
+    margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::registerNatives();
+    margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::registerNatives();
     margelo::nitro::expopico::picocore::JHybridPicoRuntimeSpec::CxxPart::registerNatives();
     margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::registerNatives();
+    margelo::nitro::expopico::picocore::JHybridPicoWindowsSpec::CxxPart::registerNatives();
 
     HybridClassRegistry::registerHybridClass("expopico.picocore.PicoCore", JHybridPicoCoreSpec::Class::get());
+    HybridClassRegistry::registerHybridClass("expopico.picocore.PicoPanelHost", JHybridPicoPanelHostSpec::Class::get());
     HybridClassRegistry::registerHybridClass("expopico.picocore.PicoRuntime", JHybridPicoRuntimeSpec::Class::get());
+    HybridClassRegistry::registerHybridClass("expopico.picocore.PicoWindows", JHybridPicoWindowsSpec::Class::get());
   }
 }

@@ -1,0 +1,18 @@
+// The Expo-linked half of @expo-pico/core. Expo autolinking includes it from
+// expo-module.config.json; it holds only what needs Expo's ReactActivity
+// hooks. The Nitro module in ../android stays on React Native autolinking.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.pico'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.pico.window"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}

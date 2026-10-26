@@ -325,6 +325,15 @@ export type { PicoCoordinates } from './location';
 
 export default ExpoPicoModule;
 
+// PICO OS 5 panels: secondary windows with their own pico.vr.position.
+export { PicoWindows } from './PicoWindows.nitro';
+export { PicoPanelHost } from './PicoPanelHost.nitro';
+export type { PanelSizeDp } from './PanelSizeDp';
+export type { PanelOpenedEvent } from './PanelOpenedEvent';
+export type { PanelClosedEvent } from './PanelClosedEvent';
+export type { PanelCloseReason } from './PanelCloseReason';
+export type { ListenerSubscription } from './ListenerSubscription';
+
 /**
  * Hand the display to this app's immersive activity.
  *

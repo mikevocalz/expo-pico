@@ -182,6 +182,8 @@ dependencies {
     implementation "com.facebook.react:react-android"
     implementation "com.facebook.react:hermes-android"
     implementation project(":react-native-nitro-modules")
+    // ComponentActivity and OnBackPressedCallback for PicoPanelActivity.
+    implementation "androidx.activity:activity:${safeExtGet('androidxActivityVersion', '1.8.2')}"
 
     // PICO Platform SDK AAR — compile-only for controller haptics, so it is
     // never bundled into the published npm package. Consumers place the AAR
