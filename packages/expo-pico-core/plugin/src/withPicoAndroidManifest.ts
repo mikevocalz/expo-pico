@@ -21,6 +21,7 @@ import { applyCapabilityContract } from './withPicoCapabilities';
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyVRActivityContract, applyPanelSize } from './withPicoVRActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
+import { applyWindowContract } from './picoWindows';
 
 /**
  * Writes `pvr.app.id` (and other PPS-required metadata) into the **main**
@@ -110,6 +111,10 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // meta-data. Each capability is independently gated; all writes
       // are idempotent and toggling off cleans up the entry.
       applyCapabilityContract(manifest, options);
+      // PICO OS 5 window defaults: the translucent-main-window flag the
+      // core window listener reads, and the panel activity openPanel()
+      // launches with a pico.vr.position of its own.
+      applyWindowContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
       console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
 
