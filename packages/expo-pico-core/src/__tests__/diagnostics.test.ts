@@ -5,9 +5,12 @@
 // touches the native mock, so returning an empty object is enough.
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: {
-    getHybridClass: jest.fn(() => function () {
-      return {};
-    }),
+    getHybridClass: jest.fn(
+      () =>
+        function () {
+          return {};
+        }
+    ),
   },
 }));
 
