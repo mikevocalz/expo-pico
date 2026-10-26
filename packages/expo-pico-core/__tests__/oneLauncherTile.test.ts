@@ -8,6 +8,7 @@ import {
   assertAtMostOneLauncherTile,
   launcherVisibleActivities,
   MAIN_ACTION,
+  VIRO_VR_ACTION,
 } from '../plugin/src/launcherTiles';
 import { resolveOptions } from '../plugin/src/types';
 import { withPicoAndroidManifest } from '../plugin/src/withPicoAndroidManifest';
@@ -29,6 +30,14 @@ const LAUNCHER_ACTIVITY = `    <activity android:name=".MainActivity" android:ex
 const VIRO_VR_ACTIVITY = `    <activity android:name=".VRActivity" android:exported="false">
       <intent-filter>
         <action android:name="com.viro.intent.action.VR"/>
+        <category android:name="com.oculus.intent.category.VR"/>
+      </intent-filter>
+    </activity>`;
+
+// What every published @reactvision/react-viro (2.58 to 3.0.x) writes.
+const PUBLISHED_VIRO_VR_ACTIVITY = `    <activity android:name=".VRActivity" android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
         <category android:name="com.oculus.intent.category.VR"/>
       </intent-filter>
     </activity>`;
@@ -122,6 +131,19 @@ describe('VRActivity in the PICO overlay', () => {
     const pico = await read(root, 'pico');
     expect(vrActivity(pico)['intent-filter']).toEqual([{ $: { 'tools:node': 'removeAll' } }]);
     expect(launcherVisibleActivities(main, pico)).toEqual(['.MainActivity']);
+  });
+
+  test('published Viro: MAIN on .VRActivity in main becomes the Viro VR action', async () => {
+    const root = makeProject(manifestXml(`${LAUNCHER_ACTIVITY}\n${PUBLISHED_VIRO_VR_ACTIVITY}`));
+    await prebuild(root);
+    const main = await read(root, 'main');
+    const filters = vrActivity(main)['intent-filter'];
+    expect(filters).toHaveLength(1);
+    expect(filters[0].action.map((a: any) => a.$['android:name'])).toEqual([VIRO_VR_ACTION]);
+    expect(filters[0].category.map((c: any) => c.$['android:name'])).toEqual([
+      'com.oculus.intent.category.VR',
+    ]);
+    expect(launcherVisibleActivities(main)).toEqual(['.MainActivity']);
   });
 
   test('a second prebuild changes nothing', async () => {
