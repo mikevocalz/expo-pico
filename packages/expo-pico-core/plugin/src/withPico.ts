@@ -13,6 +13,7 @@ import { withPicoLocalProperties } from './withPicoLocalProperties';
 import { withPicoMainApplication } from './withPicoMainApplication';
 import { withPicoNewArchCheck } from './withPicoNewArchCheck';
 import { withPicoNitroModules } from './withPicoNitroModules';
+import { withPicoOneLauncherTile } from './withPicoOneLauncherTile';
 import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
@@ -44,6 +45,9 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
     return config;
   }
 
+  // First, so its mods run after every other expo-pico mod (Expo runs the
+  // most recently registered mod of each type first).
+  config = withPicoOneLauncherTile(config);
   config = withPicoNewArchCheck(config, options);
   config = withPicoDiagnostics(config, options);
   config = withPicoGradleProperties(config, options);
