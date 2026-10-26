@@ -13,9 +13,9 @@
     "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js",
     "./plugin": {
-      "import": "./plugin/build/index.js",
-      "require": "./plugin/build/index.js",
-      "types": "./plugin/build/index.d.ts"
+      "import": "./plugin/build/src/index.js",
+      "require": "./plugin/build/src/index.js",
+      "types": "./plugin/build/src/index.d.ts"
     }
   },
   "scripts": {
@@ -23,7 +23,7 @@
     "build:plugin": "tsc --project plugin/tsconfig.json",
     "clean": "rm -rf build nitrogen/generated",
     "test": "jest --config jest.config.js",
-    "prepare": "nitrogen && tsc",
+    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json",
     "typecheck": "tsc --noEmit",
     "nitrogen": "nitrogen",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
