@@ -14,6 +14,7 @@ export declare function getSpaceState(): PicoSpaceState;
 export declare function getContainerType(): PicoContainerType;
 export declare function getSpatialCapabilities(): SpatialCapabilities;
 export declare function getSpatialSdkVersion(): string | null;
+/** Which SDK classes are linked, keyed by a stable name. Empty without native. */
 export declare function getSpatialSdkProbe(): Record<string, boolean>;
 /**
  * Status of the native WindowContainer bridge. Never throws: a missing or
@@ -34,7 +35,7 @@ export type WindowContainerResult = {
 /**
  * Opens a PICO OS 6 WindowContainer named `id` hosting the app's current
  * activity. On PICO OS 5, phones, or builds without the Spatial SDK
- * (`enableSpatialSdk`), resolves to `{ ok: false, reason }` and never throws.
+ * (`enableSpatialSdk`), returns `{ ok: false, reason }` and never throws.
  *
  * `ok: true` means the SDK call returned without throwing. The SDK gives no
  * completion signal, so it does not confirm the window is on screen yet.

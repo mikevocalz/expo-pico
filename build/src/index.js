@@ -36,8 +36,8 @@ exports.addFaceListener = addFaceListener;
 exports.isFaceTrackingAvailable = isFaceTrackingAvailable;
 exports.addBodyListener = addBodyListener;
 exports.isBodyTrackingAvailable = isBodyTrackingAvailable;
-const expo_modules_core_1 = require("expo-modules-core");
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoSpatial_nitro_1 = require("./PicoSpatial.nitro");
 __exportStar(require("./types"), exports);
 __exportStar(require("./layout"), exports);
 const layout_1 = require("./layout");
@@ -50,62 +50,8 @@ const NO_CAPABILITIES = {
     handTracking: false,
     spatialSdkAvailable: false,
 };
-let v2Cache;
-let v2ListenerId = 0;
-function nativeV2() {
-    if (v2Cache !== undefined)
-        return v2Cache;
-    try {
-        v2Cache = (0, expo_modules_core_1.requireOptionalNativeModule)('PicoSpatialV2');
-    }
-    catch {
-        v2Cache = null;
-    }
-    return v2Cache;
-}
 function native() {
-    const v2 = nativeV2();
-    if (v2) {
-        const info = () => v2.getInfo();
-        return {
-            get spaceState() {
-                return info().spaceState;
-            },
-            get containerType() {
-                return info().containerType;
-            },
-            get spatialSdkVersion() {
-                return info().spatialSdkVersion ?? undefined;
-            },
-            get capabilities() {
-                return info().capabilities;
-            },
-            get eyeGazeAvailable() {
-                return !!info().eyeGazeAvailable;
-            },
-            get sceneMeshAvailable() {
-                return !!info().sceneMeshAvailable;
-            },
-            get faceTrackingAvailable() {
-                return !!info().faceTrackingAvailable;
-            },
-            get bodyTrackingAvailable() {
-                return !!info().bodyTrackingAvailable;
-            },
-            getSpatialSdkProbe: async () => v2.getSpatialSdkProbe(),
-            createSpatialAnchor: async (pose) => v2.createSpatialAnchor(pose),
-            setWindowContainerProperties: async (props) => v2.setWindowContainerProperties(props),
-            requestFullSpace: async () => v2.requestFullSpace(),
-            getGazeSnapshot: async () => v2.getGazeSnapshot() ?? undefined,
-            getSceneMesh: async () => v2.getSceneMesh(),
-            addGazeListener: () => ++v2ListenerId,
-            addSceneMeshUpdateListener: () => ++v2ListenerId,
-            addFaceListener: () => ++v2ListenerId,
-            addBodyListener: () => ++v2ListenerId,
-            removeListener: () => { },
-        };
-    }
-    return null;
+    return (0, platform_service_common_1.resolveHybridObject)('PicoSpatial', () => new PicoSpatial_nitro_1.PicoSpatial());
 }
 function toTypedMesh(raw) {
     return {
@@ -143,22 +89,23 @@ function getSpatialCapabilities() {
 function getSpatialSdkVersion() {
     return native()?.spatialSdkVersion ?? null;
 }
+/** Which SDK classes are linked, keyed by a stable name. Empty without native. */
 function getSpatialSdkProbe() {
-    return nativeV2()?.getSpatialSdkProbe() ?? {};
+    return native()?.getSpatialSdkProbe() ?? {};
 }
 /**
  * Status of the native WindowContainer bridge. Never throws: a missing or
  * outdated native module is reported through `reason`.
  */
 function getLayoutBridgeStatus() {
-    const v2 = nativeV2();
-    if (!v2) {
-        return unboundStatus('NATIVE_MODULE_UNAVAILABLE: PicoSpatialV2 is not in this binary.');
+    const hybrid = native();
+    if (!hybrid) {
+        return unboundStatus('NATIVE_MODULE_UNAVAILABLE: the PicoSpatial HybridObject is not in this binary.');
     }
-    if (typeof v2.getLayoutBridgeStatus !== 'function') {
+    if (typeof hybrid.getLayoutBridgeStatus !== 'function') {
         return unboundStatus('NATIVE_BRIDGE_OUTDATED: this binary predates getLayoutBridgeStatus. Rebuild the app.');
     }
-    const raw = v2.getLayoutBridgeStatus();
+    const raw = hybrid.getLayoutBridgeStatus();
     return {
         sdkLinked: raw.sdkLinked === true,
         spatialPlatform: raw.spatialPlatform === true,
@@ -180,11 +127,11 @@ function callWindowContainer(method, id, options) {
     if (!status.sdkLinked || !status.spatialPlatform) {
         return { ok: false, reason: status.reason ?? 'BRIDGE_NOT_READY' };
     }
-    const v2 = nativeV2();
-    if (!v2 || typeof v2[method] !== 'function') {
+    const hybrid = native();
+    if (!hybrid || typeof hybrid[method] !== 'function') {
         return { ok: false, reason: `NATIVE_BRIDGE_OUTDATED: this binary has no ${method}.` };
     }
-    if (v2[method](id, options.tag ?? null) === true)
+    if (hybrid[method](id, options.tag) === true)
         return { ok: true };
     const after = getLayoutBridgeStatus();
     return {
@@ -196,7 +143,7 @@ function callWindowContainer(method, id, options) {
 /**
  * Opens a PICO OS 6 WindowContainer named `id` hosting the app's current
  * activity. On PICO OS 5, phones, or builds without the Spatial SDK
- * (`enableSpatialSdk`), resolves to `{ ok: false, reason }` and never throws.
+ * (`enableSpatialSdk`), returns `{ ok: false, reason }` and never throws.
  *
  * `ok: true` means the SDK call returned without throwing. The SDK gives no
  * completion signal, so it does not confirm the window is on screen yet.
