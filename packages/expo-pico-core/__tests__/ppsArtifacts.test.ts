@@ -6,6 +6,7 @@ import {
   PPS_VERSION,
   isPinnedPpsModule,
   renderLocalAarBlock,
+  resolvePpsConfigurations,
   renderPpsDependenciesBlock,
   renderPpsResolutionPin,
   resolvePpsServices,
@@ -108,6 +109,34 @@ describe('renderPpsDependenciesBlock', () => {
     const dupes = renderPpsDependenciesBlock(['auth', 'auth', 'auth'], DEPS_MARKER);
     const line = `    implementation "${PPS_GROUP}:platform-service-auth:${PPS_VERSION}"`;
     expect(dupes.split('\n').filter((l) => l === line)).toHaveLength(1);
+  });
+});
+
+describe('per-flavor PPS declarations', () => {
+  it('keeps the SDK on the pico and dual flavors only', () => {
+    expect(resolvePpsConfigurations('pico')).toEqual(['picoImplementation']);
+    expect(resolvePpsConfigurations('dual')).toEqual(['picoImplementation', 'dualImplementation']);
+    expect(resolvePpsConfigurations('mobile')).toEqual(['implementation']);
+  });
+
+  it('never declares a service on bare implementation when flavors exist', () => {
+    const block = renderPpsDependenciesBlock(
+      ['achievement'],
+      DEPS_MARKER,
+      resolvePpsConfigurations('pico')
+    );
+    expect(block).toContain(
+      `    picoImplementation "${PPS_GROUP}:platform-service-achievement:${PPS_VERSION}"`
+    );
+    expect(block).not.toContain(
+      `\n    implementation "${PPS_GROUP}:platform-service-achievement:${PPS_VERSION}"`
+    );
+  });
+
+  it('scopes vendored AARs to the same flavors', () => {
+    const block = renderLocalAarBlock(LIBS_MARKER, resolvePpsConfigurations('pico'));
+    expect(block).toContain('    picoImplementation fileTree(');
+    expect(block).not.toContain('    implementation fileTree(');
   });
 });
 
