@@ -1,0 +1,118 @@
+// PICO OS 5 window positions.
+//
+// PICO OS 5 puts activities of one package in the same 2D window when their
+// `pico.vr.position` meta-data match, and an activity without the key counts
+// as "far". A panel activity that shares the main window's position replaces
+// the main window instead of opening beside it, and "near" makes a popup that
+// PICO hides on any click outside it (framework.jar and services.jar on a
+// PICO 4 Ultra, OS 5.15.7).
+//
+// This script reads each variant's merged manifest (app, flavors and every
+// library) and fails the build when an activity that sets the key either
+// sets "near" or shares its value with another activity, the implicit "far"
+// included. Activities that leave the key unset are not reported against
+// each other, and immersive activities (pvr.app.type=vr) are skipped because
+// PICO gives them the whole display.
+//
+// Apply it from the app module: apply from: "<path>/pico-window-positions.gradle"
+// The @expo-pico/core config plugin adds that line to app/build.gradle.
+
+import javax.xml.parsers.DocumentBuilderFactory
+
+abstract class PicoWindowPositionCheckTask extends DefaultTask {
+    static final String ANDROID_NS = 'http://schemas.android.com/apk/res/android'
+    static final String POSITION = 'pico.vr.position'
+    static final String IMPLICIT = 'far'
+    static final String POPUP = 'near'
+    static final String APP_TYPE = 'pvr.app.type'
+
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getMergedManifest()
+
+    @OutputFile
+    abstract RegularFileProperty getCheckedManifest()
+
+    @Input
+    abstract Property<String> getVariantName()
+
+    static String metaValue(org.w3c.dom.Element activity, String key) {
+        def nodes = activity.getElementsByTagName('meta-data')
+        for (int i = 0; i < nodes.length; i++) {
+            def meta = (org.w3c.dom.Element) nodes.item(i)
+            if (meta.getAttributeNS(ANDROID_NS, 'name') == key) {
+                return meta.getAttributeNS(ANDROID_NS, 'value')
+            }
+        }
+        return null
+    }
+
+    @TaskAction
+    void check() {
+        File input = mergedManifest.get().asFile
+        def factory = DocumentBuilderFactory.newInstance()
+        factory.namespaceAware = true
+        def doc = factory.newDocumentBuilder().parse(input)
+        def windows = []
+        def activities = doc.getElementsByTagName('activity')
+        for (int i = 0; i < activities.length; i++) {
+            def activity = (org.w3c.dom.Element) activities.item(i)
+            if (metaValue(activity, APP_TYPE) == 'vr') continue
+            windows << [
+                name: activity.getAttributeNS(ANDROID_NS, 'name'),
+                explicit: metaValue(activity, POSITION),
+            ]
+        }
+        def problems = []
+        windows.each { w ->
+            if (w.explicit == null) return
+            if (w.explicit == POPUP) {
+                problems << "${w.name} sets ${POSITION}=\"${POPUP}\", which PICO OS shows as a popup " +
+                    "that hides on any click outside it. Use a value of its own, such as \"rail\"."
+                return
+            }
+            def sharing = windows.findAll { it != w && (it.explicit ?: IMPLICIT) == w.explicit }*.name
+            if (!sharing.isEmpty()) {
+                def implicitNote = w.explicit == IMPLICIT ?
+                    " (an activity without the key counts as \"${IMPLICIT}\")" : ''
+                problems << "${w.name} sets ${POSITION}=\"${w.explicit}\", the same window as " +
+                    "${sharing.join(', ')}${implicitNote}. PICO OS opens it in that window " +
+                    "instead of a new one. Give each panel activity a distinct value."
+            }
+        }
+        if (!problems.isEmpty()) {
+            throw new GradleException(
+                "[pico-window-positions] The merged manifest of variant '${variantName.get()}':\n- " +
+                problems.join('\n- ') + "\nMerged manifest: ${input}")
+        }
+        File output = checkedManifest.get().asFile
+        output.parentFile.mkdirs()
+        output.bytes = input.bytes
+    }
+}
+
+def picoWindowPositionsExtra = project.extensions.extraProperties
+if (!picoWindowPositionsExtra.has('picoWindowPositionCheckRegistered')) {
+    picoWindowPositionsExtra.set('picoWindowPositionCheckRegistered', true)
+    project.plugins.withId('com.android.application') {
+        def androidComponents = project.extensions.getByName('androidComponents')
+        // SingleArtifact.MERGED_MANIFEST is a Kotlin object; load it through
+        // AGP's class loader so this script needs nothing on its own classpath.
+        def mergedManifestArtifact = Class.forName(
+            'com.android.build.api.artifact.SingleArtifact$MERGED_MANIFEST',
+            true,
+            androidComponents.getClass().classLoader
+        ).getField('INSTANCE').get(null)
+        androidComponents.onVariants(androidComponents.selector().all()) { variant ->
+            def taskName = "check${variant.name.capitalize()}PicoWindowPositions"
+            def task = project.tasks.register(taskName, PicoWindowPositionCheckTask) {
+                it.variantName.set(variant.name)
+            }
+            // A transform puts the check on the path to every APK and bundle:
+            // packaging reads the manifest only after this task copied it.
+            variant.artifacts.use(task)
+                .wiredWithFiles({ it.mergedManifest }, { it.checkedManifest })
+                .toTransform(mergedManifestArtifact)
+        }
+    }
+}

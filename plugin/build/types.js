@@ -72,6 +72,7 @@ exports.PICO_OPTION_DEFAULTS = {
     enableEmulatorOptimizations: false,
     minSdkVersion: 32,
     targetSdkVersion: 34,
+    windows: { translucentMainWindow: true, panelActivity: true },
 };
 /**
  * Options that configure the Meta Horizon `quest` flavor. They belong on the
@@ -146,6 +147,11 @@ function resolveOptions(options = {}) {
         viroRendererOverlay,
         openXrLoaderOverlay,
         targetDevices: options.targetDevices ?? exports.PICO_OPTION_DEFAULTS.targetDevices,
+        windows: {
+            translucentMainWindow: options.windows?.translucentMainWindow ??
+                exports.PICO_OPTION_DEFAULTS.windows.translucentMainWindow,
+            panelActivity: options.windows?.panelActivity ?? exports.PICO_OPTION_DEFAULTS.windows.panelActivity,
+        },
         defaultWidth: nonEmpty(options.defaultWidth) ?? exports.PICO_OPTION_DEFAULTS.defaultWidth,
         defaultHeight: nonEmpty(options.defaultHeight) ?? exports.PICO_OPTION_DEFAULTS.defaultHeight,
         // Copy refreshRates to avoid mutating user input, and filter out

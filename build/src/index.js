@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LUCIDE_VERSION = exports.LUCIDE_ICONS = exports.iconMeshToViroGeometry = exports.getLucideIconMesh = exports.getIconMesh = exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = exports.PICO_EYE_TRACKING_PERMISSION = exports.HORIZON_EYE_TRACKING_PERMISSION = exports.eyeTrackingPermissionFor = exports.ensureEyeTrackingPermission = exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
+exports.LUCIDE_VERSION = exports.LUCIDE_ICONS = exports.iconMeshToViroGeometry = exports.getLucideIconMesh = exports.getIconMesh = exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = exports.PicoPanelHost = exports.PicoWindows = exports.PICO_EYE_TRACKING_PERMISSION = exports.HORIZON_EYE_TRACKING_PERMISSION = exports.eyeTrackingPermissionFor = exports.ensureEyeTrackingPermission = exports.IMMERSIVE_ROOT_COMPONENT = exports.hasImmersiveSceneRegistered = exports.registerImmersiveScene = exports.isLocationAvailable = exports.requestLocationPermission = exports.getPicoLocation = exports.spatialAudio = exports.sensors = exports.motionTracker = exports.controllers = exports.scene = exports.boundary = exports.hand = exports.body = exports.face = exports.eye = exports.display = exports.isCapabilityAvailable = exports.getCapabilitySnapshot = exports.getDeclaredTargetDevices = exports.getDeclaredRefreshRates = exports.getDeclaredCapabilities = exports.capabilities = exports.formatDiagnostics = exports.readRuntimeFacts = exports.readBuildTimeFacts = exports.buildDiagnosticsReport = exports.getPicoDiagnostics = void 0;
 exports.pulseHaptic = pulseHaptic;
 exports.isHapticsAvailable = isHapticsAvailable;
 exports.addPassthroughDialListener = addPassthroughDialListener;
@@ -55,7 +55,8 @@ exports.getPicoRuntimeInfo = getPicoRuntimeInfo;
 exports.enterImmersiveScene = enterImmersiveScene;
 exports.hasImmersiveActivity = hasImmersiveActivity;
 exports.exitImmersiveScene = exitImmersiveScene;
-const platform_service_common_1 = require("@expo-pico/platform-service-common");
+require("react-native-nitro-modules");
+const subscription_1 = require("./subscription");
 const ExpoPicoModule_1 = __importStar(require("./ExpoPicoModule"));
 const eyeTrackingPermission_1 = require("./eyeTrackingPermission");
 const immersive_1 = require("./immersive");
@@ -102,7 +103,7 @@ function isHapticsAvailable() {
 function addPassthroughDialListener(cb) {
     const r = runtime();
     if (!r?.passthroughAvailable)
-        return platform_service_common_1.NULL_SUBSCRIPTION;
+        return subscription_1.NULL_SUBSCRIPTION;
     const id = r.addPassthroughDialListener(cb);
     return { remove: () => r.removeListener(id) };
 }
@@ -311,6 +312,11 @@ Object.defineProperty(exports, "eyeTrackingPermissionFor", { enumerable: true, g
 Object.defineProperty(exports, "HORIZON_EYE_TRACKING_PERMISSION", { enumerable: true, get: function () { return eyeTrackingPermission_2.HORIZON_EYE_TRACKING_PERMISSION; } });
 Object.defineProperty(exports, "PICO_EYE_TRACKING_PERMISSION", { enumerable: true, get: function () { return eyeTrackingPermission_2.PICO_EYE_TRACKING_PERMISSION; } });
 exports.default = ExpoPicoModule_1.default;
+// PICO OS 5 panels: secondary windows with their own pico.vr.position.
+var PicoWindows_nitro_1 = require("./PicoWindows.nitro");
+Object.defineProperty(exports, "PicoWindows", { enumerable: true, get: function () { return PicoWindows_nitro_1.PicoWindows; } });
+var PicoPanelHost_nitro_1 = require("./PicoPanelHost.nitro");
+Object.defineProperty(exports, "PicoPanelHost", { enumerable: true, get: function () { return PicoPanelHost_nitro_1.PicoPanelHost; } });
 /**
  * Hand the display to this app's immersive activity.
  *

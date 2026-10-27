@@ -1,6 +1,7 @@
-import type { PicoCore } from './PicoCoreNativeTypes';
-import type { PicoRuntime } from './PicoRuntimeNativeTypes';
+import type { PicoCore } from './PicoCore.nitro';
+import type { PicoRuntime } from './PicoRuntime.nitro';
 import type { PicoBodyJoint, PicoCapabilitySnapshotEntry, PicoController, PicoDeclaredCapabilities, PicoDetectedPlane, PicoEyePose, PicoFoveationLevel, PicoHandPose, PicoHighRateSensor, PicoMotionTracker } from './types';
+/** The PicoRuntime HybridObject, or null when the native library is absent. */
 export declare function getPicoRuntimeAdapter(): PicoRuntime | null;
 declare const ExpoPicoModule: {
     readonly isPicoBuild: boolean;
@@ -25,8 +26,8 @@ declare const ExpoPicoModule: {
     readonly declaredRefreshRates: number[];
     readonly declaredTargetDevices: string[];
     hasSystemFeature(name: string): Promise<boolean>;
-    getDeclaredFeatures(): Promise<import("./PicoCoreNativeTypes").PicoDeclaredFeature[]>;
-    getDeclaredPermissions(): Promise<import("./PicoCoreNativeTypes").PicoDeclaredPermission[]>;
+    getDeclaredFeatures(): Promise<import("./PicoCore.nitro").PicoDeclaredFeature[]>;
+    getDeclaredPermissions(): Promise<import("./PicoCore.nitro").PicoDeclaredPermission[]>;
     getPlatformSdkProbe(): Promise<Record<string, boolean>>;
     enterImmersiveScene(): Promise<boolean>;
     exitImmersiveScene(): Promise<boolean>;

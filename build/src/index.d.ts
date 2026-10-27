@@ -1,4 +1,5 @@
-import { type Subscription } from '@expo-pico/platform-service-common';
+import 'react-native-nitro-modules';
+import { type Subscription } from './subscription';
 import ExpoPicoModule from './ExpoPicoModule';
 import type { PicoAppType, PicoRuntimeInfo, PicoSpatialMode, PicoTargetProfileRuntime, PicoXRMode, HapticHand, PassthroughLevelEvent } from './types';
 export type { PicoAppType, PicoRuntimeInfo, PicoSpatialMode, PicoTargetProfileRuntime, PicoXRMode, HapticHand, PicoPlatformSdkProbe, ExpoPicoModuleInterface, PassthroughLevelEvent, } from './types';
@@ -109,6 +110,13 @@ export { registerImmersiveScene, hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COM
 export type { PicoCoordinates } from './location';
 export { ensureEyeTrackingPermission, eyeTrackingPermissionFor, HORIZON_EYE_TRACKING_PERMISSION, PICO_EYE_TRACKING_PERMISSION, } from './eyeTrackingPermission';
 export default ExpoPicoModule;
+export { PicoWindows } from './PicoWindows.nitro';
+export { PicoPanelHost } from './PicoPanelHost.nitro';
+export type { PanelSizeDp } from './PanelSizeDp';
+export type { PanelOpenedEvent } from './PanelOpenedEvent';
+export type { PanelClosedEvent } from './PanelClosedEvent';
+export type { PanelCloseReason } from './PanelCloseReason';
+export type { ListenerSubscription } from './ListenerSubscription';
 /**
  * Hand the display to this app's immersive activity.
  *

@@ -47,11 +47,12 @@
     "provenance": true
   },
   "peerDependencies": {
-    "expo": ">=58.0.2 <59",
+    "expo": ">=58.0.0 <59",
     "react": ">=19.3.0 <20",
-    "react-native": ">=0.88.0-rc.3 <0.89",
+    "react-native": ">=0.88.0 <0.89",
     "expo-location": "*",
-    "expo-modules-core": ">=58.0.11 <59"
+    "react-native-nitro-modules": "*",
+    "nitro-core": "*"
   },
   "peerDependenciesMeta": {
     "expo": {
@@ -60,7 +61,10 @@
     "expo-location": {
       "optional": true
     },
-    "expo-modules-core": {
+    "nitro-core": {
+      "optional": true
+    },
+    "react-native-nitro-modules": {
       "optional": false
     }
   },
@@ -71,12 +75,20 @@
     "cli/build",
     "plugin/build",
     "plugin/assets",
-    "app.plugin.js"
+    "app.plugin.js",
+    "nitrogen/generated",
+    "expo-module.config.json",
+    "android-expo",
+    "nitro.json",
+    "react-native.config.js"
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-core",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",
-  "gitHead": "5edd6b44496ce9b3c568b060d17eeef962b7c412",
+  "imports": {
+    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
+  },
+  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
   "expoPico": {
-    "sourceCommit": "5edd6b44496ce9b3c568b060d17eeef962b7c412"
+    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1"
   }
 }

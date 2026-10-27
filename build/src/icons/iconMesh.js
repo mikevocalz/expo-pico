@@ -4,24 +4,16 @@ exports.DEFAULT_ICON_TOLERANCE = exports.DEFAULT_ICON_STROKE_WIDTH = void 0;
 exports.getIconMesh = getIconMesh;
 exports.getLucideIconMesh = getLucideIconMesh;
 exports.iconMeshToViroGeometry = iconMeshToViroGeometry;
-const expo_modules_core_1 = require("expo-modules-core");
+const hybrid_1 = require("../hybrid");
 const lucideIcons_generated_1 = require("./lucideIcons.generated");
 exports.DEFAULT_ICON_STROKE_WIDTH = 2;
 exports.DEFAULT_ICON_TOLERANCE = 0.02;
-let nativeCache;
 function native() {
-    if (nativeCache === undefined) {
-        try {
-            nativeCache = (0, expo_modules_core_1.requireOptionalNativeModule)('PicoRuntimeV2');
-        }
-        catch {
-            nativeCache = null;
-        }
+    const runtime = (0, hybrid_1.resolvePicoRuntime)();
+    if (!runtime) {
+        throw new Error('ESKIU_RUNTIME_UNAVAILABLE: icon meshes need the @expo-pico/core Android library (PicoRuntime).');
     }
-    if (!nativeCache || typeof nativeCache.getIconMesh !== 'function') {
-        throw new Error('ESKIU_RUNTIME_UNAVAILABLE: icon meshes need the @expo-pico/core Android module (PicoRuntimeV2).');
-    }
-    return nativeCache;
+    return runtime;
 }
 /**
  * Meshes the stroke of SVG element markup: `path`, `line`, `circle`,

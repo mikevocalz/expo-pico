@@ -16,7 +16,8 @@ import type { PicoPluginOptions } from './types';
  *   6. Swan composite (Swan-only Gradle deps + optional source set)
  *   7. strings.xml
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
- *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
+ *   9. MainApplication (PicoCorePackage with the xrMode platform, which loads
+ *      every @expo-pico Nitro library; New Architecture flag guard)
  *  10. local.properties (node binary path + optional PICO SDK paths)
  *  11. Meta-only entries removed from the pico, dual and mobile flavors
  *  12. PICO renderer and loader overlays (pico and dual flavors)

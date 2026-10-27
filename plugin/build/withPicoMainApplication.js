@@ -12,7 +12,7 @@ const insertLinesHelper_1 = require("./util/insertLinesHelper");
  *   - Adds the New Architecture flag guard for the Viro VR activity hop
  *     (Kotlin only; see `injectNewArchFlagGuard`).
  *   - Strips the `PicoCorePackage` registration older prebuilds injected.
- *     Core is an autolinked Expo Module, so it needs no manual registration.
+ *     React Native autolinking registers it (see react-native.config.js).
  */
 const withPicoMainApplication = (config, options) => {
     if (options.xrMode === 'mobile') {
@@ -34,9 +34,10 @@ function injectIntoKotlinMainApplication(source, _options) {
 }
 /**
  * Removes the `PicoCorePackage` registration and its imports that older
- * prebuilds injected. Core is an autolinked Expo Module now and reads its
- * platform from `BuildConfig.PICO_XR_MODE`, so nothing registers it by hand;
- * the old lines reference classes that no longer exist and fail to compile.
+ * prebuilds injected. React Native autolinking now adds `new PicoCorePackage()`
+ * to the PackageList, and the package reads its platform from
+ * `BuildConfig.PICO_XR_MODE`, which is correct per flavor. A leftover manual
+ * line would register the package a second time.
  */
 function stripLegacyPackageRegistration(source) {
     const withoutCall = stripLineWithMarker(source, constants_1.PICO_MAIN_APP_MARKER);

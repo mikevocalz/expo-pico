@@ -319,6 +319,28 @@ export interface PicoPluginOptions {
     enableEmulatorOptimizations?: boolean;
     minSdkVersion?: number;
     targetSdkVersion?: number;
+    /**
+     * PICO OS 5 window defaults for the PICO flavor manifest. Both are on
+     * unless set to `false`. See "PICO OS 5 window rules" in the README.
+     */
+    windows?: PicoWindowPluginOptions;
+}
+/** PICO OS 5 window defaults. Read by {@link PicoPluginOptions.windows}. */
+export interface PicoWindowPluginOptions {
+    /**
+     * Gives the main activity a translucent window with a transparent
+     * background on PICO builds, so anything drawn beside the main panel (a
+     * rail, rounded corners) shows passthrough instead of the theme's window
+     * color. With it on, screens paint their own background.
+     * @default true
+     */
+    translucentMainWindow?: boolean;
+    /**
+     * Declares `expo.modules.pico.PicoPanelActivity`, the activity
+     * `openPanel()` launches, in the PICO flavor manifest.
+     * @default true
+     */
+    panelActivity?: boolean;
 }
 /**
  * Swan-mode-specific plugin options. None of these are required — every
@@ -533,6 +555,11 @@ export interface ResolvedPicoOptions {
     enableEmulatorOptimizations: boolean;
     minSdkVersion: number;
     targetSdkVersion: number;
+    windows: ResolvedPicoWindowOptions;
+}
+export interface ResolvedPicoWindowOptions {
+    translucentMainWindow: boolean;
+    panelActivity: boolean;
 }
 /**
  * Default resolved platform-service state for an app with no identity

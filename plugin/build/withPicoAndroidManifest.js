@@ -44,6 +44,7 @@ const withPicoFlavorEntries_1 = require("./withPicoFlavorEntries");
 const withPicoLauncherActivity_1 = require("./withPicoLauncherActivity");
 const withPicoVRActivity_1 = require("./withPicoVRActivity");
 const withPicoPlatformService_1 = require("./withPicoPlatformService");
+const picoWindows_1 = require("./picoWindows");
 /**
  * Declares `pvr.app.id`, the only PICO Platform Service meta-data core emits.
  * The PPS SDK reads it via `AppUtils.getAppIdFromManifest("pvr.app.id")` and
@@ -135,6 +136,10 @@ const withPicoAndroidManifest = (config, options) => {
             // PICO-only permissions/features recorded by feature plugins through
             // withPicoFlavorPermission / withPicoFlavorFeature.
             (0, withPicoFlavorEntries_1.applyPicoFlavorEntries)(manifest, (0, withPicoFlavorEntries_1.getPicoFlavorManifestState)(config));
+            // PICO OS 5 window defaults: the translucent-main-window flag the
+            // core window listener reads, and the panel activity openPanel()
+            // launches with a pico.vr.position of its own.
+            (0, picoWindows_1.applyWindowContract)(manifest, options);
             await config_plugins_1.AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
             console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
             // If dual variant, also write a dual/ source set manifest

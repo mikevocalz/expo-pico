@@ -6,7 +6,7 @@ import type { ResolvedPicoOptions } from './types';
  *   - Adds the New Architecture flag guard for the Viro VR activity hop
  *     (Kotlin only; see `injectNewArchFlagGuard`).
  *   - Strips the `PicoCorePackage` registration older prebuilds injected.
- *     Core is an autolinked Expo Module, so it needs no manual registration.
+ *     React Native autolinking registers it (see react-native.config.js).
  */
 export declare const withPicoMainApplication: ConfigPlugin<ResolvedPicoOptions>;
 export declare function injectIntoKotlinMainApplication(source: string, _options: ResolvedPicoOptions): string | null;

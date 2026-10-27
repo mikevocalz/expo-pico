@@ -11,10 +11,13 @@ const withPicoGradleProperties_1 = require("./withPicoGradleProperties");
 const withPicoLocalProperties_1 = require("./withPicoLocalProperties");
 const withPicoMainApplication_1 = require("./withPicoMainApplication");
 const withPicoNewArchCheck_1 = require("./withPicoNewArchCheck");
+const withPicoNitroModules_1 = require("./withPicoNitroModules");
+const withPicoOneLauncherTile_1 = require("./withPicoOneLauncherTile");
 const withPicoOpenXrLoaderOverlay_1 = require("./withPicoOpenXrLoaderOverlay");
 const withPicoSettingsGradle_1 = require("./withPicoSettingsGradle");
 const withPicoStrings_1 = require("./withPicoStrings");
 const withPicoSwan_1 = require("./withPicoSwan");
+const withPicoWindowPositions_1 = require("./withPicoWindowPositions");
 /**
  * Main config plugin entrypoint for expo-pico-core.
  *
@@ -31,7 +34,8 @@ const withPicoSwan_1 = require("./withPicoSwan");
  *   6. Swan composite (Swan-only Gradle deps + optional source set)
  *   7. strings.xml
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
- *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
+ *   9. MainApplication (PicoCorePackage with the xrMode platform, which loads
+ *      every @expo-pico Nitro library; New Architecture flag guard)
  *  10. local.properties (node binary path + optional PICO SDK paths)
  *  11. Meta-only entries removed from the pico, dual and mobile flavors
  *  12. PICO renderer and loader overlays (pico and dual flavors)
@@ -45,12 +49,17 @@ const withPico = (config, rawOptions) => {
     if (!options.enabled) {
         return config;
     }
+    // First, so its mods run after every other expo-pico mod (Expo runs the
+    // most recently registered mod of each type first).
+    config = (0, withPicoOneLauncherTile_1.withPicoOneLauncherTile)(config);
+    config = (0, withPicoWindowPositions_1.withPicoWindowPositions)(config);
     config = (0, withPicoNewArchCheck_1.withPicoNewArchCheck)(config, options);
     config = (0, withPicoDiagnostics_1.withPicoDiagnostics)(config, options);
     config = (0, withPicoGradleProperties_1.withPicoGradleProperties)(config, options);
     config = (0, withPicoGradle_1.withPicoProjectBuildGradle)(config, options);
     config = (0, withPicoGradle_1.withPicoAppBuildGradle)(config, options);
     config = (0, withPicoSettingsGradle_1.withPicoSettingsGradle)(config, options);
+    config = (0, withPicoNitroModules_1.withPicoNitroModules)(config, options);
     config = (0, withPicoSwan_1.withPicoSwan)(config, options);
     config = (0, withPicoStrings_1.withPicoStrings)(config, options);
     if (options.buildVariant === 'pico' || options.buildVariant === 'dual') {
