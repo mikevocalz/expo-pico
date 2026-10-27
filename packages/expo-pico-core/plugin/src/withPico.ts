@@ -18,6 +18,7 @@ import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
 import { withPicoSwan } from './withPicoSwan';
+import { withPicoWindowPositions } from './withPicoWindowPositions';
 
 /**
  * Main config plugin entrypoint for expo-pico-core.
@@ -48,6 +49,7 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   // First, so its mods run after every other expo-pico mod (Expo runs the
   // most recently registered mod of each type first).
   config = withPicoOneLauncherTile(config);
+  config = withPicoWindowPositions(config);
   config = withPicoNewArchCheck(config, options);
   config = withPicoDiagnostics(config, options);
   config = withPicoGradleProperties(config, options);

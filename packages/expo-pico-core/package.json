@@ -38,7 +38,8 @@
     "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json && tsc --project cli/tsconfig.json && chmod +x cli/build/doctor.js",
     "typecheck": "tsc --noEmit",
     "nitrogen": "nitrogen",
-    "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "test:gradle": "bash scripts/test-gradle-guards.sh"
   },
   "keywords": [
     "react-native",
@@ -101,6 +102,8 @@
     "build",
     "nitrogen/generated",
     "android",
+    "expo-module.config.json",
+    "android-expo",
     "cli/build",
     "plugin/build",
     "plugin/assets",

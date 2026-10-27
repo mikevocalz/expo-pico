@@ -307,6 +307,29 @@ export interface PicoPluginOptions {
   enableEmulatorOptimizations?: boolean;
   minSdkVersion?: number;
   targetSdkVersion?: number;
+  /**
+   * PICO OS 5 window defaults for the PICO flavor manifest. Both are on
+   * unless set to `false`. See "PICO OS 5 window rules" in the README.
+   */
+  windows?: PicoWindowPluginOptions;
+}
+
+/** PICO OS 5 window defaults. Read by {@link PicoPluginOptions.windows}. */
+export interface PicoWindowPluginOptions {
+  /**
+   * Gives the main activity a translucent window with a transparent
+   * background on PICO builds, so anything drawn beside the main panel (a
+   * rail, rounded corners) shows passthrough instead of the theme's window
+   * color. With it on, screens paint their own background.
+   * @default true
+   */
+  translucentMainWindow?: boolean;
+  /**
+   * Declares `expo.modules.pico.PicoPanelActivity`, the activity
+   * `openPanel()` launches, in the PICO flavor manifest.
+   * @default true
+   */
+  panelActivity?: boolean;
 }
 
 /**
@@ -527,6 +550,12 @@ export interface ResolvedPicoOptions {
   enableEmulatorOptimizations: boolean;
   minSdkVersion: number;
   targetSdkVersion: number;
+  windows: ResolvedPicoWindowOptions;
+}
+
+export interface ResolvedPicoWindowOptions {
+  translucentMainWindow: boolean;
+  panelActivity: boolean;
 }
 
 /**
@@ -597,6 +626,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
   enableEmulatorOptimizations: false,
   minSdkVersion: 32,
   targetSdkVersion: 34,
+  windows: { translucentMainWindow: true, panelActivity: true },
 };
 
 export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOptions {
@@ -657,6 +687,12 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
     openXrLoaderDeclaration,
     viroRendererOverlay,
     targetDevices: options.targetDevices ?? PICO_OPTION_DEFAULTS.targetDevices,
+    windows: {
+      translucentMainWindow:
+        options.windows?.translucentMainWindow ??
+        PICO_OPTION_DEFAULTS.windows.translucentMainWindow,
+      panelActivity: options.windows?.panelActivity ?? PICO_OPTION_DEFAULTS.windows.panelActivity,
+    },
     defaultWidth: nonEmpty(options.defaultWidth) ?? PICO_OPTION_DEFAULTS.defaultWidth,
     defaultHeight: nonEmpty(options.defaultHeight) ?? PICO_OPTION_DEFAULTS.defaultHeight,
     // Copy refreshRates to avoid mutating user input, and filter out

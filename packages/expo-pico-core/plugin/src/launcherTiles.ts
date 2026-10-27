@@ -98,6 +98,44 @@ export function assertAtMostOneLauncherTile(
   if (names.length > 1) throw launcherTileError(where, names);
 }
 
+/** The action Viro's immersive activity answers to once it no longer uses MAIN. */
+export const VIRO_VR_ACTION = 'com.viro.intent.action.VR';
+
+const VR_ACTIVITY_NAMES = ['.VRActivity', 'com.viro.core.VRActivity'];
+
+/**
+ * Gives `.VRActivity` `com.viro.intent.action.VR` in place of MAIN in every
+ * launcher-visible intent-filter, keeping its categories. Every published
+ * @reactvision/react-viro (2.58 to 3.0.x) writes MAIN plus
+ * com.oculus.intent.category.VR there, which makes the activity a second
+ * library tile. Viro starts it by explicit intent, so MAIN is never used.
+ * Returns true when the manifest changed.
+ */
+export function moveVRActivityOffMain(manifest: Manifest): boolean {
+  let changed = false;
+  for (const activity of activitiesOf(manifest)) {
+    if (!VR_ACTIVITY_NAMES.includes(nameOf(activity) ?? '')) continue;
+    for (const filter of (activity['intent-filter'] ?? []) as Node[]) {
+      if (!isLauncherVisibleFilter(filter)) continue;
+      filter.action = (filter.action as Node[]).map((action) =>
+        nameOf(action) === MAIN_ACTION ? { $: { 'android:name': VIRO_VR_ACTION } } : action
+      );
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+/** Applies {@link moveVRActivityOffMain} to app/src/main/AndroidManifest.xml on disk. */
+export async function moveVRActivityOffMainOnDisk(platformProjectRoot: string): Promise<void> {
+  const mainPath = path.join(platformProjectRoot, 'app', 'src', 'main', 'AndroidManifest.xml');
+  if (!fs.existsSync(mainPath)) return;
+  const main = await AndroidConfig.Manifest.readAndroidManifestAsync(mainPath);
+  if (moveVRActivityOffMain(main)) {
+    await AndroidConfig.Manifest.writeAndroidManifestAsync(mainPath, main);
+  }
+}
+
 /**
  * Reads app/src/main and every app/src/<flavor> manifest on disk and throws
  * when main alone, or main plus any one flavor, has more than one
@@ -126,27 +164,45 @@ export async function assertOneLauncherTileOnDisk(platformProjectRoot: string): 
 const GRADLE_MARKER = '// @expo-pico/core: one launcher tile check';
 
 /**
+ * Returns app/build.gradle with exactly one `apply from: "<scriptPath>"`
+ * line under `marker` at the end, dropping any earlier copy of that pair.
+ * Idempotent; a changed path replaces the old one.
+ */
+export function applyMarkedGradleScript(
+  contents: string,
+  marker: string,
+  scriptFile: string,
+  scriptPath: string
+): string {
+  const lines = contents.split('\n');
+  const kept = lines
+    .filter((line, i) => {
+      if (line.trim() === marker) return false;
+      return !(lines[i - 1]?.trim() === marker && line.includes(scriptFile));
+    })
+    .join('\n')
+    .replace(/\n+$/, '');
+  return `${kept}\n\n${marker}\napply from: "${scriptPath}"\n`;
+}
+
+/**
  * Returns app/build.gradle with exactly one `apply from:` line for
  * android/one-launcher-tile.gradle at the end. `scriptPath` is relative to
  * the app module directory. Idempotent.
  */
 export function applyOneLauncherTileGradle(contents: string, scriptPath: string): string {
-  const lines = contents.split('\n');
-  const kept = lines
-    .filter((line, i) => {
-      if (line.trim() === GRADLE_MARKER) return false;
-      return !(lines[i - 1]?.trim() === GRADLE_MARKER && line.includes('one-launcher-tile.gradle'));
-    })
-    .join('\n')
-    .replace(/\n+$/, '');
-  return `${kept}\n\n${GRADLE_MARKER}\napply from: "${scriptPath}"\n`;
+  return applyMarkedGradleScript(contents, GRADLE_MARKER, 'one-launcher-tile.gradle', scriptPath);
 }
 
 /**
- * Path of this package's android/one-launcher-tile.gradle relative to the
- * app module directory, with POSIX separators for Gradle.
+ * Path of a script in this package's android/ directory relative to the app
+ * module directory, with POSIX separators for Gradle.
  */
-export function resolveOneLauncherTileScript(projectRoot: string, appModuleDir: string): string {
+export function resolveCoreGradleScript(
+  projectRoot: string,
+  appModuleDir: string,
+  fileName: string
+): string {
   let packageDir = path.resolve(__dirname, '..', '..');
   try {
     packageDir = path.dirname(
@@ -155,6 +211,11 @@ export function resolveOneLauncherTileScript(projectRoot: string, appModuleDir: 
   } catch {
     // Not resolvable from the app (tests, linked checkouts): use this file's package.
   }
-  const script = path.join(packageDir, 'android', 'one-launcher-tile.gradle');
+  const script = path.join(packageDir, 'android', fileName);
   return path.relative(appModuleDir, script).split(path.sep).join('/');
+}
+
+/** {@link resolveCoreGradleScript} for android/one-launcher-tile.gradle. */
+export function resolveOneLauncherTileScript(projectRoot: string, appModuleDir: string): string {
+  return resolveCoreGradleScript(projectRoot, appModuleDir, 'one-launcher-tile.gradle');
 }

@@ -4,6 +4,7 @@ import * as path from 'path';
 import {
   applyOneLauncherTileGradle,
   assertOneLauncherTileOnDisk,
+  moveVRActivityOffMainOnDisk,
   resolveOneLauncherTileScript,
 } from './launcherTiles';
 
@@ -29,6 +30,8 @@ export const withPicoOneLauncherTile: ConfigPlugin = (config) => {
   return withFinalizedMod(config, [
     'android',
     async (config) => {
+      // Finalized, so Viro's manifest mod has already added .VRActivity.
+      await moveVRActivityOffMainOnDisk(config.modRequest.platformProjectRoot);
       await assertOneLauncherTileOnDisk(config.modRequest.platformProjectRoot);
       return config;
     },

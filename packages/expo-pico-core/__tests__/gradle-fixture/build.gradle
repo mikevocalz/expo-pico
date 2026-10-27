@@ -1,0 +1,23 @@
+// An app module whose merged manifest is the one passed as -Pmanifest, with
+// android/pico-window-positions.gradle applied the way the config plugin
+// applies it. Run by scripts/test-gradle-guards.sh.
+plugins {
+  id 'com.android.application' version '9.1.0'
+}
+
+android {
+  namespace 'com.example.fixture'
+  compileSdk 36
+  defaultConfig {
+    applicationId 'com.example.fixture'
+    minSdk 24
+  }
+  sourceSets {
+    main {
+      manifest.srcFile file(project.property('manifest'))
+    }
+  }
+}
+
+apply from: '../../android/pico-window-positions.gradle'
+apply from: '../../android/one-launcher-tile.gradle'

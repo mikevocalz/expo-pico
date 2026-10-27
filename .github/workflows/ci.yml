@@ -21,6 +21,13 @@ jobs:
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # Runs the merged-manifest Gradle guards (window positions, one
+      # launcher tile) against an AGP fixture app.
+      - run: yarn workspace @expo-pico/core test:gradle
       - run: yarn build
       - run: yarn test:pack
 
