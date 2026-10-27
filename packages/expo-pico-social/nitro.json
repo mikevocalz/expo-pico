@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
+  "cxxNamespace": ["expopico", "social"],
+  "apple": {
+    "moduleName": "ExpoPicoSocial"
+  },
+  "android": {
+    "namespace": ["expopico", "social"],
+    "cxxLibName": "ExpoPicoSocial"
+  },
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
+}

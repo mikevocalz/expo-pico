@@ -1,9 +1,18 @@
 const getIconMesh = jest.fn();
 
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn((name: string) =>
-    name === 'PicoRuntimeV2' ? { getIconMesh } : null
-  ),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    // Nitro V1: `new PicoRuntime()` resolves its class through getHybridClass.
+    getHybridClass: jest.fn((name: string) =>
+      name.endsWith('.PicoRuntime')
+        ? function () {
+            return { getIconMesh };
+          }
+        : function () {
+            throw new Error('not in this suite');
+          }
+    ),
+  },
 }));
 
 import {

@@ -43,6 +43,7 @@ The rule: drop the `@expo-pico/` scope. `expo-horizon-core` is the one exception
 List every expo-pico package your app uses, plus the ones they need as peers:
 
 - Every package except `core`, `platform-service-common` and `template` peers on `@expo-pico/core`.
+- Every package except `platform-service-common`, `app-kit` and `template` peers on `react-native-nitro-modules`. Install the Nitro V1 build the workspace pins, `1.0.0-alpha.nightly.100.g107f6fc66597`, from npm.
 - `account`, `iap`, `subscription`, `achievements`, `leaderboards`, `social`, `notifications`, `rooms`, `rtc`, `storage` and `spatial` also peer on `@expo-pico/platform-service-common`.
 
 Inside the monorepo these are regular dependencies. The release manifests turn them into peers because pnpm 12 refuses a git dependency that sits below the top level (`ERR_PNPM_EXOTIC_SUBDEP`, controlled by `blockExoticSubdeps`). A peer is resolved from your app's own `package.json`, where a git dependency is allowed. If you leave one out, pnpm tries to auto-install the peer from the npm registry and fails with a 404, because these packages are not published there.
@@ -72,7 +73,7 @@ npm also reports missing peers, so list the peers the same way as for pnpm.
 
 ## expo-horizon-core
 
-`release/horizon-core` is the upstream [software-mansion-labs/expo-horizon](https://github.com/software-mansion-labs/expo-horizon) `expo-horizon-core` at the version `example/package.json` pins (57.0.2 today), with one patch: `android/build.gradle` turns on `buildFeatures.buildConfig`. AGP 9 stopped generating `BuildConfig` by default, and the module reads `BuildConfig.META_HORIZON_APP_ID`. The packed manifest records the upstream version in `expoPico.upstream`.
+`release/horizon-core` is the upstream [software-mansion-labs/expo-horizon](https://github.com/software-mansion-labs/expo-horizon) `expo-horizon-core` at the version `example/package.json` pins (57.0.3 today), with one patch: `android/build.gradle` turns on `buildFeatures.buildConfig`. AGP 9 stopped generating `BuildConfig` by default, and the module reads `BuildConfig.META_HORIZON_APP_ID`. The packed manifest records the upstream version in `expoPico.upstream`.
 
 ## Native code
 

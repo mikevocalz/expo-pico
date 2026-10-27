@@ -37,7 +37,7 @@ public class MainApplication extends Application {
 }
 `;
 
-// What pre-v2 prebuilds injected. Both classes are gone, so leftovers fail to compile.
+// What older prebuilds injected. Autolinking registers PicoCorePackage now, so a leftover would register it twice.
 const LEGACY_KT = KT_TEMPLATE.replace(
   'import com.facebook.react.PackageList\n',
   'import com.facebook.react.PackageList\n' +

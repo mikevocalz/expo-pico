@@ -19,13 +19,14 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "nitrogen && tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",
-    "clean": "rm -rf build plugin/build",
+    "clean": "rm -rf build nitrogen/generated plugin/build",
     "test": "jest --config jest.config.js",
-    "prepare": "tsc && tsc --project plugin/tsconfig.json",
+    "prepare": "nitrogen && tsc && tsc --project plugin/tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "nitrogen": "nitrogen"
   },
   "keywords": [
     "expo",
@@ -51,24 +52,35 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/react": "19.3.0",
-    "expo": "58.0.2",
+    "expo": "~58.0.19",
     "@expo-pico/core": "*",
     "jest": "^29.7.0",
-    "react-native": "0.88.0-rc.3",
+    "react-native": "0.88.0",
     "ts-jest": "^29.4.9",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.100.g107f6fc66597",
+    "nitrogen": "1.0.0-alpha.nightly.100.g107f6fc66597",
+    "nitro-core": "1.0.0-alpha.nightly.100.g107f6fc66597"
   },
   "peerDependencies": {
-    "expo": ">=58.0.2 <59",
+    "expo": ">=58.0.0 <59",
     "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
-    "react-native": ">=0.88.0-rc.3 <0.89"
+    "react-native": ">=0.88.0 <0.89",
+    "react-native-nitro-modules": "*",
+    "nitro-core": "*"
   },
   "peerDependenciesMeta": {
     "expo": {
       "optional": false
     },
     "@expo-pico/core": {
+      "optional": false
+    },
+    "nitro-core": {
+      "optional": true
+    },
+    "react-native-nitro-modules": {
       "optional": false
     }
   },
@@ -77,8 +89,14 @@
     "build",
     "android",
     "plugin/build",
-    "app.plugin.js"
+    "app.plugin.js",
+    "nitrogen/generated",
+    "nitro.json",
+    "react-native.config.js"
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rtc",
-  "bugs": "https://github.com/mikevocalz/expo-pico/issues"
+  "bugs": "https://github.com/mikevocalz/expo-pico/issues",
+  "imports": {
+    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
+  }
 }

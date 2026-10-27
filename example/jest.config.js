@@ -15,5 +15,7 @@ module.exports = {
     '^expo-modules-core$': '<rootDir>/../packages/__jest_stubs__/expo-modules-core.js',
     '^expo$': '<rootDir>/../packages/__jest_stubs__/expo.js',
     '^react-native$': '<rootDir>/../packages/__jest_stubs__/react-native.js',
+    '^react-native-nitro-modules$':
+      '<rootDir>/../packages/__jest_stubs__/react-native-nitro-modules.js',
   },
 };

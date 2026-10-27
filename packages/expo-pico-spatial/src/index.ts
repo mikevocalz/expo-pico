@@ -1,13 +1,12 @@
-import { requireOptionalNativeModule } from 'expo-modules-core';
-
 import {
   guardService,
   wrapNativeCall,
+  resolveHybridObject,
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatialNativeTypes';
+import { PicoSpatial, type SceneMeshRaw, type SpatialBodyJoint } from './PicoSpatial.nitro';
 import type {
   PicoSpaceState,
   PicoContainerType,
@@ -37,91 +36,8 @@ const NO_CAPABILITIES: SpatialCapabilities = {
   spatialSdkAvailable: false,
 };
 
-type PicoSpatialV2Native = {
-  getInfo(): {
-    spaceState: string;
-    containerType: string;
-    spatialSdkVersion?: string | null;
-    capabilities: SpatialCapabilities;
-    eyeGazeAvailable: boolean;
-    sceneMeshAvailable: boolean;
-    faceTrackingAvailable: boolean;
-    bodyTrackingAvailable: boolean;
-  };
-  getSpatialSdkProbe(): Record<string, boolean>;
-  createSpatialAnchor(pose: SpatialPose): any;
-  setWindowContainerProperties(props: WindowContainerProperties): void;
-  requestFullSpace(): void;
-  getGazeSnapshot(): GazePose | null;
-  getSceneMesh(): SceneMeshRaw;
-  // Added with the WindowContainer bridge. Optional because a JS bundle can
-  // run against an older native binary that lacks them.
-  getLayoutBridgeStatus?(): {
-    sdkLinked: boolean;
-    spatialPlatform: boolean;
-    reason?: string | null;
-    lastError?: string | null;
-  };
-  openWindowContainer?(id: string, tag: string | null): boolean;
-  closeWindowContainer?(id: string, tag: string | null): boolean;
-};
-
-let v2Cache: PicoSpatialV2Native | null | undefined;
-let v2ListenerId = 0;
-
-function nativeV2(): PicoSpatialV2Native | null {
-  if (v2Cache !== undefined) return v2Cache;
-  try {
-    v2Cache = requireOptionalNativeModule<PicoSpatialV2Native>('PicoSpatialV2');
-  } catch {
-    v2Cache = null;
-  }
-  return v2Cache;
-}
-
 function native(): PicoSpatial | null {
-  const v2 = nativeV2();
-  if (v2) {
-    const info = () => v2.getInfo();
-    return {
-      get spaceState() {
-        return info().spaceState;
-      },
-      get containerType() {
-        return info().containerType;
-      },
-      get spatialSdkVersion() {
-        return info().spatialSdkVersion ?? undefined;
-      },
-      get capabilities() {
-        return info().capabilities;
-      },
-      get eyeGazeAvailable() {
-        return !!info().eyeGazeAvailable;
-      },
-      get sceneMeshAvailable() {
-        return !!info().sceneMeshAvailable;
-      },
-      get faceTrackingAvailable() {
-        return !!info().faceTrackingAvailable;
-      },
-      get bodyTrackingAvailable() {
-        return !!info().bodyTrackingAvailable;
-      },
-      getSpatialSdkProbe: async () => v2.getSpatialSdkProbe(),
-      createSpatialAnchor: async (pose: any) => v2.createSpatialAnchor(pose),
-      setWindowContainerProperties: async (props: any) => v2.setWindowContainerProperties(props),
-      requestFullSpace: async () => v2.requestFullSpace(),
-      getGazeSnapshot: async () => v2.getGazeSnapshot() ?? undefined,
-      getSceneMesh: async () => v2.getSceneMesh(),
-      addGazeListener: () => ++v2ListenerId,
-      addSceneMeshUpdateListener: () => ++v2ListenerId,
-      addFaceListener: () => ++v2ListenerId,
-      addBodyListener: () => ++v2ListenerId,
-      removeListener: () => {},
-    } as unknown as PicoSpatial;
-  }
-  return null;
+  return resolveHybridObject('PicoSpatial', () => new PicoSpatial());
 }
 
 function toTypedMesh(raw: SceneMeshRaw): SceneMesh {
@@ -166,8 +82,9 @@ export function getSpatialSdkVersion(): string | null {
   return native()?.spatialSdkVersion ?? null;
 }
 
+/** Which SDK classes are linked, keyed by a stable name. Empty without native. */
 export function getSpatialSdkProbe(): Record<string, boolean> {
-  return nativeV2()?.getSpatialSdkProbe() ?? {};
+  return native()?.getSpatialSdkProbe() ?? {};
 }
 
 /**
@@ -175,16 +92,18 @@ export function getSpatialSdkProbe(): Record<string, boolean> {
  * outdated native module is reported through `reason`.
  */
 export function getLayoutBridgeStatus(): PicoSpatialLayoutBridgeStatus {
-  const v2 = nativeV2();
-  if (!v2) {
-    return unboundStatus('NATIVE_MODULE_UNAVAILABLE: PicoSpatialV2 is not in this binary.');
+  const hybrid = native();
+  if (!hybrid) {
+    return unboundStatus(
+      'NATIVE_MODULE_UNAVAILABLE: the PicoSpatial HybridObject is not in this binary.'
+    );
   }
-  if (typeof v2.getLayoutBridgeStatus !== 'function') {
+  if (typeof hybrid.getLayoutBridgeStatus !== 'function') {
     return unboundStatus(
       'NATIVE_BRIDGE_OUTDATED: this binary predates getLayoutBridgeStatus. Rebuild the app.'
     );
   }
-  const raw = v2.getLayoutBridgeStatus();
+  const raw = hybrid.getLayoutBridgeStatus();
   return {
     sdkLinked: raw.sdkLinked === true,
     spatialPlatform: raw.spatialPlatform === true,
@@ -224,11 +143,11 @@ function callWindowContainer(
   if (!status.sdkLinked || !status.spatialPlatform) {
     return { ok: false, reason: status.reason ?? 'BRIDGE_NOT_READY' };
   }
-  const v2 = nativeV2();
-  if (!v2 || typeof v2[method] !== 'function') {
+  const hybrid = native();
+  if (!hybrid || typeof hybrid[method] !== 'function') {
     return { ok: false, reason: `NATIVE_BRIDGE_OUTDATED: this binary has no ${method}.` };
   }
-  if (v2[method]!(id, options.tag ?? null) === true) return { ok: true };
+  if (hybrid[method](id, options.tag) === true) return { ok: true };
   const after = getLayoutBridgeStatus();
   return {
     ok: false,
@@ -241,7 +160,7 @@ function callWindowContainer(
 /**
  * Opens a PICO OS 6 WindowContainer named `id` hosting the app's current
  * activity. On PICO OS 5, phones, or builds without the Spatial SDK
- * (`enableSpatialSdk`), resolves to `{ ok: false, reason }` and never throws.
+ * (`enableSpatialSdk`), returns `{ ok: false, reason }` and never throws.
  *
  * `ok: true` means the SDK call returned without throwing. The SDK gives no
  * completion signal, so it does not confirm the window is on screen yet.

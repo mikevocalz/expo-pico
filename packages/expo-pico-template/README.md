@@ -10,7 +10,7 @@ Welcome. This project was bootstrapped from [`expo-pico-template`](https://githu
 `app.config.ts`:
 
 - New Architecture on (`newArchEnabled: true`). Required by `expo-pico-core`.
-- `xrMode: 'pico-os5'`. Registers `PicoCorePackage(PicoXRPlatform.PICO_OS5)` at app boot. Flip to `'pico-swan'` when you target Swan hardware.
+- `xrMode: 'pico-os5'`. Selects the PICO OS 5 runtime `PicoCorePackage` starts at app boot. Flip to `'pico-swan'` when you target Swan hardware.
 - `appType: 'vr'`. Emits `pvr.app.type=vr`, OpenXR `IMMERSIVE_HMD` and `com.pico.intent.category.VR` on the launcher activity, and the PICO system-package `<queries>` block. The APK will show up in the PICO launcher's VR section.
 - `buildVariant: 'pico'`. Writes the PICO product flavor, ABI filter, and flavor-scoped manifest.
 - `platformService.picoAppId` / `picoAppKey`. Read from `process.env`. Populate via EAS Secrets in CI or a `.env` file locally.

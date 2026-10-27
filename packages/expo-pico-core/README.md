@@ -128,6 +128,13 @@ Values marked _(seam)_ are best-known key names pending PICO doc confirmation. E
 | `developerTools`              | `boolean`                                                                         | PICO OS 6 dev-tools overlay opt-in                                      |
 | `enableEmulatorOptimizations` | `boolean`                                                                         | Project Swan emulator tweaks (unrequired VR headtracking feature, etc.) |
 
+### Windows
+
+| Option                          | Type      | Default | Description                                                                                    |
+| ------------------------------- | --------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `windows.translucentMainWindow` | `boolean` | `true`  | Translucent main window on PICO builds. See [PICO OS 5 window rules](#pico-os-5-window-rules). |
+| `windows.panelActivity`         | `boolean` | `true`  | Declare `PicoPanelActivity` with its own `pico.vr.position`, for `PicoPanelHost.openPanel()`.  |
+
 ### Toolchain
 
 | Option                    | Type      | Default               | Description                                                                |
@@ -250,6 +257,56 @@ const sensors = await capabilities.sensors.getHighRate();
 ```
 
 The capability runtime is reflection-gated on the Kotlin side. For the modern PPS surfaces (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) there's nothing to "drop in" — `withPicoGradle` registers the public Bytedance Maven repo and pulls `com.pico.pps:platform-service-*:1.0.0` into the `picoDebug` flavor automatically, so the PPS classes resolve at runtime with no further setup. The reflection layer is what lets sibling packages stay decoupled across PPS / legacy PVR class-name variance and across the `mobile` vs `picoDebug` split. For the narrower legacy surfaces still gated by the older PVR-prefixed SDKs (`PXR_Plugin` programmatic passthrough/haptics, the Spatial SDK) you still drop the legacy AAR into `vendor/pico-sdk/` or `android/app/libs/`; the probes light up the same way.
+
+## PICO OS 5 window rules
+
+These come from reading framework.jar and services.jar on a PICO 4 Ultra running OS 5.15.7. Every app that installs this package gets the defaults below in its PICO flavor manifest; the `windows` plugin option turns each one off.
+
+1. **One launcher tile.** PICO OS lists every activity whose intent-filter pairs `android.intent.action.MAIN` with a PICO, OpenXR or Oculus VR category, so a second such activity is a second tile. The prebuild moves `.VRActivity` from `MAIN` to `com.viro.intent.action.VR` (Viro starts it by explicit intent), and both the prebuild and `android/one-launcher-tile.gradle` fail when more than one activity is launcher-visible.
+2. **Activities share a window by `pico.vr.position`.** Activities of one package reuse a single 2D window when their `pico.vr.position` meta-data match, and an activity without the key counts as `"far"`. A second activity with the main window's value replaces the main window instead of opening beside it. `"near"` makes a popup that PICO hides on any click outside it, so never use it for a panel. The panel activity this package declares uses `"rail"`, a value PICO does not map to a window type, so it gets a window of its own. The prebuild and `android/pico-window-positions.gradle` (applied to `app/build.gradle`, reading each variant's merged manifest) fail when an activity sets `"near"` or sets a position another activity already has, the implicit `"far"` included. Activities that leave the key unset are not reported against each other, and immersive activities (`pvr.app.type=vr`) are skipped.
+3. **Window size comes from the launch.** OS 5 reads `<layout>` only for system apps. The one per-launch size it reads is the `ActivityOptions` bundle `pico:activity.data` with `override_app_width` and `override_app_height` in pixels; both must be positive and must differ. `PicoPanelHost.openPanel()` takes dp and converts at the launching window's density.
+4. **Windows cannot be attached to each other.** An activity window cannot be parented to another, so a rail or toolbar cannot be its own window pinned beside the main one. Draw it inside the main window. For that, the main activity gets a translucent window with a transparent background, set again after the splash screen swaps the theme; PICO composites window alpha, so anything you do not paint shows passthrough. With this on, give your screens their own background.
+5. **App displays are secure.** Each app's virtual display is `FLAG_SECURE`, so screenshots of it come out black. Only the composited `adb exec-out screencap -p` shows the app.
+6. **Hidden APIs are blocked.** `ExtPanelWrapper` and `native_shell` are not reachable from a third-party app. This package does not use them.
+
+### Panels
+
+```ts
+import { AppRegistry } from 'react-native';
+import { PicoWindows } from '@expo-pico/core';
+
+AppRegistry.registerComponent('NotesPanel', () => NotesPanel);
+
+const windows = new PicoWindows();
+if (windows.isPanelAvailable) {
+  const host = await windows.createPanelHost();
+  const closed = host.addOnPanelClosedListener(({ name, reason }) => {
+    console.log(`${name} closed by the ${reason}`);
+  });
+  await host.openPanel('NotesPanel', { widthDp: 480, heightDp: 640 }, { noteId: '42' });
+  // later
+  await host.closePanel('NotesPanel');
+  closed.remove();
+}
+```
+
+A panel is a second React Native surface on the app's one runtime, so it shares module state with the main window. PICO OS picks where it opens. `createPanelHost()` rejects on builds without the panel activity: any non-PICO build, or a PICO build with `windows.panelActivity: false`.
+
+### Opting out
+
+```js
+[
+  '@expo-pico/core',
+  {
+    windows: {
+      translucentMainWindow: false, // keep the theme's opaque window background
+      panelActivity: false, // do not declare PicoPanelActivity
+    },
+  },
+];
+```
+
+The position checks always run; they only report activities that set `pico.vr.position`.
 
 ## CLI: `expo-pico-doctor`
 

@@ -1,5 +1,5 @@
-import { requireOptionalNativeModule } from 'expo-modules-core';
-
+import { resolvePicoRuntime } from '../hybrid';
+import type { PicoIconMeshData } from '../PicoRuntime.nitro';
 import { LUCIDE_ICONS, type LucideIconName } from './lucideIcons.generated';
 
 /**
@@ -31,34 +31,17 @@ export const DEFAULT_ICON_STROKE_WIDTH = 2;
 export const DEFAULT_ICON_TOLERANCE = 0.02;
 
 type IconMeshNative = {
-  getIconMesh(
-    svgElements: string,
-    strokeWidth: number,
-    tolerance: number
-  ): {
-    vertices: ArrayLike<number>;
-    indices: ArrayLike<number>;
-    vertexCount: number;
-    indexCount: number;
-  };
+  getIconMesh(svgElements: string, strokeWidth: number, tolerance: number): PicoIconMeshData;
 };
 
-let nativeCache: IconMeshNative | null | undefined;
-
 function native(): IconMeshNative {
-  if (nativeCache === undefined) {
-    try {
-      nativeCache = requireOptionalNativeModule<IconMeshNative>('PicoRuntimeV2');
-    } catch {
-      nativeCache = null;
-    }
-  }
-  if (!nativeCache || typeof nativeCache.getIconMesh !== 'function') {
+  const runtime = resolvePicoRuntime();
+  if (!runtime) {
     throw new Error(
-      'ESKIU_RUNTIME_UNAVAILABLE: icon meshes need the @expo-pico/core Android module (PicoRuntimeV2).'
+      'ESKIU_RUNTIME_UNAVAILABLE: icon meshes need the @expo-pico/core Android library (PicoRuntime).'
     );
   }
-  return nativeCache;
+  return runtime;
 }
 
 /**

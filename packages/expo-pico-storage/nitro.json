@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
+  "cxxNamespace": ["expopico", "storage"],
+  "apple": {
+    "moduleName": "ExpoPicoStorage"
+  },
+  "android": {
+    "namespace": ["expopico", "storage"],
+    "cxxLibName": "ExpoPicoStorage"
+  },
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
+}

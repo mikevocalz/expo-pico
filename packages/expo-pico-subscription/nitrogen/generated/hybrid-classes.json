@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoSubscription": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoSubscription"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

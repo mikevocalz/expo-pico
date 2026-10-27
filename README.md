@@ -11,13 +11,14 @@ For native Viro rendering on PICO, see the [Viro + Expo-PICO integration guide](
 **Ship an Expo app to a PICO headset without ejecting to the bare workflow.**
 
 [![Expo SDK 58](https://img.shields.io/badge/Expo_SDK-58-0B0B0C?style=flat-square&logo=expo&logoColor=white)](https://docs.expo.dev/)
+[![Nitro Modules](https://img.shields.io/badge/Nitro_Modules-V1-0B0B0C?style=flat-square)](https://nitro.margelo.com)
 [![New Architecture](https://img.shields.io/badge/React_Native-New_Architecture-0B0B0C?style=flat-square&logo=react&logoColor=61DAFB)](https://reactnative.dev/architecture/landing-page)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](./docs/FAQ.md#2-why-is-this-android-only)
 [![MIT](https://img.shields.io/badge/license-MIT-6B7280?style=flat-square)](./LICENSE)
 
 Expo-native package family for PICO 4 / 4 Ultra (PICO OS 5) and Project Swan (PICO OS 6) XR devices.
 
-Config plugins and Expo Modules that teach an Expo Android project how to build, install, and enumerate on PICO 4, 4 Ultra, 4 Ultra Enterprise and Space Pro / Swan headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
+Config plugins and Nitro Modules (V1) that teach an Expo Android project how to build, install, and enumerate on PICO 4, 4 Ultra, 4 Ultra Enterprise and Space Pro / Swan headsets without ejecting to the bare workflow. The plugin is renderer-agnostic. It works with `@reactvision/react-viro` (the example app's renderer), Unity-as-a-Library, and any renderer that uses the system OpenXR loader.
 
 > OS note. PICO 4 and PICO 4 Ultra ship on PICO OS 5 (the legacy PVR / current XR runtime), so set `xrMode: 'pico-os5'`. The next-gen Project Swan hardware ships on PICO OS 6, so set `xrMode: 'pico-swan'`.
 
@@ -100,7 +101,7 @@ npx expo run:android --variant picoDebug
 The packages install from GitHub release branches, not npm. [docs/INSTALL-FROM-GITHUB.md](./docs/INSTALL-FROM-GITHUB.md) lists the branch for every package, the peers each one needs, and how to pin a commit.
 
 ```bash
-yarn add "github:mikevocalz/expo-pico#release/core"
+yarn add "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
 # (add siblings as needed, each from its own release/<name> branch)
 ```
 

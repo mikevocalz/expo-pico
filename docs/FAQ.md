@@ -6,7 +6,7 @@ Questions that keep coming up. If yours isn't here, open a [GitHub issue](https:
 
 Because PICO-specific support needs project-level mutations (product flavors, launcher categories, BuildConfig fields, PICO-flavor manifest, Platform SDK identity resources) that a runtime library can't do from JS. Config plugins are Expo's native path for making those mutations survive `expo prebuild --clean`.
 
-This works for projects on the managed workflow and on bare RN. The plugin runs at prebuild time; the sibling runtime modules are Expo Modules, looked up at runtime through `resolveHybridObject()`, which wraps `requireOptionalNativeModule()`. The two are complementary, not alternatives — a config plugin cannot expose native APIs to JS, and a native module cannot rewrite your Gradle files.
+This works for projects on the managed workflow and on bare RN. The plugin runs at prebuild time; the runtime modules are [Nitro Modules](https://nitro.margelo.com) V1 HybridObjects. Each package constructs its own with `new X()` through `resolveHybridObject()`, which returns `null` when the native library is not in the build. The two are complementary, not alternatives — a config plugin cannot expose native APIs to JS, and a native module cannot rewrite your Gradle files.
 
 ## 2. Why is this Android-only?
 

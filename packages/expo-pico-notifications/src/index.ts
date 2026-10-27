@@ -5,12 +5,12 @@ import {
   type Subscription,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type {
+import {
   PicoNotifications,
-  NotificationPermissionStatus,
-  PicoPushMessage,
-  PicoPushRevocation,
-} from './types';
+  type NotificationPermissionStatus,
+  type PicoPushMessage,
+  type PicoPushRevocation,
+} from './PicoNotifications.nitro';
 
 export type {
   NotificationPermissionStatus,
@@ -24,7 +24,7 @@ export type {
 const PKG = '@expo-pico/notifications';
 
 function native(): PicoNotifications | null {
-  return resolveHybridObject<PicoNotifications>('PicoNotifications');
+  return resolveHybridObject('PicoNotifications', () => new PicoNotifications());
 }
 
 export function isNotificationsAvailable(): boolean {

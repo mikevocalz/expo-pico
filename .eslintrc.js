@@ -9,6 +9,7 @@ module.exports = {
     '**/build/**',
     '**/plugin/build/**',
     '**/cli/build/**',
+    '**/nitrogen/generated/**',
     'example/android/**',
     'example/ios/**',
     '.vendor/**',

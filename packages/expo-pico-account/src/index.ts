@@ -4,7 +4,8 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoAccount, PicoAuthType } from './types';
+import { PicoAccount } from './PicoAccount.nitro';
+import type { PicoAuthType } from './types';
 
 export type {
   PicoUserProfile,
@@ -19,12 +20,12 @@ export type {
 const PKG = '@expo-pico/account';
 
 /**
- * Created lazily: createHybridObject throws when the native library is absent
+ * Created lazily: `new PicoAccount()` throws when the native library is absent
  * (mobile flavor, non-PICO hardware), and that must surface as
  * SERVICE_UNAVAILABLE rather than a module-load crash.
  */
 function nativeAccount(): PicoAccount | null {
-  return resolveHybridObject<PicoAccount>('PicoAccount');
+  return resolveHybridObject<PicoAccount>('PicoAccount', () => new PicoAccount());
 }
 
 export function isAccountAvailable(): boolean {
@@ -35,7 +36,7 @@ export function getAccountSdkVersion(): string {
   return nativeAccount()?.sdkVersion ?? 'unavailable';
 }
 
-/** Remediation step from the native side; 'ready' once the SDK is initialized. */
+/** Native status token; 'READY' once the SDK is usable. See PicoAccount.sdkStatus. */
 export function getAccountSdkStatus(): string {
   return nativeAccount()?.sdkStatus ?? 'unknown';
 }

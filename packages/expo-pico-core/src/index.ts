@@ -1,6 +1,7 @@
-import { NULL_SUBSCRIPTION, type Subscription } from '@expo-pico/platform-service-common';
+import 'react-native-nitro-modules';
+import { NULL_SUBSCRIPTION, type Subscription } from './subscription';
 
-import type { PicoRuntime } from './PicoRuntimeNativeTypes';
+import type { PicoRuntime } from './PicoRuntime.nitro';
 
 import ExpoPicoModule, { getPicoRuntimeAdapter } from './ExpoPicoModule';
 import { buildXrMode } from './eyeTrackingPermission';
@@ -331,6 +332,15 @@ export {
 } from './eyeTrackingPermission';
 
 export default ExpoPicoModule;
+
+// PICO OS 5 panels: secondary windows with their own pico.vr.position.
+export { PicoWindows } from './PicoWindows.nitro';
+export { PicoPanelHost } from './PicoPanelHost.nitro';
+export type { PanelSizeDp } from './PanelSizeDp';
+export type { PanelOpenedEvent } from './PanelOpenedEvent';
+export type { PanelClosedEvent } from './PanelClosedEvent';
+export type { PanelCloseReason } from './PanelCloseReason';
+export type { ListenerSubscription } from './ListenerSubscription';
 
 /**
  * Hand the display to this app's immersive activity.

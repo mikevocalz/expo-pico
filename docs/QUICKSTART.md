@@ -51,7 +51,7 @@ Kill the dev server once you see the QR code. We're about to switch to the Andro
 ## 2. Install the `expo-pico-core` plugin
 
 ```bash
-yarn add @expo-pico/core
+yarn add @expo-pico/core react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
 ```
 
 Only `expo-pico-core` is required for the base build wiring. Add sibling packages (`expo-pico-account`, `expo-pico-iap`, etc.) as you need their surfaces.
@@ -128,7 +128,7 @@ This creates `android/` with:
 - `pvr.app.type=vr` and OpenXR `IMMERSIVE_HMD` launcher categories in the PICO-flavor manifest
 - `<uses-native-library android:name="libopenxr_loader.so"/>`
 - `ndk { abiFilters 'arm64-v8a' }` on the pico flavor
-- A `PicoCorePackage(PicoXRPlatform.PICO_OS5)` line added to `MainApplication.kt`
+- `PicoCorePackage` in the autolinked package list, through `@expo-pico/core`'s `react-native.config.js`
 
 Inspect any of these if you want to verify. The plugin never writes anything it can't justify.
 

@@ -3,7 +3,7 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoSubscription, SubscribeOptions } from './types';
+import { PicoSubscription, type SubscribeOptions } from './PicoSubscription.nitro';
 
 export type {
   SubscriptionPeriod,
@@ -17,7 +17,7 @@ export type {
 const PKG = '@expo-pico/subscription';
 
 function native(): PicoSubscription | null {
-  return resolveHybridObject<PicoSubscription>('PicoSubscription');
+  return resolveHybridObject('PicoSubscription', () => new PicoSubscription());
 }
 
 export function isSubscriptionAvailable(): boolean {

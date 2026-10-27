@@ -1,14 +1,15 @@
 import type { AndroidConfig } from '@expo/config-plugins';
 
-import { LAUNCHER_CATEGORIES, MANIFEST_META } from './constants';
+import { MANIFEST_META } from './constants';
 import type { ResolvedPicoOptions } from './types';
 
 /**
  * Reference to the Viro plugin's auto-generated immersive activity. The
  * `@reactvision/react-viro` Expo plugin always emits `.VRActivity` in the
  * app's package when `xRMode` includes `QUEST` (and now `PICO`). Our PICO
- * manifest overlay merges into that activity to add the categories and
- * meta-data PICO OS needs to grant exclusive OpenXR display access.
+ * manifest overlay merges into that activity to add the meta-data PICO OS
+ * needs to grant exclusive OpenXR display access, and to drop its
+ * intent-filters so it never becomes a launcher tile.
  *
  * Architecture: `MainActivity` stays a 2D panel app (window-container or
  * 2D launcher). The user enters immersive XR via a button that mounts
@@ -22,22 +23,23 @@ import type { ResolvedPicoOptions } from './types';
 const VR_ACTIVITY_NAME = '.VRActivity';
 
 /**
- * Add the PICO launcher categories + spatial meta-data to `.VRActivity` so
- * PICO OS treats it as the immersive entry point for this app. Idempotent.
+ * Mark `.VRActivity` as PICO's immersive activity. Idempotent.
  *
  * Mutates:
- *   1. `.VRActivity` <intent-filter>: add `com.pvr.intent.category.VR`
- *      (PICO modern) + `com.picovr.intent.category.VR` (legacy) so the
- *      activity is reachable as an immersive target.
- *   2. `.VRActivity` <meta-data>: add `com.pico.spatial.mode=immersive`
- *      + `com.pico.spatial.containerMode=immersive` so the activity gets
- *      the exclusive HMD surface (not a 2D window-container).
- *   3. `.VRActivity` <meta-data>: add `pvr.app.type=vr` activity-scope
- *      override so PICO enumerates VRActivity as immersive even when the
- *      app-level type is `mr` (panel + immersive coexist).
+ *   1. `.VRActivity` <intent-filter>: a single `tools:node="removeAll"`
+ *      marker, so the PICO variant drops every intent-filter the main
+ *      manifest gave this activity. An older @reactvision/react-viro wrote
+ *      MAIN + com.oculus.intent.category.VR there, which PICO OS listed as a
+ *      second app-library tile. VRLauncher starts VRActivity with an explicit
+ *      intent, and PICO runs it immersive with no intent-filter (checked on a
+ *      PICO 4 Ultra, OS 5.15.7), so the activity needs none.
+ *   2. `.VRActivity` <meta-data>: `com.pico.spatial.mode=full-space` so the
+ *      activity gets the exclusive HMD surface (not a 2D window-container).
+ *   3. `.VRActivity` <meta-data>: `pvr.app.type=vr` activity-scope override
+ *      so PICO treats VRActivity as immersive even when the app-level type
+ *      is `mr` (panel + immersive coexist).
  *
- * Gated on `appType` being `vr` or `mr` — only those flavors host an XR
- * scene worth routing PICO immersive into.
+ * Gated on `appType` being `vr` or `mr`: only those host an XR scene.
  */
 export function applyVRActivityContract(
   manifest: AndroidConfig.Manifest.AndroidManifest,
@@ -62,7 +64,7 @@ export function applyVRActivityContract(
     activity.$ = { ...activity.$, 'tools:node': 'merge' };
   }
 
-  addPicoIntentCategories(activity);
+  clearVRActivityIntentFilters(activity);
   // 'full-space' is PICO OS 6's full-environment-takeover mode. 'immersive'
   // is the legacy pre-OS6 value and on OS 6 only gives a contained
   // immersive surface — splats render as a 3D object in front rather than
@@ -73,31 +75,14 @@ export function applyVRActivityContract(
   return manifest;
 }
 
-function addPicoIntentCategories(activity: any): void {
-  activity['intent-filter'] = activity['intent-filter'] ?? [];
-
-  // The Viro plugin emits the Oculus VR intent-filter on this activity.
-  // We add a parallel PICO-categories filter so the manifest merger keeps
-  // both. PICO and Quest are mutually exclusive at runtime — only the
-  // matching runtime resolves its category.
-  const marker = LAUNCHER_CATEGORIES.PICO_VR;
-  const existingIdx = (activity['intent-filter'] as any[]).findIndex(
-    (f: any) =>
-      Array.isArray(f.category) && f.category.some((c: any) => c.$?.['android:name'] === marker)
-  );
-  const filter = {
-    action: [{ $: { 'android:name': 'android.intent.action.MAIN' } }],
-    category: [
-      { $: { 'android:name': LAUNCHER_CATEGORIES.PICO_VR } },
-      { $: { 'android:name': LAUNCHER_CATEGORIES.PICOVR_VR_LEGACY } },
-      { $: { 'android:name': LAUNCHER_CATEGORIES.OPENXR_IMMERSIVE_HMD } },
-    ],
-  };
-  if (existingIdx === -1) {
-    activity['intent-filter'].push(filter);
-  } else {
-    activity['intent-filter'][existingIdx] = filter;
-  }
+/**
+ * Replaces whatever filters `.VRActivity` has in this overlay with one
+ * `<intent-filter tools:node="removeAll"/>`. Drops the MAIN + PICO/OpenXR
+ * filter older versions of this plugin wrote, and strips main-manifest
+ * filters from the merged PICO manifest.
+ */
+function clearVRActivityIntentFilters(activity: any): void {
+  activity['intent-filter'] = [{ $: { 'tools:node': 'removeAll' } }];
 }
 
 function upsertActivityMeta(activity: any, name: string, value: string): void {

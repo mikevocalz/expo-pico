@@ -24,6 +24,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'com.example.expopico',
   },
   plugins: [
+    // First, so its manifest mod runs after Viro's. See the file.
+    './plugins/withVrActivityOffTheLauncher',
     'expo-router',
     // Meta Horizon / Quest build flavor + manifest (Software Mansion).
     // Creates the `quest` Android build flavor with the right

@@ -1,6 +1,8 @@
-// WindowContainer bridge + readiness mapping. index.ts caches the native
-// module on first use, so each test loads a fresh copy through
-// jest.isolateModules with its own requireOptionalNativeModule mock.
+// WindowContainer bridge + readiness mapping. resolveHybridObject caches the
+// PicoSpatial HybridObject on first use, so each test loads a fresh copy
+// through jest.isolateModules with its own Nitro V1 class mock: the generated
+// `#nitro/PicoSpatial` module asks NitroModules.getHybridClass for the class
+// and index.ts calls `new PicoSpatial()` on it.
 
 import { layoutReadinessFromProbe, type PicoSpatialLayoutBridgeStatus } from '../layout';
 
@@ -9,8 +11,18 @@ type Api = typeof import('../index');
 function loadWithNative(native: Record<string, unknown> | null): Api {
   let api: Api | undefined;
   jest.isolateModules(() => {
-    jest.doMock('expo-modules-core', () => ({
-      requireOptionalNativeModule: (name: string) => (name === 'PicoSpatialV2' ? native : null),
+    jest.doMock('react-native-nitro-modules', () => ({
+      NitroModules: {
+        getHybridClass: (name: string) => {
+          if (name !== 'expopico.spatial.PicoSpatial' || native === null) {
+            throw new Error('HybridObject not available in test environment');
+          }
+          // A constructor that returns an object makes `new` yield that object.
+          return function PicoSpatial() {
+            return native;
+          };
+        },
+      },
     }));
     api = require('../index');
   });
@@ -39,7 +51,7 @@ function fakeNative(status: Partial<PicoSpatialLayoutBridgeStatus>, overrides = 
 }
 
 afterEach(() => {
-  jest.dontMock('expo-modules-core');
+  jest.dontMock('react-native-nitro-modules');
 });
 
 describe('layoutReadinessFromProbe', () => {
@@ -173,7 +185,7 @@ describe('openWindowContainer / closeWindowContainer', () => {
     const native = fakeNative({ sdkLinked: true, spatialPlatform: true });
     const api = loadWithNative(native);
     expect(api.openWindowContainer('main')).toEqual({ ok: true });
-    expect(native.openWindowContainer).toHaveBeenCalledWith('main', null);
+    expect(native.openWindowContainer).toHaveBeenCalledWith('main', undefined);
   });
 
   it('passes the tag through to close', () => {

@@ -1,9 +1,12 @@
-# Expo PICO: Eskiu + Expo Modules v2 migration
+# Expo PICO: Eskiu runtime
 
 ## Target architecture
 
-TypeScript/React Native -> thin Expo Modules v2 Kotlin adapters -> either PICO Java/Kotlin SDKs
+TypeScript/React Native -> Nitro Modules V1 HybridObjects (Kotlin) -> either PICO Java/Kotlin SDKs
 or the Eskiu C ABI. ViroCore consumes the same Eskiu C ABI directly for hot XR paths.
+
+An earlier plan replaced Nitro with Expo Modules v2. The project kept Nitro instead and moved every
+package to Nitro V1; the Eskiu pieces below are unchanged by that decision.
 
 ### Move to Eskiu
 
@@ -15,11 +18,10 @@ or the Eskiu C ABI. ViroCore consumes the same Eskiu C ABI directly for hot XR p
 - haptic parameter normalization
 - fixed-layout packets shared with ViroCore
 
-### Keep in Expo Modules v2 / Kotlin
+### Keep in Kotlin
 
 PICO Platform Service SDKs are AAR/Java APIs. Account, IAP, achievements, leaderboards, rooms,
-social, storage, subscription, notifications and RTC registration should become thin Expo Modules
-v2 wrappers instead of keeping Nitro just to call Java APIs.
+social, storage, subscription, notifications and RTC call them from their Nitro HybridObjects.
 
 ### Android linking
 
@@ -27,17 +29,12 @@ Eskiu 0.9.3 emits native object files, supports AArch64 and uses the platform C 
 still lists per-target Android native-library linking as unfinished. Expo PICO therefore uses
 `eskiuc` as the object compiler and lets CMake/NDK clang link the final shared library.
 
-## Migration slices
+## Status
 
-1. Foundation: Expo SDK 58, Expo Modules v2 baseline, Eskiu doctor, arm64 object helper, C ABI.
-2. Core + spatial: replace PicoCore/PicoRuntime Nitro objects; move hot state/math/scene transforms
-   to Eskiu; expose ViroCore ABI.
-3. Platform services: account/IAP/achievements/leaderboards/rooms/social/storage/subscription/
-   notifications to Expo Modules v2; delete their Nitrogen specs.
-4. RTC: keep Fishjam/WebRTC lifecycle; Expo Modules v2 owns RN API; Eskiu only for measurable
-   reusable packet/state transforms.
-5. Nitro removal: remove react-native-nitro-modules/nitrogen, `*.nitro.ts`, `nitro.json`, generated
-   Nitro build glue and Jest stubs; audit npm package and APK sizes.
+- Eskiu doctor, the arm64 object helper and the C ABI are in place.
+- Core links the Eskiu runtime into `libExpoPicoCore.so` next to its Nitro sources and exposes
+  icon meshes through `PicoRuntime.getIconMesh`.
+- `yarn audit:native-bridge:strict` fails on any native bridge that is not Nitro V1.
 
 ## Guardrails
 

@@ -29,7 +29,7 @@ Typed seam for PICO platform cloud storage on PICO OS 6.
 ## Installation
 
 ```sh
-yarn add @expo-pico/storage
+yarn add @expo-pico/storage react-native-nitro-modules
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:

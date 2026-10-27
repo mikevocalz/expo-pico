@@ -8,19 +8,19 @@
 # compiler path; under GitHub Actions it also exports ESKIUC and adds bin/ to PATH.
 set -euo pipefail
 
-ESKIU_VERSION="0.9.3"
-REPO="doranteseduardo/eskiu"
+ESKIU_VERSION="0.14.0"
+REPO="eskiu-lang/eskiu"
 
 case "$(uname -s)-$(uname -m)" in
   Darwin-arm64)
     ASSET="eskiuc-macos-arm64.tar.gz"
-    SHA256="8eb0216c7aca4d347388227479e5f1e36e1fc03e4fe88592536b4e84d266c6d0" ;;
+    SHA256="ced8ed271e0db5b8ea09c4ce6487049ffa1d7eb102d3758624c2c16c642f0bfd" ;;
   Linux-x86_64)
     ASSET="eskiuc-linux-x86_64.tar.gz"
-    SHA256="b5216cc8118a6caf06ec540b8663c2aa94efeb4a99158a74b05928f8e0d304a1" ;;
+    SHA256="4d6bb09c9995991e32c178fd5d4bcdd85e4652c750ce4f578c386fd5e8f2eb50" ;;
   Linux-aarch64 | Linux-arm64)
     ASSET="eskiuc-linux-arm64.tar.gz"
-    SHA256="0ced81adde0215673eb98852f327137598aa6c44f84a285e24a93af2643860bc" ;;
+    SHA256="0824bbd90913bed7bc85254fc2bf4c0ee1e76c095dcd6aa7380097f7e3a6eb19" ;;
   *)
     echo "install-eskiuc: no eskiuc ${ESKIU_VERSION} build for $(uname -s)-$(uname -m)" >&2
     exit 1 ;;

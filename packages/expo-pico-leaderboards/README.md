@@ -10,7 +10,7 @@ PICO platform leaderboard APIs for Expo apps. Query rankings, write scores, and 
 ## Installation
 
 ```sh
-yarn add @expo-pico/leaderboards
+yarn add @expo-pico/leaderboards react-native-nitro-modules
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account
+yarn add @expo-pico/account react-native-nitro-modules
 ```
 
 ```ts
@@ -130,14 +130,16 @@ if (isLeaderboardsAvailable()) {
 
 ### `getEntries` options
 
-| Option    | Values                          | Default                |
-| --------- | ------------------------------- | ---------------------- |
-| `filter`  | `'none'`, `'friends'`           | `'none'`               |
-| `startAt` | `'top'`, `'centered-on-viewer'` | `'centered-on-viewer'` |
+| Option     | Values                          | Default                |
+| ---------- | ------------------------------- | ---------------------- |
+| `filter`   | `'none'`, `'friends'`           | `'none'`               |
+| `startAt`  | `'top'`, `'centered-on-viewer'` | `'centered-on-viewer'` |
+| `pageSize` | number                          | `20`                   |
 
 `filter: 'viewer-and-friends'` is part of the shared type but PICO has no matching filter, so
-`getEntries` rejects it with code `UNSUPPORTED_FILTER`. Any other unrecognised `filter` or
-`startAt` string rejects with `INVALID_ARGUMENT` instead of falling back to the global board.
+`getEntries` rejects it with an error whose message starts with `UNSUPPORTED_FILTER`. Any other
+unrecognised `filter` or `startAt` string is rejected by Nitro's enum conversion before it
+reaches native code, so it never falls back to the global board.
 
 ### Pagination
 

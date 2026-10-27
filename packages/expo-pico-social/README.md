@@ -10,7 +10,7 @@ PICO platform social APIs for Expo apps. Friends, presence, invites, and launch 
 ## Installation
 
 ```sh
-yarn add @expo-pico/social
+yarn add @expo-pico/social react-native-nitro-modules
 ```
 
 Add to `app.config.ts` after `expo-pico-core`:
@@ -29,7 +29,7 @@ plugins: [
 simply return no data or `SERVICE_UNAVAILABLE` until a PICO account is connected.
 
 ```bash
-yarn add @expo-pico/account
+yarn add @expo-pico/account react-native-nitro-modules
 ```
 
 ```ts

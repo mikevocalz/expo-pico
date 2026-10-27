@@ -1,7 +1,11 @@
-// Simulates a build with no PICO native library: the Expo module lookup
-// in @expo-pico/platform-service-common returns null.
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn(() => null),
+// Simulates a build with no PICO native library: the generated `#nitro/*`
+// module asks getHybridClass for the class, and it is not registered.
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    getHybridClass: jest.fn(() => {
+      throw new Error('HybridObject not available in test environment');
+    }),
+  },
 }));
 import * as api from '../index';
 import { runPackageContractTests } from '@expo-pico/platform-service-common/testing';
@@ -23,8 +27,11 @@ runPackageContractTests({
 });
 
 describe('native module resolution', () => {
-  it('resolves the ExpoPicoLeaderboards Expo module', () => {
-    const { requireOptionalNativeModule } = jest.requireMock('expo-modules-core');
-    expect(requireOptionalNativeModule).toHaveBeenCalledWith('ExpoPicoLeaderboards');
+  it('resolves the PicoLeaderboards Nitro hybrid class', () => {
+    expect(api.isLeaderboardsAvailable()).toBe(false);
+    const { NitroModules } = jest.requireMock('react-native-nitro-modules');
+    expect(NitroModules.getHybridClass).toHaveBeenCalledWith(
+      'expopico.leaderboards.PicoLeaderboards'
+    );
   });
 });
