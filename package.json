@@ -24,9 +24,6 @@
       ]
     }
   },
-  "peerDependencies": {
-    "expo-modules-core": ">=58.0.11 <59"
-  },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
@@ -51,13 +48,8 @@
     "README.md",
     "build"
   ],
-  "peerDependenciesMeta": {
-    "expo-modules-core": {
-      "optional": false
-    }
-  },
-  "gitHead": "5edd6b44496ce9b3c568b060d17eeef962b7c412",
+  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
   "expoPico": {
-    "sourceCommit": "5edd6b44496ce9b3c568b060d17eeef962b7c412"
+    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1"
   }
 }

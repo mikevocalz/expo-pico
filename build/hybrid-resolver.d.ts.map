@@ -1,1 +1,1 @@
-{"version":3,"file":"hybrid-resolver.d.ts","sourceRoot":"","sources":["../src/hybrid-resolver.ts"],"names":[],"mappings":"AA2DA,wBAAgB,mBAAmB,CAAC,CAAC,SAAS,MAAM,EAAE,IAAI,EAAE,MAAM,GAAG,CAAC,GAAG,IAAI,CAgJ5E;AAED,wBAAgB,kBAAkB,IAAI,IAAI,CAIzC"}
+{"version":3,"file":"hybrid-resolver.d.ts","sourceRoot":"","sources":["../src/hybrid-resolver.ts"],"names":[],"mappings":"AAaA,wBAAgB,mBAAmB,CAAC,CAAC,EAAE,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,CAAC,GAAG,CAAC,GAAG,IAAI,CAU9E;AAED,6DAA6D;AAC7D,wBAAgB,kBAAkB,IAAI,IAAI,CAEzC"}
