@@ -6,19 +6,8 @@
     "module": "node16",
     "moduleResolution": "node16",
     "resolvePackageJsonImports": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "plugin",
-    "android",
-    "__tests__",
-    "src/__tests__"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "build", "plugin", "android", "__tests__", "src/__tests__"]
 }
