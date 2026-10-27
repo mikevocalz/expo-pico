@@ -12,9 +12,10 @@ exports.addUserJoinedListener = addUserJoinedListener;
 exports.addUserLeftListener = addUserLeftListener;
 exports.addRtcStateChangeListener = addRtcStateChangeListener;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoRtc_nitro_1 = require("./PicoRtc.nitro");
 const PKG = '@expo-pico/rtc';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoRtc');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoRtc', () => new PicoRtc_nitro_1.PicoRtc());
 }
 function isRtcAvailable() {
     return native()?.available ?? false;

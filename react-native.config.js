@@ -1,0 +1,14 @@
+// React Native autolinking: the app's settings.gradle and PackageList pick up
+// this package's Android module and ExpoPicoRtcPackage, which loads the
+// Nitro library. Android only.
+module.exports = {
+  dependency: {
+    platforms: {
+      android: {
+        packageImportPath: 'import com.margelo.nitro.expopico.rtc.ExpoPicoRtcPackage;',
+        packageInstance: 'new ExpoPicoRtcPackage()',
+      },
+      ios: null,
+    },
+  },
+};

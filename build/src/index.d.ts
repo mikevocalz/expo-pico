@@ -6,7 +6,7 @@ export declare function isRtcAvailable(): boolean;
 export declare function getRtcServiceStatus(): RtcServiceStatus;
 export declare function getRtcSdkVersion(): string | null;
 export declare function initRtcEngine(options?: RtcInitOptions): Promise<void>;
-export declare function joinChannel(options: RtcJoinOptions): Promise<import("./types").RtcJoinResult>;
+export declare function joinChannel(options: RtcJoinOptions): Promise<import("./PicoRtc.nitro").RtcJoinResult>;
 export declare function leaveChannel(): Promise<void>;
 export declare function muteLocalAudio(muted: boolean): Promise<void>;
 export declare function setAudioOutputVolume(volume: RtcVolume): Promise<void>;
