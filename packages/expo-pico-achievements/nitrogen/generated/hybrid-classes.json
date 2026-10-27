@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoAchievements": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoAchievements"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

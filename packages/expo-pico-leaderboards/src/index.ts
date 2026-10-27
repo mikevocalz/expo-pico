@@ -3,10 +3,10 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type {
+import {
   PicoLeaderboards,
-  GetEntriesOptions,
-  WriteScoreOptions,
+  type GetEntriesOptions,
+  type WriteScoreOptions,
 } from './PicoLeaderboards.nitro';
 
 export type {
@@ -24,7 +24,7 @@ export type {
 const PKG = '@expo-pico/leaderboards';
 
 function native(): PicoLeaderboards | null {
-  return resolveHybridObject<PicoLeaderboards>('PicoLeaderboards');
+  return resolveHybridObject('PicoLeaderboards', () => new PicoLeaderboards());
 }
 
 export function isLeaderboardsAvailable(): boolean {

@@ -6,7 +6,7 @@ import {
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type { PicoSpatial, SceneMeshRaw, SpatialBodyJoint } from './PicoSpatial.nitro';
+import { PicoSpatial, type SceneMeshRaw, type SpatialBodyJoint } from './PicoSpatial.nitro';
 import type {
   PicoSpaceState,
   PicoContainerType,
@@ -34,7 +34,7 @@ const NO_CAPABILITIES: SpatialCapabilities = {
 };
 
 function native(): PicoSpatial | null {
-  return resolveHybridObject<PicoSpatial>('PicoSpatial');
+  return resolveHybridObject('PicoSpatial', () => new PicoSpatial());
 }
 
 function toTypedMesh(raw: SceneMeshRaw): SceneMesh {
@@ -190,7 +190,7 @@ export function addBodyListener(cb: (joints: BodyJoint[]) => void): Subscription
             number,
             number,
             number,
-            number
+            number,
           ],
         }))
       )

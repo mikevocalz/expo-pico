@@ -5,7 +5,7 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import type { PicoAchievements, AchievementUnlockedEvent } from './PicoAchievements.nitro';
+import { PicoAchievements, type AchievementUnlockedEvent } from './PicoAchievements.nitro';
 
 export type {
   Achievement,
@@ -20,7 +20,7 @@ export type {
 const PKG = '@expo-pico/achievements';
 
 function native(): PicoAchievements | null {
-  return resolveHybridObject<PicoAchievements>('PicoAchievements');
+  return resolveHybridObject('PicoAchievements', () => new PicoAchievements());
 }
 
 export function isAchievementsAvailable(): boolean {

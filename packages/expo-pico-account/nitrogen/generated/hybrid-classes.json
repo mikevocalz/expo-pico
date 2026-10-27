@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoAccount": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoAccount"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

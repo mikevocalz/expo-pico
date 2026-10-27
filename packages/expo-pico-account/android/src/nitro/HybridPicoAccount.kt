@@ -226,7 +226,10 @@ class HybridPicoAccount : HybridPicoAccountSpec() {
   override fun getAccountLinkStatus(): Promise<PicoAccountLinkStatus> =
     Promise.resolved(PicoAccountLinkStatus.UNSUPPORTED)
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoAccount()`).
+  companion object : HybridPicoAccountSpec.Companion {
+    override fun constructor(): HybridPicoAccount = HybridPicoAccount()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
   }

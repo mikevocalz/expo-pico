@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "iap"],
-  "ios": {
-    "iosModuleName": "ExpoPicoIap"
+  "apple": {
+    "moduleName": "ExpoPicoIap"
   },
   "android": {
-    "androidNamespace": ["expopico", "iap"],
-    "androidCxxLibName": "ExpoPicoIap"
-  },
-  "autolinking": {
-    "PicoIap": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoIap"
-      }
-    }
+    "namespace": ["expopico", "iap"],
+    "cxxLibName": "ExpoPicoIap"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

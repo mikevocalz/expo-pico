@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.rtc
 
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 
 /**
@@ -48,13 +49,13 @@ class HybridPicoRtc : HybridPicoRtcSpec() {
   // Listener registration succeeds and returns a real id so that JS
   // subscribe/unsubscribe code is not forced to special-case this package.
   // Nothing is ever emitted, and `removeListener` is honest about that.
-  override fun addUserJoinedListener(listener: (event: RtcUserJoinedEvent) -> Unit): Double =
+  override fun addUserJoinedListener(listener: Callback<(event: RtcUserJoinedEvent) -> Unit>): Double =
     nextListenerId()
 
-  override fun addUserLeftListener(listener: (event: RtcUserLeftEvent) -> Unit): Double =
+  override fun addUserLeftListener(listener: Callback<(event: RtcUserLeftEvent) -> Unit>): Double =
     nextListenerId()
 
-  override fun addRtcStateChangeListener(listener: (event: RtcStateChangeEvent) -> Unit): Double =
+  override fun addRtcStateChangeListener(listener: Callback<(event: RtcStateChangeEvent) -> Unit>): Double =
     nextListenerId()
 
   override fun removeListener(id: Double): Unit = Unit
@@ -71,4 +72,9 @@ class HybridPicoRtc : HybridPicoRtcSpec() {
       "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.0.x " +
         "publishes no real-time voice artifact."
     )
+
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoRtc()`).
+  companion object : HybridPicoRtcSpec.Companion {
+    override fun constructor(): HybridPicoRtc = HybridPicoRtc()
+  }
 }

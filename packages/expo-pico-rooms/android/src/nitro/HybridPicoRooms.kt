@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.rooms
 
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 import com.pico.pps.sdk.friend.IFriendClient
 import com.pico.pps.sdk.friend.PicoFriendClient
@@ -164,17 +165,17 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
   // No room events exist to subscribe to. Registration returns a real id
   // so JS subscribe/unsubscribe code stays uniform across packages;
   // nothing is ever emitted.
-  override fun addRoomUpdatedListener(listener: (event: RoomUpdatedEvent) -> Unit): Double =
+  override fun addRoomUpdatedListener(listener: Callback<(event: RoomUpdatedEvent) -> Unit>): Double =
     nextListenerId()
 
-  override fun addRoomUserJoinedListener(listener: (event: RoomUserJoinedEvent) -> Unit): Double =
+  override fun addRoomUserJoinedListener(listener: Callback<(event: RoomUserJoinedEvent) -> Unit>): Double =
     nextListenerId()
 
-  override fun addRoomUserLeftListener(listener: (event: RoomUserLeftEvent) -> Unit): Double =
+  override fun addRoomUserLeftListener(listener: Callback<(event: RoomUserLeftEvent) -> Unit>): Double =
     nextListenerId()
 
   override fun addMatchmakingFoundListener(
-    listener: (event: MatchmakingFoundEvent) -> Unit
+    listener: Callback<(event: MatchmakingFoundEvent) -> Unit>
   ): Double = nextListenerId()
 
   override fun removeListener(id: Double): Unit = Unit
@@ -193,7 +194,10 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
         "the read-only friends-and-rooms feed behind getRoomInfo()."
     )
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoRooms()`).
+  companion object : HybridPicoRoomsSpec.Companion {
+    override fun constructor(): HybridPicoRooms = HybridPicoRooms()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
 

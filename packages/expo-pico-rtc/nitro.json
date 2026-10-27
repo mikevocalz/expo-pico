@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "rtc"],
-  "ios": {
-    "iosModuleName": "ExpoPicoRtc"
+  "apple": {
+    "moduleName": "ExpoPicoRtc"
   },
   "android": {
-    "androidNamespace": ["expopico", "rtc"],
-    "androidCxxLibName": "ExpoPicoRtc"
-  },
-  "autolinking": {
-    "PicoRtc": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoRtc"
-      }
-    }
+    "namespace": ["expopico", "rtc"],
+    "cxxLibName": "ExpoPicoRtc"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

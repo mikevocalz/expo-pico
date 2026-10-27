@@ -1,5 +1,7 @@
 package com.margelo.nitro.expopico.notifications
 
+import com.margelo.nitro.core.Callback
+import com.margelo.nitro.core.callAndForget
 import com.margelo.nitro.core.Promise
 import com.pico.pps.sdk.push.IPPSPushClient
 import com.pico.pps.sdk.push.IPPSPushMsgReceiver
@@ -107,8 +109,8 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
   // here. Ids are handed out across both maps from one counter, which is what
   // lets `removeListener(id)` take a bare id without the caller tracking which
   // kind of listener it was.
-  private val messageListeners = mutableMapOf<Double, (PicoPushMessage) -> Unit>()
-  private val revocationListeners = mutableMapOf<Double, (PicoPushRevocation) -> Unit>()
+  private val messageListeners = mutableMapOf<Double, Callback<(PicoPushMessage) -> Unit>>()
+  private val revocationListeners = mutableMapOf<Double, Callback<(PicoPushRevocation) -> Unit>>()
   private var listenerCounter: Double = 0.0
   private var receiverInstalled = false
 
@@ -118,7 +120,7 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
         msgId = message.msgId.orEmpty(),
         data = message.data.orEmpty(),
       )
-      messageListeners.values.toList().forEach { it(payload) }
+      messageListeners.values.toList().forEach { it.callAndForget(payload) }
     }
 
     override fun onRevokeMsg(revokeMsg: RevokeMsg) {
@@ -127,7 +129,7 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
         revokeId = revokeMsg.revokeId.orEmpty(),
         revokeData = revokeMsg.revokeData.orEmpty(),
       )
-      revocationListeners.values.toList().forEach { it(payload) }
+      revocationListeners.values.toList().forEach { it.callAndForget(payload) }
     }
   }
 
@@ -153,7 +155,7 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
     receiverInstalled = false
   }
 
-  override fun addPushMessageListener(listener: (message: PicoPushMessage) -> Unit): Double {
+  override fun addPushMessageListener(listener: Callback<(message: PicoPushMessage) -> Unit>): Double {
     val id = nextListenerId()
     messageListeners[id] = listener
     ensureReceiver()
@@ -161,7 +163,7 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
   }
 
   override fun addPushRevocationListener(
-    listener: (revocation: PicoPushRevocation) -> Unit
+    listener: Callback<(revocation: PicoPushRevocation) -> Unit>
   ): Double {
     val id = nextListenerId()
     revocationListeners[id] = listener
@@ -203,7 +205,10 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
     return promise
   }
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoNotifications()`).
+  companion object : HybridPicoNotificationsSpec.Companion {
+    override fun constructor(): HybridPicoNotifications = HybridPicoNotifications()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
   }

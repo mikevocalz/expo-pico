@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoSpatial": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoSpatial"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

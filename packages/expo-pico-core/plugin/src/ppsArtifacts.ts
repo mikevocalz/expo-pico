@@ -174,17 +174,41 @@ export function createPackageResolver(projectRoot: string): PackageResolver {
 }
 
 /**
+ * Gradle configurations the PPS artifacts are declared on.
+ *
+ * `xrMode` and `buildVariant` are independent: a `pico-os5` app built as
+ * `dual` still produces `mobileDebug`, `mobileRelease` and the `quest*`
+ * variants. A bare `implementation` declaration lands on every one of
+ * them, so the SDK is declared per flavor instead.
+ *
+ * `buildVariant: 'mobile'` emits `missingDimensionStrategy` rather than
+ * productFlavors, so no `picoImplementation` configuration exists there
+ * and the declaration stays on `implementation`.
+ */
+export function resolvePpsConfigurations(
+  buildVariant: 'mobile' | 'pico' | 'dual'
+): readonly string[] {
+  if (buildVariant === 'pico') return ['picoImplementation'];
+  if (buildVariant === 'dual') return ['picoImplementation', 'dualImplementation'];
+  return ['implementation'];
+}
+
+/**
  * Render the `dependencies { }` block for the app module.
  *
  * The `constraints` sub-block is what makes this safe to combine with a
  * hand-written declaration: a consumer (or a third-party plugin) that adds
  * `com.pico.pps:platform-service-auth` without a version, or at an older
  * one, resolves to {@link PPS_VERSION} rather than landing a second copy
- * of the service and its `pps_sdk_base` on the classpath.
+ * of the service and its `pps_sdk_base` on the classpath. Constraints stay
+ * on `implementation` — every variant's compile classpath extends it, so
+ * one declaration pins the group no matter which flavor requests it, and a
+ * constraint alone puts nothing on the classpath.
  */
 export function renderPpsDependenciesBlock(
   services: readonly PicoPlatformServiceName[],
   marker: string,
+  configurations: readonly string[] = ['implementation'],
   version: string = PPS_VERSION
 ): string {
   const ordered = dedupe(services);
@@ -194,9 +218,13 @@ export function renderPpsDependenciesBlock(
       (svc) => `        implementation "${PPS_GROUP}:platform-service-${svc}:${version}"`
     ),
   ].join('\n');
-  const implementationLines = ordered
-    .map((svc) => `    implementation "${PPS_GROUP}:platform-service-${svc}:${version}"`)
-    .join('\n');
+  const implementationLines = configurations
+    .map((configuration) =>
+      ordered
+        .map((svc) => `    ${configuration} "${PPS_GROUP}:platform-service-${svc}:${version}"`)
+        .join('\n')
+    )
+    .join('\n\n');
 
   return `
 ${marker}
@@ -256,9 +284,25 @@ allprojects {
  * Kept for consumers who vendor AARs into source control, but bounded:
  * anything PPS already supplies from Maven is excluded so the two paths
  * cannot both contribute the same classes.
+ *
+ * Declared on the same configurations as the Maven artifacts — see
+ * {@link resolvePpsConfigurations} — so a vendored PICO AAR never reaches
+ * a `mobile*` or `quest*` variant.
  */
-export function renderLocalAarBlock(marker: string): string {
+export function renderLocalAarBlock(
+  marker: string,
+  configurations: readonly string[] = ['implementation']
+): string {
   const excludes = PPS_LOCAL_AAR_EXCLUDES.map((pattern) => `'${pattern}'`).join(', ');
+  const fileTreeLines = configurations
+    .map(
+      (configuration) => `    ${configuration} fileTree(
+        dir: 'libs',
+        include: ['*.aar', '*.jar'],
+        exclude: [${excludes}]
+    )`
+    )
+    .join('\n');
   return `
 ${marker}
 //
@@ -267,11 +311,7 @@ ${marker}
 // excluded by name — a local copy alongside the Maven one is what
 // produces "Duplicate class com.pico.pps.… found in modules".
 dependencies {
-    implementation fileTree(
-        dir: 'libs',
-        include: ['*.aar', '*.jar'],
-        exclude: [${excludes}]
-    )
+${fileTreeLines}
 }
 `;
 }
@@ -288,6 +328,7 @@ export default {
   PPS_LOCAL_AAR_EXCLUDES,
   isPinnedPpsModule,
   resolvePpsServices,
+  resolvePpsConfigurations,
   createPackageResolver,
   renderPpsDependenciesBlock,
   renderPpsResolutionPin,

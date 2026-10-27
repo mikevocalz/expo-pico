@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "storage"],
-  "ios": {
-    "iosModuleName": "ExpoPicoStorage"
+  "apple": {
+    "moduleName": "ExpoPicoStorage"
   },
   "android": {
-    "androidNamespace": ["expopico", "storage"],
-    "androidCxxLibName": "ExpoPicoStorage"
-  },
-  "autolinking": {
-    "PicoStorage": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoStorage"
-      }
-    }
+    "namespace": ["expopico", "storage"],
+    "cxxLibName": "ExpoPicoStorage"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }
