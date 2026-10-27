@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.storage
 
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 
 /**
@@ -55,14 +56,14 @@ class HybridPicoStorage : HybridPicoStorageSpec() {
    */
   override fun clearLocalCache(): Promise<Unit> = Promise.resolved(Unit)
 
-  override fun addStorageConflictListener(listener: (event: StorageConflictEvent) -> Unit): Double =
+  override fun addStorageConflictListener(listener: Callback<(event: StorageConflictEvent) -> Unit>): Double =
     nextListenerId()
 
   override fun addStorageSyncProgressListener(
-    listener: (event: StorageSyncProgressEvent) -> Unit
+    listener: Callback<(event: StorageSyncProgressEvent) -> Unit>
   ): Double = nextListenerId()
 
-  override fun addStorageSyncCompleteListener(listener: (result: StorageSyncResult) -> Unit): Double =
+  override fun addStorageSyncCompleteListener(listener: Callback<(result: StorageSyncResult) -> Unit>): Double =
     nextListenerId()
 
   override fun removeListener(id: Double): Unit = Unit
@@ -79,4 +80,9 @@ class HybridPicoStorage : HybridPicoStorageSpec() {
       "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.0.x " +
         "publishes no cloud-storage artifact."
     )
+
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoStorage()`).
+  companion object : HybridPicoStorageSpec.Companion {
+    override fun constructor(): HybridPicoStorage = HybridPicoStorage()
+  }
 }

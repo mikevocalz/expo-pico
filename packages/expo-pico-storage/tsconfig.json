@@ -4,7 +4,10 @@
     "strict": true,
     "outDir": "build",
     "types": [],
-    "rootDir": "src"
+    "rootDir": "src",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "resolvePackageJsonImports": true
   },
   "include": ["src"],
   "exclude": ["**/__tests__/*", "build"]
