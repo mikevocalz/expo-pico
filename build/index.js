@@ -8,9 +8,10 @@ exports.getEntriesAfterRank = getEntriesAfterRank;
 exports.getUserEntry = getUserEntry;
 exports.writeScore = writeScore;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoLeaderboards_nitro_1 = require("./PicoLeaderboards.nitro");
 const PKG = '@expo-pico/leaderboards';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoLeaderboards');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoLeaderboards', () => new PicoLeaderboards_nitro_1.PicoLeaderboards());
 }
 function isLeaderboardsAvailable() {
     return native()?.available ?? false;
@@ -30,7 +31,7 @@ async function getEntriesAfterRank(apiName, afterRank, options) {
     (0, platform_service_common_1.guardService)(isLeaderboardsAvailable(), PKG, 'getEntriesAfterRank');
     return (0, platform_service_common_1.wrapNativeCall)(PKG, 'getEntriesAfterRank', native().getEntriesAfterRank(apiName, afterRank, options));
 }
-/** Emulated by scanning entries — PPS has no single-user lookup. */
+/** The viewer's row on the global board, or undefined if they have no score. */
 async function getUserEntry(apiName) {
     (0, platform_service_common_1.guardService)(isLeaderboardsAvailable(), PKG, 'getUserEntry');
     return (0, platform_service_common_1.wrapNativeCall)(PKG, 'getUserEntry', native().getUserEntry(apiName));
