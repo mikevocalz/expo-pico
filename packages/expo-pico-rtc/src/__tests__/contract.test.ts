@@ -1,7 +1,8 @@
 // Mock native module as absent — simulates non-PICO build
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: {
-    createHybridObject: jest.fn(() => {
+    // Nitro V1: the generated spec class resolves through getHybridClass.
+    getHybridClass: jest.fn(() => {
       throw new Error('HybridObject not available in test environment');
     }),
   },
