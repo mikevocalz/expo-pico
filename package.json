@@ -27,12 +27,13 @@
     "provenance": true
   },
   "dependencies": {
-    "expo": "58.0.2",
+    "expo": "~58.0.19",
     "@expo-pico/core": "github:mikevocalz/expo-pico#release/core",
-    "expo-status-bar": "58.0.3",
+    "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
-    "react-native": "0.88.0-rc.3",
-    "expo-modules-core": "58.0.11"
+    "react-native": "0.88.0",
+    "expo-modules-core": "58.0.11",
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.100.g107f6fc66597"
   },
   "expo": {
     "name": "PICO OS 6 / Swan",
@@ -48,8 +49,8 @@
     "index.js",
     ".gitignore"
   ],
-  "gitHead": "5edd6b44496ce9b3c568b060d17eeef962b7c412",
+  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
   "expoPico": {
-    "sourceCommit": "5edd6b44496ce9b3c568b060d17eeef962b7c412"
+    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1"
   }
 }
