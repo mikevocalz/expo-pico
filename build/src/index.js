@@ -8,9 +8,10 @@ exports.getPurchaseHistory = getPurchaseHistory;
 exports.isProductPurchased = isProductPurchased;
 exports.purchase = purchase;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoIap_nitro_1 = require("./PicoIap.nitro");
 const PKG = '@expo-pico/iap';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoIap');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoIap', () => new PicoIap_nitro_1.PicoIap());
 }
 function isIapAvailable() {
     return native()?.available ?? false;
