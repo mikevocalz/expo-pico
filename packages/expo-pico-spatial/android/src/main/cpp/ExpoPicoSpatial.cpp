@@ -18,7 +18,7 @@
 #include <fbjni/fbjni.h>
 #include <jni.h>
 
-#include "ExpoPicoSpatialOnLoad.hpp"
+#include <ExpoPicoSpatial/private/ExpoPicoSpatialOnLoad.hpp>
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
   return facebook::jni::initialize(vm, [] {
