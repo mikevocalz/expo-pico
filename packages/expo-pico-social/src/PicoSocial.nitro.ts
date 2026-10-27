@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type FriendshipStatus =
   | 'friends'
@@ -136,7 +136,12 @@ export interface LaunchAppOptions {
   deepLinkMessage?: string;
 }
 
-export interface PicoSocial extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoSocial()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoSocial' } })
+export declare class PicoSocial extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
 
@@ -188,3 +193,5 @@ export interface PicoSocial extends HybridObject<{ android: 'kotlin' }> {
   addInviteReceivedListener(listener: (event: InviteReceivedEvent) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoSocial';
