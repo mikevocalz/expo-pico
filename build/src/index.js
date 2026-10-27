@@ -8,9 +8,10 @@ exports.getSubscriptionEntitlement = getSubscriptionEntitlement;
 exports.subscribe = subscribe;
 exports.cancelSubscription = cancelSubscription;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoSubscription_nitro_1 = require("./PicoSubscription.nitro");
 const PKG = '@expo-pico/subscription';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoSubscription');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoSubscription', () => new PicoSubscription_nitro_1.PicoSubscription());
 }
 function isSubscriptionAvailable() {
     return native()?.available ?? false;
