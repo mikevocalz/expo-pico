@@ -1,11 +1,11 @@
 import { type Subscription } from '@expo-pico/platform-service-common';
-import type { NotificationPermissionStatus, PicoPushMessage, PicoPushRevocation } from './types';
+import { type NotificationPermissionStatus, type PicoPushMessage, type PicoPushRevocation } from './PicoNotifications.nitro';
 export type { NotificationPermissionStatus, NotificationPermissionResult, NotificationProvider, NotificationToken, PicoPushMessage, PicoPushRevocation, } from './types';
 export declare function isNotificationsAvailable(): boolean;
 export declare function getNotificationsSdkVersion(): string;
 export declare function getNotificationPermissionStatus(): NotificationPermissionStatus;
-export declare function requestPermissions(): Promise<import("./types").NotificationPermissionResult>;
-export declare function registerForPushNotifications(): Promise<import("./types").NotificationToken>;
+export declare function requestPermissions(): Promise<import("./PicoNotifications.nitro").NotificationPermissionResult>;
+export declare function registerForPushNotifications(): Promise<import("./PicoNotifications.nitro").NotificationToken>;
 export declare function unregisterForPushNotifications(): Promise<void>;
 /**
  * Fires for each incoming push. Registration alone only obtains a token — an

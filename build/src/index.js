@@ -9,9 +9,10 @@ exports.unregisterForPushNotifications = unregisterForPushNotifications;
 exports.addPushMessageListener = addPushMessageListener;
 exports.addPushRevocationListener = addPushRevocationListener;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoNotifications_nitro_1 = require("./PicoNotifications.nitro");
 const PKG = '@expo-pico/notifications';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoNotifications');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoNotifications', () => new PicoNotifications_nitro_1.PicoNotifications());
 }
 function isNotificationsAvailable() {
     return native()?.available ?? false;
