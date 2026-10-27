@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
+  "cxxNamespace": ["expopico", "notifications"],
+  "apple": {
+    "moduleName": "ExpoPicoNotifications"
+  },
+  "android": {
+    "namespace": ["expopico", "notifications"],
+    "cxxLibName": "ExpoPicoNotifications"
+  },
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
+}

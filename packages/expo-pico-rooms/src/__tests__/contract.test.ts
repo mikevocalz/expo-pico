@@ -1,7 +1,11 @@
-// Simulates a build with no PICO native library: the Expo module lookup
-// in @expo-pico/platform-service-common returns null.
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn(() => null),
+// Simulates a build with no PICO native library present.
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    // Nitro V1: the generated spec class resolves through getHybridClass.
+    getHybridClass: jest.fn(() => {
+      throw new Error('HybridObject not available in test environment');
+    }),
+  },
 }));
 
 // Ensure @expo-pico/platform-service-common uses real implementations
@@ -50,8 +54,8 @@ describe('getRoomSessionState default state', () => {
 });
 
 describe('native module resolution', () => {
-  it('resolves the ExpoPicoRooms Expo module', () => {
-    const { requireOptionalNativeModule } = jest.requireMock('expo-modules-core');
-    expect(requireOptionalNativeModule).toHaveBeenCalledWith('ExpoPicoRooms');
+  it('resolves the PicoRooms Nitro hybrid class', () => {
+    const { NitroModules } = jest.requireMock('react-native-nitro-modules');
+    expect(NitroModules.getHybridClass).toHaveBeenCalledWith('expopico.rooms.PicoRooms');
   });
 });

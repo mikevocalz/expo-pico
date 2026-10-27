@@ -1,3 +1,7 @@
 {
-  "platforms": ["android"]
+  "platforms": ["android"],
+  "android": {
+    "name": "expo-pico-core-window",
+    "path": "android-expo"
+  }
 }

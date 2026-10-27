@@ -37,9 +37,10 @@ Shared error codes. Every sibling throws only from this taxonomy:
 import { resolveHybridObject, __resetHybridCache } from '@expo-pico/platform-service-common';
 ```
 
-Wraps `NitroModules.createHybridObject()` with a defensive resolver that returns
-`null` rather than throwing when the native library isn't in this build (mobile
-flavor, non-PICO hardware, Gradle offline at prebuild, test env). The result is
+`resolveHybridObject('PicoIap', () => new PicoIap())` runs the package's Nitro V1
+constructor and returns `null` rather than throwing when the native library isn't
+in this build (mobile flavor, non-PICO hardware, Gradle offline at prebuild, test
+env). The result is
 cached either way, so a missing module costs one failed lookup rather than one
 per call. Siblings guard on `null` and raise `SERVICE_UNAVAILABLE` before
 dispatching. `__resetHybridCache()` is a test seam that drops the cache.

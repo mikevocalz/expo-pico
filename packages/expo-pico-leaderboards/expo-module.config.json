@@ -1,7 +1,0 @@
-{
-  "platforms": ["android"],
-  "android": {
-    "modules": ["expo.modules.pico.leaderboards.ExpoPicoLeaderboardsModule"]
-  },
-  "plugin": "./plugin/build/index"
-}

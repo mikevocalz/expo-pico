@@ -14,16 +14,25 @@ let mockDeclared: Array<{ name: string; granted: boolean }> = [];
 const mockEnter = jest.fn(() => true);
 const mockGetDeclaredPermissions = jest.fn(() => mockDeclared);
 
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn((name: string) =>
-    name === 'PicoCoreV2'
-      ? {
-          getInfo: () => mockInfo,
-          getDeclaredPermissions: mockGetDeclaredPermissions,
-          enterImmersiveScene: mockEnter,
-        }
-      : null
-  ),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    // Nitro V1: `new PicoCore()` resolves its class through getHybridClass.
+    getHybridClass: jest.fn((name: string) =>
+      name.endsWith('.PicoCore')
+        ? function () {
+            return {
+              get xrMode() {
+                return mockInfo.xrMode;
+              },
+              getDeclaredPermissions: async () => mockGetDeclaredPermissions(),
+              enterImmersiveScene: async () => mockEnter(),
+            };
+          }
+        : function () {
+            throw new Error('not in this suite');
+          }
+    ),
+  },
 }));
 
 // No renderer here: run effects inline so the registered root can be called

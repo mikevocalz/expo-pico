@@ -28,6 +28,7 @@ import {
 import { applyLauncherContract } from './withPicoLauncherActivity';
 import { applyVRActivityContract, applyPanelSize } from './withPicoVRActivity';
 import { applyPlatformServiceContract } from './withPicoPlatformService';
+import { applyWindowContract } from './picoWindows';
 
 /**
  * Declares `pvr.app.id`, the only PICO Platform Service meta-data core emits.
@@ -129,6 +130,10 @@ export const withPicoAndroidManifest: ConfigPlugin<ResolvedPicoOptions> = (confi
       // PICO-only permissions/features recorded by feature plugins through
       // withPicoFlavorPermission / withPicoFlavorFeature.
       applyPicoFlavorEntries(manifest, getPicoFlavorManifestState(config));
+      // PICO OS 5 window defaults: the translucent-main-window flag the
+      // core window listener reads, and the panel activity openPanel()
+      // launches with a pico.vr.position of its own.
+      applyWindowContract(manifest, options);
       await AndroidConfig.Manifest.writeAndroidManifestAsync(picoManifestPath, manifest);
       console.log(`✅ Created PICO-specific AndroidManifest at: ${picoManifestPath}`);
 

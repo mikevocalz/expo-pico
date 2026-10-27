@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
+  "cxxNamespace": ["expopico", "iap"],
+  "apple": {
+    "moduleName": "ExpoPicoIap"
+  },
+  "android": {
+    "namespace": ["expopico", "iap"],
+    "cxxLibName": "ExpoPicoIap"
+  },
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
+}

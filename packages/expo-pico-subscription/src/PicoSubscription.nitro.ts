@@ -1,0 +1,65 @@
+import { Android, type HybridObject } from 'react-native-nitro-modules';
+
+export type SubscriptionPeriod = 'weekly' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
+
+export type EntitlementStatus =
+  | 'active'
+  | 'in-grace'
+  | 'paused'
+  | 'cancelled'
+  | 'expired'
+  | 'not-subscribed';
+
+export interface SubscriptionProduct {
+  sku: string;
+  title: string;
+  description: string;
+  formattedPrice: string;
+  priceMicros: number;
+  currency: string;
+  period: SubscriptionPeriod;
+  trialDays: number;
+  introductoryFormattedPrice?: string;
+}
+
+export interface ActiveSubscription {
+  sku: string;
+  orderId: string;
+  purchaseToken: string;
+  currentPeriodStartMs: number;
+  currentPeriodEndMs: number;
+  autoRenewing: boolean;
+  status: EntitlementStatus;
+}
+
+export interface SubscriptionEntitlement {
+  sku: string;
+  status: EntitlementStatus;
+  currentSubscription?: ActiveSubscription;
+  expiresAtMs?: number;
+}
+
+export interface SubscribeOptions {
+  sku: string;
+  promoCode?: string;
+}
+
+// Android only: PICO OS is Android. On other platforms `new PicoSubscription()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoSubscription' } })
+export declare class PicoSubscription extends HybridObject {
+  constructor();
+
+  readonly available: boolean;
+  readonly sdkVersion: string;
+
+  getSubscriptionProducts(skus: string[]): Promise<SubscriptionProduct[]>;
+  getActiveSubscriptions(): Promise<ActiveSubscription[]>;
+  getSubscriptionEntitlement(sku: string): Promise<SubscriptionEntitlement>;
+  /** Seam — PICO requires OS storefront UI. */
+  subscribe(options: SubscribeOptions): Promise<void>;
+  /** Rejects with `NOT_IN_PPS_1_0`; cancelling happens in the PICO Store. */
+  cancelSubscription(sku: string): Promise<void>;
+}
+
+export * from '#nitro/PicoSubscription';

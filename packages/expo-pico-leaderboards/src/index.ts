@@ -3,7 +3,11 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoLeaderboards, GetEntriesOptions, WriteScoreOptions } from './types';
+import {
+  PicoLeaderboards,
+  type GetEntriesOptions,
+  type WriteScoreOptions,
+} from './PicoLeaderboards.nitro';
 
 export type {
   Leaderboard,
@@ -20,7 +24,7 @@ export type {
 const PKG = '@expo-pico/leaderboards';
 
 function native(): PicoLeaderboards | null {
-  return resolveHybridObject<PicoLeaderboards>('PicoLeaderboards');
+  return resolveHybridObject('PicoLeaderboards', () => new PicoLeaderboards());
 }
 
 export function isLeaderboardsAvailable(): boolean {
@@ -54,7 +58,7 @@ export async function getEntriesAfterRank(
   );
 }
 
-/** Emulated by scanning entries — PPS has no single-user lookup. */
+/** The viewer's row on the global board, or undefined if they have no score. */
 export async function getUserEntry(apiName: string) {
   guardService(isLeaderboardsAvailable(), PKG, 'getUserEntry');
   return wrapNativeCall(PKG, 'getUserEntry', native()!.getUserEntry(apiName));

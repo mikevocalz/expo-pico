@@ -14,10 +14,13 @@ import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
 import { withPicoMainApplication } from './withPicoMainApplication';
 import { withPicoNewArchCheck } from './withPicoNewArchCheck';
+import { withPicoNitroModules } from './withPicoNitroModules';
+import { withPicoOneLauncherTile } from './withPicoOneLauncherTile';
 import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
 import { withPicoSettingsGradle } from './withPicoSettingsGradle';
 import { withPicoStrings } from './withPicoStrings';
 import { withPicoSwan } from './withPicoSwan';
+import { withPicoWindowPositions } from './withPicoWindowPositions';
 
 /**
  * Main config plugin entrypoint for expo-pico-core.
@@ -35,7 +38,8 @@ import { withPicoSwan } from './withPicoSwan';
  *   6. Swan composite (Swan-only Gradle deps + optional source set)
  *   7. strings.xml
  *   8. PICO-flavor AndroidManifest (withDangerousMod — writes source set file)
- *   9. MainApplication (New Architecture flag guard; strips legacy PicoCorePackage lines)
+ *   9. MainApplication (PicoCorePackage with the xrMode platform, which loads
+ *      every @expo-pico Nitro library; New Architecture flag guard)
  *  10. local.properties (node binary path + optional PICO SDK paths)
  *  11. Meta-only entries removed from the pico, dual and mobile flavors
  *  12. PICO renderer and loader overlays (pico and dual flavors)
@@ -51,12 +55,17 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
     return config;
   }
 
+  // First, so its mods run after every other expo-pico mod (Expo runs the
+  // most recently registered mod of each type first).
+  config = withPicoOneLauncherTile(config);
+  config = withPicoWindowPositions(config);
   config = withPicoNewArchCheck(config, options);
   config = withPicoDiagnostics(config, options);
   config = withPicoGradleProperties(config, options);
   config = withPicoProjectBuildGradle(config, options);
   config = withPicoAppBuildGradle(config, options);
   config = withPicoSettingsGradle(config, options);
+  config = withPicoNitroModules(config, options);
   config = withPicoSwan(config, options);
   config = withPicoStrings(config, options);
 

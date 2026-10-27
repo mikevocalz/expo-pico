@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
+  "cxxNamespace": ["expopico", "leaderboards"],
+  "apple": {
+    "moduleName": "ExpoPicoLeaderboards"
+  },
+  "android": {
+    "namespace": ["expopico", "leaderboards"],
+    "cxxLibName": "ExpoPicoLeaderboards"
+  },
+  "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
+}

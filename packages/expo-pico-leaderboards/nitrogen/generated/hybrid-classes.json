@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoLeaderboards": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoLeaderboards"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

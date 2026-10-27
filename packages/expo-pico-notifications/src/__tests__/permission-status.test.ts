@@ -1,13 +1,13 @@
-// The native module is present. `notificationPermissionStatus` mimics the old
-// module-load constant, frozen at 'denied'; `getPermissionStatus` is the live
-// sync Function, and flips to 'granted' after the user accepts the prompt.
+// The native object is present. `permissionStatus` mimics the old cached
+// property, frozen at 'denied'; `getPermissionStatus` is the live method, and
+// flips to 'granted' after the user accepts the prompt.
 const mockGetPermissionStatus = jest.fn();
 
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn(() => ({
-    notificationsSdkAvailable: true,
-    notificationsSdkVersion: '1.0.0',
-    notificationPermissionStatus: 'denied',
+jest.mock('#nitro/PicoNotifications', () => ({
+  PicoNotifications: jest.fn().mockImplementation(() => ({
+    available: true,
+    sdkVersion: '1.0.0',
+    permissionStatus: 'denied',
     getPermissionStatus: mockGetPermissionStatus,
   })),
 }));

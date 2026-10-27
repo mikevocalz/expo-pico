@@ -5,8 +5,8 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
+import { PicoStorage } from './PicoStorage.nitro';
 import type {
-  PicoStorage,
   StorageStatus,
   StorageEntryType,
   StorageSaveOptions,
@@ -32,7 +32,7 @@ export type {
 const PKG = '@expo-pico/storage';
 
 function native(): PicoStorage | null {
-  return resolveHybridObject<PicoStorage>('PicoStorage');
+  return resolveHybridObject('PicoStorage', () => new PicoStorage());
 }
 
 export function isStorageAvailable(): boolean {

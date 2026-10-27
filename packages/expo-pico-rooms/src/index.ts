@@ -6,16 +6,16 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import type {
+import {
   PicoRooms,
-  RoomSessionState,
-  CreateRoomOptions,
-  MatchmakingOptions,
-  RoomUpdatedEvent,
-  RoomUserJoinedEvent,
-  RoomUserLeftEvent,
-  MatchmakingFoundEvent,
-} from './types';
+  type RoomSessionState,
+  type CreateRoomOptions,
+  type MatchmakingOptions,
+  type RoomUpdatedEvent,
+  type RoomUserJoinedEvent,
+  type RoomUserLeftEvent,
+  type MatchmakingFoundEvent,
+} from './PicoRooms.nitro';
 
 export type {
   RoomConnectionState,
@@ -42,7 +42,7 @@ const DISCONNECTED: RoomSessionState = {
 };
 
 function native(): PicoRooms | null {
-  return resolveHybridObject<PicoRooms>('PicoRooms');
+  return resolveHybridObject('PicoRooms', () => new PicoRooms());
 }
 
 export function isRoomsAvailable(): boolean {

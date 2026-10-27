@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoIap": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoIap"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

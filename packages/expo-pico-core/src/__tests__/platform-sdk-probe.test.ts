@@ -9,8 +9,7 @@
  * `getPicoRuntimeInfo`.
  */
 
-// PicoCoreV2.getInfo() payload. The adapter reads it on every property access.
-const mockInfo: {
+const mockModule: {
   isPicoBuild: boolean;
   isPicoDevice: boolean;
   spatialMode: string;
@@ -29,6 +28,10 @@ const mockInfo: {
   os5RuntimeInitialized: boolean;
   platformSdkPresent: boolean;
   platformSdkVersion: string | null;
+  getPlatformSdkProbe: jest.Mock;
+  hasSystemFeature?: jest.Mock;
+  getDeclaredFeatures?: jest.Mock;
+  getDeclaredPermissions?: jest.Mock;
 } = {
   isPicoBuild: true,
   isPicoDevice: true,
@@ -48,20 +51,20 @@ const mockInfo: {
   os5RuntimeInitialized: true,
   platformSdkPresent: false,
   platformSdkVersion: null,
+  getPlatformSdkProbe: jest.fn(async () => ({})),
 };
 
-// The PicoCoreV2 Expo module. Its functions are synchronous on the native
-// side; the adapter in ExpoPicoModule.ts wraps them in promises.
-const mockCore: {
-  getInfo: () => typeof mockInfo;
-  getPlatformSdkProbe: jest.Mock;
-} = {
-  getInfo: () => mockInfo,
-  getPlatformSdkProbe: jest.fn(() => ({})),
-};
-
-jest.mock('expo-modules-core', () => ({
-  requireOptionalNativeModule: jest.fn((name: string) => (name === 'PicoCoreV2' ? mockCore : null)),
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    // Nitro V1: `new PicoCore()` / `new PicoRuntime()` resolve the class
+    // through getHybridClass; a constructor returning the mock stands in.
+    getHybridClass: jest.fn(
+      () =>
+        function () {
+          return mockModule;
+        }
+    ),
+  },
 }));
 
 import {
@@ -72,48 +75,48 @@ import {
 } from '../index';
 
 beforeEach(() => {
-  mockInfo.platformSdkPresent = false;
-  mockInfo.platformSdkVersion = null;
-  mockCore.getPlatformSdkProbe = jest.fn(() => ({}));
+  mockModule.platformSdkPresent = false;
+  mockModule.platformSdkVersion = null;
+  mockModule.getPlatformSdkProbe = jest.fn(async () => ({}));
 });
 
 describe('isPlatformSdkPresent', () => {
   it('returns false when the SDK is absent', () => {
-    mockInfo.platformSdkPresent = false;
+    mockModule.platformSdkPresent = false;
     expect(isPlatformSdkPresent()).toBe(false);
   });
 
   it('returns true when the native module reports presence', () => {
-    mockInfo.platformSdkPresent = true;
+    mockModule.platformSdkPresent = true;
     expect(isPlatformSdkPresent()).toBe(true);
   });
 
   it('coerces undefined to false (native module stale/unloaded)', () => {
-    mockInfo.platformSdkPresent = undefined as unknown as boolean;
+    mockModule.platformSdkPresent = undefined as unknown as boolean;
     expect(isPlatformSdkPresent()).toBe(false);
   });
 });
 
 describe('getPlatformSdkVersion', () => {
   it('returns the native version string when present', () => {
-    mockInfo.platformSdkVersion = '3.2.0';
+    mockModule.platformSdkVersion = '3.2.0';
     expect(getPlatformSdkVersion()).toBe('3.2.0');
   });
 
   it('returns null when the native module has no version', () => {
-    mockInfo.platformSdkVersion = null;
+    mockModule.platformSdkVersion = null;
     expect(getPlatformSdkVersion()).toBeNull();
   });
 
   it('coerces undefined to null', () => {
-    mockInfo.platformSdkVersion = undefined as unknown as null;
+    mockModule.platformSdkVersion = undefined as unknown as null;
     expect(getPlatformSdkVersion()).toBeNull();
   });
 });
 
 describe('getPlatformSdkProbe', () => {
   it('returns all-false shape when native returns empty map', async () => {
-    mockCore.getPlatformSdkProbe = jest.fn(() => ({}));
+    mockModule.getPlatformSdkProbe = jest.fn(async () => ({}));
     const probe = await getPlatformSdkProbe();
     expect(probe).toEqual({
       account: false,
@@ -130,7 +133,7 @@ describe('getPlatformSdkProbe', () => {
   });
 
   it('forwards native true/false per surface', async () => {
-    mockCore.getPlatformSdkProbe = jest.fn(() => ({
+    mockModule.getPlatformSdkProbe = jest.fn(async () => ({
       account: true,
       iap: true,
       notifications: false,
@@ -148,7 +151,7 @@ describe('getPlatformSdkProbe', () => {
   });
 
   it('ignores extra keys the native module returns (forward compat)', async () => {
-    mockCore.getPlatformSdkProbe = jest.fn(() => ({
+    mockModule.getPlatformSdkProbe = jest.fn(async () => ({
       account: true,
       speech: true, // hypothetical future surface
       haptics: true,
@@ -162,7 +165,9 @@ describe('getPlatformSdkProbe', () => {
   });
 
   it('returns the all-false shape if native returns null (defensive)', async () => {
-    mockCore.getPlatformSdkProbe = jest.fn(() => null as unknown as Record<string, boolean>);
+    mockModule.getPlatformSdkProbe = jest.fn(
+      async () => null as unknown as Record<string, boolean>
+    );
     const probe = await getPlatformSdkProbe();
     expect(Object.values(probe).every((v) => v === false)).toBe(true);
   });
@@ -170,16 +175,16 @@ describe('getPlatformSdkProbe', () => {
 
 describe('getPicoRuntimeInfo — Platform SDK fields', () => {
   it('surfaces platformSdkPresent and platformSdkVersion', () => {
-    mockInfo.platformSdkPresent = true;
-    mockInfo.platformSdkVersion = '3.2.0';
+    mockModule.platformSdkPresent = true;
+    mockModule.platformSdkVersion = '3.2.0';
     const info = getPicoRuntimeInfo();
     expect(info.platformSdkPresent).toBe(true);
     expect(info.platformSdkVersion).toBe('3.2.0');
   });
 
   it('defaults to false / null when native reports absence', () => {
-    mockInfo.platformSdkPresent = false;
-    mockInfo.platformSdkVersion = null;
+    mockModule.platformSdkPresent = false;
+    mockModule.platformSdkVersion = null;
     const info = getPicoRuntimeInfo();
     expect(info.platformSdkPresent).toBe(false);
     expect(info.platformSdkVersion).toBeNull();

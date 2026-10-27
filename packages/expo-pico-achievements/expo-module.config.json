@@ -1,7 +1,0 @@
-{
-  "platforms": ["android"],
-  "android": {
-    "modules": ["expo.modules.pico.achievements.ExpoPicoAchievementsModule"]
-  },
-  "plugin": "./plugin/build/index"
-}
