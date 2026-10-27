@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type AchievementType = 'simple' | 'count' | 'bitfield';
 export type AchievementVisibility = 'always-visible' | 'hidden';
@@ -44,7 +44,12 @@ export interface AchievementUnlockedEvent {
   unlockedAtMs: number;
 }
 
-export interface PicoAchievements extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoAchievements()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoAchievements' } })
+export declare class PicoAchievements extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
 
@@ -59,3 +64,5 @@ export interface PicoAchievements extends HybridObject<{ android: 'kotlin' }> {
   addAchievementUnlockedListener(listener: (event: AchievementUnlockedEvent) => void): number;
   removeAchievementUnlockedListener(id: number): void;
 }
+
+export * from '#nitro/PicoAchievements';

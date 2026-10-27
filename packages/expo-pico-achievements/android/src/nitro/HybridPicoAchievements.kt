@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.achievements
 
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 import com.bytedance.pico.platformsdk.message.AchievementDefinition
 import com.bytedance.pico.platformsdk.message.AchievementProgress
@@ -174,7 +175,7 @@ class HybridPicoAchievements : HybridPicoAchievementsSpec() {
    * every write returns.
    */
   override fun addAchievementUnlockedListener(
-    listener: (event: AchievementUnlockedEvent) -> Unit
+    listener: Callback<(event: AchievementUnlockedEvent) -> Unit>
   ): Double {
     listenerCounter += 1.0
     return listenerCounter
@@ -256,7 +257,10 @@ class HybridPicoAchievements : HybridPicoAchievementsSpec() {
     }
   }
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoAchievements()`).
+  companion object : HybridPicoAchievementsSpec.Companion {
+    override fun constructor(): HybridPicoAchievements = HybridPicoAchievements()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
 
