@@ -14,9 +14,10 @@ exports.addStorageConflictListener = addStorageConflictListener;
 exports.addStorageSyncProgressListener = addStorageSyncProgressListener;
 exports.addStorageSyncCompleteListener = addStorageSyncCompleteListener;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoStorage_nitro_1 = require("./PicoStorage.nitro");
 const PKG = '@expo-pico/storage';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoStorage');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoStorage', () => new PicoStorage_nitro_1.PicoStorage());
 }
 function isStorageAvailable() {
     return native()?.available ?? false;
