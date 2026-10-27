@@ -10,9 +10,10 @@ exports.addAchievementCount = addAchievementCount;
 exports.addAchievementBitfield = addAchievementBitfield;
 exports.addAchievementUnlockedListener = addAchievementUnlockedListener;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoAchievements_nitro_1 = require("./PicoAchievements.nitro");
 const PKG = '@expo-pico/achievements';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoAchievements');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoAchievements', () => new PicoAchievements_nitro_1.PicoAchievements());
 }
 function isAchievementsAvailable() {
     return native()?.available ?? false;
