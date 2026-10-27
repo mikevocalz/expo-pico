@@ -3,20 +3,30 @@ import { WarningAggregator } from '@expo/config-plugins';
 import { resolveOptions } from '../plugin/src/types';
 import { withPicoDiagnostics } from '../plugin/src/withPicoDiagnostics';
 
+// @expo/config-plugins 58 exports WarningAggregator's members as
+// non-configurable getters, so jest.spyOn cannot replace addWarningAndroid.
+// Swap the module's WarningAggregator for a copy with a mock in that slot.
+jest.mock('@expo/config-plugins', () => {
+  const actual = jest.requireActual('@expo/config-plugins');
+  return {
+    ...actual,
+    WarningAggregator: { ...actual.WarningAggregator, addWarningAndroid: jest.fn() },
+  };
+});
+
 type WarnCall = { tag: string; message: string };
 
 function runDiagnostics(input: Parameters<typeof resolveOptions>[0]): WarnCall[] {
   const calls: WarnCall[] = [];
-  const spy = jest
-    .spyOn(WarningAggregator, 'addWarningAndroid')
-    .mockImplementation((tag: string, message: string) => {
-      calls.push({ tag, message });
-    });
+  const addWarning = jest.mocked(WarningAggregator.addWarningAndroid);
+  addWarning.mockImplementation((tag: string, message: string) => {
+    calls.push({ tag, message });
+  });
   try {
     const resolved = resolveOptions(input);
     withPicoDiagnostics({} as any, resolved);
   } finally {
-    spy.mockRestore();
+    addWarning.mockReset();
   }
   return calls;
 }
