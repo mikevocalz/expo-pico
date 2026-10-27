@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "subscription"],
-  "ios": {
-    "iosModuleName": "ExpoPicoSubscription"
+  "apple": {
+    "moduleName": "ExpoPicoSubscription"
   },
   "android": {
-    "androidNamespace": ["expopico", "subscription"],
-    "androidCxxLibName": "ExpoPicoSubscription"
-  },
-  "autolinking": {
-    "PicoSubscription": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoSubscription"
-      }
-    }
+    "namespace": ["expopico", "subscription"],
+    "cxxLibName": "ExpoPicoSubscription"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }
