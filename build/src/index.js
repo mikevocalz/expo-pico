@@ -14,14 +14,15 @@ exports.cancelAuthorization = cancelAuthorization;
 exports.sendAuthScopesRequest = sendAuthScopesRequest;
 exports.logout = logout;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoAccount_nitro_1 = require("./PicoAccount.nitro");
 const PKG = '@expo-pico/account';
 /**
- * Created lazily: createHybridObject throws when the native library is absent
+ * Created lazily: `new PicoAccount()` throws when the native library is absent
  * (mobile flavor, non-PICO hardware), and that must surface as
  * SERVICE_UNAVAILABLE rather than a module-load crash.
  */
 function nativeAccount() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoAccount');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoAccount', () => new PicoAccount_nitro_1.PicoAccount());
 }
 function isAccountAvailable() {
     return nativeAccount()?.available ?? false;
@@ -29,7 +30,7 @@ function isAccountAvailable() {
 function getAccountSdkVersion() {
     return nativeAccount()?.sdkVersion ?? 'unavailable';
 }
-/** Remediation step from the native side; 'ready' once the SDK is initialized. */
+/** Native status token; 'READY' once the SDK is usable. See PicoAccount.sdkStatus. */
 function getAccountSdkStatus() {
     return nativeAccount()?.sdkStatus ?? 'unknown';
 }
