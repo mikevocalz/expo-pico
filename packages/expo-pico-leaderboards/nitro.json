@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "leaderboards"],
-  "ios": {
-    "iosModuleName": "ExpoPicoLeaderboards"
+  "apple": {
+    "moduleName": "ExpoPicoLeaderboards"
   },
   "android": {
-    "androidNamespace": ["expopico", "leaderboards"],
-    "androidCxxLibName": "ExpoPicoLeaderboards"
-  },
-  "autolinking": {
-    "PicoLeaderboards": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoLeaderboards"
-      }
-    }
+    "namespace": ["expopico", "leaderboards"],
+    "cxxLibName": "ExpoPicoLeaderboards"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

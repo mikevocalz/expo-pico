@@ -62,11 +62,11 @@
     "provenance": true
   },
   "devDependencies": {
-    "@expo/config-plugins": "~57.0.9",
+    "@expo/config-plugins": "~58.0.10",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
     "@types/react": "~19.2.14",
-    "expo": "~57.0.16",
+    "expo": "~58.0.19",
     "jest": "^29.7.0",
     "react-native": "0.88.0",
     "ts-jest": "^29.4.9",
@@ -76,7 +76,7 @@
     "nitro-core": "1.0.0-alpha.nightly.100.g107f6fc66597"
   },
   "peerDependencies": {
-    "expo": "~57.0.16",
+    "expo": "~58.0.19",
     "react": "*",
     "react-native": ">=0.88.0",
     "expo-location": "*",

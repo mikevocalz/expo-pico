@@ -5,14 +5,14 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import type {
+import {
   PicoStorage,
-  StorageStatus,
-  StorageEntryType,
-  StorageSaveOptions,
-  StorageConflictEvent,
-  StorageSyncProgressEvent,
-  StorageSyncResult,
+  type StorageStatus,
+  type StorageEntryType,
+  type StorageSaveOptions,
+  type StorageConflictEvent,
+  type StorageSyncProgressEvent,
+  type StorageSyncResult,
 } from './PicoStorage.nitro';
 
 export type {
@@ -32,7 +32,7 @@ export type {
 const PKG = '@expo-pico/storage';
 
 function native(): PicoStorage | null {
-  return resolveHybridObject<PicoStorage>('PicoStorage');
+  return resolveHybridObject('PicoStorage', () => new PicoStorage());
 }
 
 export function isStorageAvailable(): boolean {

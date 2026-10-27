@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type StorageStatus = 'available' | 'unavailable' | 'syncing' | 'error';
 export type StorageConflictPolicy = 'server-wins' | 'client-wins' | 'manual';
@@ -59,7 +59,12 @@ export interface StorageSyncProgressEvent {
  * Back per-player state with your own service keyed off the account userId,
  * or expo-secure-store for local-only data.
  */
-export interface PicoStorage extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoStorage()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoStorage' } })
+export declare class PicoStorage extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
   readonly status: StorageStatus;
@@ -82,3 +87,5 @@ export interface PicoStorage extends HybridObject<{ android: 'kotlin' }> {
   addStorageSyncCompleteListener(listener: (result: StorageSyncResult) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoStorage';

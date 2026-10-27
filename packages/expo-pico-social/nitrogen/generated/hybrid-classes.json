@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoSocial": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoSocial"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

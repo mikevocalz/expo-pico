@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "notifications"],
-  "ios": {
-    "iosModuleName": "ExpoPicoNotifications"
+  "apple": {
+    "moduleName": "ExpoPicoNotifications"
   },
   "android": {
-    "androidNamespace": ["expopico", "notifications"],
-    "androidCxxLibName": "ExpoPicoNotifications"
-  },
-  "autolinking": {
-    "PicoNotifications": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoNotifications"
-      }
-    }
+    "namespace": ["expopico", "notifications"],
+    "cxxLibName": "ExpoPicoNotifications"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

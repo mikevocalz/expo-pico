@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 /**
  * Consolidates the five Expo Modules natives this package used to resolve
@@ -82,7 +82,12 @@ export interface SpatialBodyJoint {
   rotation: SpatialQuat;
 }
 
-export interface PicoSpatial extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoSpatial()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoSpatial' } })
+export declare class PicoSpatial extends HybridObject {
+  constructor();
+
   // ── Space state + containers ──────────────────────────────────────────────
   readonly spaceState: PicoSpaceState;
   readonly containerType: PicoContainerType;
@@ -115,3 +120,5 @@ export interface PicoSpatial extends HybridObject<{ android: 'kotlin' }> {
 
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoSpatial';

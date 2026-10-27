@@ -1,20 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "environment": "react-native",
   "cxxNamespace": ["expopico", "achievements"],
-  "ios": {
-    "iosModuleName": "ExpoPicoAchievements"
+  "apple": {
+    "moduleName": "ExpoPicoAchievements"
   },
   "android": {
-    "androidNamespace": ["expopico", "achievements"],
-    "androidCxxLibName": "ExpoPicoAchievements"
-  },
-  "autolinking": {
-    "PicoAchievements": {
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridPicoAchievements"
-      }
-    }
+    "namespace": ["expopico", "achievements"],
+    "cxxLibName": "ExpoPicoAchievements"
   },
   "ignorePaths": ["**/node_modules", "build", "lib", "plugin"]
 }

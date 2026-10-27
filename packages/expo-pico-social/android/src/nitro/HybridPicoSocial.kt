@@ -1,5 +1,7 @@
 package com.margelo.nitro.expopico.social
 
+import com.margelo.nitro.core.Callback
+import com.margelo.nitro.core.callAndForget
 import com.margelo.nitro.core.Promise
 import com.bytedance.pico.matrix.proto.v2.OpenUserInfo
 import com.pico.pps.sdk.base.common.NextInfo
@@ -232,25 +234,25 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
    * returns a real id so JS subscribe/unsubscribe code stays uniform.
    */
   override fun addFriendPresenceChangedListener(
-    listener: (event: FriendPresenceChangedEvent) -> Unit
+    listener: Callback<(event: FriendPresenceChangedEvent) -> Unit>
   ): Double = nextListenerId()
 
   override fun addFriendRequestReceivedListener(
-    listener: (request: FriendRequest) -> Unit
+    listener: Callback<(request: FriendRequest) -> Unit>
   ): Double = nextListenerId()
 
   override fun addInviteReceivedListener(
-    listener: (event: InviteReceivedEvent) -> Unit
+    listener: Callback<(event: InviteReceivedEvent) -> Unit>
   ): Double = nextListenerId()
 
   // PPS holds a single launch-intent callback, so it is installed once on the
   // first listener and never replaced; JS listeners fan out from here. There is
   // no PPS call to uninstall it, so removal just drops the local listener.
-  private val launchListeners = mutableMapOf<Double, (PicoLaunchDetails) -> Unit>()
+  private val launchListeners = mutableMapOf<Double, Callback<(PicoLaunchDetails) -> Unit>>()
   private var launchCallbackInstalled = false
 
   override fun addLaunchDetailsListener(
-    listener: (details: PicoLaunchDetails) -> Unit
+    listener: Callback<(details: PicoLaunchDetails) -> Unit>
   ): Double {
     val id = nextListenerId()
     launchListeners[id] = listener
@@ -266,7 +268,7 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
               override fun onChange(launchDetails: PpsLaunchDetails?) {
                 val details = launchDetails ?: return
                 val mapped = toLaunchDetails(details)
-                launchListeners.values.toList().forEach { it(mapped) }
+                launchListeners.values.toList().forEach { it.callAndForget(mapped) }
               }
             }
           )
@@ -519,7 +521,10 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
     return socialClient.shareImages(imagePaths.toList()).bridge("shareImages") { it ?: false }
   }
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoSocial()`).
+  companion object : HybridPicoSocialSpec.Companion {
+    override fun constructor(): HybridPicoSocial = HybridPicoSocial()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
 

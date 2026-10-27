@@ -191,7 +191,10 @@ class HybridPicoLeaderboards : HybridPicoLeaderboardsSpec() {
       updatedAtMs = timestamp * 1000.0,
     )
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoLeaderboards()`).
+  companion object : HybridPicoLeaderboardsSpec.Companion {
+    override fun constructor(): HybridPicoLeaderboards = HybridPicoLeaderboards()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
     const val DEFAULT_PAGE_SIZE = 50

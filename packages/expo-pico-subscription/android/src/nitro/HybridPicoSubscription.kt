@@ -219,7 +219,10 @@ class HybridPicoSubscription : HybridPicoSubscriptionSpec() {
     }
   }
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoSubscription()`).
+  companion object : HybridPicoSubscriptionSpec.Companion {
+    override fun constructor(): HybridPicoSubscription = HybridPicoSubscription()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
 

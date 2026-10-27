@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type SubscriptionPeriod = 'weekly' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
 
@@ -44,7 +44,12 @@ export interface SubscribeOptions {
   promoCode?: string;
 }
 
-export interface PicoSubscription extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoSubscription()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoSubscription' } })
+export declare class PicoSubscription extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
 
@@ -56,3 +61,5 @@ export interface PicoSubscription extends HybridObject<{ android: 'kotlin' }> {
   /** Rejects with `NOT_IN_PPS_1_0`; cancelling happens in the PICO Store. */
   cancelSubscription(sku: string): Promise<void>;
 }
+
+export * from '#nitro/PicoSubscription';

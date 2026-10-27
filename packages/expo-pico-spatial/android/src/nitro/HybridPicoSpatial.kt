@@ -1,5 +1,6 @@
 package com.margelo.nitro.expopico.spatial
 
+import com.margelo.nitro.core.Callback
 import com.margelo.nitro.core.Promise
 import expo.modules.pico.spatial.BuildConfig
 
@@ -110,15 +111,15 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
   // Streaming surfaces. Registration returns a real id so JS
   // subscribe/unsubscribe code stays uniform across packages; with no SDK
   // linked there is nothing producing frames, so nothing is emitted.
-  override fun addGazeListener(listener: (gaze: GazePose) -> Unit): Double = nextListenerId()
+  override fun addGazeListener(listener: Callback<(gaze: GazePose) -> Unit>): Double = nextListenerId()
 
-  override fun addSceneMeshUpdateListener(listener: (mesh: SceneMeshRaw) -> Unit): Double =
+  override fun addSceneMeshUpdateListener(listener: Callback<(mesh: SceneMeshRaw) -> Unit>): Double =
     nextListenerId()
 
-  override fun addFaceListener(listener: (blendShapes: Map<String, Double>) -> Unit): Double =
+  override fun addFaceListener(listener: Callback<(blendShapes: Map<String, Double>) -> Unit>): Double =
     nextListenerId()
 
-  override fun addBodyListener(listener: (joints: Array<SpatialBodyJoint>) -> Unit): Double =
+  override fun addBodyListener(listener: Callback<(joints: Array<SpatialBodyJoint>) -> Unit>): Double =
     nextListenerId()
 
   override fun removeListener(id: Double): Unit = Unit
@@ -166,7 +167,10 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
       )
     )
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoSpatial()`).
+  companion object : HybridPicoSpatialSpec.Companion {
+    override fun constructor(): HybridPicoSpatial = HybridPicoSpatial()
+
     const val SPATIAL_SDK_CLASS = "com.picovr.spatial.SpatialAnchorManager"
     const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
 

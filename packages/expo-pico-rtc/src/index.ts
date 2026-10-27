@@ -6,15 +6,15 @@ import {
   type Subscription,
 } from '@expo-pico/platform-service-common';
 
-import type {
+import {
   PicoRtc,
-  RtcServiceStatus,
-  RtcInitOptions,
-  RtcJoinOptions,
-  RtcVolume,
-  RtcUserJoinedEvent,
-  RtcUserLeftEvent,
-  RtcStateChangeEvent,
+  type RtcServiceStatus,
+  type RtcInitOptions,
+  type RtcJoinOptions,
+  type RtcVolume,
+  type RtcUserJoinedEvent,
+  type RtcUserLeftEvent,
+  type RtcStateChangeEvent,
 } from './PicoRtc.nitro';
 
 export type {
@@ -37,7 +37,7 @@ export type { Subscription };
 const PKG = '@expo-pico/rtc';
 
 function native(): PicoRtc | null {
-  return resolveHybridObject<PicoRtc>('PicoRtc');
+  return resolveHybridObject('PicoRtc', () => new PicoRtc());
 }
 
 export function isRtcAvailable(): boolean {
