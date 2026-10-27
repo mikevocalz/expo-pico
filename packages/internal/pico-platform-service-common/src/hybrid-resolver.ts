@@ -1,20 +1,21 @@
-import { NitroModules, type HybridObject } from 'react-native-nitro-modules';
-
 /**
- * Resolves an autolinked HybridObject, or null when the native library is not
+ * Resolves a package's HybridObject, or null when the native library is not
  * in this build (mobile flavor, non-PICO hardware, Gradle offline at prebuild).
  *
- * createHybridObject throws in those cases; every expo-pico package must
- * degrade to SERVICE_UNAVAILABLE instead of failing at module load, so the
- * throw is swallowed here and the result cached either way.
+ * Nitro V1 dropped the name-based `NitroModules.createHybridObject`; each
+ * package now constructs its spec class (`() => new PicoIap()`). That
+ * constructor throws when the class is not registered, and every expo-pico
+ * package must degrade to SERVICE_UNAVAILABLE instead of failing at module
+ * load, so the throw is swallowed here. `name` keys the cache, and the result
+ * is cached either way.
  */
 const cache = new Map<string, unknown>();
 
-export function resolveHybridObject<T extends HybridObject<{}>>(name: string): T | null {
+export function resolveHybridObject<T>(name: string, create: () => T): T | null {
   if (cache.has(name)) return cache.get(name) as T | null;
   let resolved: T | null;
   try {
-    resolved = NitroModules.createHybridObject<T>(name);
+    resolved = create();
   } catch {
     resolved = null;
   }
