@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoRooms": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoRooms"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}
