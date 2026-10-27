@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/spatial",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -67,7 +67,7 @@
   },
   "peerDependencies": {
     "expo": ">=58.0.0 <59",
-    "@expo-pico/core": ">=1.1.0",
+    "@expo-pico/core": ">=2.0.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
     "react-native-nitro-modules": "*",
