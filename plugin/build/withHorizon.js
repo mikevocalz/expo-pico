@@ -36,6 +36,7 @@ const withHorizonEnabled = (config) => {
 const withHorizonAppId = (config, options = {}) => {
     return (0, config_plugins_1.withGradleProperties)(config, (config) => {
         const horizonAppId = options.horizonAppId ?? '';
+        config.modResults = config.modResults.filter((item) => item.type !== 'property' || item.key !== 'horizonAppId');
         config.modResults.push({
             type: 'property',
             key: 'horizonAppId',
