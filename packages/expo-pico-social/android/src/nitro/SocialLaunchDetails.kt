@@ -8,7 +8,6 @@ import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.ReactApplicationContext
 import com.pico.pps.sdk.social.ILaunchIntentChangeCallback
 import com.pico.pps.sdk.social.LaunchDetails as PpsLaunchDetails
-import com.pico.pps.sdk.social.PicoClientLaunchStatusMgr
 import com.pico.pps.sdk.social.PicoSocialClient
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,6 +37,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 internal object SocialLaunchDetails {
   private const val TAG = "ExpoPicoSocial"
+
+  // Kotlin `internal object` in platform-service-social, so Kotlin code
+  // outside that module cannot name it. Reached through its JVM INSTANCE
+  // field instead; the class and method are public in the bytecode.
+  private const val STATUS_MGR = "com.pico.pps.sdk.social.PicoClientLaunchStatusMgr"
 
   private val initialized = AtomicBoolean(false)
   private val callbackRegistered = AtomicBoolean(false)
@@ -144,7 +148,9 @@ internal object SocialLaunchDetails {
   private fun forwardIntent(intent: Intent) {
     if (!PicoPps.sdkPresent) return
     try {
-      PicoClientLaunchStatusMgr.onCheckIntentChanged(intent)
+      val mgrClass = Class.forName(STATUS_MGR)
+      val mgr = mgrClass.getField("INSTANCE").get(null)
+      mgrClass.getMethod("onCheckIntentChanged", Intent::class.java).invoke(mgr, intent)
     } catch (t: Throwable) {
       Log.w(TAG, "onCheckIntentChanged failed: ${t.javaClass.simpleName}: ${t.message}")
     }
