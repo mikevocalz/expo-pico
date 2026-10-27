@@ -1,13 +1,13 @@
 import { type Subscription } from '@expo-pico/platform-service-common';
-import type { RoomSessionState, CreateRoomOptions, MatchmakingOptions, RoomUpdatedEvent, RoomUserJoinedEvent, RoomUserLeftEvent, MatchmakingFoundEvent } from './types';
+import { type RoomSessionState, type CreateRoomOptions, type MatchmakingOptions, type RoomUpdatedEvent, type RoomUserJoinedEvent, type RoomUserLeftEvent, type MatchmakingFoundEvent } from './PicoRooms.nitro';
 export type { RoomConnectionState, RoomJoinPolicy, RoomMemberRole, RoomLeaveReason, RoomMember, RoomInfo, CreateRoomOptions, JoinRoomResult, MatchmakingOptions, RoomSessionState, RoomUpdatedEvent, RoomUserJoinedEvent, RoomUserLeftEvent, MatchmakingFoundEvent, } from './types';
 export declare function isRoomsAvailable(): boolean;
 export declare function getRoomsSdkVersion(): string;
 export declare function getRoomSessionState(): RoomSessionState;
-export declare function createRoom(options?: CreateRoomOptions): Promise<import("./types").RoomInfo>;
-export declare function joinRoom(roomId: string): Promise<import("./types").JoinRoomResult>;
+export declare function createRoom(options?: CreateRoomOptions): Promise<import("./PicoRooms.nitro").RoomInfo>;
+export declare function joinRoom(roomId: string): Promise<import("./PicoRooms.nitro").JoinRoomResult>;
 export declare function leaveRoom(): Promise<void>;
-export declare function getRoomInfo(roomId: string): Promise<import("./types").RoomInfo>;
+export declare function getRoomInfo(roomId: string): Promise<import("./PicoRooms.nitro").RoomInfo>;
 /**
  * Every room currently visible in the friends-and-rooms feed.
  *
@@ -15,7 +15,7 @@ export declare function getRoomInfo(roomId: string): Promise<import("./types").R
  * none are. `memberCount` counts the friends visible in that room, not the
  * room's true occupancy, which PPS does not report.
  */
-export declare function getFriendsAndRooms(): Promise<import("./types").RoomInfo[]>;
+export declare function getFriendsAndRooms(): Promise<import("./PicoRooms.nitro").RoomInfo[]>;
 export declare function kickUser(userId: string): Promise<void>;
 export declare function updateRoomData(data: Record<string, string>): Promise<void>;
 export declare function requestMatchmaking(_options: MatchmakingOptions): Promise<void>;

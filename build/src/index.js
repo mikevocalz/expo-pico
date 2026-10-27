@@ -17,13 +17,14 @@ exports.addRoomUserJoinedListener = addRoomUserJoinedListener;
 exports.addRoomUserLeftListener = addRoomUserLeftListener;
 exports.addMatchmakingFoundListener = addMatchmakingFoundListener;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoRooms_nitro_1 = require("./PicoRooms.nitro");
 const PKG = '@expo-pico/rooms';
 const DISCONNECTED = {
     memberCount: 0,
     connectionState: 'disconnected',
 };
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoRooms');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoRooms', () => new PicoRooms_nitro_1.PicoRooms());
 }
 function isRoomsAvailable() {
     return native()?.available ?? false;
