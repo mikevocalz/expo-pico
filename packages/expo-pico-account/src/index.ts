@@ -1,10 +1,9 @@
-import { NitroModules } from 'react-native-nitro-modules';
 import {
   PicoServiceError,
   PicoErrorCode,
   wrapNativeCall,
 } from '@expo-pico/platform-service-common';
-import type { PicoAccount, PicoAuthType } from './PicoAccount.nitro';
+import { PicoAccount, type PicoAuthType } from './PicoAccount.nitro';
 
 export type {
   PicoUserProfile,
@@ -19,7 +18,7 @@ export type {
 const PKG = '@expo-pico/account';
 
 /**
- * Created lazily: createHybridObject throws when the native library is absent
+ * Created lazily: `new PicoAccount()` throws when the native library is absent
  * (mobile flavor, non-PICO hardware), and that must surface as
  * SERVICE_UNAVAILABLE rather than a module-load crash.
  */
@@ -30,7 +29,7 @@ function nativeAccount(): PicoAccount | null {
   if (!resolved) {
     resolved = true;
     try {
-      cached = NitroModules.createHybridObject<PicoAccount>('PicoAccount');
+      cached = new PicoAccount();
     } catch {
       cached = null;
     }

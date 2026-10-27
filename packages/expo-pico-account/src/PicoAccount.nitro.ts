@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 /** Account-linking state reported by PicoSignInClient. */
 export type PicoAccountLinkStatus = 'linked' | 'not-linked' | 'pending' | 'error' | 'unsupported';
@@ -61,7 +61,12 @@ export interface PicoLoginResult {
   message?: string;
 }
 
-export interface PicoAccount extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoAccount()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoAccount' } })
+export declare class PicoAccount extends HybridObject {
+  constructor();
+
   /** False when PPS is off the classpath (mobile flavor, non-PICO hardware, offline prebuild). */
   readonly available: boolean;
   readonly sdkVersion: string;
@@ -90,3 +95,5 @@ export interface PicoAccount extends HybridObject<{ android: 'kotlin' }> {
    */
   sendAuthScopesRequest(scopes: string[], authType: PicoAuthType): Promise<PicoAuthScopeResult>;
 }
+
+export * from '#nitro/PicoAccount';

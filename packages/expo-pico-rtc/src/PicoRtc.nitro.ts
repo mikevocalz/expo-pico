@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 /**
  * PPS 1.0.x removed RTC — every method returns NOT_IN_PPS_1_0 today. The
@@ -59,7 +59,12 @@ export interface RtcStateChangeEvent {
   reason: string;
 }
 
-export interface PicoRtc extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoRtc()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoRtc' } })
+export declare class PicoRtc extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion?: string;
   readonly status: RtcServiceStatus;
@@ -75,3 +80,5 @@ export interface PicoRtc extends HybridObject<{ android: 'kotlin' }> {
   addRtcStateChangeListener(listener: (event: RtcStateChangeEvent) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoRtc';

@@ -5,15 +5,15 @@ import {
   NULL_SUBSCRIPTION,
   type Subscription,
 } from '@expo-pico/platform-service-common';
-import type {
+import {
   PicoSocial,
-  PresenceOptions,
-  InviteOptions,
-  FriendRequest,
-  FriendPresenceChangedEvent,
-  InviteReceivedEvent,
-  PicoLaunchDetails,
-  LaunchAppOptions,
+  type PresenceOptions,
+  type InviteOptions,
+  type FriendRequest,
+  type FriendPresenceChangedEvent,
+  type InviteReceivedEvent,
+  type PicoLaunchDetails,
+  type LaunchAppOptions,
 } from './PicoSocial.nitro';
 
 export type {
@@ -33,7 +33,7 @@ export type {
 const PKG = '@expo-pico/social';
 
 function native(): PicoSocial | null {
-  return resolveHybridObject<PicoSocial>('PicoSocial');
+  return resolveHybridObject('PicoSocial', () => new PicoSocial());
 }
 
 export function isSocialAvailable(): boolean {

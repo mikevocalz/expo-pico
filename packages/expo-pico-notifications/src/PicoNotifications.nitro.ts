@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type NotificationPermissionStatus = 'granted' | 'denied' | 'not-determined';
 export type NotificationProvider = 'fcm' | 'pico';
@@ -28,7 +28,12 @@ export interface PicoPushRevocation {
   revokeData: string;
 }
 
-export interface PicoNotifications extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoNotifications()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoNotifications' } })
+export declare class PicoNotifications extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
   readonly permissionStatus: NotificationPermissionStatus;
@@ -49,3 +54,5 @@ export interface PicoNotifications extends HybridObject<{ android: 'kotlin' }> {
   addPushRevocationListener(listener: (revocation: PicoPushRevocation) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoNotifications';

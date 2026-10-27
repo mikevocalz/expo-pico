@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type RoomConnectionState = 'disconnected' | 'connecting' | 'joined' | 'leaving' | 'error';
 export type RoomJoinPolicy = 'everyone' | 'friends-only' | 'invite-only';
@@ -74,7 +74,12 @@ export interface MatchmakingFoundEvent {
  * NOT_IN_PPS_1_0 today; the interface is kept so a future PPS release can
  * wire it without an API break. Run live session state on Fishjam or Colyseus.
  */
-export interface PicoRooms extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoRooms()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoRooms' } })
+export declare class PicoRooms extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
   readonly sessionState: RoomSessionState;
@@ -102,3 +107,5 @@ export interface PicoRooms extends HybridObject<{ android: 'kotlin' }> {
   addMatchmakingFoundListener(listener: (event: MatchmakingFoundEvent) => void): number;
   removeListener(id: number): void;
 }
+
+export * from '#nitro/PicoRooms';

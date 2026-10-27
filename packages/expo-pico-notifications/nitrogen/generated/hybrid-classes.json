@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "PicoNotifications": {
+      "android": {
+        "implementation": {
+          "className": "HybridPicoNotifications"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

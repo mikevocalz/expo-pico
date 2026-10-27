@@ -2,7 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./build/src",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "resolvePackageJsonImports": true
   },
   "include": ["./src"],
   "exclude": ["./src/**/__tests__/**"]

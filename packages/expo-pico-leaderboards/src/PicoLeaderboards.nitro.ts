@@ -1,4 +1,4 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import { Android, type HybridObject } from 'react-native-nitro-modules';
 
 export type LeaderboardSortOrder = 'descending' | 'ascending';
 export type LeaderboardFilter = 'none' | 'friends' | 'viewer-and-friends';
@@ -50,7 +50,12 @@ export interface WriteScoreResult {
   newRank?: number;
 }
 
-export interface PicoLeaderboards extends HybridObject<{ android: 'kotlin' }> {
+// Android only: PICO OS is Android. On other platforms `new PicoLeaderboards()` throws,
+// and the package's resolver turns that into its native-absent default.
+@Android({ language: 'kotlin', implementation: { className: 'HybridPicoLeaderboards' } })
+export declare class PicoLeaderboards extends HybridObject {
+  constructor();
+
   readonly available: boolean;
   readonly sdkVersion: string;
 
@@ -69,3 +74,5 @@ export interface PicoLeaderboards extends HybridObject<{ android: 'kotlin' }> {
     options?: WriteScoreOptions
   ): Promise<WriteScoreResult>;
 }
+
+export * from '#nitro/PicoLeaderboards';

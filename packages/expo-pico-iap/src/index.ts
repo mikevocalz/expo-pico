@@ -3,7 +3,7 @@ import {
   wrapNativeCall,
   resolveHybridObject,
 } from '@expo-pico/platform-service-common';
-import type { PicoIap } from './PicoIap.nitro';
+import { PicoIap } from './PicoIap.nitro';
 
 export type {
   IapProduct,
@@ -16,7 +16,7 @@ export type {
 const PKG = '@expo-pico/iap';
 
 function native(): PicoIap | null {
-  return resolveHybridObject<PicoIap>('PicoIap');
+  return resolveHybridObject('PicoIap', () => new PicoIap());
 }
 
 export function isIapAvailable(): boolean {

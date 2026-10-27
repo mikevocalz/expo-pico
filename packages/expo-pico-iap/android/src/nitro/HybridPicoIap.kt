@@ -142,7 +142,10 @@ class HybridPicoIap : HybridPicoIapSpec() {
       type = if (isContinuous == true) IapProductType.NON_CONSUMABLE else IapProductType.CONSUMABLE,
     )
 
-  private companion object {
+  // Nitro V1: the spec bridge reads this Companion (backs JS `new PicoIap()`).
+  companion object : HybridPicoIapSpec.Companion {
+    override fun constructor(): HybridPicoIap = HybridPicoIap()
+
     /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
     const val PPS_VERSION = "1.0.0"
 
