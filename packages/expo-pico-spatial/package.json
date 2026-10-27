@@ -94,7 +94,8 @@
     "plugin/build",
     "app.plugin.js",
     "nitrogen/generated",
-    "nitro.json"
+    "nitro.json",
+    "react-native.config.js"
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-spatial",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",

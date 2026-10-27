@@ -33,9 +33,12 @@ import expo.modules.pico.swan.PicoSwanRuntime
  * @param platform Active PICO XR platform mode. Defaults to the value
  *                 written into BuildConfig by the config plugin.
  */
-class PicoCorePackage @JvmOverloads constructor(
-    private val platform: PicoXRPlatform = PicoXRPlatform.fromBuildConfig()
-) : ReactPackage {
+class PicoCorePackage(private val platform: PicoXRPlatform) : ReactPackage {
+
+    // React Native autolinking instantiates `new PicoCorePackage()`. Written as
+    // a secondary constructor, not a default argument: autolinking finds the
+    // package class with a regex that cannot read a default-value expression.
+    constructor() : this(PicoXRPlatform.fromBuildConfig())
 
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         Log.i(TAG, "PicoCorePackage initialized with platform=$platform")

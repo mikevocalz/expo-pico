@@ -1,6 +1,4 @@
 import { ConfigPlugin, withAppBuildGradle, withSettingsGradle } from '@expo/config-plugins';
-import * as fs from 'fs';
-import * as path from 'path';
 
 import type { ResolvedPicoOptions } from './types';
 
@@ -10,7 +8,8 @@ export const PICO_NITRO_DEPS_MARKER = '// expo-pico-core: @expo-pico/* module de
 /**
  * Every package in the family that ships an Android Gradle module.
  *
- * `@expo-pico/app-kit` is absent deliberately — it is TypeScript only.
+ * `@expo-pico/app-kit` is absent deliberately — it is TypeScript only. Kept
+ * in step with `NITRO_ONLOAD_CLASSES` in `android/src/nitro/PicoCorePackage.kt`.
  */
 export const PICO_NATIVE_PACKAGES: readonly string[] = [
   '@expo-pico/account',
@@ -28,206 +27,67 @@ export const PICO_NATIVE_PACKAGES: readonly string[] = [
 ];
 
 /**
- * Gradle project name for an npm package.
+ * Removes the `include` block this plugin used to append to settings.gradle.
  *
- * Deliberately identical to `convertPackageToProjectName` in
- * `expo-modules-autolinking/build/platforms/android.js`: strip a leading
- * `@`, then collapse every run of non-word characters to a single dash.
- * `@expo-pico/core` becomes `expo-pico-core`.
- *
- * Matching that algorithm is the point. If Expo's autolinker is also
- * active it emits exactly these names, so {@link isAlreadyIncluded} sees
- * its `include` line and this plugin stays out of the way. Diverging here
- * would include the same directory twice under two names, and Gradle would
- * compile the module twice into one APK.
+ * The block starts at {@link PICO_NITRO_INCLUDE_MARKER}, continues through its
+ * comment lines, and ends after the last `include ':expo-pico-*'` /
+ * `project(':expo-pico-*').projectDir` line. Returns the input unchanged when
+ * the marker is absent.
  */
-export function gradleProjectName(packageName: string): string {
-  return packageName.replace(/^@/g, '').replace(/\W+/g, '-');
-}
-
-/**
- * True when `settings.gradle` already includes this Gradle project, under
- * any of the syntaxes the various autolinkers emit.
- */
-export function isAlreadyIncluded(contents: string, projectName: string): boolean {
-  const escaped = projectName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`include\\s*\\(?\\s*['"]:${escaped}['"]`, 'm').test(contents);
-}
-
-export interface PicoNativeModule {
-  packageName: string;
-  projectName: string;
-  /** Absolute path to the package's `android` directory. */
-  androidDir: string;
-}
-
-/**
- * Locate the installed packages that have an Android module to include.
- *
- * Resolution is rooted at the consuming app so it works with yarn/npm
- * hoisting, pnpm's nested store, and a monorepo `workspace:` link alike.
- * A package that is not installed, or is installed without an `android`
- * directory, is skipped rather than guessed at.
- */
-/**
- * Directory of an installed package, without depending on its `exports` map.
- *
- * `require.resolve('<pkg>/package.json')` is the obvious way to do this and it
- * is what this used to do, but Node enforces `exports`: a package that does not
- * explicitly export `./package.json` throws ERR_PACKAGE_PATH_NOT_EXPORTED. That
- * failure was swallowed by the caller's `continue`, so every module silently
- * dropped out of `settings.gradle` and the whole native layer went missing from
- * the build with only a warning.
- *
- * These packages now export `./package.json`, but a consumer can be on an older
- * version, so this falls back to resolving the entry point and walking up to the
- * manifest rather than trusting the map.
- */
-function resolvePackageDir(packageName: string, projectRoot: string): string | null {
-  try {
-    return path.dirname(require.resolve(`${packageName}/package.json`, { paths: [projectRoot] }));
-  } catch {
-    // Fall through to the entry-point walk.
+export function stripIncludeBlock(contents: string): string {
+  const lines = contents.split('\n');
+  const start = lines.findIndex((line) => line.trim() === PICO_NITRO_INCLUDE_MARKER);
+  if (start === -1) return contents;
+  let end = start + 1;
+  while (
+    end < lines.length &&
+    (lines[end].startsWith('//') ||
+      /^include ':expo-pico-[\w-]+'$/.test(lines[end].trim()) ||
+      /^project\(':expo-pico-[\w-]+'\)\.projectDir = /.test(lines[end].trim()))
+  ) {
+    end += 1;
   }
-  try {
-    let dir = path.dirname(require.resolve(packageName, { paths: [projectRoot] }));
-    for (let i = 0; i < 10; i += 1) {
-      if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  } catch {
-    // Not installed, or no resolvable entry point.
-  }
-  return null;
-}
-
-export function findPicoNativeModules(
-  projectRoot: string,
-  packages: readonly string[] = PICO_NATIVE_PACKAGES
-): PicoNativeModule[] {
-  const found: PicoNativeModule[] = [];
-  for (const packageName of packages) {
-    const packageDir = resolvePackageDir(packageName, projectRoot);
-    if (!packageDir) continue;
-    const androidDir = path.join(packageDir, 'android');
-    if (!fs.existsSync(path.join(androidDir, 'build.gradle'))) continue;
-    found.push({
-      packageName,
-      projectName: gradleProjectName(packageName),
-      androidDir,
-    });
-  }
-  return found;
+  // The block was appended after a blank line; drop that too.
+  const from = start > 0 && lines[start - 1].trim() === '' ? start - 1 : start;
+  return [...lines.slice(0, from), ...lines.slice(end)].join('\n');
 }
 
 /**
- * Render the `include` / `projectDir` lines for the modules not yet in
- * `settings.gradle`, or `null` when every one is already there.
- *
- * Paths are written relative to the app's `android` directory and with
- * forward slashes, so the generated file is identical on Windows and
- * POSIX and does not change between machines.
+ * Removes the `dependencies { implementation project(':expo-pico-*') }` block
+ * this plugin used to append to app/build.gradle. Returns the input unchanged
+ * when the marker is absent.
  */
-export function renderIncludeBlock(
-  modules: readonly PicoNativeModule[],
-  androidProjectRoot: string,
-  existingContents: string
-): string | null {
-  const missing = modules.filter((m) => !isAlreadyIncluded(existingContents, m.projectName));
-  if (missing.length === 0) return null;
-
-  const lines = missing.flatMap((m) => {
-    const relative = path.relative(androidProjectRoot, m.androidDir).split(path.sep).join('/');
-    return [
-      `include ':${m.projectName}'`,
-      `project(':${m.projectName}').projectDir = new File(rootProject.projectDir, '${relative}')`,
-    ];
-  });
-
-  return `
-${PICO_NITRO_INCLUDE_MARKER}
-//
-// Each @expo-pico/* package is a self-contained Nitro module: it declares
-// no dependency on any sibling Gradle project, so the order these are
-// included in does not matter and none of them can be missing a peer.
-//
-// These lines are only written for projects that are not already included.
-// The names match expo-modules-autolinking's own algorithm exactly, so
-// when that autolinker is active this block stays empty rather than
-// including the same directory a second time.
-${lines.join('\n')}
-`;
+export function stripDependencyBlock(contents: string): string {
+  const escaped = PICO_NITRO_DEPS_MARKER.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+  const block = new RegExp(
+    `\\n*${escaped}\\ndependencies \\{\\n(?:\\s*implementation project\\(':expo-pico-[\\w-]+'\\)\\n)*\\}\\n?`
+  );
+  return contents.replace(block, '\n');
 }
 
 /**
- * Make sure every installed `@expo-pico/*` Android module is a Gradle
- * project in the consuming app.
+ * Removes what earlier versions of this plugin wrote to the Gradle files.
  *
- * These packages used to rely on Expo Modules autolinking, which included
- * them because each shipped an `expo-module.config.json` listing Android
- * modules. The Nitro migration dropped those files — the Kotlin no longer
- * extends Expo's `Module`, so the generated Expo package list would
- * reference classes that are not compiled. Nitro itself has no autolinker
- * that writes `settings.gradle`; it only generates the per-module Gradle
- * and CMake fragments that a project applies once it *is* included.
- *
- * So inclusion is done here, deterministically, rather than left to
- * whichever autolinker happens to run.
+ * Those versions included every installed `@expo-pico/*` Android module in
+ * settings.gradle as `:expo-pico-<name>` and added it to the app's
+ * dependencies, because the packages had no autolinking entry. Each package
+ * now ships a `react-native.config.js` and a `ReactPackage`, so React Native
+ * autolinking includes it (as `:expo-pico_<name>`) whether or not this plugin
+ * is configured. A leftover block from a prebuild without `--clean` would
+ * include the same directory a second time under the old name, and Gradle
+ * would compile the module twice into one APK.
  */
-/**
- * Add `implementation project(':expo-pico-*')` for each included module.
- *
- * `include` in settings.gradle only makes a directory a Gradle project. It does
- * not put anything in the app. Without a dependency the modules configure and
- * can even build on their own — `./gradlew assemblePicoDebug` runs that task in
- * every project — while contributing no code, no JNI and no AAR to the APK, and
- * their classes stay invisible to the app. That is how `PicoCorePackage` came to
- * be imported by MainApplication and unresolvable at compile time.
- *
- * These packages are not React Native autolinking targets (`autolinking.json`
- * lists none of them), so nothing else was going to add the dependency.
- */
-function renderDependencyBlock(modules: PicoNativeModule[]): string {
-  // gradleProjectName has no leading colon; settings.gradle adds it at the
-  // include site, so the dependency has to add its own.
-  const lines = modules.map((m) => `    implementation project(':${m.projectName}')`);
-  return `${PICO_NITRO_DEPS_MARKER}\ndependencies {\n${lines.join('\n')}\n}\n`;
-}
-
 export const withPicoNitroModules: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   if (!options.enabled) return config;
 
   config = withAppBuildGradle(config, (cfg) => {
-    const modules = findPicoNativeModules(cfg.modRequest.projectRoot);
-    if (modules.length === 0) return cfg;
-    if (cfg.modResults.contents.includes(PICO_NITRO_DEPS_MARKER)) return cfg;
-    cfg.modResults.contents = `${cfg.modResults.contents.trimEnd()}\n\n${renderDependencyBlock(
-      modules
-    )}`;
+    cfg.modResults.contents = stripDependencyBlock(cfg.modResults.contents);
     return cfg;
   });
 
-  return withSettingsGradle(config, (config) => {
-    const modules = findPicoNativeModules(config.modRequest.projectRoot);
-    if (modules.length === 0) {
-      console.warn(
-        '[expo-pico-core] No @expo-pico/* package with an android/build.gradle was ' +
-          'found from the project root. Nothing was added to settings.gradle.'
-      );
-      return config;
-    }
-
-    const block = renderIncludeBlock(
-      modules,
-      config.modRequest.platformProjectRoot,
-      config.modResults.contents
-    );
-    if (block !== null) {
-      config.modResults.contents = config.modResults.contents + block;
-    }
-    return config;
+  return withSettingsGradle(config, (cfg) => {
+    cfg.modResults.contents = stripIncludeBlock(cfg.modResults.contents);
+    return cfg;
   });
 };
 

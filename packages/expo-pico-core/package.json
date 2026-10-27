@@ -105,7 +105,8 @@
     "nitrogen/generated",
     "expo-module.config.json",
     "android-expo",
-    "nitro.json"
+    "nitro.json",
+    "react-native.config.js"
   ],
   "homepage": "https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-core",
   "bugs": "https://github.com/mikevocalz/expo-pico/issues",

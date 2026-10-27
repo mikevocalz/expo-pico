@@ -202,12 +202,12 @@ describe('native linking of the window listener', () => {
     );
   });
 
-  test('the Expo project is separate from the Nitro module withPicoNitroModules includes', () => {
+  test('the Expo project is separate from the Nitro module React Native autolinks', () => {
     const config = JSON.parse(fs.readFileSync(path.join(PKG, 'expo-module.config.json'), 'utf8'));
-    // android/ is included as :expo-pico-core by withPicoNitroModules; the
+    // android/ is autolinked as :expo-pico_core through react-native.config.js; the
     // Expo project must not point at the same directory or reuse that name.
     expect(config.android.path).not.toBe('android');
-    expect(config.android.name).not.toBe('expo-pico-core');
+    expect(config.android.name).not.toBe('expo-pico_core');
     expect(fs.existsSync(path.join(PKG, config.android.path, 'build.gradle'))).toBe(true);
   });
 

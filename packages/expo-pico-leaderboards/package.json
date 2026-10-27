@@ -96,7 +96,8 @@
     "plugin/build",
     "app.plugin.js",
     "nitrogen/generated",
-    "nitro.json"
+    "nitro.json",
+    "react-native.config.js"
   ],
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"

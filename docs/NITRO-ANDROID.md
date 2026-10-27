@@ -92,52 +92,36 @@ than answering it — there is no name left to get wrong, no include order to
 respect, and no way for one package to be present while a peer it needs is
 missing.
 
-## Inclusion is now explicit
+## Inclusion: React Native autolinking
 
-Expo Modules autolinking used to include these projects because each
-shipped an `expo-module.config.json` listing Android modules. That config
-is now `{"platforms": []}`, which makes `findModules` skip the package
-entirely — verified against `supportsPlatform` in
-`expo-modules-autolinking@3.0.0`.
+Every `@expo-pico/*` package with an Android module ships a
+`react-native.config.js` and a `ReactPackage`:
 
-That mattered for more than the module list. Expo's `findAndroidPackagesAsync`
-globs `**/*Package.{java,kt}` across the module's `android/` directory and
-adds whatever it finds to the app's generated package list. `PicoCorePackage.kt`
-is still on disk, so leaving the config in place would have put a reference
-to an uncompiled class into the app and broken the build.
+- `@expo-pico/core`: `PicoCorePackage`. It loads every installed Nitro
+  library and starts the runtime that `BuildConfig.PICO_XR_MODE` names for
+  the flavor being built.
+- Every other package: `ExpoPico<Name>Package`, whose companion `init` calls
+  that package's generated `ExpoPico<Name>OnLoad.initializeNative()`.
 
-Nitro has no autolinker that writes `settings.gradle` — it only generates
-the per-module Gradle and CMake fragments a project applies _once it is
-included_. So `withPicoNitroModules` does the inclusion:
+React Native autolinking includes each module as `:expo-pico_<name>`, adds
+it to the app's dependencies and puts the package in `PackageList`. This
+works without the `@expo-pico/core` config plugin, so a mobile or Quest
+build with no PICO app ID still links every module.
 
-- Resolves each `@expo-pico/*` package from the app root, so hoisting,
-  pnpm and workspace links all work.
-- Skips any package without an `android/build.gradle`.
-- Names projects with the exact algorithm
-  `expo-modules-autolinking` uses (`convertPackageToProjectName`: strip a
-  leading `@`, collapse `\W+` to `-`). A test asserts the two agree for
-  every package in the family.
-- Writes nothing for a project that is already included, under any of the
-  `include ':x'` / `include(":x")` / `include ':x', ':y'` spellings.
+Autolinking finds the package class with a regex that cannot read a
+constructor with a default-value expression. That is why `PicoCorePackage`
+takes its no-argument form as a secondary constructor.
 
-Matching Expo's naming is the point, not a coincidence: if that autolinker
-is ever active alongside this plugin, the existence check sees its line and
-this block stays empty. Diverging would include the same directory twice
-under two names and compile the module twice into one APK.
+Core's `expo-module.config.json` points Expo autolinking at `android-expo`
+only, the PICO OS 5 window listener, linked as `:expo-pico-core-window`.
+The sibling packages have no `expo-module.config.json`.
 
-## The `expo-module.config.json` files should be deleted
-
-They are neutralised, not removed — this session could write files to the
-repo but not delete them. Once you are satisfied the build links correctly:
-
-```bash
-git rm packages/expo-pico-*/expo-module.config.json
-```
-
-`app.plugin.js` at each package root is what resolves the config plugin, so
-removing these does not affect plugin discovery. `expo-pico-social`'s file
-also carried a `plugin` field; that has been preserved in the neutralised
-version, and `app.plugin.js` covers it either way.
+Earlier versions included the modules from the config plugin
+(`withPicoNitroModules`) and registered `PicoCorePackage` in
+`MainApplication`. Both now remove what they used to write: a leftover
+`include ':expo-pico-*'` block would compile each module a second time
+next to the autolinked `:expo-pico_*` project, and a leftover
+`add(PicoCorePackage(...))` would register the package twice.
 
 There is also a leftover probe file to delete:
 

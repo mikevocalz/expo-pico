@@ -128,7 +128,7 @@ This creates `android/` with:
 - `pvr.app.type=vr` and OpenXR `IMMERSIVE_HMD` launcher categories in the PICO-flavor manifest
 - `<uses-native-library android:name="libopenxr_loader.so"/>`
 - `ndk { abiFilters 'arm64-v8a' }` on the pico flavor
-- A `PicoCorePackage(PicoXRPlatform.PICO_OS5)` line added to `MainApplication.kt`
+- `PicoCorePackage` in the autolinked package list, through `@expo-pico/core`'s `react-native.config.js`
 
 Inspect any of these if you want to verify. The plugin never writes anything it can't justify.
 
