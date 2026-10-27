@@ -30,9 +30,10 @@ exports.launchStore = launchStore;
 exports.shareVideo = shareVideo;
 exports.shareImages = shareImages;
 const platform_service_common_1 = require("@expo-pico/platform-service-common");
+const PicoSocial_nitro_1 = require("./PicoSocial.nitro");
 const PKG = '@expo-pico/social';
 function native() {
-    return (0, platform_service_common_1.resolveHybridObject)('PicoSocial');
+    return (0, platform_service_common_1.resolveHybridObject)('PicoSocial', () => new PicoSocial_nitro_1.PicoSocial());
 }
 function isSocialAvailable() {
     return native()?.available ?? false;

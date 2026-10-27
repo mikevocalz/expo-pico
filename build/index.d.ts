@@ -1,11 +1,11 @@
 import { type Subscription } from '@expo-pico/platform-service-common';
-import type { PresenceOptions, InviteOptions, FriendRequest, FriendPresenceChangedEvent, InviteReceivedEvent, PicoLaunchDetails, LaunchAppOptions } from './types';
+import { type PresenceOptions, type InviteOptions, type FriendRequest, type FriendPresenceChangedEvent, type InviteReceivedEvent, type PicoLaunchDetails, type LaunchAppOptions } from './PicoSocial.nitro';
 export type { FriendshipStatus, PresenceStatus, SocialUser, FriendRequest, FriendListResult, SentInvite, InviteOptions, PresenceOptions, FriendPresenceChangedEvent, InviteReceivedEvent, PicoLaunchDetails, } from './types';
 export declare function isSocialAvailable(): boolean;
 export declare function getSocialSdkVersion(): string;
-export declare function getCurrentUser(): Promise<import("./types").SocialUser>;
-export declare function getFriendList(pageSize?: number, pageToken?: string): Promise<import("./types").FriendListResult>;
-export declare function getFriendshipStatus(userId: string): Promise<import("./types").FriendshipStatus>;
+export declare function getCurrentUser(): Promise<import("./PicoSocial.nitro").SocialUser>;
+export declare function getFriendList(pageSize?: number, pageToken?: string): Promise<import("./PicoSocial.nitro").FriendListResult>;
+export declare function getFriendshipStatus(userId: string): Promise<import("./PicoSocial.nitro").FriendshipStatus>;
 export declare function sendFriendRequest(userId: string): Promise<FriendRequest>;
 export declare function getPendingFriendRequests(): Promise<FriendRequest[]>;
 export declare function acceptFriendRequest(requestId: string): Promise<void>;
@@ -15,7 +15,7 @@ export declare function blockUser(userId: string): Promise<void>;
 export declare function unblockUser(userId: string): Promise<void>;
 export declare function setPresence(options: PresenceOptions): Promise<void>;
 export declare function clearPresence(): Promise<void>;
-export declare function sendInvites(options: InviteOptions): Promise<import("./types").SentInvite[]>;
+export declare function sendInvites(options: InviteOptions): Promise<import("./PicoSocial.nitro").SentInvite[]>;
 /**
  * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
  * PPS has no presence-change push. Call `getFriendList()` when you need the
@@ -46,11 +46,11 @@ export declare function getLaunchDetails(): PicoLaunchDetails;
  * Pass the previous result's `nextPageToken` to page. Its absence means there
  * are no further pages, so there is no separate `hasMore` to check.
  */
-export declare function getDestinations(pageToken?: string): Promise<import("./types").DestinationListResult>;
+export declare function getDestinations(pageToken?: string): Promise<import("./PicoSocial.nitro").DestinationListResult>;
 /** Users invitable to the current destination. `suggestedUserIds` biases the list. */
-export declare function getInvitableUsers(suggestedUserIds?: string[], pageToken?: string): Promise<import("./types").InvitableUsersResult>;
+export declare function getInvitableUsers(suggestedUserIds?: string[], pageToken?: string): Promise<import("./PicoSocial.nitro").InvitableUsersResult>;
 /** Invites this user has already sent. */
-export declare function getSentInvites(pageToken?: string): Promise<import("./types").SentInviteListResult>;
+export declare function getSentInvites(pageToken?: string): Promise<import("./PicoSocial.nitro").SentInviteListResult>;
 /** Launches another PICO app by app id or package name. */
 export declare function launchApp(options: LaunchAppOptions): Promise<string>;
 /**
