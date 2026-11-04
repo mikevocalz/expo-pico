@@ -75,8 +75,6 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'center',
     backgroundColor: palette.bgRaised,
-    borderColor: palette.border,
-    borderWidth: 1,
     borderRadius: SHELL.tokens.cornerRadiusDp,
     borderCurve: 'continuous',
   },
