@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   ctaLabel: { color: palette.bg, fontSize: 16, fontWeight: '700', letterSpacing: 0.2 },
   ctaNote: { color: palette.textFaint, fontSize: 12, textAlign: 'center', marginTop: space.sm + 2 },
 
-  rows: { marginTop: space.lg, gap: space.sm },
+  rows: { alignSelf: 'stretch', marginTop: space.lg, gap: space.sm },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
