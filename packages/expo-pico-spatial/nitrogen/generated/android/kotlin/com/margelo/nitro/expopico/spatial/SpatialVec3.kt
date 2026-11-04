@@ -28,8 +28,6 @@ data class SpatialVec3(
   @Keep
   val z: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialVec3) return false

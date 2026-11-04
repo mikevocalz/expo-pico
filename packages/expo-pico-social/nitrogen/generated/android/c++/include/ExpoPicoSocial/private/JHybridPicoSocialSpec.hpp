@@ -109,7 +109,7 @@ namespace margelo::nitro::expopico::social {
     jni::local_ref<JTypedPromise<jni::local_ref<JInvitableUsersResult>>> getInvitableUsers(const jni::local_ref<JOptional<jni::JArrayClass<jni::JString>>>& suggestedUserIds, const jni::local_ref<JOptional<jni::JString>>& pageToken);
     jni::local_ref<JTypedPromise<jni::local_ref<JSentInviteListResult>>> getSentInvites(const jni::local_ref<JOptional<jni::JString>>& pageToken);
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JString>>> launchApp(const jni::local_ref<JLaunchAppOptions>& options);
-    jdouble addLaunchDetailsListener(const jni::local_ref<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart>& listener);
+    jdouble addLaunchDetailsListener(const jni::local_ref<JCallback<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart>>& listener);
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> launchPresenceInvitePanel();
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> launchInviteUserJoinRoomFlow(const jni::local_ref<jni::JString>& roomId);
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JString>>> launchStore();

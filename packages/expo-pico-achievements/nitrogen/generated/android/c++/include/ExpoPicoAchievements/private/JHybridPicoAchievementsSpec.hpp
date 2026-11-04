@@ -88,7 +88,7 @@ namespace margelo::nitro::expopico::achievements {
     jni::local_ref<JTypedPromise<jni::local_ref<JUnlockAchievementResult>>> unlockAchievement(const jni::local_ref<jni::JString>& apiName);
     jni::local_ref<JTypedPromise<jni::local_ref<JAddCountResult>>> addAchievementCount(const jni::local_ref<jni::JString>& apiName, jdouble count);
     jni::local_ref<JTypedPromise<jni::local_ref<JAddBitfieldResult>>> addAchievementBitfield(const jni::local_ref<jni::JString>& apiName, const jni::local_ref<jni::JString>& bitfield);
-    jdouble addAchievementUnlockedListener(const jni::local_ref<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart>& listener);
+    jdouble addAchievementUnlockedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart>>& listener);
     void removeAchievementUnlockedListener(jdouble id);
 
   public:

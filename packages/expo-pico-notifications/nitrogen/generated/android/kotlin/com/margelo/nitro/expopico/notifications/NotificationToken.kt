@@ -28,8 +28,6 @@ data class NotificationToken(
   @Keep
   val registeredAtMs: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is NotificationToken) return false

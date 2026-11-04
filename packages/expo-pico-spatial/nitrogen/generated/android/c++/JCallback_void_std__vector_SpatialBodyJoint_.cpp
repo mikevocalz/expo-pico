@@ -14,6 +14,10 @@
 
 namespace margelo::nitro::expopico::spatial {
 
+  jni::local_ref<JCallback_void_std__vector_SpatialBodyJoint_::JFunction_cxx> JCallback_void_std__vector_SpatialBodyJoint_::JFunction_cxx::create(jni::alias_ref<JCallback<JavaPart>> callback) {
+    return newInstance(callback);
+  }
+
   JNIRetainedValue<void>::Type JCallback_void_std__vector_SpatialBodyJoint_::JFunction_cxx::invoke(JNIRetainedValue<jni::local_ref<jni::JArrayClass<margelo::nitro::expopico::spatial::JSpatialBodyJoint>>>::Type joints) const {
     static const auto __method = javaClassStatic()->getMethod<void(jni::alias_ref<jni::JArrayClass<JSpatialBodyJoint>>)>("call");
     __method(self(), JNIRetainedValue<jni::local_ref<jni::JArrayClass<margelo::nitro::expopico::spatial::JSpatialBodyJoint>>>::borrow(joints));
@@ -35,12 +39,9 @@ namespace margelo::nitro::expopico::spatial {
     callAndForget(joints);
   }
 
-  jni::local_ref<JCallback_void_std__vector_SpatialBodyJoint_::JavaPart> JCallback_void_std__vector_SpatialBodyJoint_::fromCxx_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JCxxCallback::javaobject> callback) {
-    return create(getCallback(callback));
-  }
-
-  jni::local_ref<JCallback_void_std__vector_SpatialBodyJoint_::JavaPart> JCallback_void_std__vector_SpatialBodyJoint_::fromFunction_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JFunction_cxx> function) {
-    return create(CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function))));
+  JCallback_void_std__vector_SpatialBodyJoint_::CallbackType JCallback_void_std__vector_SpatialBodyJoint_::fromKotlin(jni::alias_ref<JCallback<JavaPart>> callback) {
+    auto function = JFunction_cxx::create(callback);
+    return CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function)));
   }
 
   void JCallback_void_std__vector_SpatialBodyJoint_::registerNatives() {
@@ -48,8 +49,6 @@ namespace margelo::nitro::expopico::spatial {
       makeNativeMethod("callSync_cxx", JCallback_void_std__vector_SpatialBodyJoint_::callSync_cxx),
       makeNativeMethod("callAsync_cxx", JCallback_void_std__vector_SpatialBodyJoint_::callAsync_cxx),
       makeNativeMethod("callAndForget_cxx", JCallback_void_std__vector_SpatialBodyJoint_::callAndForget_cxx),
-      makeNativeMethod("fromCxx_cxx", JCallback_void_std__vector_SpatialBodyJoint_::fromCxx_cxx),
-      makeNativeMethod("fromFunction_cxx", JCallback_void_std__vector_SpatialBodyJoint_::fromFunction_cxx),
     });
   }
 

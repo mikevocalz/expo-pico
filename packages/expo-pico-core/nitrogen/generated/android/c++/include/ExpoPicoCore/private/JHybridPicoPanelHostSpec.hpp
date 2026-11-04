@@ -78,8 +78,8 @@ namespace margelo::nitro::expopico::picocore {
     // Methods
     jni::local_ref<JTypedPromise<void>> openPanel(const jni::local_ref<jni::JString>& name, const jni::local_ref<JPanelSizeDp>& size, const jni::local_ref<JOptional<jni::JMap<jni::JString, jni::JString>>>& props);
     jni::local_ref<JTypedPromise<void>> closePanel(const jni::local_ref<jni::JString>& name);
-    jni::local_ref<JListenerSubscription> addOnPanelOpenedListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart>& listener);
-    jni::local_ref<JListenerSubscription> addOnPanelClosedListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart>& listener);
+    jni::local_ref<JListenerSubscription> addOnPanelOpenedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart>>& listener);
+    jni::local_ref<JListenerSubscription> addOnPanelClosedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart>>& listener);
 
   public:
     // Constructor and static members

@@ -31,8 +31,6 @@ data class PurchaseResult(
   @Keep
   val purchasedAtMs: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PurchaseResult) return false

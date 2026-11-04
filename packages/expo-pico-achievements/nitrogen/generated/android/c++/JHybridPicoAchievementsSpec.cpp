@@ -127,8 +127,8 @@ namespace margelo::nitro::expopico::achievements {
     auto __result = __method(_javaPart, CxxPart::getClass(), apiName, bitfield);
     return __result;
   }
-  jdouble JHybridPicoAchievementsSpec::addAchievementUnlockedListener(const jni::local_ref<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart> /* listener */)>("addAchievementUnlockedListener_cxx");
+  jdouble JHybridPicoAchievementsSpec::addAchievementUnlockedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::achievements::JCallback_void_AchievementUnlockedEvent::JavaPart>> /* listener */)>("addAchievementUnlockedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

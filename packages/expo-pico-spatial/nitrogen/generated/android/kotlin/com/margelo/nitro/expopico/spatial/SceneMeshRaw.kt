@@ -28,8 +28,6 @@ data class SceneMeshRaw(
   @Keep
   val normals: DoubleArray?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SceneMeshRaw) return false

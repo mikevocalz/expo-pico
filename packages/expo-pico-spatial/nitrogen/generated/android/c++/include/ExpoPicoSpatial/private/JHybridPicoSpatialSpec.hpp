@@ -108,11 +108,11 @@ namespace margelo::nitro::expopico::spatial {
     jboolean openWindowContainer(const jni::local_ref<jni::JString>& id, const jni::local_ref<JOptional<jni::JString>>& tag);
     jboolean closeWindowContainer(const jni::local_ref<jni::JString>& id, const jni::local_ref<JOptional<jni::JString>>& tag);
     jni::local_ref<JTypedPromise<jni::local_ref<JOptional<JGazePose>>>> getGazeSnapshot();
-    jdouble addGazeListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart>& listener);
+    jdouble addGazeListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart>>& listener);
     jni::local_ref<JTypedPromise<jni::local_ref<JSceneMeshRaw>>> getSceneMesh();
-    jdouble addSceneMeshUpdateListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart>& listener);
-    jdouble addFaceListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart>& listener);
-    jdouble addBodyListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart>& listener);
+    jdouble addSceneMeshUpdateListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart>>& listener);
+    jdouble addFaceListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart>>& listener);
+    jdouble addBodyListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart>>& listener);
     void removeListener(jdouble id);
 
   public:

@@ -70,32 +70,17 @@ abstract class HybridPicoStorageSpec: HybridObject() {
   @Keep
   abstract fun clearLocalCache(): Promise<Unit>
 
+  @DoNotStrip
+  @Keep
   abstract fun addStorageConflictListener(listener: Callback<(event: StorageConflictEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addStorageConflictListener_cxx(listener: Callback_void_StorageConflictEvent): Double {
-    val __result = addStorageConflictListener(listener)
-    return __result
-  }
-
   abstract fun addStorageSyncProgressListener(listener: Callback<(event: StorageSyncProgressEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addStorageSyncProgressListener_cxx(listener: Callback_void_StorageSyncProgressEvent): Double {
-    val __result = addStorageSyncProgressListener(listener)
-    return __result
-  }
-
   abstract fun addStorageSyncCompleteListener(listener: Callback<(result: StorageSyncResult) -> Unit>): Double
-
-  @DoNotStrip
-  @Keep
-  private fun addStorageSyncCompleteListener_cxx(listener: Callback_void_StorageSyncResult): Double {
-    val __result = addStorageSyncCompleteListener(listener)
-    return __result
-  }
 
   @DoNotStrip
   @Keep
@@ -145,8 +130,7 @@ abstract class HybridPicoStorageSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoStorageSpec {
-      val __result = HybridPicoStorage.constructor()
-      return __result
+      return HybridPicoStorage.constructor()
     }
   }
 }

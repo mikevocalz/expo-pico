@@ -49,8 +49,6 @@ data class PicoLaunchDetails(
   @Keep
   val clientAction: String
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoLaunchDetails) return false

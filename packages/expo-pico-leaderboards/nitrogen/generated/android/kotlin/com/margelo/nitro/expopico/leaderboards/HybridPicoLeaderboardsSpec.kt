@@ -101,8 +101,7 @@ abstract class HybridPicoLeaderboardsSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoLeaderboardsSpec {
-      val __result = HybridPicoLeaderboards.constructor()
-      return __result
+      return HybridPicoLeaderboards.constructor()
     }
   }
 }

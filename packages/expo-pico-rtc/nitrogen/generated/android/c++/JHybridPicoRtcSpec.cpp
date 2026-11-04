@@ -133,18 +133,18 @@ namespace margelo::nitro::expopico::rtc {
     auto __result = __method(_javaPart, CxxPart::getClass(), volume);
     return __result;
   }
-  jdouble JHybridPicoRtcSpec::addUserJoinedListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart> /* listener */)>("addUserJoinedListener_cxx");
+  jdouble JHybridPicoRtcSpec::addUserJoinedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart>> /* listener */)>("addUserJoinedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoRtcSpec::addUserLeftListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart> /* listener */)>("addUserLeftListener_cxx");
+  jdouble JHybridPicoRtcSpec::addUserLeftListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart>> /* listener */)>("addUserLeftListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoRtcSpec::addRtcStateChangeListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart> /* listener */)>("addRtcStateChangeListener_cxx");
+  jdouble JHybridPicoRtcSpec::addRtcStateChangeListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart>> /* listener */)>("addRtcStateChangeListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

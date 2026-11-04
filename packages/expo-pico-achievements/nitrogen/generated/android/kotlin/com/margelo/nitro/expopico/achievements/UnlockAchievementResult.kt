@@ -28,8 +28,6 @@ data class UnlockAchievementResult(
   @Keep
   val unlockedAtMs: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is UnlockAchievementResult) return false

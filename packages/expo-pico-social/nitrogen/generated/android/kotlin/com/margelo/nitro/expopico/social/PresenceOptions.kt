@@ -28,8 +28,6 @@ data class PresenceOptions(
   @Keep
   val destinationApiName: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PresenceOptions) return false

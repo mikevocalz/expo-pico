@@ -31,8 +31,6 @@ data class AddCountResult(
   @Keep
   val justUnlocked: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is AddCountResult) return false

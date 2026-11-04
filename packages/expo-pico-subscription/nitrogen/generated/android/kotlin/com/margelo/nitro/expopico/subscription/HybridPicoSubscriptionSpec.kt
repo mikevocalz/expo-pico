@@ -101,8 +101,7 @@ abstract class HybridPicoSubscriptionSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoSubscriptionSpec {
-      val __result = HybridPicoSubscription.constructor()
-      return __result
+      return HybridPicoSubscription.constructor()
     }
   }
 }

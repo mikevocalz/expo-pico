@@ -28,8 +28,6 @@ data class Leaderboard(
   @Keep
   val sortOrder: LeaderboardSortOrder
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Leaderboard) return false

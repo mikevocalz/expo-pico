@@ -25,8 +25,6 @@ data class PicoDeclaredPermission(
   @Keep
   val granted: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredPermission) return false

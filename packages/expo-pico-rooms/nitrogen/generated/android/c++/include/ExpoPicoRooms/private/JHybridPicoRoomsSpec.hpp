@@ -103,10 +103,10 @@ namespace margelo::nitro::expopico::rooms {
     jni::local_ref<JTypedPromise<void>> updateRoomData(const jni::local_ref<jni::JMap<jni::JString, jni::JString>>& data);
     jni::local_ref<JTypedPromise<void>> requestMatchmaking(const jni::local_ref<JMatchmakingOptions>& options);
     jni::local_ref<JTypedPromise<void>> cancelMatchmaking();
-    jdouble addRoomUpdatedListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart>& listener);
-    jdouble addRoomUserJoinedListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart>& listener);
-    jdouble addRoomUserLeftListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart>& listener);
-    jdouble addMatchmakingFoundListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart>& listener);
+    jdouble addRoomUpdatedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart>>& listener);
+    jdouble addRoomUserJoinedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart>>& listener);
+    jdouble addRoomUserLeftListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart>>& listener);
+    jdouble addMatchmakingFoundListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart>>& listener);
     void removeListener(jdouble id);
 
   public:

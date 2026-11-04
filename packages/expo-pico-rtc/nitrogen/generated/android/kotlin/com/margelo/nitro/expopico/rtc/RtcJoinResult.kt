@@ -34,8 +34,6 @@ data class RtcJoinResult(
   @Keep
   val message: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcJoinResult) return false

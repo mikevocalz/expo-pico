@@ -12,6 +12,10 @@
 
 namespace margelo::nitro::expopico::rtc {
 
+  jni::local_ref<JCallback_void_RtcUserJoinedEvent::JFunction_cxx> JCallback_void_RtcUserJoinedEvent::JFunction_cxx::create(jni::alias_ref<JCallback<JavaPart>> callback) {
+    return newInstance(callback);
+  }
+
   JNIRetainedValue<void>::Type JCallback_void_RtcUserJoinedEvent::JFunction_cxx::invoke(JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::rtc::JRtcUserJoinedEvent>>::Type event) const {
     static const auto __method = javaClassStatic()->getMethod<void(jni::alias_ref<JRtcUserJoinedEvent>)>("call");
     __method(self(), JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::rtc::JRtcUserJoinedEvent>>::borrow(event));
@@ -33,12 +37,9 @@ namespace margelo::nitro::expopico::rtc {
     callAndForget(event);
   }
 
-  jni::local_ref<JCallback_void_RtcUserJoinedEvent::JavaPart> JCallback_void_RtcUserJoinedEvent::fromCxx_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JCxxCallback::javaobject> callback) {
-    return create(getCallback(callback));
-  }
-
-  jni::local_ref<JCallback_void_RtcUserJoinedEvent::JavaPart> JCallback_void_RtcUserJoinedEvent::fromFunction_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JFunction_cxx> function) {
-    return create(CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function))));
+  JCallback_void_RtcUserJoinedEvent::CallbackType JCallback_void_RtcUserJoinedEvent::fromKotlin(jni::alias_ref<JCallback<JavaPart>> callback) {
+    auto function = JFunction_cxx::create(callback);
+    return CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function)));
   }
 
   void JCallback_void_RtcUserJoinedEvent::registerNatives() {
@@ -46,8 +47,6 @@ namespace margelo::nitro::expopico::rtc {
       makeNativeMethod("callSync_cxx", JCallback_void_RtcUserJoinedEvent::callSync_cxx),
       makeNativeMethod("callAsync_cxx", JCallback_void_RtcUserJoinedEvent::callAsync_cxx),
       makeNativeMethod("callAndForget_cxx", JCallback_void_RtcUserJoinedEvent::callAndForget_cxx),
-      makeNativeMethod("fromCxx_cxx", JCallback_void_RtcUserJoinedEvent::fromCxx_cxx),
-      makeNativeMethod("fromFunction_cxx", JCallback_void_RtcUserJoinedEvent::fromFunction_cxx),
     });
   }
 

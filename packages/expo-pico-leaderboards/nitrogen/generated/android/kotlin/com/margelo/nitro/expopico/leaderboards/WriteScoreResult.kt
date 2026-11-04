@@ -34,8 +34,6 @@ data class WriteScoreResult(
   @Keep
   val newRank: Double?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is WriteScoreResult) return false

@@ -25,8 +25,6 @@ data class RtcInitOptions(
   @Keep
   val audioScenario: RtcAudioScenario?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcInitOptions) return false

@@ -28,8 +28,6 @@ data class RtcJoinOptions(
   @Keep
   val uid: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcJoinOptions) return false

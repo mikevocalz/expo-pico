@@ -54,23 +54,13 @@ abstract class HybridPicoNotificationsSpec: HybridObject() {
   @Keep
   abstract fun unregisterForPushNotifications(): Promise<Unit>
 
+  @DoNotStrip
+  @Keep
   abstract fun addPushMessageListener(listener: Callback<(message: PicoPushMessage) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addPushMessageListener_cxx(listener: Callback_void_PicoPushMessage): Double {
-    val __result = addPushMessageListener(listener)
-    return __result
-  }
-
   abstract fun addPushRevocationListener(listener: Callback<(revocation: PicoPushRevocation) -> Unit>): Double
-
-  @DoNotStrip
-  @Keep
-  private fun addPushRevocationListener_cxx(listener: Callback_void_PicoPushRevocation): Double {
-    val __result = addPushRevocationListener(listener)
-    return __result
-  }
 
   @DoNotStrip
   @Keep
@@ -120,8 +110,7 @@ abstract class HybridPicoNotificationsSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoNotificationsSpec {
-      val __result = HybridPicoNotifications.constructor()
-      return __result
+      return HybridPicoNotifications.constructor()
     }
   }
 }
