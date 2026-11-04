@@ -1,6 +1,6 @@
 import { requireOptionalNativeModule } from 'expo';
 
-import type { PicoRuntimeInfo, PicoXRMode } from '@expo-pico/core';
+import { isPicoBuild, type PicoRuntimeInfo, type PicoXRMode } from '@expo-pico/core';
 
 /**
  * Build-time platform for the example's 2D and immersive surfaces.
@@ -34,3 +34,9 @@ export function isHeadsetBuild(info: Pick<PicoRuntimeInfo, 'xrMode'>): boolean {
 export function xrModeLabel(mode: PicoXRMode): string {
   return isHorizonBuild || mode === 'quest' ? 'Horizon OS' : mode;
 }
+
+/**
+ * True in the pico flavor (PICO OS 5 and Swan). Read once: the flavor cannot
+ * change while the app runs.
+ */
+export const isPicoHeadsetBuild: boolean = isPicoBuild();

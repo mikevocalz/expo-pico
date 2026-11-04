@@ -128,7 +128,9 @@ const PICO_FEATURE_PLUGINS: NonNullable<ExpoConfig['plugins']> = [
   '@expo-pico/leaderboards',
 ];
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
+// SDK 58 dropped `newArchEnabled` from ExpoConfig; @expo-pico/core's
+// new-architecture check still reads it, so the type carries it.
+export default ({ config }: ConfigContext): ExpoConfig & { newArchEnabled: boolean } => ({
   ...config,
   name: 'expo-pico-example',
   slug: 'expo-pico-example',
@@ -212,10 +214,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         viroRendererOverlay: true,
         // Meta: "The `quest3+` specifier includes Quest 3 family, Meta VR Glasses, and future devices."
         storeDeviceTargets: 'quest3+',
-        // Meta VR Layout SDK in the quest flavor only: Library, Details and
-        // Controls open as Horizon OS windows around the launcher panel. The
-        // JS side (src/layout/metaWindows.ts) stays inline off Horizon.
+        // Meta VR Layout SDK in the quest flavor only. It opens one window,
+        // the navigation rail, flush outside the main panel's left edge
+        // (src/ui/AppShell.tsx, docs/adr/0001).
         metaLayoutSdk: true,
+        // The detail panel: a second activity Horizon OS opens beside the main
+        // panel. Same size as SHELL.detailPanelSizeDp (src/ui/theme.ts).
+        detailPanel: { defaultWidth: '420dp', defaultHeight: '600dp' },
         // Quest-only strikes. Each one is added to every flavor by another
         // package, and nothing in this app uses it on Meta Horizon:
         //  - CAMERA + android.hardware.camera and HEADSET_CAMERA come from

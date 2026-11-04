@@ -1,9 +1,9 @@
 /**
- * Launcher home for the 2D panel.
+ * Home: the main panel's first destination.
  *
  * Structure-only references (Mobbin, web): Base welcome
- * (https://mobbin.com/screens/d5d2c2c4-aaba-4764-8453-9b622e9aeacb) for the
- * split with one primary action on the left; Klaviyo empty state
+ * (https://mobbin.com/screens/d5d2c2c4-aaba-4764-8453-9b622e9aeacb) for one
+ * primary action under the title; Klaviyo empty state
  * (https://mobbin.com/screens/543b8f44-0434-46bd-ac53-5fe7cd7f55a5) for a
  * status line directly under the primary button; Replit home
  * (https://mobbin.com/screens/c38f4614-95ad-4e3a-bc84-0bb1e1b81590) for a
@@ -12,35 +12,23 @@
  * filled primary above quieter secondary entries. Colours and type come from
  * ./theme only.
  *
- * On Meta Horizon OS builds, Library, Details and Controls are Layout SDK
- * windows around this panel (src/layout/workspace.ts, META_WINDOWS).
- * Structure-only references for that split: fal Assets
- * (https://mobbin.com/screens/44620b3b-7939-4ba5-97c5-cef1c0473387) for a
- * library list on the start side and a details column on the end side of the
- * main content; Replit's design canvas
- * (https://mobbin.com/screens/24dd99de-1b70-4eea-a245-2c4a151875bb) and
- * Recraft (https://mobbin.com/screens/12bf793a-4693-452c-82f3-488aed6d2c54)
- * for actions in a bar under the main surface; Gumloop
- * (https://mobbin.com/screens/41397256-f780-4071-b0e4-afbcf02f5f26) for a
- * status overview card beside the content; Shopify's image editor
- * (https://mobbin.com/screens/5ec9f2d9-dd23-4551-897a-653b312f0256) for a
- * stacked end-side inspector.
+ * Diagnostics and the validation harness live in the rail (the tab bar on
+ * phones). The two rows below open detail content, which goes to the detail
+ * panel beside this one on headsets (docs/adr/0001).
  */
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { enterImmersiveScene, getPicoRuntimeInfo } from '@expo-pico/core';
 
-import { metaWindows } from '../layout/metaWindows';
-import { META_WINDOWS } from '../layout/workspace';
+import { useOpenDetail } from '../layout/DetailPanelHost';
+import { DETAIL_TITLES } from '../layout/shell';
 import { horizonAppId, isHeadsetBuild, isHorizonBuild, xrModeLabel } from '../platform';
 import { IsoCube } from './IsoCube';
-import { SpatialLayoutPreview } from './SpatialLayoutPreview';
 import { useLayout } from './useLayout';
-import { WorkspaceWindow } from './WorkspaceWindow';
 import { palette, radius, space } from './theme';
 
-export type HomeRoute = 'xr' | 'diagnostics' | 'harness';
+export type HomeRoute = 'xr';
 
 type Props = { onNavigate: (route: HomeRoute) => void };
 
@@ -96,13 +84,7 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
   const info = useMemo(() => getPicoRuntimeInfo(), []);
   const L = useLayout();
   const onHeadset = isHeadsetBuild(info);
-  // With Library and Details both in their own windows the secondary column
-  // is empty, so the launcher takes the panel on its own instead of sitting in
-  // the left half. The column stays mounted: it declares those windows.
-  const libraryOut = metaWindows.usePlacement(META_WINDOWS.library.label) === 'spatial';
-  const detailsOut = metaWindows.usePlacement(META_WINDOWS.details.label) === 'spatial';
-  const sideColumnEmpty = libraryOut && detailsOut;
-  const twoColumn = L.twoColumn && !sideColumnEmpty;
+  const openDetail = useOpenDetail();
 
   // Every headset build enters through VRActivity, which renders the scene
   // registered in index.js. If no immersive activity resolves (a phone, or a
@@ -116,101 +98,60 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
     ? { value: horizonAppId ? 'app ID set' : 'no app ID', ok: horizonAppId !== null }
     : { value: info.platformSdkPresent ? 'live' : 'seam', ok: info.platformSdkPresent };
 
-  const launcher = (
-    <View
-      style={[
-        styles.launcher,
-        twoColumn && styles.colWide,
-        sideColumnEmpty && L.twoColumn && styles.launcherSolo,
-      ]}
-    >
-      <IsoCube size={L.heroSize} />
-      <Text style={[styles.title, { fontSize: L.titleSize }, twoColumn && styles.textLeft]}>
-        XR Sample
-      </Text>
-      <Text
-        style={[
-          styles.subtitle,
-          { fontSize: L.bodySize, lineHeight: L.bodySize * 1.5 },
-          twoColumn && styles.textLeft,
-        ]}
-      >
-        {isHorizonBuild
-          ? 'Runtime capabilities and an immersive scene, running on Meta Horizon OS from an Expo app.'
-          : 'Platform services, runtime capabilities and an immersive scene, running on PICO OS from an Expo app.'}
-      </Text>
-
-      <View style={styles.chips}>
-        <Chip label="XR mode" value={xrModeLabel(info.xrMode)} tone={onHeadset ? 'ok' : 'warn'} />
-        <Chip label="App type" value={info.appType} />
-        <Chip
-          label="Platform SDK"
-          value={platformSdk.value}
-          tone={platformSdk.ok ? 'ok' : 'warn'}
-        />
-      </View>
-
-      <WorkspaceWindow id="controls">
-        <Pressable
-          onPress={onEnterXr}
-          style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Enter the XR scene"
-        >
-          <Text style={styles.ctaLabel}>Enter XR Scene</Text>
-        </Pressable>
-
-        <Text style={[styles.ctaNote, twoColumn && styles.textLeft]}>
-          {onHeadset
-            ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
-            : 'No headset detected — the scene renders as a flat preview.'}
-        </Text>
-      </WorkspaceWindow>
-    </View>
-  );
-
-  const secondary = (
-    <View
-      style={[
-        styles.secondary,
-        twoColumn && styles.colWide,
-        twoColumn && styles.secondaryWide,
-        sideColumnEmpty && styles.secondaryEmpty,
-      ]}
-    >
-      <WorkspaceWindow id="details">
-        <SpatialLayoutPreview />
-      </WorkspaceWindow>
-      <WorkspaceWindow id="library" title="Library">
-        <View style={styles.rows}>
-          <Row
-            title="Diagnostics"
-            detail="Build-time and runtime report, SDK probe table"
-            onPress={() => onNavigate('diagnostics')}
-          />
-          <Row
-            title="Validation harness"
-            detail="Exercises every sibling package's public API"
-            onPress={() => onNavigate('harness')}
-          />
-        </View>
-      </WorkspaceWindow>
-    </View>
-  );
-
   return (
     <View style={styles.root}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          { paddingHorizontal: L.gutter, paddingVertical: L.gutter },
-        ]}
+        contentContainerStyle={[styles.scroll, { padding: L.gutter }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.frame, { maxWidth: L.maxContentWidth }]}>
-          <View style={twoColumn ? styles.split : undefined}>
-            {launcher}
-            {secondary}
+        <View style={styles.column}>
+          <IsoCube size={L.heroSize} />
+          <Text style={[styles.title, { fontSize: L.titleSize }]}>XR Sample</Text>
+          <Text style={[styles.subtitle, { fontSize: L.bodySize, lineHeight: L.bodySize * 1.5 }]}>
+            {isHorizonBuild
+              ? 'Runtime capabilities and an immersive scene, running on Meta Horizon OS from an Expo app.'
+              : 'Platform services, runtime capabilities and an immersive scene, running on PICO OS from an Expo app.'}
+          </Text>
+
+          <View style={styles.chips}>
+            <Chip
+              label="XR mode"
+              value={xrModeLabel(info.xrMode)}
+              tone={onHeadset ? 'ok' : 'warn'}
+            />
+            <Chip label="App type" value={info.appType} />
+            <Chip
+              label="Platform SDK"
+              value={platformSdk.value}
+              tone={platformSdk.ok ? 'ok' : 'warn'}
+            />
+          </View>
+
+          <Pressable
+            onPress={onEnterXr}
+            style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Enter the XR scene"
+          >
+            <Text style={styles.ctaLabel}>Enter XR Scene</Text>
+          </Pressable>
+          <Text style={styles.ctaNote}>
+            {onHeadset
+              ? `Opens the immersive scene on your ${info.deviceModel ?? 'headset'}`
+              : 'No headset detected — the scene renders as a flat preview.'}
+          </Text>
+
+          <View style={styles.rows}>
+            <Row
+              title={DETAIL_TITLES.headset}
+              detail="Device, runtime and Platform SDK"
+              onPress={() => openDetail('headset')}
+            />
+            <Row
+              title={DETAIL_TITLES.layout}
+              detail="Where the rail and detail panel are placed"
+              onPress={() => openDetail('layout')}
+            />
           </View>
         </View>
       </ScrollView>
@@ -221,21 +162,9 @@ export function HomeScreen({ onNavigate }: Props): React.JSX.Element {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
   scroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
-  frame: { width: '100%' },
-  split: { flexDirection: 'row', alignItems: 'center', gap: space.xl },
+  // One readable measure on a 1280dp panel; chips and CTA share its edges.
+  column: { width: '100%', maxWidth: 560, alignItems: 'center' },
 
-  launcher: { alignItems: 'center' },
-  // Each column takes half the frame; the launcher's children stretch to it so
-  // the chips and CTA share one left edge.
-  colWide: { flex: 1, alignItems: 'stretch' },
-  secondary: { marginTop: space.xl },
-  secondaryWide: { marginTop: 0 },
-  // Both side surfaces are in their own windows; nothing here takes space.
-  secondaryEmpty: { marginTop: 0 },
-  // Launcher alone on a wide panel: keep the single-column measure.
-  launcherSolo: { alignSelf: 'center', width: '100%', maxWidth: 560 },
-
-  textLeft: { textAlign: 'left' },
   title: {
     color: palette.text,
     fontWeight: '700',
