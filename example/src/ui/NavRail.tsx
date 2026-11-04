@@ -13,7 +13,7 @@ import { usePathname, useRouter } from 'expo-router';
 
 import { DESTINATIONS, destinationForPath, SHELL, type Destination } from '../layout/shell';
 import { LucideGlyph } from './LucideGlyph';
-import { palette, radius, space } from './theme';
+import { palette, shellSize, space } from './theme';
 
 function RailItem({
   destination,
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
   },
   itemPressed: { opacity: 0.7 },
   indicator: {
-    width: 56,
-    height: 32,
-    borderRadius: radius.pill,
+    width: shellSize.railIndicator,
+    height: shellSize.railIndicator,
+    borderRadius: shellSize.railIndicator / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
