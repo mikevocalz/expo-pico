@@ -9,11 +9,12 @@
  */
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { Rect } from 'react-native-svg';
 import { usePathname, useRouter } from 'expo-router';
 
 import { DESTINATIONS, destinationForPath, SHELL, type Destination } from '../layout/shell';
 import { LucideGlyph } from './LucideGlyph';
-import { palette, shellSize, space } from './theme';
+import { palette, radius, shellSize, space } from './theme';
 
 function RailItem({
   destination,
@@ -33,7 +34,28 @@ function RailItem({
       accessibilityState={{ selected: active }}
       accessibilityLabel={destination.title}
     >
-      <View style={[styles.indicator, active && styles.indicatorActive]}>
+      <View style={styles.indicator}>
+        {/*
+          The selected fill is an SVG rounded square, not a View background
+          with borderRadius: in the Meta Layout SDK rail window the View drew
+          rounded on first render and lost its radius once the selection moved
+          to another tab (seen on a Quest 3S).
+        */}
+        {active ? (
+          <Svg
+            style={StyleSheet.absoluteFill}
+            width={shellSize.railIndicator}
+            height={shellSize.railIndicator}
+          >
+            <Rect
+              width={shellSize.railIndicator}
+              height={shellSize.railIndicator}
+              rx={radius.sm}
+              ry={radius.sm}
+              fill={palette.borderBright}
+            />
+          </Svg>
+        ) : null}
         <LucideGlyph name={destination.icon} size={22} color={active ? palette.accent : tint} />
       </View>
       <Text style={[styles.label, { color: tint }]} numberOfLines={1}>
@@ -88,10 +110,8 @@ const styles = StyleSheet.create({
   indicator: {
     width: shellSize.railIndicator,
     height: shellSize.railIndicator,
-    borderRadius: shellSize.railIndicator / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  indicatorActive: { backgroundColor: palette.borderBright },
   label: { fontSize: 12, fontWeight: '600' },
 });

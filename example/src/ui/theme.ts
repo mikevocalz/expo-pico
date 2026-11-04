@@ -74,7 +74,7 @@ export const type = {
 export const shellSize = {
   railWidth: 96,
   railItem: 72,
-  /** The selected-item indicator: a circle, as MoyoLearn's spatial rail draws it. */
+  /** The selected-item indicator: a square with radius.sm corners. */
   railIndicator: 40,
   railPadding: space.sm + 4,
   detailWidth: 420,
