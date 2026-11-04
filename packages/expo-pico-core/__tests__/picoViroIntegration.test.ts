@@ -147,7 +147,9 @@ test('subprojects fallback declares the missing device dimension, never a flavor
 });
 
 test('missing-dimension fallback is skipped for mobile, and core leaves Horizon alone', async () => {
-  const mobile = await renderProjectGradle(resolveOptions({ buildVariant: 'mobile', xrMode: 'mobile' }));
+  const mobile = await renderProjectGradle(
+    resolveOptions({ buildVariant: 'mobile', xrMode: 'mobile' })
+  );
   expect(mobile).not.toContain('// expo-pico-core: subprojects missing-dim fallback');
   expect(mobile).not.toContain('expo-horizon-core');
 
@@ -176,7 +178,10 @@ test('packaging covers pico and dual only, never quest or mobile', () => {
   expect(both).not.toContain('"quest"');
   expect(both).not.toContain('"mobile"');
   expect(
-    updateOverlayPackaging('', resolveOptions({ buildVariant: 'mobile', viroRendererOverlay: true }))
+    updateOverlayPackaging(
+      '',
+      resolveOptions({ buildVariant: 'mobile', viroRendererOverlay: true })
+    )
   ).toBe('');
   for (const options of [resolveOptions({ viroRendererOverlay: true }), resolveOptions({})]) {
     const once = updateOverlayPackaging('android {}\n', options);
