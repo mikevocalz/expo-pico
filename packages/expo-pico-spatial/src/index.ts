@@ -22,6 +22,7 @@ import type {
 
 export * from './types';
 export * from './layout';
+export * from './shell';
 
 import { layoutReadinessFromProbe, type PicoSpatialLayoutBridgeStatus } from './layout';
 
@@ -291,7 +292,7 @@ export function addBodyListener(cb: (joints: BodyJoint[]) => void): Subscription
             number,
             number,
             number,
-            number,
+            number
           ],
         }))
       )
