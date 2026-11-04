@@ -70,7 +70,8 @@ const HORIZON = 'com.oculus.permission.EYE_TRACKING';
 const PICO = 'com.picovr.permission.EYE_TRACKING';
 const HORIZONOS = 'horizonos.permission.EYE_TRACKING';
 const HORIZON_FEATURE = 'oculus.software.eye_tracking';
-const PICO_FEATURE = 'picovr.software.eye_tracking';
+const PICO_FEATURE = 'pico.hardware.eyetracking';
+const PICO_ALT_FEATURE = 'picovr.software.eye_tracking';
 
 type Core = typeof import('../index');
 type Root = (props: object) => ReactElement;
@@ -322,7 +323,19 @@ describe('immersive permission routing and device features', () => {
     await settle();
 
     expect(mockHasSystemFeature).toHaveBeenCalledWith(PICO_FEATURE);
+    expect(mockHasSystemFeature).toHaveBeenCalledWith(PICO_ALT_FEATURE);
     expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it('asks on a PICO headset that reports only picovr.software.eye_tracking', async () => {
+    mockDeclared = [{ name: PICO, granted: false }];
+    mockFeatures = new Set([PICO_ALT_FEATURE]);
+    load('pico-os5');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockRequest).toHaveBeenCalledWith(PICO);
   });
 
   it('does not ask on PICO when the build did not enable eyeTracking', async () => {

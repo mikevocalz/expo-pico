@@ -274,8 +274,12 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   ): PicoCapabilitySnapshotEntry {
     val declared = name.declaredIn(declaredCapabilities)
     val feature = name.systemFeature
-    val featureAvailable = feature?.let { f ->
-      pm?.let { runCatching { it.hasSystemFeature(f) }.getOrDefault(false) }
+    val candidates =
+      if (name == PicoCapabilityName.EYETRACKING) PICO_EYE_TRACKING_FEATURES else listOfNotNull(feature)
+    val featureAvailable = feature?.let {
+      pm?.let { manager ->
+        candidates.any { f -> runCatching { manager.hasSystemFeature(f) }.getOrDefault(false) }
+      }
     }
     val sdkClass = name.sdkClass
     val sdkAvailable = sdkClass?.let { PicoDevice.classPresent(it) } ?: true
@@ -307,6 +311,14 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     const val OS5_RUNTIME_CLASS = "expo.modules.pico.os5.PicoOs5Runtime"
 
     /**
+     * Feature names that mean PICO eye tracking hardware. PICO documents the
+     * permission but no uses-feature string, so either name counts. The first
+     * is what the plugin declares; `PICO_EYE_TRACKING_FEATURES` in
+     * `src/eyeTrackingPermission.ts` lists the same names.
+     */
+    val PICO_EYE_TRACKING_FEATURES = listOf("pico.hardware.eyetracking", "picovr.software.eye_tracking")
+
+    /**
      * The manifest feature each capability corresponds to, or null where
      * PICO declares none. Names match the `PICO_FEATURES` table in
      * `plugin/src/constants.ts` — the plugin writes them, this reads them
@@ -317,7 +329,7 @@ class HybridPicoCore : HybridPicoCoreSpec() {
         PicoCapabilityName.HANDTRACKING -> "picovr.software.hand_tracking"
         PicoCapabilityName.PASSTHROUGH -> "picovr.software.seethrough"
         PicoCapabilityName.SCENEUNDERSTANDING -> "picovr.software.scene_understanding"
-        PicoCapabilityName.EYETRACKING -> "picovr.software.eye_tracking"
+        PicoCapabilityName.EYETRACKING -> PICO_EYE_TRACKING_FEATURES.first()
         PicoCapabilityName.FACETRACKING -> "picovr.software.face_tracking"
         PicoCapabilityName.BODYTRACKING -> "picovr.software.body_tracking"
         PicoCapabilityName.BOUNDARY -> "picovr.software.boundary"

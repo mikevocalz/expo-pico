@@ -38,13 +38,32 @@ export function eyeTrackingPermissionFor(mode: PicoXRMode): string | null {
 /** Horizon OS device feature for eye tracking. Quest Pro has it; Quest 3 and 3S do not. */
 export const HORIZON_EYE_TRACKING_FEATURE = 'oculus.software.eye_tracking';
 
-/** PICO device feature for eye tracking. PICO 4 Ultra does not have it. */
-export const PICO_EYE_TRACKING_FEATURE = 'picovr.software.eye_tracking';
+/**
+ * Device feature names that mean PICO eye tracking hardware. PICO documents
+ * the permission (`com.picovr.permission.EYE_TRACKING`) but no uses-feature
+ * string, so a device reporting either name counts. The first is the one the
+ * plugin's `eyeTracking` option declares (`PICO_FEATURES.EYE_TRACKING`).
+ * PICO 4 Ultra reports neither.
+ */
+export const PICO_EYE_TRACKING_FEATURES = [
+  'pico.hardware.eyetracking',
+  'picovr.software.eye_tracking',
+] as const;
 
-function eyeTrackingFeatureFor(permission: string): string {
+/** The PICO eye tracking feature the plugin declares. */
+export const PICO_EYE_TRACKING_FEATURE = PICO_EYE_TRACKING_FEATURES[0];
+
+function eyeTrackingFeaturesFor(permission: string): readonly string[] {
   return permission === HORIZON_EYE_TRACKING_PERMISSION
-    ? HORIZON_EYE_TRACKING_FEATURE
-    : PICO_EYE_TRACKING_FEATURE;
+    ? [HORIZON_EYE_TRACKING_FEATURE]
+    : PICO_EYE_TRACKING_FEATURES;
+}
+
+async function hasAnySystemFeature(names: readonly string[]): Promise<boolean> {
+  for (const name of names) {
+    if (await ExpoPicoModule.hasSystemFeature(name)) return true;
+  }
+  return false;
 }
 
 // Keyed by permission. An entry stays once a request reached the user; a
@@ -62,7 +81,7 @@ const pending = new Map<string, Promise<void>>();
  *
  * Asks only when the build's manifest declares the permission, it is not
  * granted yet, and the device has eye tracking hardware (the
- * `oculus.software.eye_tracking` or `picovr.software.eye_tracking` feature),
+ * `oculus.software.eye_tracking` feature, or one of `PICO_EYE_TRACKING_FEATURES`),
  * and never on the `mobile` flavor. PICO builds also need the plugin's
  * `eyeTracking` option. The request goes through the immersive activity, so
  * the grant dialog opens in its task and XR stays open behind it. A denial is logged, not
@@ -120,7 +139,7 @@ async function requestIfDeclared(permission: string): Promise<boolean> {
     // No eye tracking hardware (Quest 3/3S, PICO 4 Ultra): nothing to ask for.
     // Horizon OS would suppress the dialog anyway, but only after starting the
     // grant activity, which already costs the immersive activity its focus.
-    if (!(await ExpoPicoModule.hasSystemFeature(eyeTrackingFeatureFor(permission)))) return true;
+    if (!(await hasAnySystemFeature(eyeTrackingFeaturesFor(permission)))) return true;
 
     // Through the immersive activity, never PermissionsAndroid: that uses the
     // React context's current activity, which can still be the 2D panel. The

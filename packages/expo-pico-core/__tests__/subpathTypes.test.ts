@@ -45,7 +45,7 @@ const cases = subpathTypeExports();
 describe('subpath exports resolve under moduleResolution Node10', () => {
   it('covers the core plugin subpaths', () => {
     expect(cases.map((c) => c.specifier)).toEqual(
-      expect.arrayContaining(['@expo-pico/core/plugin', '@expo-pico/core/plugin/viro']),
+      expect.arrayContaining(['@expo-pico/core/plugin', '@expo-pico/core/plugin/viro'])
     );
   });
 
@@ -67,11 +67,11 @@ describe('subpath exports resolve under moduleResolution Node10', () => {
         specifier,
         path.join(REPO_ROOT, 'probe.ts'),
         { module: ts.ModuleKind.CommonJS, moduleResolution: ts.ModuleResolutionKind.Node10 },
-        host,
+        host
       );
       expect(resolvedModule && toPackage(path.resolve(resolvedModule.resolvedFileName))).toBe(
-        typesFile,
+        typesFile
       );
-    },
+    }
   );
 });
