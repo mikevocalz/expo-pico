@@ -81,7 +81,7 @@ export function runDiagnosticChecks(
 
   // Pure XR apps must remain installable with no PICO Developer Console
   // account. Only PPS-backed features require a registered app identity.
-  if (options.isPicoEnabled && !options.platformService.picoAppId) {
+  if (options.enabled && options.isPicoEnabled && !options.platformService.picoAppId) {
     findings.push({
       id: 'identity.missing',
       severity: 'info',
