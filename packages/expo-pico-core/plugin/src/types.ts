@@ -658,6 +658,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
  */
 const QUEST_OPTION_KEYS = [
   'metaLayoutSdk',
+  'detailPanel',
   'storeDeviceTargets',
   'questRemovePermissions',
   'questRemoveFeatures',

@@ -1,3 +1,4 @@
+import { normalizeDetailPanel, type QuestDetailPanelOptions } from './withQuestPanelActivity';
 import { normalizeDependencyExclusions, normalizeNames } from './withQuestRemovals';
 import { normalizeStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
@@ -27,6 +28,16 @@ export interface QuestOptions {
    * @default false
    */
   metaLayoutSdk?: boolean;
+  /**
+   * Declare @expo-pico/core's panel activity in the `quest` flavor, sized by
+   * its `<layout>` element, so the app can open a detail panel beside the
+   * main panel with `PicoWindows.createPanelHost().openPanel(...)`. Meta's
+   * multi-panel activity launch needs no SDK; Horizon OS picks the slot.
+   * Width must be within 384-1440dp.
+   *
+   * @default false
+   */
+  detailPanel?: QuestDetailPanelOptions | false;
   /**
    * Default Meta Store device targeting, written as
    * `com.meta.store.defaultDeviceTargets` in `app/src/quest/AndroidManifest.xml`.
@@ -83,6 +94,8 @@ export interface QuestOptions {
  */
 export interface ResolvedQuestOptions {
   metaLayoutSdk: boolean;
+  /** Validated panel size, or null when no panel activity is declared. */
+  detailPanel: QuestDetailPanelOptions | null;
   /** Validated specifiers; `false` removes the entry; `null` derives it. */
   storeDeviceTargets: string | false | null;
   questRemovePermissions: string[];
@@ -95,6 +108,7 @@ export interface ResolvedQuestOptions {
 /** The {@linkcode QuestOptions} keys, for splitting a combined plugin entry. */
 export const QUEST_OPTION_NAMES = [
   'metaLayoutSdk',
+  'detailPanel',
   'storeDeviceTargets',
   'questRemovePermissions',
   'questRemoveFeatures',
@@ -106,12 +120,13 @@ export const QUEST_OPTION_NAMES = [
 /**
  * Validates {@linkcode QuestOptions} and fills defaults.
  *
- * @throws when `storeDeviceTargets` or `questExcludeDependencies` holds a
- * value Meta or Gradle would reject
+ * @throws when `storeDeviceTargets`, `questExcludeDependencies` or
+ * `detailPanel` holds a value Meta or Gradle would reject
  */
 export function resolveQuestOptions(options: QuestOptions = {}): ResolvedQuestOptions {
   return {
     metaLayoutSdk: options.metaLayoutSdk === true,
+    detailPanel: normalizeDetailPanel(options.detailPanel),
     storeDeviceTargets: normalizeStoreDeviceTargets(options.storeDeviceTargets),
     questRemovePermissions: normalizeNames(options.questRemovePermissions),
     questRemoveFeatures: normalizeNames(options.questRemoveFeatures),

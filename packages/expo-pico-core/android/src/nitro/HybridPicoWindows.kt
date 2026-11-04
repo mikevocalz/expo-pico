@@ -15,9 +15,9 @@ class HybridPicoWindows : HybridPicoWindowsSpec() {
     if (!isPanelAvailable) {
       return Promise.rejected(
         Error(
-          "This APK declares no expo.modules.pico.PicoPanelActivity: it is not a PICO build, or " +
-            "the @expo-pico/core plugin option windows.panelActivity is false. Render the content " +
-            "in the main window instead.",
+          "This APK declares no expo.modules.pico.PicoPanelActivity. PICO builds declare it unless " +
+            "the @expo-pico/core option windows.panelActivity is false; quest builds declare it with " +
+            "the expo-horizon-quest option detailPanel. Render the content in the main window instead.",
         ),
       )
     }
