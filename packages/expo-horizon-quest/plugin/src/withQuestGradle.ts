@@ -10,6 +10,76 @@ const HORIZON_BUILD_CONFIG_MARKER =
   '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 
 /**
+ * Find a top-level Groovy dependencies block, not a buildscript/repositories
+ * child that happens to start in column zero. Generated Gradle can contain
+ * braces in strings and comments, so scan lexical boundaries before deciding.
+ */
+export function findAppDependenciesBlock(contents: string): number {
+  let depth = 0;
+  let state: 'code' | 'line' | 'block' | 'quote' | 'triple' = 'code';
+  let quote = '';
+  let lineStart = 0;
+  for (let index = 0; index < contents.length; index += 1) {
+    const char = contents[index];
+    const next = contents[index + 1];
+    if (char === '\n') {
+      lineStart = index + 1;
+      if (state === 'line') state = 'code';
+      if (state !== 'quote' && state !== 'triple') continue;
+    }
+    if (state === 'line') continue;
+    if (state === 'block') {
+      if (char === '*' && next === '/') {
+        state = 'code';
+        index += 1;
+      }
+      continue;
+    }
+    if (state === 'quote') {
+      if (char === '\\') index += 1;
+      else if (char === quote) state = 'code';
+      continue;
+    }
+    if (state === 'triple') {
+      if (contents.startsWith(quote.repeat(3), index)) {
+        state = 'code';
+        index += 2;
+      }
+      continue;
+    }
+
+    if (char === '/' && next === '/') {
+      state = 'line';
+      index += 1;
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      state = 'block';
+      index += 1;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      const triple = contents.startsWith(char.repeat(3), index);
+      state = triple ? 'triple' : 'quote';
+      if (triple) index += 2;
+      continue;
+    }
+    if (
+      depth === 0 &&
+      (index === lineStart || contents.slice(lineStart, index).trim() === '') &&
+      contents.startsWith('dependencies', index) &&
+      /^dependencies[ \t]*\{/.test(contents.slice(index))
+    ) {
+      return lineStart;
+    }
+    if (char === '{') depth += 1;
+    else if (char === '}') depth = Math.max(0, depth - 1);
+  }
+  return -1;
+}
+
+/**
  * The quest flavor's settings, declared before the app module's dependencies
  * block and rewritten on every prebuild. Gradle must create `questImplementation`
  * before evaluating dependencies that reference it (including the Meta VR SDK).
@@ -52,8 +122,8 @@ ${QUEST_FLAVOR_END}
   // When PICO declares the `device` dimension first, expo-horizon-core
   // skips declaring Quest. Appending Quest after dependencies is too late:
   // `questImplementation(...)` then fails during Gradle evaluation.
-  // Match only the top-level app block, not buildscript's dependencies.
-  const depsIndex = contents.search(/^dependencies\s*\{/m);
+  // Match only the top-level app block, never nested buildscript deps.
+  const depsIndex = findAppDependenciesBlock(contents);
   return depsIndex < 0
     ? contents + questBlock
     : contents.slice(0, depsIndex) + questBlock + contents.slice(depsIndex);
