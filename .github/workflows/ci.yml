@@ -51,7 +51,7 @@ jobs:
               "slug": "smoke",
               "plugins": [[
                 "@expo-pico/core",
-                { "xrMode": "pico-os6", "appType": "vr",
+                { "xrMode": "pico-os5", "appType": "vr",
                   "platformService": { "picoAppId": "APP", "picoAppKey": "KEY" } }
               ]]
             }
@@ -59,6 +59,27 @@ jobs:
           JSON
           node packages/expo-pico-core/cli/build/doctor.js \
             --project /tmp/doctor-smoke --fail-on-warning
+      - name: Doctor proves XR prebuild stays enabled without PPS credentials
+        run: |
+          mkdir -p /tmp/doctor-pico-no-id
+          cat > /tmp/doctor-pico-no-id/app.config.json <<'JSON'
+          {
+            "expo": {
+              "name": "credential-free-pico",
+              "slug": "credential-free-pico",
+              "newArchEnabled": true,
+              "orientation": "default",
+              "plugins": [["@expo-pico/core", {
+                "buildVariant": "pico",
+                "xrMode": "pico-os5",
+                "appType": "mr"
+              }]]
+            }
+          }
+          JSON
+          node packages/expo-pico-core/cli/build/doctor.js \
+            --project /tmp/doctor-pico-no-id --json > /tmp/doctor-pico-no-id/result.json
+          node -e "const r=require('/tmp/doctor-pico-no-id/result.json'); if (!r.resolvedOptions?.isPicoEnabled || r.resolvedOptions?.buildVariant !== 'pico' || r.resolvedOptions?.xrMode !== 'pico-os5' || r.summary?.errorCount !== 0 || !r.findings?.some(x => x.id === 'identity.missing' && x.severity === 'info')) process.exit(1);"
 
       # Advisory: report whether any changesets are pending so PR
       # authors see the impact on the next release before merge.
