@@ -127,6 +127,53 @@ dependencies {
     expect(updateQuestFlavorBlock(out, opts)).toBe(out);
   });
 
+  it('never inserts Quest inside buildscript, even with unindented nested dependencies', () => {
+    const input = `// { fake dependencies {
+buildscript {
+dependencies {
+  classpath "com.android.tools.build:gradle:9.0.0"
+}
+def text = "{ dependencies { in a quoted string }"
+def block = '''{ dependencies { in a triple-quoted string }'''
+/* another { followed by
+dependencies { in a block comment */
+}
+android {
+    productFlavors {
+        mobile { dimension "device" }
+        pico { dimension "device" }
+    }
+}
+dependencies {
+    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.0.0")
+}
+`;
+    const out = updateQuestFlavorBlock(input, opts);
+    const begin = out.indexOf('begin quest flavor');
+    const classpath = out.indexOf('classpath "com.android.tools.build');
+    const appDeps = out.lastIndexOf('\ndependencies {');
+    expect(begin).toBeGreaterThan(classpath);
+    expect(begin).toBeGreaterThan(out.indexOf('\n}\nandroid {'));
+    expect(begin).toBeLessThan(appDeps);
+    expect(updateQuestFlavorBlock(out, opts)).toBe(out);
+  });
+
+  it('respects an indented nested dependencies block before the app block', () => {
+    const input = `buildscript {
+    dependencies {
+        classpath 'com.android.tools.build:gradle:9.0.0'
+    }
+}
+android {}
+dependencies {
+    questImplementation "com.meta.metavrx:metavrx-bom:1.2026.0.0"
+}
+`;
+    const out = updateQuestFlavorBlock(input, opts);
+    expect(out.indexOf('begin quest flavor')).toBeGreaterThan(out.indexOf('classpath'));
+    expect(out.indexOf('begin quest flavor')).toBeLessThan(out.lastIndexOf('\ndependencies {'));
+  });
+
   it('is rewritten, not stacked', () => {
     const once = updateQuestFlavorBlock('android {}\n', opts);
     expect(updateQuestFlavorBlock(once, opts)).toBe(once);
