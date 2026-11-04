@@ -124,12 +124,14 @@ jobs:
           yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
-      # The example's PICO config is commented out, so there is no picoDebug.
       - run: yarn example:assemble:quest
-      - name: No pico variant without a PICO app ID
+      - name: PICO flavor is generated without a Developer Console app ID
         run: |
+          test -z "${PICO_APP_ID:-}"
+          test -z "${PICO_PLATFORM_APP_ID:-}"
           cd example/android
-          ! ./gradlew -q :app:tasks --all | grep -i picoDebug
+          ./gradlew -q :app:tasks --all | grep -q assemblePicoDebug
+      - run: yarn example:assemble:pico
       - name: Quest APK has no PICO entries, mobile APK has no Meta entries
         run: |
           aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | tail -1)
