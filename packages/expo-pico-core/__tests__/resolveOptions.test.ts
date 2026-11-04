@@ -1,25 +1,33 @@
 import { resolveOptions, PICO_OPTION_DEFAULTS } from '../plugin/src/types';
 
 describe('resolveOptions', () => {
-  it('resolves to a mobile build with PICO off when no app ID is set', () => {
+  it('builds PICO XR by default even when no Platform Service ID is supplied', () => {
     for (const result of [resolveOptions({}), resolveOptions(undefined)]) {
       expect(result).toEqual({
         ...PICO_OPTION_DEFAULTS,
-        isPicoEnabled: false,
-        buildVariant: 'mobile',
-        xrMode: 'mobile',
-        appType: '2d',
-        ndkAbiFilters: false,
-        openXrLoaderDeclaration: false,
-        openXrLoaderOverlay: false,
+        platformService: expect.objectContaining({ picoAppId: null, hasIdentity: false }),
       });
+      expect(result.isPicoEnabled).toBe(true);
+      expect(result.buildVariant).toBe('pico');
+      expect(result.xrMode).toBe('pico-os5');
+      expect(result.appType).toBe('vr');
     }
   });
 
-  it('keeps PICO off for a blank or whitespace app ID', () => {
+  it('keeps a dual XR build enabled with an empty Platform Service ID', () => {
     for (const picoAppId of ['', '   ']) {
-      expect(resolveOptions({ picoAppId, buildVariant: 'dual' }).buildVariant).toBe('mobile');
+      const result = resolveOptions({ picoAppId, buildVariant: 'dual' });
+      expect(result.isPicoEnabled).toBe(true);
+      expect(result.buildVariant).toBe('dual');
+      expect(result.platformService.picoAppId).toBeNull();
     }
+  });
+
+  it('honors an explicit mobile-only build without platform credentials', () => {
+    const result = resolveOptions({ buildVariant: 'mobile' });
+    expect(result.isPicoEnabled).toBe(false);
+    expect(result.xrMode).toBe('mobile');
+    expect(result.appType).toBe('2d');
   });
 
   it('turns PICO on with an app ID, from either field', () => {
@@ -35,7 +43,8 @@ describe('resolveOptions', () => {
     const result = resolveOptions({
       platformService: { picoAppKey: 'K', foreign: { picoAppId: 'F' } },
     });
-    expect(result.isPicoEnabled).toBe(false);
+    expect(result.isPicoEnabled).toBe(true);
+    expect(result.platformService.picoAppId).toBeNull();
   });
 
   it('rejects quest options and names the plugin entry they belong on', () => {
