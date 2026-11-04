@@ -38,14 +38,14 @@ describe('runDiagnosticChecks — reducer is pure', () => {
 });
 
 describe('runDiagnosticChecks — each finding has the expected stable id', () => {
-  it('identity.missing is the only finding, as info, when no app ID is set', () => {
+  it('identity.missing is informational for headset builds without Platform Services credentials', () => {
     const f = runDiagnosticChecks(
       resolveOptions({ xrMode: 'pico-os5', picoAppId: undefined, refreshRates: [90] })
     );
     expect(f).toHaveLength(1);
     expect(f[0].id).toBe('identity.missing');
     expect(f[0].severity).toBe('info');
-    expect(f[0].message).toMatch(/PICO is off/);
+    expect(f[0].message).toMatch(/PICO XR flavor will build/);
   });
 
   it('appType.hidden-launcher fires on 2d with pico xrMode', () => {
