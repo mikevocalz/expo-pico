@@ -33,7 +33,12 @@ export function AppShell({ children }: { children: React.ReactNode }): React.JSX
   return <AdaptiveShell>{children}</AdaptiveShell>;
 }
 
-const RAIL_WINDOW = SHELL.railWindow(DESTINATIONS.length);
+// The window's background matches the rail's fill, so no light edge shows at
+// its rounded corners.
+const RAIL_WINDOW = {
+  ...SHELL.railWindow(DESTINATIONS.length),
+  windowBackgroundColor: palette.bgRaised,
+};
 
 function HeadsetShell({ children }: { children: React.ReactNode }): React.JSX.Element {
   const railWindow = useHostedSpatialWindow(RAIL_WINDOW, <NavRail />);

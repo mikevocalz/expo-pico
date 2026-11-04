@@ -44,6 +44,13 @@ export type SpatialWindowSpec = Readonly<{
   anchor: SpatialAnchorPoint | Readonly<{ parent: SpatialAnchorPoint; child: SpatialAnchorPoint }>;
   /** Absent when the window sits flush with the main window. */
   offset?: Readonly<{ x?: SpatialOffsetStep; y?: SpatialOffsetStep; z?: SpatialOffsetStep }>;
+  /**
+   * Opaque color Meta paints behind the window's content. Without it the
+   * window shows the app theme's `android:windowBackground` (Expo's splash,
+   * white), which shows through as a light edge around content with rounded
+   * corners. Set it to the content's own background.
+   */
+  windowBackgroundColor?: string;
 }>;
 
 /** Where a hosted window is, in the vocabulary of Meta's `useSpatialWindowState`. */
