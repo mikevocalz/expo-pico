@@ -17,7 +17,7 @@ PICO is a native Viro platform, alongside Quest and visionOS. The three reposito
 
 **Expo integration**: Expo SDK 58 / React Native 0.88 / React 19.3. `@expo-pico/core` now creates the `pico` flavor without `PICO_APP_ID` or a Platform Service app key. No registered PICO account is needed to build the XR renderer; account, achievements, IAP and other authenticated Platform Service calls remain credential-gated. The example config enables `xRMode: ['QUEST', 'PICO']` and the corresponding native plugins.
 
-**Binary gate**: the example still uses the published Viro 3.0.2 dependency and its legacy compatibility overlays. Building the 3.1.0 source pair, replacing the Android AARs, and rebuilding Apple/visionOS and web/WASM binaries remain separate release steps; source version checks and CI unit tests do not establish a working compiled 3.1.0 renderer. After a *paired, verified* Viro 3.1.0 native build, disable compatibility overlays and prove the APK's arm64 ELF alignment plus ZIP alignment.
+**Binary gate**: the example still uses the published Viro 3.0.2 dependency and its legacy compatibility overlays. Building the 3.1.0 source pair, replacing the Android AARs, and rebuilding Apple/visionOS and web/WASM binaries remain separate release steps; source version checks and CI unit tests do not establish a working compiled 3.1.0 renderer. After a _paired, verified_ Viro 3.1.0 native build, disable compatibility overlays and prove the APK's arm64 ELF alignment plus ZIP alignment.
 
 The React bridge, native renderer, OpenXR loader, controller profile and world-mesh/VPS capabilities must come from a compatible artifact set. Do not mix a new Java/JNI bridge with an older `libviro_renderer.so` or let an overlay silently replace the renderer under test.
 
