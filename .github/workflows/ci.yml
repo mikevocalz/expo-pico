@@ -77,6 +77,8 @@ jobs:
       # Pinned eskiuc release, verified against a checksum committed in the script.
       - run: bash scripts/install-eskiuc.sh
       - run: node scripts/eskiu-doctor.mjs --strict
+      # ExpoPicoEskiu.cmake accepts only the pinned eskiuc.
+      - run: node --test scripts/eskiu-cmake-pin.test.mjs
       # Every lucide-static icon, fetched from npm at the latest version.
       - run: node scripts/build-lucide-icons.mjs --all --out "$RUNNER_TEMP/lucide-icons.json"
       # Host tests (parser, arcs, stroke counts, Lucide meshes) plus the
