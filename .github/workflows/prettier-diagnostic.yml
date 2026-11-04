@@ -1,0 +1,22 @@
+name: PR formatting diagnostic
+on:
+  push:
+    branches: [fix/xr-no-platform-credentials]
+permissions:
+  contents: read
+jobs:
+  print-formatted-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+      - name: Print only the formatted integration document
+        run: |
+          npx --yes prettier@3.8.1 docs/VIRO-PICO-INTEGRATION.md > /tmp/expected.md
+          echo '=== BEGIN PRETTIER OUTPUT ==='
+          cat /tmp/expected.md
+          echo '=== END PRETTIER OUTPUT ==='
