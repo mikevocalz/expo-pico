@@ -117,22 +117,23 @@ export declare class PicoCore extends HybridObject {
   getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]>;
 
   /**
-   * Start this app's immersive activity — the one declaring PICO's VR intent
-   * category — so it takes over the display.
+   * Start this app's immersive activity so it takes over the display.
    *
-   * PICO launches an app as a flat 2D panel. An OpenXR renderer drawing inside
-   * that panel stays inside it: the panel is still there, floating in the
-   * scene, because the scene *is* the panel. Exclusive display needs a separate
-   * Activity carrying `com.pico.intent.category.VR`, which is what
-   * `withPicoLauncherActivity` writes onto `.VRActivity`.
+   * PICO and Horizon OS launch an app as a flat 2D panel. An OpenXR renderer
+   * drawing inside that panel stays inside it: the panel is still there,
+   * floating in the scene, because the scene *is* the panel. Exclusive display
+   * needs a separate Activity, which is Viro's `.VRActivity`.
    *
-   * The activity is discovered through `PackageManager` rather than named, so
-   * this works whatever the renderer's plugin generated. Resolves `false` when
-   * no such activity is declared.
+   * The config plugin marks that activity with the
+   * `expo.modules.pico.IMMERSIVE_ACTIVITY` meta-data, and this finds it
+   * through `PackageManager` by that marker. Its intent filters are renamed
+   * or removed so it never shows as a second library tile, so the marker,
+   * not a filter, is what identifies it. Resolves `false` on phone builds
+   * and when no activity is marked.
    */
   enterImmersiveScene(): Promise<boolean>;
 
-  /** Whether an activity declaring the PICO VR category exists in this app. */
+  /** Whether this headset build has a marked immersive activity. */
   hasImmersiveActivity(): Promise<boolean>;
 
   /**

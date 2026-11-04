@@ -143,29 +143,19 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     get() = PicoDevice.splitList(BuildConfig.PICO_TARGET_DEVICES).toTypedArray()
 
   /**
-   * Resolve this app's immersive activity, if it declares one.
+   * Resolve this app's immersive activity, if this flavor has one.
    *
-   * Matched on PICO's VR intent category rather than a class name, so it finds
-   * whatever the renderer's config plugin generated — Viro's `.VRActivity`, or
-   * an app's own. Restricted to this package: `queryIntentActivities` would
-   * otherwise happily return the system launcher's VR entries.
-   *
-   * The legacy `com.picovr.` category is checked too, because devices still on
-   * PICO OS 5 filter on that one.
+   * The config plugin marks the renderer's immersive activity (Viro's
+   * `.VRActivity`) with [IMMERSIVE_ACTIVITY_META], which survives the
+   * one-launcher-tile rules that strip or rename its intent filters. Phone
+   * builds (`xrMode` `mobile`) get null: the activity is in the main manifest
+   * of every flavor, and a phone renders the scene inline instead.
    */
   private fun resolveImmersiveActivity(): Intent? {
+    if (BuildConfig.PICO_XR_MODE == "mobile") return null
     val context = PicoDevice.context() ?: return null
-    val pm = context.packageManager
-    for (category in IMMERSIVE_CATEGORIES) {
-      val probe = Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(context.packageName)
-      val match = runCatching { pm.queryIntentActivities(probe, 0) }
-        .getOrDefault(emptyList())
-        .firstOrNull() ?: continue
-      return Intent(Intent.ACTION_MAIN)
-        .addCategory(category)
-        .setClassName(context.packageName, match.activityInfo.name)
-    }
-    return null
+    val name = context.immersiveActivityName() ?: return null
+    return Intent().setClassName(context.packageName, name)
   }
 
   /**
@@ -306,20 +296,6 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   // so it is no longer private.
   companion object : HybridPicoCoreSpec.Companion {
     override fun constructor(): HybridPicoCore = HybridPicoCore()
-
-    /**
-     * VR intent categories for this flavor. react-viro generates VRActivity in
-     * the main manifest with only the Meta category, so every flavor (the phone
-     * one included) would resolve it. The Meta category is therefore searched
-     * only in the `quest` flavor; PICO keys on its own categories, current
-     * first then the OS 5 legacy name.
-     */
-    private val IMMERSIVE_CATEGORIES: List<String> =
-      if (BuildConfig.PICO_XR_MODE == "quest") {
-        listOf("com.oculus.intent.category.VR")
-      } else {
-        listOf("com.pico.intent.category.VR", "com.picovr.intent.category.VR")
-      }
 
     const val SWAN_RUNTIME_CLASS = "expo.modules.pico.swan.PicoSwanRuntime"
     const val OS5_RUNTIME_CLASS = "expo.modules.pico.os5.PicoOs5Runtime"
