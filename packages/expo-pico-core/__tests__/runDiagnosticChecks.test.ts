@@ -25,6 +25,11 @@ describe('runDiagnosticChecks — reducer is pure', () => {
     expect(runDiagnosticChecks(resolveOptions({ buildVariant: 'mobile' }))).toEqual([]);
   });
 
+  it('does not announce a PICO XR build when the plugin is disabled', () => {
+    const findings = runDiagnosticChecks(resolveOptions({ enabled: false }));
+    expect(ids(findings)).not.toContain('identity.missing');
+  });
+
   it('is deterministic — same input produces same finding ids in same order', () => {
     const opts = resolveOptions({
       xrMode: 'pico-swan',
