@@ -10,8 +10,9 @@ const HORIZON_BUILD_CONFIG_MARKER =
   '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 
 /**
- * The quest flavor's settings, appended to `app/build.gradle` and rewritten on
- * every prebuild.
+ * The quest flavor's settings, declared before the app module's dependencies
+ * block and rewritten on every prebuild. Gradle must create `questImplementation`
+ * before evaluating dependencies that reference it (including the Meta VR SDK).
  *
  * expo-horizon-core declares `mobile` and `quest` only when the file has no
  * flavors yet; when another plugin declared the `device` dimension first
@@ -35,9 +36,7 @@ androidComponents {
     }
 }`
     : '';
-  return (
-    contents +
-    `
+  const questBlock = `
 ${QUEST_FLAVOR_BEGIN}
 android {
     productFlavors {
@@ -49,8 +48,15 @@ android {
     }
 }${pickFirst}
 ${QUEST_FLAVOR_END}
-`
-  );
+`;
+  // When PICO declares the `device` dimension first, expo-horizon-core
+  // skips declaring Quest. Appending Quest after dependencies is too late:
+  // `questImplementation(...)` then fails during Gradle evaluation.
+  // Match only the top-level app block, not buildscript's dependencies.
+  const depsIndex = contents.search(/^dependencies\s*\{/m);
+  return depsIndex < 0
+    ? contents + questBlock
+    : contents.slice(0, depsIndex) + questBlock + contents.slice(depsIndex);
 }
 
 /**
