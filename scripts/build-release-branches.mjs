@@ -115,7 +115,10 @@ function packInto(packArgs, cwd, stageDir) {
       cwd,
     }
   );
-  const [{ filename }] = JSON.parse(out);
+  // npm 10 prints an array of reports; npm 12 prints an object keyed by
+  // package name.
+  const report = JSON.parse(out);
+  const [{ filename }] = Array.isArray(report) ? report : Object.values(report);
   run('tar', ['xzf', join(scratch, filename), '-C', scratch]);
   rmSync(stageDir, { recursive: true, force: true });
   cpSync(join(scratch, 'package'), stageDir, { recursive: true });
