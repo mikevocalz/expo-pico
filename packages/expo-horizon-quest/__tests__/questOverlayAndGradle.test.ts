@@ -109,6 +109,24 @@ describe('quest flavor Gradle block', () => {
     expect(out).not.toContain('flavorDimensions');
     expect(out).not.toMatch(/\bpico\b/);
   });
+  it('declares quest before dependencies when PICO creates flavors first', () => {
+    const input = `android {
+    flavorDimensions += "device"
+    productFlavors {
+        mobile { dimension "device" }
+        pico { dimension "device" }
+    }
+}
+dependencies {
+    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.0.0")
+}
+`;
+    const out = updateQuestFlavorBlock(input, opts);
+    expect(out.indexOf('begin quest flavor')).toBeLessThan(out.indexOf('dependencies {'));
+    expect(out).toContain('quest {');
+    expect(updateQuestFlavorBlock(out, opts)).toBe(out);
+  });
+
   it('is rewritten, not stacked', () => {
     const once = updateQuestFlavorBlock('android {}\n', opts);
     expect(updateQuestFlavorBlock(once, opts)).toBe(once);
