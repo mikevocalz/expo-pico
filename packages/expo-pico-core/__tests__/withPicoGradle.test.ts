@@ -79,12 +79,41 @@ describe('missingDimensionStrategy injection (buildVariant=mobile)', () => {
     expect(shouldInject).toBe(false);
   });
 
-  it('inserts missingDimensionStrategy after android {', () => {
-    const freshGradle = `android {\n  compileSdkVersion 34\n}`;
-    const dimBlock = `\n    ${MISSING_DIM_MARKER}\n    defaultConfig {\n        missingDimensionStrategy "device", "mobile"\n    }\n`;
-    const result = insertAfterPattern(freshGradle, /android\s*\{/, dimBlock);
-    expect(result).toContain('missingDimensionStrategy "device", "mobile"');
-    expect(result).toContain(MISSING_DIM_MARKER);
+  it('applies the strategy only when the app has no device dimension of its own', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { renderMissingDimensionBlock } = require('../plugin/src/withPicoGradle');
+    const block: string = renderMissingDimensionBlock();
+    expect(block).toContain(MISSING_DIM_MARKER);
+    // An unconditional defaultConfig strategy overrides the quest flavor that
+    // expo-horizon-core adds, so questDebug packaged its mobile variant.
+    expect(block).toMatch(
+      /finalizeDsl \{ extension ->\s+if \(!extension\.getFlavorDimensions\(\)\.contains\("device"\)\) \{\s+extension\.defaultConfig\.missingDimensionStrategy\("device", "mobile"\)/
+    );
+    expect(block).not.toMatch(/^\s*defaultConfig \{/m);
+    // expo-horizon-core skips adding its mobile/quest flavors when
+    // app/build.gradle already contains `flavorDimensions` and
+    // `productFlavors`, so this block must not contain that word.
+    expect(block).not.toContain('flavorDimensions');
+  });
+
+  it('replaces the unconditional block an earlier version wrote', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { withPicoAppBuildGradle } = require('../plugin/src/withPicoGradle');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { resolveOptions } = require('./support/picoOptions');
+    const legacy = `android {\n    ${MISSING_DIM_MARKER}\n    defaultConfig {\n        missingDimensionStrategy "device", "mobile"\n    }\n\n    flavorDimensions += "device"\n}\n`;
+    const config = withPicoAppBuildGradle(
+      { name: 'x', slug: 'x' },
+      resolveOptions({ xrMode: 'mobile', buildVariant: 'mobile' })
+    );
+    const applied = await config.mods.android.appBuildGradle({
+      modRequest: { nextMod: (result: unknown) => result, projectRoot: '/nonexistent' },
+      modResults: { contents: legacy, language: 'groovy' },
+    });
+    const out: string = applied.modResults.contents;
+    expect(out).not.toMatch(/defaultConfig \{\n\s*missingDimensionStrategy/);
+    expect(out.match(/missing dimension strategy/g)).toHaveLength(1);
+    expect(out).toContain('extension.getFlavorDimensions().contains("device")');
   });
 });
 

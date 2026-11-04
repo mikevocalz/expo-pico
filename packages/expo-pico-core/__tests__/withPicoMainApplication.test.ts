@@ -141,3 +141,43 @@ describe('New Architecture flag guard', () => {
     warn.mockRestore();
   });
 });
+
+describe('withPicoMainApplication on a quest-only build (xrMode mobile)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const {
+    withPicoMainApplication,
+    usesViroVrActivity,
+  } = require('../plugin/src/withPicoMainApplication');
+
+  async function run(plugins: unknown[]): Promise<string> {
+    const config = withPicoMainApplication(
+      { name: 'x', slug: 'x', plugins },
+      resolveOptions({ xrMode: 'mobile' })
+    );
+    const mod = config.mods?.android?.mainApplication;
+    if (!mod) return KT_TEMPLATE;
+    const applied = await mod({
+      modRequest: { nextMod: (result: unknown) => result },
+      modResults: { contents: KT_TEMPLATE, language: 'kt' },
+    });
+    return applied.modResults.contents;
+  }
+
+  it('adds the flag guard when react-viro generates a VRActivity', async () => {
+    // Without it, Enter XR on a Quest 3S crashed in ReactHostImpl.onHostPause:
+    // "Pausing an activity that is not the current activity".
+    const out = await run([['@reactvision/react-viro', { xRMode: ['QUEST'] }]]);
+    expect(out).toContain('skipActivityIdentityAssertionOnHostPause(): Boolean = true');
+  });
+
+  it('leaves a phone app without react-viro untouched', async () => {
+    expect(await run(['expo-router'])).toBe(KT_TEMPLATE);
+  });
+
+  it('detects the plugin by name, with or without options', () => {
+    expect(usesViroVrActivity({ plugins: ['@reactvision/react-viro'] })).toBe(true);
+    expect(usesViroVrActivity({ plugins: [['@reactvision/react-viro', {}]] })).toBe(true);
+    expect(usesViroVrActivity({ plugins: ['expo-horizon-core'] })).toBe(false);
+    expect(usesViroVrActivity({})).toBe(false);
+  });
+});

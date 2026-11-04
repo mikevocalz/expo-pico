@@ -10,7 +10,8 @@ import type { ResolvedPicoOptions } from './types';
 import { insertImportAfterPackage, insertLinesAfter } from './util/insertLinesHelper';
 
 /**
- * MainApplication edits for PICO builds (`xrMode` other than `'mobile'`):
+ * MainApplication edits for PICO builds (`xrMode` other than `'mobile'`) and for
+ * any build that has react-viro's `VRActivity` (`usesViroVrActivity`):
  *
  *   - Adds the New Architecture flag guard for the Viro VR activity hop
  *     (Kotlin only; see `injectNewArchFlagGuard`).
@@ -18,7 +19,7 @@ import { insertImportAfterPackage, insertLinesAfter } from './util/insertLinesHe
  *     React Native autolinking registers it (see react-native.config.js).
  */
 export const withPicoMainApplication: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
-  if (options.xrMode === 'mobile') {
+  if (options.xrMode === 'mobile' && !usesViroVrActivity(config)) {
     return config;
   }
 
@@ -39,6 +40,20 @@ export function injectIntoKotlinMainApplication(
   _options: ResolvedPicoOptions
 ): string | null {
   return injectNewArchFlagGuard(stripLegacyPackageRegistration(source));
+}
+
+/**
+ * True when `@reactvision/react-viro` is a config plugin, which generates the
+ * immersive `VRActivity` that shares the app's ReactHost. A quest-only app
+ * (no `picoAppId`, so `xrMode` stays `'mobile'`) has that activity too and
+ * needs the flag guard: without it, entering XR on a Quest 3S crashed with
+ * `AssertionError: Pausing an activity that is not the current activity ...
+ * Current activity: VRActivity Paused activity: MainActivity`.
+ */
+export function usesViroVrActivity(config: { plugins?: unknown[] }): boolean {
+  return (config.plugins ?? []).some(
+    (entry) => (Array.isArray(entry) ? entry[0] : entry) === '@reactvision/react-viro'
+  );
 }
 
 /**
