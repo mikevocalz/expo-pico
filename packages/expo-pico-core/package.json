@@ -23,6 +23,16 @@
       "types": "./plugin/build/viro/index.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/withPico.d.ts"
+      ],
+      "plugin/viro": [
+        "./plugin/build/viro/index.d.ts"
+      ]
+    }
+  },
   "bin": {
     "expo-pico-doctor": "./cli/build/doctor.js"
   },

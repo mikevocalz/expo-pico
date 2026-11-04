@@ -18,6 +18,13 @@
       "types": "./plugin/build/src/withPicoSubscription.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/src/withPicoSubscription.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "nitrogen && tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",

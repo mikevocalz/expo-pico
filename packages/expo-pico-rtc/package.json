@@ -18,6 +18,13 @@
       "types": "./plugin/build/src/withPicoRtc.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/src/withPicoRtc.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "nitrogen && tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",
