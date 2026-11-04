@@ -9,6 +9,17 @@ export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan' | 'quest';
 export type PicoAppType = 'vr' | 'mr' | '2d';
 export type PicoTargetProfile = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'unknown';
 
+/**
+ * Outcome of `requestImmersivePermission`. `no_immersive_activity` means the
+ * request never reached the user: the immersive activity is not alive, so
+ * nothing was asked.
+ */
+export type PicoPermissionStatus =
+  | 'granted'
+  | 'denied'
+  | 'never_ask_again'
+  | 'no_immersive_activity';
+
 export type PicoCapabilityName =
   | 'handTracking'
   | 'passthrough'
@@ -149,6 +160,22 @@ export declare class PicoCore extends HybridObject {
    * the panel by mistake.
    */
   exitImmersiveScene(): Promise<boolean>;
+
+  /**
+   * Ask for one runtime permission from the immersive activity itself.
+   *
+   * `PermissionsAndroid.request` goes through the React context's current
+   * activity, and while the immersive activity is in front that can still be
+   * the 2D panel's MainActivity. The system then opens the grant dialog in the
+   * panel's task, the panel comes forward, and react-viro's VRActivity finishes
+   * itself when another activity of the app resumes: XR closed about 0.4 s
+   * after entry on a Quest 3S. Asking through the immersive activity keeps the
+   * dialog in its task, so the panel never resumes.
+   *
+   * Resolves without prompting when the permission is already granted, and
+   * with `no_immersive_activity` when that activity is not alive.
+   */
+  requestImmersivePermission(permission: string): Promise<PicoPermissionStatus>;
   /** Undefined when the capability has no system-feature key to check. */
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | undefined>;
 }

@@ -174,6 +174,12 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     return Promise.resolved(true)
   }
 
+  override fun requestImmersivePermission(permission: String): Promise<PicoPermissionStatus> {
+    val activity = ImmersiveActivityTracker.immersiveActivity()
+      ?: return Promise.resolved(PicoPermissionStatus.NO_IMMERSIVE_ACTIVITY)
+    return activity.requestPermissionStatus(permission)
+  }
+
   override fun hasImmersiveActivity(): Promise<Boolean> =
     Promise.resolved(resolveImmersiveActivity() != null)
 

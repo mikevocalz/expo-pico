@@ -1,4 +1,4 @@
-import { PermissionsAndroid, Platform, type Permission } from 'react-native';
+import { Platform } from 'react-native';
 
 import ExpoPicoModule from './ExpoPicoModule';
 import type { PicoXRMode } from './types';
@@ -35,6 +35,18 @@ export function eyeTrackingPermissionFor(mode: PicoXRMode): string | null {
   }
 }
 
+/** Horizon OS device feature for eye tracking. Quest Pro has it; Quest 3 and 3S do not. */
+export const HORIZON_EYE_TRACKING_FEATURE = 'oculus.software.eye_tracking';
+
+/** PICO device feature for eye tracking. PICO 4 Ultra does not have it. */
+export const PICO_EYE_TRACKING_FEATURE = 'picovr.software.eye_tracking';
+
+function eyeTrackingFeatureFor(permission: string): string {
+  return permission === HORIZON_EYE_TRACKING_PERMISSION
+    ? HORIZON_EYE_TRACKING_FEATURE
+    : PICO_EYE_TRACKING_FEATURE;
+}
+
 // Keyed by permission. An entry stays once a request reached the user; a
 // lookup that failed before that is dropped so the next launch tries again.
 const pending = new Map<string, Promise<void>>();
@@ -48,8 +60,12 @@ const pending = new Map<string, Promise<void>>();
  * activates and selection falls back to the hand ray. The manifest entry alone
  * is not enough: the permission is a runtime one and nothing else requests it.
  *
- * Asks only when the build's manifest declares the permission and it is not
- * granted yet, and never on the `mobile` flavor. A denial is logged, not
+ * Asks only when the build's manifest declares the permission, it is not
+ * granted yet, and the device has eye tracking hardware (the
+ * `oculus.software.eye_tracking` or `picovr.software.eye_tracking` feature),
+ * and never on the `mobile` flavor. PICO builds also need the plugin's
+ * `eyeTracking` option. The request goes through the immersive activity, so
+ * the grant dialog opens in its task and XR stays open behind it. A denial is logged, not
  * thrown, so the caller carries on with the hand ray. After "don't ask again"
  * Android answers `never_ask_again` without showing a dialog, and the one
  * request per process keeps a declined prompt from coming back every time the
@@ -89,15 +105,32 @@ export function ensureEyeTrackingPermission(mode: PicoXRMode): Promise<void> {
 /** Resolves `true` when the outcome is final for this process. */
 async function requestIfDeclared(permission: string): Promise<boolean> {
   try {
+    // PICO builds carry the eye tracking permission only when the plugin's
+    // `eyeTracking` option set it; BuildConfig.PICO_EYE_TRACKING says so.
+    if (
+      permission === PICO_EYE_TRACKING_PERMISSION &&
+      !ExpoPicoModule.declaredCapabilities.eyeTracking
+    ) {
+      return true;
+    }
     const declared = await ExpoPicoModule.getDeclaredPermissions();
-    if (!declared.some((entry) => entry.name === permission)) return true;
+    const entry = declared.find((candidate) => candidate.name === permission);
+    if (!entry || entry.granted) return true;
 
-    // A custom permission string; RN's Permission type only lists android.*.
-    const target = permission as Permission;
-    if (await PermissionsAndroid.check(target)) return true;
+    // No eye tracking hardware (Quest 3/3S, PICO 4 Ultra): nothing to ask for.
+    // Horizon OS would suppress the dialog anyway, but only after starting the
+    // grant activity, which already costs the immersive activity its focus.
+    if (!(await ExpoPicoModule.hasSystemFeature(eyeTrackingFeatureFor(permission)))) return true;
 
-    const status = await PermissionsAndroid.request(target);
-    if (status !== PermissionsAndroid.RESULTS.GRANTED) {
+    // Through the immersive activity, never PermissionsAndroid: that uses the
+    // React context's current activity, which can still be the 2D panel. The
+    // dialog then opens in the panel's task, the panel resumes, and react-viro's
+    // VRActivity finishes itself.
+    const status = await ExpoPicoModule.requestImmersivePermission(permission);
+    // The immersive activity was not alive, so the user saw nothing: let the
+    // next mount ask.
+    if (status === 'no_immersive_activity') return false;
+    if (status !== 'granted') {
       console.warn(
         `[@expo-pico/core] ${permission} was ${status}. Eye gaze stays off; ` +
           `selection uses the hand ray.`

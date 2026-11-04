@@ -26,6 +26,7 @@
 #include <NitroModules/JNIConverter+Map.hpp>
 #include <NitroModules/JSIConverter+JMap.hpp>
 #include <ExpoPicoCore/private/JPicoCapabilitySnapshotEntry.hpp>
+#include <ExpoPicoCore/private/JPicoPermissionStatus.hpp>
 #include <ExpoPicoCore/private/JPicoCapabilityName.hpp>
 #include <memory>
 #include <NitroModules/JNIConverter+HybridObject.hpp>
@@ -71,6 +72,7 @@ namespace margelo::nitro::expopico::picocore {
       clazz.registerHybridMethod("enterImmersiveScene", &JHybridPicoCoreSpec::enterImmersiveScene);
       clazz.registerHybridMethod("hasImmersiveActivity", &JHybridPicoCoreSpec::hasImmersiveActivity);
       clazz.registerHybridMethod("exitImmersiveScene", &JHybridPicoCoreSpec::exitImmersiveScene);
+      clazz.registerHybridMethod("requestImmersivePermission", &JHybridPicoCoreSpec::requestImmersivePermission);
       clazz.registerHybridMethod("isCapabilityAvailable", &JHybridPicoCoreSpec::isCapabilityAvailable);
       clazz.registerHybridConstructor(&JHybridPicoCoreSpec::constructor);
     });
@@ -256,6 +258,11 @@ namespace margelo::nitro::expopico::picocore {
   jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> JHybridPicoCoreSpec::exitImmersiveScene() {
     static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>>()>("exitImmersiveScene");
     auto __result = __method(_javaPart, CxxPart::getClass());
+    return __result;
+  }
+  jni::local_ref<JTypedPromise<jni::local_ref<JPicoPermissionStatus>>> JHybridPicoCoreSpec::requestImmersivePermission(const jni::local_ref<jni::JString>& permission) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JTypedPromise<jni::local_ref<JPicoPermissionStatus>>>(jni::alias_ref<jni::JString> /* permission */)>("requestImmersivePermission");
+    auto __result = __method(_javaPart, CxxPart::getClass(), permission);
     return __result;
   }
   jni::local_ref<JTypedPromise<jni::local_ref<JOptional<jni::JBoolean>>>> JHybridPicoCoreSpec::isCapabilityAvailable(const jni::local_ref<JPicoCapabilityName>& name) {

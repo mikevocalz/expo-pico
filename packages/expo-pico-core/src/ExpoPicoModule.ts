@@ -1,6 +1,6 @@
 import { resolvePicoCore, resolvePicoRuntime } from './hybrid';
 
-import type { PicoCore } from './PicoCore.nitro';
+import type { PicoCore, PicoPermissionStatus } from './PicoCore.nitro';
 import type { PicoRuntime, PicoVec3, PicoQuat } from './PicoRuntime.nitro';
 import type {
   PicoBodyJoint,
@@ -163,6 +163,10 @@ const ExpoPicoModule = {
 
   async exitImmersiveScene(): Promise<boolean> {
     return (await core()?.exitImmersiveScene()) ?? false;
+  },
+
+  async requestImmersivePermission(permission: string): Promise<PicoPermissionStatus> {
+    return (await core()?.requestImmersivePermission(permission)) ?? 'no_immersive_activity';
   },
 
   async hasImmersiveActivity(): Promise<boolean> {

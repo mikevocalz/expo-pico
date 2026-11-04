@@ -32,6 +32,7 @@
 #include <NitroModules/JNIConverter+Map.hpp>
 #include <NitroModules/JSIConverter+JMap.hpp>
 #include <ExpoPicoCore/private/JPicoCapabilitySnapshotEntry.hpp>
+#include <ExpoPicoCore/private/JPicoPermissionStatus.hpp>
 #include <ExpoPicoCore/private/JPicoCapabilityName.hpp>
 #include <ExpoPicoCore/private/JHybridPicoCoreSpec.hpp>
 #include <memory>
@@ -115,6 +116,7 @@ namespace margelo::nitro::expopico::picocore {
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> enterImmersiveScene();
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> hasImmersiveActivity();
     jni::local_ref<JTypedPromise<jni::local_ref<jni::JBoolean>>> exitImmersiveScene();
+    jni::local_ref<JTypedPromise<jni::local_ref<JPicoPermissionStatus>>> requestImmersivePermission(const jni::local_ref<jni::JString>& permission);
     jni::local_ref<JTypedPromise<jni::local_ref<JOptional<jni::JBoolean>>>> isCapabilityAvailable(const jni::local_ref<JPicoCapabilityName>& name);
 
   public:
