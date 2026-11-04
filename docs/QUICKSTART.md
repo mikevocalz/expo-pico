@@ -9,7 +9,7 @@ Deeper references once you're up and running:
 
 ## 0. Prerequisites
 
-- Node 20+ and yarn 1.x (or `npm`). The repo and templates are written for yarn; swap to `npm` / `pnpm` if you prefer.
+- Node 22.18+ and yarn 1.x (or `npm`). The repo and templates are written for yarn; swap to `npm` / `pnpm` if you prefer.
 - Android Studio with:
   - Command-line tools installed.
   - `ANDROID_HOME` on your `PATH`.
@@ -54,7 +54,7 @@ Kill the dev server once you see the QR code. We're about to switch to the Andro
 yarn add @expo-pico/core react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
 ```
 
-Only `expo-pico-core` is required for the base build wiring. Add sibling packages (`expo-pico-account`, `expo-pico-iap`, etc.) as you need their surfaces.
+Only `@expo-pico/core` is required for base build wiring. **No PICO app ID is required to create the PICO flavor or run local XR scenes.** Add sibling packages (`@expo-pico/account`, `@expo-pico/iap`, etc.) as you need Platform Service features. Account and payment calls require registered credentials, but XR rendering does not.
 
 ## 3. Configure `app.config.ts`
 
@@ -114,7 +114,7 @@ Every plugin option is documented in [expo-pico-core's README](../packages/expo-
 npx expo-pico-doctor
 ```
 
-The doctor catches seven common misconfigs before `expo prebuild` mutates native files. On a fresh config you should see zero errors and one `identity.missing` warning, which is fine since you haven't set platform identity yet.
+The doctor checks common misconfigurations before `expo prebuild` mutates native files. On a credential-free XR config, `identity.missing` is **informational**: the PICO flavor still builds. If you install Platform Services packages, supply their credentials before calling login, IAP or leaderboards.
 
 ## 4. Regenerate native projects
 
@@ -122,7 +122,7 @@ The doctor catches seven common misconfigs before `expo prebuild` mutates native
 npx expo prebuild --clean
 ```
 
-This creates `android/` with:
+This creates `android/` **without editing Gradle or AndroidManifest by hand**, even when no PICO Developer Console app ID has been set. Generated files include:
 
 - `flavorDimensions "device"` plus `mobile` / `pico` product flavors
 - `pvr.app.type=vr` and OpenXR `IMMERSIVE_HMD` launcher categories in the PICO-flavor manifest
