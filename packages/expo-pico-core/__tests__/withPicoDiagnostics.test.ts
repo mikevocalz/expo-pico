@@ -1,12 +1,13 @@
 import { resolveOptions } from './support/picoOptions';
 import { runDiagnosticChecks } from '../plugin/src/withPicoDiagnostics';
 
-type WarnCall = { tag: string; message: string };
+type WarnCall = { tag: string; id: string; message: string };
 
 function runDiagnostics(input: Parameters<typeof resolveOptions>[0]): WarnCall[] {
   const resolved = resolveOptions(input);
   return runDiagnosticChecks(resolved).map((finding) => ({
     tag: '@expo-pico/core',
+    id: finding.id,
     message: finding.message,
   }));
 }
@@ -40,12 +41,13 @@ describe('withPicoDiagnostics — no app ID', () => {
   it('reports missing PPS identity without disabling PICO XR', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: undefined, handTracking: true });
     expect(calls).toHaveLength(1);
+    expect(calls[0].id).toBe('identity.missing');
     expect(calls[0].message).toMatch(/PICO XR flavor will build/);
   });
 
   it('says nothing about identity when legacy top-level picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
-    expect(calls.some((c) => c.message.includes('identity.missing'))).toBe(false);
+    expect(calls.some((c) => c.id === 'identity.missing')).toBe(false);
   });
 });
 
