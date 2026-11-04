@@ -292,7 +292,7 @@ export function addBodyListener(cb: (joints: BodyJoint[]) => void): Subscription
             number,
             number,
             number,
-            number
+            number,
           ],
         }))
       )

@@ -171,7 +171,7 @@ export function attachedWindowFrame(
   if (typeof anchor !== 'object' || !('parent' in anchor)) return null;
   if (window.offset != null) return null;
   const horizontal = (point: SpatialAnchorPoint) =>
-    typeof point === 'string' ? point : point.horizontal ?? null;
+    typeof point === 'string' ? point : (point.horizontal ?? null);
   if (horizontal(anchor.parent) !== 'left' || horizontal(anchor.child) !== 'right') return null;
   return {
     widthDp: Math.round(window.windowWidth),
