@@ -37,9 +37,8 @@ export interface DiagnosticCheckFinding {
  *
  * Covered checks (each has a stable id):
  *
- *   1. `identity.missing` (info) — no `picoAppId` /
- *      `platformService.picoAppId`, so PICO is off and no pico flavor is
- *      built. The only finding returned in that case.
+ *   1. `identity.missing` (info) — the PICO XR flavor remains active without
+ *      Platform Service credentials; account/IAP calls require an app ID.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive
@@ -80,21 +79,20 @@ export function runDiagnosticChecks(
 ): DiagnosticCheckFinding[] {
   const findings: DiagnosticCheckFinding[] = [];
 
-  // PICO is off until the app sets an app ID. Say so once and skip the
-  // PICO checks: none of them apply to a build with no pico flavor.
-  if (!options.isPicoEnabled) {
-    return [
-      {
-        id: 'identity.missing',
-        severity: 'info',
-        message:
-          'PICO is off: no picoAppId is set, so prebuild adds no pico flavor. ' +
-          'Set picoAppId (from the PICO Developer Console) to build for PICO.' +
-          (process.env.PICO_APP_ID
-            ? ' PICO_APP_ID is set in this shell but app.config does not pass it as picoAppId.'
-            : ''),
-      },
-    ];
+  // Pure XR apps must remain installable with no PICO Developer Console
+  // account. Only PPS-backed features require a registered app identity.
+  if (options.isPicoEnabled && !options.platformService.picoAppId) {
+    findings.push({
+      id: 'identity.missing',
+      severity: 'info',
+      message:
+        'PICO XR flavor will build without Platform Service credentials. ' +
+        'Account, achievements and IAP require platformService.picoAppId and ' +
+        'their respective keys; headset rendering does not.' +
+        (process.env.PICO_APP_ID
+          ? ' PICO_APP_ID is set, but app.config does not pass it as platformService.picoAppId.'
+          : ''),
+    });
   }
 
   // 2. 2d appType with PICO xrMode
