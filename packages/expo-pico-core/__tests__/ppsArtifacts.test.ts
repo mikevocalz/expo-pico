@@ -2,9 +2,11 @@ import {
   PPS_ALL_SERVICES,
   PPS_GROUP,
   PPS_LOCAL_AAR_EXCLUDES,
+  PPS_SERVICE_VERSIONS,
   PPS_SERVICES_BY_PACKAGE,
   PPS_VERSION,
   isPinnedPpsModule,
+  ppsPinnedVersion,
   renderLocalAarBlock,
   resolvePpsConfigurations,
   renderPpsDependenciesBlock,
@@ -86,8 +88,8 @@ describe('renderPpsDependenciesBlock', () => {
   const block = renderPpsDependenciesBlock(['auth', 'friend', 'iap', 'social'], DEPS_MARKER);
 
   it('declares each requested service exactly once', () => {
-    for (const service of ['auth', 'friend', 'iap', 'social']) {
-      const line = `    implementation "${PPS_GROUP}:platform-service-${service}:${PPS_VERSION}"`;
+    for (const service of ['auth', 'friend', 'iap', 'social'] as const) {
+      const line = `    implementation "${PPS_GROUP}:platform-service-${service}:${PPS_SERVICE_VERSIONS[service]}"`;
       expect(block.split('\n').filter((l) => l === line)).toHaveLength(1);
     }
   });
@@ -95,7 +97,7 @@ describe('renderPpsDependenciesBlock', () => {
   it('constrains every service plus the shared base, not just the ones used', () => {
     for (const service of PPS_ALL_SERVICES) {
       expect(block).toContain(
-        `        implementation "${PPS_GROUP}:platform-service-${service}:${PPS_VERSION}"`
+        `        implementation "${PPS_GROUP}:platform-service-${service}:${PPS_SERVICE_VERSIONS[service]}"`
       );
     }
     expect(block).toContain(`        implementation "${PPS_GROUP}:pps_sdk_base:${PPS_VERSION}"`);
@@ -107,7 +109,7 @@ describe('renderPpsDependenciesBlock', () => {
 
   it('de-duplicates a service passed twice', () => {
     const dupes = renderPpsDependenciesBlock(['auth', 'auth', 'auth'], DEPS_MARKER);
-    const line = `    implementation "${PPS_GROUP}:platform-service-auth:${PPS_VERSION}"`;
+    const line = `    implementation "${PPS_GROUP}:platform-service-auth:${PPS_SERVICE_VERSIONS.auth}"`;
     expect(dupes.split('\n').filter((l) => l === line)).toHaveLength(1);
   });
 });
@@ -126,10 +128,10 @@ describe('per-flavor PPS declarations', () => {
       resolvePpsConfigurations('pico')
     );
     expect(block).toContain(
-      `    picoImplementation "${PPS_GROUP}:platform-service-achievement:${PPS_VERSION}"`
+      `    picoImplementation "${PPS_GROUP}:platform-service-achievement:${PPS_SERVICE_VERSIONS.achievement}"`
     );
     expect(block).not.toContain(
-      `\n    implementation "${PPS_GROUP}:platform-service-achievement:${PPS_VERSION}"`
+      `\n    implementation "${PPS_GROUP}:platform-service-achievement:${PPS_SERVICE_VERSIONS.achievement}"`
     );
   });
 
@@ -145,10 +147,15 @@ describe('renderPpsResolutionPin', () => {
 
   it('scopes the pin to the group', () => {
     expect(pin).toContain(`requested.group == "${PPS_GROUP}"`);
+    expect(pin).not.toContain('startsWith("platform-service-")');
   });
 
-  it('forces the pinned version', () => {
-    expect(pin).toContain(`details.useVersion "${PPS_VERSION}"`);
+  it('forces each pinned module to its own version', () => {
+    expect(pin).toContain('details.useVersion pinned');
+    expect(pin).toContain(`"pps_sdk_base": "${PPS_VERSION}",`);
+    for (const service of PPS_ALL_SERVICES) {
+      expect(pin).toContain(`"platform-service-${service}": "${PPS_SERVICE_VERSIONS[service]}",`);
+    }
   });
 
   it('reaches every module in the build, not just the app', () => {
@@ -157,16 +164,18 @@ describe('renderPpsResolutionPin', () => {
   });
 
   it('leaves the independently-versioned modules in the group alone', () => {
-    // The group also holds pps_platform_java_base (0.0.1-rc.0),
-    // sdk.lib.annotations (0.0.1-alpha.0), matrix_psf_api (1.0.0) and
-    // coreservice.library (2.1.0-alpha.13). Forcing those to PPS_VERSION
-    // would ask Gradle for a version that was never published.
+    // The group also holds pps_platform_java_base (0.0.1-rc.0, its only
+    // release), sdk.lib.annotations (0.0.1-alpha.0), coreservice.library
+    // (2.1.0-alpha.13) and matrix_psf_api, which follows pps_sdk_base's POM.
+    // Forcing those to PPS_VERSION could ask Gradle for a version that was
+    // never published.
     expect(isPinnedPpsModule('platform-service-auth')).toBe(true);
     expect(isPinnedPpsModule('pps_sdk_base')).toBe(true);
     expect(isPinnedPpsModule('pps_platform_java_base')).toBe(false);
     expect(isPinnedPpsModule('sdk.lib.annotations')).toBe(false);
     expect(isPinnedPpsModule('matrix_psf_api')).toBe(false);
     expect(isPinnedPpsModule('coreservice.library')).toBe(false);
+    expect(isPinnedPpsModule('platform-service-unknown')).toBe(false);
   });
 });
 
@@ -186,11 +195,12 @@ describe('renderLocalAarBlock', () => {
   it('covers each resolved PPS artifact name by at least one exclude', () => {
     // Names taken from a real `gradle` resolution of the eleven services.
     const resolved = [
-      'platform-service-auth-1.0.0.aar',
-      'platform-service-iap-1.0.0.aar',
-      'pps_sdk_base-1.0.0.aar',
+      'platform-service-auth-1.1.2.aar',
+      'platform-service-push-1.1.3.aar',
+      'platform-service-compliance-1.0.0.aar',
+      'pps_sdk_base-1.1.3.aar',
       'pps_platform_java_base-0.0.1-rc.0.aar',
-      'matrix_psf_api-1.0.0.aar',
+      'matrix_psf_api-1.1.3.aar',
       'coreservice.library-2.1.0-alpha.13.aar',
       'sdk.lib.annotations-0.0.1-alpha.0.jar',
     ];
@@ -206,5 +216,57 @@ describe('renderLocalAarBlock', () => {
       new RegExp(`^${glob.replace(/[.]/g, '\\.').replace(/\*/g, '.*')}$`);
     expect(PPS_LOCAL_AAR_EXCLUDES.some((g) => toRegExp(g).test('my-vendor-lib.jar'))).toBe(false);
     expect(PPS_LOCAL_AAR_EXCLUDES.some((g) => toRegExp(g).test('unity-classes.jar'))).toBe(false);
+  });
+});
+
+describe('pinned PPS versions', () => {
+  // Stable versions listed in each artifact's maven-metadata.xml on
+  // https://artifact.bytedance.com/repository/Volcengine/com/pico/pps/,
+  // read 2026-11-04. Pre-releases (alpha, rc) left out. A pin outside this
+  // list asks Gradle for a coordinate that does not exist.
+  const PUBLISHED: Record<string, string[]> = {
+    pps_sdk_base: ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3'],
+    'platform-service-achievement': ['0.0.1', '0.0.3', '1.0.0', '1.1.1', '1.1.2'],
+    'platform-service-auth': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
+    'platform-service-compliance': ['1.0.0'],
+    'platform-service-entitlement': ['1.0.0'],
+    'platform-service-friend': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
+    'platform-service-iap': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
+    'platform-service-leaderboard': ['0.0.1', '0.0.3', '1.0.0', '1.1.2'],
+    'platform-service-push': ['1.0.0', '1.1.2', '1.1.3'],
+    'platform-service-social': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
+    'platform-service-speech': ['1.0.0'],
+    'platform-service-sport': ['1.0.0', '1.1.3'],
+  };
+
+  it('pins every module to a version that was published', () => {
+    for (const [name, versions] of Object.entries(PUBLISHED)) {
+      expect(versions).toContain(ppsPinnedVersion(name));
+    }
+  });
+
+  it('pins every module to its newest stable release', () => {
+    const newest = (versions: string[]) =>
+      [...versions].sort((a, b) => {
+        const [x, y] = [a, b].map((v) => v.split('.').map(Number));
+        for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i];
+        return 0;
+      })[versions.length - 1];
+    for (const [name, versions] of Object.entries(PUBLISHED)) {
+      expect(`${name}:${ppsPinnedVersion(name)}`).toBe(`${name}:${newest(versions)}`);
+    }
+  });
+
+  it('renders only published coordinates for the full-set fallback', () => {
+    const block = renderPpsDependenciesBlock(
+      resolvePpsServices(null, () => false),
+      DEPS_MARKER
+    );
+    const coordinate = new RegExp(`${PPS_GROUP.replace(/\./g, '\\.')}:([a-z_-]+):([0-9.]+)"`, 'g');
+    const rendered = [...block.matchAll(coordinate)];
+    expect(rendered.length).toBeGreaterThan(PPS_ALL_SERVICES.length);
+    for (const [, name, version] of rendered) {
+      expect(PUBLISHED[name]).toContain(version);
+    }
   });
 });

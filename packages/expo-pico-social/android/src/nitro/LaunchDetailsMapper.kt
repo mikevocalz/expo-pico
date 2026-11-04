@@ -5,7 +5,7 @@ import com.pico.pps.sdk.social.LaunchResult
 import com.pico.pps.sdk.social.LaunchType
 
 /**
- * Converts a PPS 1.0 `LaunchDetails` into the `PicoLaunchDetails` struct the
+ * Converts a PPS 1.x `LaunchDetails` into the `PicoLaunchDetails` struct the
  * spec returns. Shared by the synchronous getter and the launch-intent
  * callback so both report the same shape.
  *

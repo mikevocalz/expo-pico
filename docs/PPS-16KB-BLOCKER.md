@@ -36,12 +36,12 @@ force it to a version that was never published.
 `maven-metadata.xml` for that artifact lists exactly one entry, checked against
 both the Bytedance repo and `developer.pico-interactive.com/maven`.
 
-The rest of the group has moved on — `pps_sdk_base` and `platform-service-*`
-publish up to `1.1.2`, against the `1.0.0` pinned here — but neither of those
-artifacts ships a `.so` at all. `pps_sdk_base-1.1.2.aar` contains only
-`classes.jar`, `AndroidManifest.xml`, `R.txt` and `proguard.txt`. Upgrading the
-pinned modules changes nothing about the alignment, because the loaders are not
-in them.
+The rest of the group has moved on, and this repo now pins it: services at
+1.1.2 or 1.1.3, `pps_sdk_base` at 1.1.3. That changes nothing about the
+alignment. None of the `pps_sdk_base`, `matrix_psf_api` or wrapped-service
+AARs at those versions ships a `.so` (checked with `unzip -Z1`), and
+`platform-service-achievement` and `platform-service-leaderboard` 1.1.2 still
+declare `pps_platform_java_base:0.0.1-rc.0` in their POMs.
 
 ## Why it cannot be dropped
 

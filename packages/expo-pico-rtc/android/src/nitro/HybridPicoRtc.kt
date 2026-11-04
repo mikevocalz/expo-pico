@@ -13,7 +13,7 @@ import com.margelo.nitro.core.Promise
  * published artifacts rather than the documentation.
  *
  * So this is not a stub waiting on a call to be wired: real-time voice is
- * not part of PPS 1.0.x. Every method reports the service as unavailable,
+ * not part of PPS 1.x. Every method reports the service as unavailable,
  * which is the contract the TypeScript layer already documents as
  * `NOT_IN_PPS_1_0` and already handles.
  *
@@ -69,7 +69,7 @@ class HybridPicoRtc : HybridPicoRtcSpec() {
 
   private fun notInPps(what: String): Throwable =
     UnsupportedOperationException(
-      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.0.x " +
+      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.x " +
         "publishes no real-time voice artifact."
     )
 

@@ -6,7 +6,7 @@ import com.pico.pps.sdk.friend.IFriendClient
 import com.pico.pps.sdk.friend.PicoFriendClient
 
 /**
- * `PicoRooms` — read-only, because that is all PPS 1.0.x offers.
+ * `PicoRooms` — read-only, because that is all PPS 1.x offers.
  *
  * There is no `platform-service-room` artifact. The only room data
  * anywhere in the SDK is `IFriendClient.getFriendsAndRooms()`, which
@@ -21,7 +21,7 @@ import com.pico.pps.sdk.friend.PicoFriendClient
  *
  * `docs/PPS-WIRING-GAPS.md` records this as confirmed against the
  * published artifacts. Note that `getFriendsAndRooms` is itself marked
- * `@Deprecated("Legacy")` in the 1.0.0 artifact with no named replacement,
+ * `@Deprecated("Legacy")` in the 1.0.0 and 1.1.2 artifacts with no named replacement,
  * so even the read path is on notice.
  */
 class HybridPicoRooms : HybridPicoRoomsSpec() {
@@ -189,7 +189,7 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
 
   private fun notInPps(what: String): Throwable =
     UnsupportedOperationException(
-      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.0.x " +
+      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.x " +
         "publishes no room-management artifact — the only room data available is " +
         "the read-only friends-and-rooms feed behind getRoomInfo()."
     )
@@ -198,8 +198,11 @@ class HybridPicoRooms : HybridPicoRoomsSpec() {
   companion object : HybridPicoRoomsSpec.Companion {
     override fun constructor(): HybridPicoRooms = HybridPicoRooms()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
 
     /**
      * `RoomInfo.joinPolicy` is a bare `Integer` with no accompanying enum

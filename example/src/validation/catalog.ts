@@ -85,7 +85,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     maturity: 'experimental',
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
-    stableBlocker: 'PPS 1.0.x removed RTC — use @fishjam-cloud/react-native-webrtc',
+    stableBlocker: 'PPS 1.x removed RTC — use @fishjam-cloud/react-native-webrtc',
   },
   {
     id: 'rooms',
@@ -94,7 +94,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
     stableBlocker:
-      'PPS 1.0.x removed dedicated rooms — use Fishjam/Colyseus or wait for next-gen PPS',
+      'PPS 1.x removed dedicated rooms — use Fishjam/Colyseus or wait for next-gen PPS',
   },
   {
     id: 'storage',
@@ -103,7 +103,7 @@ export const packageCatalog: PackageCatalogEntry[] = [
     validationEnvironments: ['non-pico', 'device', 'multi-user', 'provisioning'],
     prereleaseReady: 'alpha only',
     stableBlocker:
-      'PPS 1.0.x removed cloud storage — use own backend keyed off openUid, or expo-secure-store',
+      'PPS 1.x removed cloud storage — use own backend keyed off openUid, or expo-secure-store',
   },
   {
     id: 'social',

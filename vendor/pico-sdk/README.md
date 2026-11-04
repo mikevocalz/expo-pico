@@ -2,7 +2,7 @@
 
 > **Heads up.** The modern **PICO Platform Service SDK (PPS)** —
 > `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,
-leaderboard,push,entitlement,compliance,sport,speech}:1.0.0` — is
+leaderboard,push,entitlement,compliance,sport,speech}` — is
 > resolved automatically from the public Bytedance Maven repo
 > (`https://artifact.bytedance.com/repository/Volcengine/`) by
 > `expo-pico-core`'s `withPicoGradle` plugin. **You do NOT drop those

@@ -1,10 +1,28 @@
-# PPS 1.0.x — the real API surface
+# PPS 1.x — the real API surface
 
 Extracted from the published artifacts on the public Volcengine Maven
 (`https://artifact.bytedance.com/repository/Volcengine/`), the same repo
 `withPicoGradle` already registers. Signatures below are `javap` output from
 `com.pico.pps:platform-service-*:1.0.0` and `com.pico.pps:pps_sdk_base:1.0.0`
 — not documentation, not inference.
+
+They still hold for the versions pinned now (services at 1.1.2, `push` at
+1.1.3, `pps_sdk_base` at 1.1.3). Diffing `javap -public` between 1.0.0 and
+those versions shows no removed or changed member in any service this repo
+wraps. The additions:
+
+- `auth`: `ISignInClient.getIDTokenInfo(String, boolean)` returning
+  `Task<TokenInfoResponse>`, `SignInApiAvailableChecker.isGetIDTokenInfoAvailable()`,
+  and the `com.pico.pps.sdk.auth.idtoken` package.
+- `iap`: a `purchaseProduct(Product, Map<String, String>, IapDialogLifecycleListener)`
+  overload, plus `IapDialogLifecycleListener` and `IapDialogLifecycleEvent`.
+- `push`: an `IPPSPushClient.register(String, IRegisterPPSPushCallback)`
+  overload. The one-argument `register` is unchanged.
+- `pps_sdk_base`: `LoaderManager` lost only synthetic `access$` accessors and
+  gained an `ILoaderBridge` setter; `NativeHttpClient` is new.
+
+`achievement`, `friend`, `leaderboard` and `social` are identical. None of
+the additions is wired yet.
 
 Reproduce with:
 

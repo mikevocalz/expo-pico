@@ -32,7 +32,11 @@ import {
   runDiagnosticChecks,
   type DiagnosticCheckFinding,
 } from '../../plugin/build/withPicoDiagnostics';
-import { PPS_GROUP, PPS_LOCAL_AAR_EXCLUDES, PPS_VERSION } from '../../plugin/build/ppsArtifacts';
+import {
+  PPS_GROUP,
+  PPS_LOCAL_AAR_EXCLUDES,
+  ppsPinnedVersion,
+} from '../../plugin/build/ppsArtifacts';
 
 interface CliArgs {
   projectRoot: string;
@@ -285,8 +289,8 @@ function checkDuplicatePicoArtifacts(
         `android/app/libs contains ${shadowed.length} file(s) that ${PPS_GROUP} ` +
         `already supplies from Maven: ${shadowed.join(', ')}. They are excluded ` +
         'from the generated fileTree so the build still succeeds, but nothing ' +
-        'loads them — delete them, or pin a different version through the ' +
-        "plugin's platformService.services option instead of vendoring.",
+        'loads them. Delete them: the plugin already declares the Maven copy, and ' +
+        'platformService.services selects which services land, not their version.',
     });
   }
 
@@ -323,7 +327,8 @@ function checkDuplicatePicoArtifacts(
   const skewed = new Set<string>();
   for (const match of appGradle.matchAll(coordinate)) {
     const [, name, version] = match;
-    if (version !== PPS_VERSION) {
+    const pinned = ppsPinnedVersion(name);
+    if (pinned !== undefined && version !== pinned) {
       skewed.add(`${PPS_GROUP}:${name}:${version}`);
     }
   }
@@ -335,9 +340,11 @@ function checkDuplicatePicoArtifacts(
       message:
         `app/build.gradle requests ${skewed.size} ${PPS_GROUP} coordinate(s) at a ` +
         `version expo-pico-core does not pin: ${[...skewed].sort().join(', ')}. ` +
-        `The resolution pin forces them to ${PPS_VERSION} so the services and ` +
-        'their shared pps_sdk_base stay in step, which means the version written ' +
-        'here has no effect. Remove it, or bump the plugin.',
+        'The resolution pin overrides them so the services and their shared ' +
+        'pps_sdk_base stay in step, which means the version written here has no ' +
+        'effect. Remove it, or bump the plugin. If the line sits inside the ' +
+        'expo-pico-core PPS block, an older plugin version generated it: run ' +
+        '`npx expo prebuild --clean` to regenerate.',
     });
   }
 
