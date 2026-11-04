@@ -37,15 +37,15 @@ describe('withPicoDiagnostics — clean config', () => {
 });
 
 describe('withPicoDiagnostics — no app ID', () => {
-  it('says once that PICO is off', () => {
+  it('reports missing PPS identity without disabling PICO XR', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: undefined, handTracking: true });
     expect(calls).toHaveLength(1);
-    expect(calls[0].message).toMatch(/PICO is off/);
+    expect(calls[0].message).toMatch(/PICO XR flavor will build/);
   });
 
   it('says nothing about identity when legacy top-level picoAppId is set', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
-    expect(calls.some((c) => c.message.includes('PICO is off'))).toBe(false);
+    expect(calls.some((c) => c.message.includes('identity.missing'))).toBe(false);
   });
 });
 
