@@ -224,7 +224,7 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).
-- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.62 to satisfy the system loader on PICO OS 5.
+- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.65 to satisfy the system loader on PICO OS 5.
 
 ## Doctor
 
