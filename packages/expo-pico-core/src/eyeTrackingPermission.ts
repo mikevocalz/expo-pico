@@ -127,8 +127,8 @@ async function requestIfDeclared(permission: string): Promise<boolean> {
     // dialog then opens in the panel's task, the panel resumes, and react-viro's
     // VRActivity finishes itself.
     const status = await ExpoPicoModule.requestImmersivePermission(permission);
-    // The immersive activity was not alive, so the user saw nothing: let the
-    // next mount ask.
+    // The immersive activity was not alive, or was destroyed before the user
+    // answered: drop the entry so the next mount asks.
     if (status === 'no_immersive_activity') return false;
     if (status !== 'granted') {
       console.warn(

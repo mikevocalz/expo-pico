@@ -11,8 +11,8 @@ export type PicoTargetProfile = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'un
 
 /**
  * Outcome of `requestImmersivePermission`. `no_immersive_activity` means the
- * request never reached the user: the immersive activity is not alive, so
- * nothing was asked.
+ * request got no answer: the immersive activity was not alive, so nothing was
+ * asked, or it was destroyed before the user answered the dialog.
  */
 export type PicoPermissionStatus =
   | 'granted'
