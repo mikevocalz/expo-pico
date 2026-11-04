@@ -41,6 +41,11 @@ export function isLauncherVisibleFilter(filter: Node): boolean {
   );
 }
 
+function isRemovalMarker(filter: Node): boolean {
+  const node = filter.$?.['tools:node'];
+  return node === 'remove' || node === 'removeAll';
+}
+
 function activitiesOf(manifest: Manifest): Node[] {
   const app = (manifest.manifest.application?.[0] ?? {}) as Node;
   return [...((app.activity ?? []) as Node[]), ...((app['activity-alias'] ?? []) as Node[])];
@@ -72,7 +77,10 @@ export function launcherVisibleActivities(main: Manifest, flavor?: Manifest): st
     if (node === 'replace' || filters.some((f) => f.$?.['tools:node'] === 'removeAll')) {
       names.delete(name);
     }
-    if (filters.some(isLauncherVisibleFilter)) names.add(name);
+    // A filter marked tools:node="remove" is a removal marker for a filter a
+    // library manifest declares (withMetaEntryRemovals writes one for
+    // Viro's MAIN + Meta VR filter); it never reaches the merged manifest.
+    if (filters.some((f) => !isRemovalMarker(f) && isLauncherVisibleFilter(f))) names.add(name);
   }
   return [...names];
 }

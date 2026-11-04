@@ -343,3 +343,47 @@ describe('immersive activity marker', () => {
     expect(markImmersiveActivity(manifest)).toBe(false);
   });
 });
+
+test('a tools:node="remove" filter in a flavor is a removal marker, not a tile', () => {
+  const main: any = {
+    manifest: {
+      application: [
+        {
+          activity: [
+            {
+              $: { 'android:name': '.MainActivity' },
+              'intent-filter': [
+                {
+                  action: [{ $: { 'android:name': MAIN_ACTION } }],
+                  category: [{ $: { 'android:name': 'android.intent.category.LAUNCHER' } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+  const pico: any = {
+    manifest: {
+      application: [
+        {
+          activity: [
+            {
+              $: { 'android:name': '.VRActivity', 'tools:node': 'merge' },
+              'intent-filter': [
+                { $: { 'tools:node': 'removeAll' } },
+                {
+                  $: { 'tools:node': 'remove' },
+                  action: [{ $: { 'android:name': MAIN_ACTION } }],
+                  category: [{ $: { 'android:name': 'com.oculus.intent.category.VR' } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+  expect(launcherVisibleActivities(main, pico)).toEqual(['.MainActivity']);
+});
