@@ -571,6 +571,8 @@ export declare const PICO_PLATFORM_SERVICE_DEFAULTS: ResolvedPicoPlatformService
 export declare const PICO_SWAN_DEFAULTS: ResolvedPicoSwanOptions;
 export declare const PICO_OPTION_DEFAULTS: ResolvedPicoOptions;
 export declare function resolveOptions(options?: PicoPluginOptions): ResolvedPicoOptions;
+/** True when `value` is a stand-in such as `1234567` or `your-pico-app-id`. */
+export declare function isPlaceholderAppId(value: string): boolean;
 /**
  * Resolve the effective target profile from options.
  * When 'auto', infer from targetDevices, then from xrMode.

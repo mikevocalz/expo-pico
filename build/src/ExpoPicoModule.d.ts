@@ -1,4 +1,4 @@
-import type { PicoCore } from './PicoCore.nitro';
+import type { PicoCore, PicoPermissionStatus } from './PicoCore.nitro';
 import type { PicoRuntime } from './PicoRuntime.nitro';
 import type { PicoBodyJoint, PicoCapabilitySnapshotEntry, PicoController, PicoDeclaredCapabilities, PicoDetectedPlane, PicoEyePose, PicoFoveationLevel, PicoHandPose, PicoHighRateSensor, PicoMotionTracker } from './types';
 /** The PicoRuntime HybridObject, or null when the native library is absent. */
@@ -31,6 +31,7 @@ declare const ExpoPicoModule: {
     getPlatformSdkProbe(): Promise<Record<string, boolean>>;
     enterImmersiveScene(): Promise<boolean>;
     exitImmersiveScene(): Promise<boolean>;
+    requestImmersivePermission(permission: string): Promise<PicoPermissionStatus>;
     hasImmersiveActivity(): Promise<boolean>;
     getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]>;
     isCapabilityAvailable(name: Parameters<PicoCore["isCapabilityAvailable"]>[0]): Promise<boolean | null>;

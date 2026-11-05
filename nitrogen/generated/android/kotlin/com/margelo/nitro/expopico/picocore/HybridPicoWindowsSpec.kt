@@ -81,8 +81,7 @@ abstract class HybridPicoWindowsSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoWindowsSpec {
-      val __result = HybridPicoWindows.constructor()
-      return __result
+      return HybridPicoWindows.constructor()
     }
   }
 }

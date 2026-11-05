@@ -4,13 +4,14 @@ import type { PanelClosedEvent } from './PanelClosedEvent';
 import type { PanelOpenedEvent } from './PanelOpenedEvent';
 import type { PanelSizeDp } from './PanelSizeDp';
 /**
- * Opens React Native components as separate PICO panels. Each panel is its
+ * Opens React Native components as separate panels on PICO OS 5 and Meta
+ * Horizon OS. Each panel is its
  * own activity in its own task and a second surface on the app's one React
  * Native runtime, so module state is shared with the main window.
  *
  * Created by {@linkcode PicoWindows.createPanelHost}, which rejects on
- * builds that cannot open panels. PICO OS picks where a panel opens, and the
- * user can move it.
+ * builds that cannot open panels. The OS picks where a panel opens (Horizon OS
+ * puts it in the slot beside the app's panel), and the user can move it.
  */
 export declare class PicoPanelHost extends HybridObject {
     /**

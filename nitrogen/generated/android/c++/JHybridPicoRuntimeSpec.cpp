@@ -315,8 +315,8 @@ namespace margelo::nitro::expopico::picocore {
     auto __result = __method(_javaPart, CxxPart::getClass(), enabled, level);
     return __result;
   }
-  jdouble JHybridPicoRuntimeSpec::addPassthroughDialListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart> /* listener */)>("addPassthroughDialListener_cxx");
+  jdouble JHybridPicoRuntimeSpec::addPassthroughDialListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart>> /* listener */)>("addPassthroughDialListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

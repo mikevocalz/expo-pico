@@ -38,6 +38,21 @@ export declare function renderFlavorBlock(options: ResolvedPicoOptions): string;
  */
 export declare function renderFlavorXrModeBlock(options: ResolvedPicoOptions): string;
 /**
+ * `buildVariant: 'mobile'` adds no flavors, but the core library has a
+ * `device` dimension, so an app without one must say which variant it wants.
+ *
+ * Only when the app has no `device` dimension of its own. expo-horizon-core
+ * gives the app `mobile` and `quest` flavors in that dimension, and a
+ * defaultConfig `missingDimensionStrategy` overrides the flavor's own value:
+ * questDebug then requested `device=mobile` and packaged expo-horizon-core's
+ * mobile variant (`isHorizonBuild == false`), so a Quest build ran the phone
+ * layout. The check runs in `finalizeDsl`, after every plugin's flavors are
+ * declared, so plugin order does not matter. It calls the getter on purpose:
+ * expo-horizon-core skips writing its flavors when the file already holds
+ * both the property's name and `productFlavors`.
+ */
+export declare function renderMissingDimensionBlock(): string;
+/**
  * Removes the identity gate an earlier plugin version wrote into
  * app/build.gradle. PICO is now off until a picoAppId is set, so there is
  * nothing to gate.

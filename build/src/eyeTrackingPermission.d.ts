@@ -13,6 +13,18 @@ export declare function buildXrMode(): PicoXRMode;
  * the phone build.
  */
 export declare function eyeTrackingPermissionFor(mode: PicoXRMode): string | null;
+/** Horizon OS device feature for eye tracking. Quest Pro has it; Quest 3 and 3S do not. */
+export declare const HORIZON_EYE_TRACKING_FEATURE = "oculus.software.eye_tracking";
+/**
+ * Device feature names that mean PICO eye tracking hardware. PICO documents
+ * the permission (`com.picovr.permission.EYE_TRACKING`) but no uses-feature
+ * string, so a device reporting either name counts. The first is the one the
+ * plugin's `eyeTracking` option declares (`PICO_FEATURES.EYE_TRACKING`).
+ * PICO 4 Ultra reports neither.
+ */
+export declare const PICO_EYE_TRACKING_FEATURES: readonly ["pico.hardware.eyetracking", "picovr.software.eye_tracking"];
+/** The PICO eye tracking feature the plugin declares. */
+export declare const PICO_EYE_TRACKING_FEATURE: "pico.hardware.eyetracking";
 /**
  * Ask for the platform's eye tracking permission once per process.
  *
@@ -22,8 +34,12 @@ export declare function eyeTrackingPermissionFor(mode: PicoXRMode): string | nul
  * activates and selection falls back to the hand ray. The manifest entry alone
  * is not enough: the permission is a runtime one and nothing else requests it.
  *
- * Asks only when the build's manifest declares the permission and it is not
- * granted yet, and never on the `mobile` flavor. A denial is logged, not
+ * Asks only when the build's manifest declares the permission, it is not
+ * granted yet, and the device has eye tracking hardware (the
+ * `oculus.software.eye_tracking` feature, or one of `PICO_EYE_TRACKING_FEATURES`),
+ * and never on the `mobile` flavor. PICO builds also need the plugin's
+ * `eyeTracking` option. The request goes through the immersive activity, so
+ * the grant dialog opens in its task and XR stays open behind it. A denial is logged, not
  * thrown, so the caller carries on with the hand ray. After "don't ask again"
  * Android answers `never_ask_again` without showing a dialog, and the one
  * request per process keeps a declined prompt from coming back every time the

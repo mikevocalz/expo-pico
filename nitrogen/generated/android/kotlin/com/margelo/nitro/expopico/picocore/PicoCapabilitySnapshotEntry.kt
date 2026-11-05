@@ -40,8 +40,6 @@ data class PicoCapabilitySnapshotEntry(
   @Keep
   val fullyAvailable: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoCapabilitySnapshotEntry) return false

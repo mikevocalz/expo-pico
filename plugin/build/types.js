@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PICO_OPTION_DEFAULTS = exports.PICO_SWAN_DEFAULTS = exports.PICO_PLATFORM_SERVICE_DEFAULTS = void 0;
 exports.resolveOptions = resolveOptions;
+exports.isPlaceholderAppId = isPlaceholderAppId;
 exports.resolveTargetProfile = resolveTargetProfile;
 exports.xrModeToNativeEnum = xrModeToNativeEnum;
 /**
@@ -80,6 +81,7 @@ exports.PICO_OPTION_DEFAULTS = {
  */
 const QUEST_OPTION_KEYS = [
     'metaLayoutSdk',
+    'detailPanel',
     'storeDeviceTargets',
     'questRemovePermissions',
     'questRemoveFeatures',
@@ -91,6 +93,9 @@ function resolveOptions(options = {}) {
         throw new Error(`[expo-pico-core] ${misplaced.join(', ')} configure the Meta Horizon quest flavor. ` +
             'Move them to the expo-horizon-core plugin entry.');
     }
+    assertRealAppId('picoAppId', options.picoAppId);
+    assertRealAppId('platformService.picoAppId', options.platformService?.picoAppId);
+    assertRealAppId('platformService.foreign.picoAppId', options.platformService?.foreign?.picoAppId);
     const platformService = resolvePlatformServiceOptions(options.platformService, 
     /* legacyPicoAppId */ options.picoAppId);
     // No app ID, no PICO build: the pico flavor exists only once the app asks
@@ -203,6 +208,41 @@ function resolvePlatformServiceOptions(options, legacyPicoAppId) {
         hasIdentity,
         hasIapIdentity,
     };
+}
+/**
+ * Values that stand in for a PICO app ID in docs, templates and samples. PICO
+ * OS ends an app at launch when its ID is not registered for the package
+ * (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), so a build carrying one of these
+ * can never run; prebuild stops instead.
+ */
+const PLACEHOLDER_APP_IDS = new Set([
+    '1234567',
+    '12345678',
+    '123456789',
+    '1234567890',
+    'my-app',
+    'your-pico-app-id',
+    'your_pico_app_id',
+    'replace_with_pico_app_id',
+    'replace-with-pico-app-id',
+    'ci-placeholder-app-id',
+]);
+const PLACEHOLDER_APP_ID_PATTERN = /^(?:0+|x+|<.*>|\$\{.*\}|(?:your|replace|placeholder|changeme|todo|insert)\b.*)$/i;
+/** True when `value` is a stand-in such as `1234567` or `your-pico-app-id`. */
+function isPlaceholderAppId(value) {
+    const id = value.trim();
+    return PLACEHOLDER_APP_IDS.has(id.toLowerCase()) || PLACEHOLDER_APP_ID_PATTERN.test(id);
+}
+function assertRealAppId(field, value) {
+    const id = nonEmpty(value);
+    if (id === null || !isPlaceholderAppId(id))
+        return;
+    throw new Error(`[expo-pico-core] ${field} is set to the placeholder ${JSON.stringify(id)}. PICO OS ` +
+        'closes an app at launch unless its app ID is registered for the package in the ' +
+        'PICO Developer Console. Set ' +
+        field +
+        ' to that ID (for example from the PICO_APP_ID environment variable), or leave it ' +
+        'unset to build without the pico flavor.');
 }
 function nonEmpty(value) {
     if (value == null)

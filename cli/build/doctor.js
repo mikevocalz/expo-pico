@@ -27,6 +27,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const types_1 = require("../../plugin/build/types");
 const withPicoDiagnostics_1 = require("../../plugin/build/withPicoDiagnostics");
 const ppsArtifacts_1 = require("../../plugin/build/ppsArtifacts");
+const utils_1 = require("../../plugin/build/utils");
 function parseArgs(argv) {
     var _a;
     const args = {
@@ -230,6 +231,7 @@ function checkOrientation(expoConfig, resolved) {
  * reducer only sees resolved plugin options.
  */
 function checkDuplicatePicoArtifacts(projectRoot, resolved) {
+    var _a;
     if (resolved.xrMode === 'mobile')
         return [];
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -256,8 +258,8 @@ function checkDuplicatePicoArtifacts(projectRoot, resolved) {
             message: `android/app/libs contains ${shadowed.length} file(s) that ${ppsArtifacts_1.PPS_GROUP} ` +
                 `already supplies from Maven: ${shadowed.join(', ')}. They are excluded ` +
                 'from the generated fileTree so the build still succeeds, but nothing ' +
-                'loads them — delete them, or pin a different version through the ' +
-                "plugin's platformService.services option instead of vendoring.",
+                'loads them. Delete them: the plugin already declares the Maven copy, and ' +
+                'platformService.services selects which services land, not their version.',
         });
     }
     const appGradlePath = path.join(projectRoot, 'android', 'app', 'build.gradle');
@@ -285,22 +287,45 @@ function checkDuplicatePicoArtifacts(projectRoot, resolved) {
     // a warning — but it is a second place to update on the next SDK bump,
     // and it means someone believed they were choosing a version.
     const coordinate = new RegExp(`${ppsArtifacts_1.PPS_GROUP.replace(/\./g, '\\.')}:(platform-service-[a-z]+|pps_sdk_base):([^"'\\s]+)`, 'g');
-    const skewed = new Set();
+    // A skewed line inside the plugin's own PPS block was written by an older
+    // plugin version; the next prebuild rewrites that block in place.
+    let block;
+    try {
+        block = markerCount === 1 ? (0, utils_1.markedBlockRange)(appGradle, DEPS_MARKER) : undefined;
+    }
+    catch {
+        block = undefined;
+    }
+    const generated = new Set();
+    const handWritten = new Set();
     for (const match of appGradle.matchAll(coordinate)) {
         const [, name, version] = match;
-        if (version !== ppsArtifacts_1.PPS_VERSION) {
-            skewed.add(`${ppsArtifacts_1.PPS_GROUP}:${name}:${version}`);
-        }
+        const pinned = (0, ppsArtifacts_1.ppsPinnedVersion)(name);
+        if (pinned === undefined || version === pinned)
+            continue;
+        const at = (_a = match.index) !== null && _a !== void 0 ? _a : 0;
+        const inBlock = block !== undefined && at >= block.start && at < block.end;
+        (inBlock ? generated : handWritten).add(`${ppsArtifacts_1.PPS_GROUP}:${name}:${version}`);
     }
-    if (skewed.size > 0) {
+    if (generated.size > 0 || handWritten.size > 0) {
+        const parts = [];
+        if (handWritten.size > 0) {
+            parts.push(`app/build.gradle requests ${handWritten.size} ${ppsArtifacts_1.PPS_GROUP} coordinate(s) at a ` +
+                `version expo-pico-core does not pin: ${[...handWritten].sort().join(', ')}. ` +
+                'The resolution pin overrides them so the services and their shared ' +
+                'pps_sdk_base stay in step, which means the version written here has no ' +
+                'effect. Remove it.');
+        }
+        if (generated.size > 0) {
+            parts.push(`The expo-pico-core PPS block in app/build.gradle still carries an older ` +
+                `plugin version's pins: ${[...generated].sort().join(', ')}. Run ` +
+                '`npx expo prebuild` and the plugin rewrites the block with its current ' +
+                'pins, along with the resolution pin in android/build.gradle.');
+        }
         findings.push({
             id: 'pps-coordinate-version-skew',
             severity: 'warning',
-            message: `app/build.gradle requests ${skewed.size} ${ppsArtifacts_1.PPS_GROUP} coordinate(s) at a ` +
-                `version expo-pico-core does not pin: ${[...skewed].sort().join(', ')}. ` +
-                `The resolution pin forces them to ${ppsArtifacts_1.PPS_VERSION} so the services and ` +
-                'their shared pps_sdk_base stay in step, which means the version written ' +
-                'here has no effect. Remove it, or bump the plugin.',
+            message: parts.join(' '),
         });
     }
     return findings;

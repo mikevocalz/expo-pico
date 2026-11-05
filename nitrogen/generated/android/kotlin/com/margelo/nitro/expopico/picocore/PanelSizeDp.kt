@@ -25,8 +25,6 @@ data class PanelSizeDp(
   @Keep
   val heightDp: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PanelSizeDp) return false

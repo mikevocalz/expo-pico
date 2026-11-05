@@ -320,14 +320,15 @@ Object.defineProperty(exports, "PicoPanelHost", { enumerable: true, get: functio
 /**
  * Hand the display to this app's immersive activity.
  *
- * PICO starts every app as a flat 2D panel. A renderer drawing inside that
- * panel stays inside it — which is why an "XR scene" rendered inline still
- * shows the panel floating in the environment. Exclusive display requires a
- * separate Activity carrying PICO's VR intent category; `@expo-pico/core`'s
- * plugin writes that onto `.VRActivity`.
+ * PICO and Horizon OS start every app as a flat 2D panel. A renderer drawing
+ * inside that panel stays inside it — which is why an "XR scene" rendered
+ * inline still shows the panel floating in the environment. Exclusive display
+ * requires a separate Activity: Viro's `.VRActivity`, which
+ * `@expo-pico/core`'s plugin marks with `expo.modules.pico.IMMERSIVE_ACTIVITY`
+ * meta-data so it can be found after its intent filters are removed.
  *
- * Resolves `false` when no such activity is declared, so a 2D-only build can
- * call this unconditionally.
+ * Resolves `false` on phone builds and when no activity is marked, so a
+ * 2D-only build can call this unconditionally.
  *
  * Note this is not something the renderer will do for you: `@reactvision/
  * react-viro` gates its equivalent (`VRLauncher.launchVRScene()`) behind a
@@ -353,7 +354,7 @@ async function enterImmersiveScene() {
     }
     return ExpoPicoModule_1.default.enterImmersiveScene();
 }
-/** Whether this build declares an activity with PICO's VR intent category. */
+/** Whether this headset build has a marked immersive activity. */
 async function hasImmersiveActivity() {
     return ExpoPicoModule_1.default.hasImmersiveActivity();
 }

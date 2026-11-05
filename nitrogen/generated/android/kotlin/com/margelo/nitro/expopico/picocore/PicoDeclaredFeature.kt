@@ -28,8 +28,6 @@ data class PicoDeclaredFeature(
   @Keep
   val glEsVersion: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredFeature) return false

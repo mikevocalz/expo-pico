@@ -17,18 +17,42 @@
 /** Maven group shared by every PPS artifact. */
 export declare const PPS_GROUP = "com.pico.pps";
 /**
- * The PPS line this release pins.
+ * The `com.pico.pps:pps_sdk_base` version this release pins.
  *
  * Pinning matters more than usual here: all eleven service artifacts
- * depend on `com.pico.pps:pps_sdk_base`, so a single service resolved at
- * a different version drags a second `pps_sdk_base` into the graph and
- * Gradle picks the newest — silently pairing services with a base they
- * were not compiled against.
+ * depend on `pps_sdk_base`, so a service resolved at a different version
+ * drags a second `pps_sdk_base` into the graph and Gradle picks the newest,
+ * silently pairing services with a base they were not compiled against.
+ *
+ * Why 1.1.3: `platform-service-push` 1.1.3 and `platform-service-sport`
+ * 1.1.3 declare `pps_sdk_base:1.1.3` in their POMs. The 1.1.2 services
+ * declare `pps_sdk_base:1.1.2`, but 1.1.2 and 1.1.3 have the same public
+ * API (`javap -public` diff is empty, and so is the diff for the
+ * `matrix_psf_api` they each pull in), and every `pps_sdk_base` member the
+ * service bytecode references resolves in 1.1.3, so every chosen POM runs
+ * against the same base.
  */
-export declare const PPS_VERSION = "1.0.0";
+export declare const PPS_VERSION = "1.1.3";
 export type PicoPlatformServiceName = 'achievement' | 'auth' | 'compliance' | 'entitlement' | 'friend' | 'iap' | 'leaderboard' | 'push' | 'social' | 'speech' | 'sport';
 /** Every service artifact published under {@link PPS_GROUP}. */
 export declare const PPS_ALL_SERVICES: readonly PicoPlatformServiceName[];
+/**
+ * The version each service artifact is pinned to: the newest stable release
+ * in its `maven-metadata.xml` on the Volcengine repo, pre-releases ignored.
+ *
+ * `push` and `sport` are at 1.1.3. The other wrapped services stop at 1.1.2.
+ * `compliance`, `entitlement` and `speech` have only ever published 1.0.0;
+ * their POMs ask for `pps_sdk_base:1.0.0`, which the pin lifts to
+ * {@link PPS_VERSION}. Every `pps_sdk_base` member their bytecode references
+ * exists in 1.1.3. The only members removed since 1.0.0 are synthetic
+ * `LoaderManager` accessors (`access$getCurrentActivity$p` and friends).
+ *
+ * A single version for every service is not an option: it would make the
+ * full-set fallback in {@link resolvePpsServices}, or an explicit
+ * `platformService.services` list, request a coordinate that was never
+ * published.
+ */
+export declare const PPS_SERVICE_VERSIONS: Readonly<Record<PicoPlatformServiceName, string>>;
 /**
  * Which service artifacts each `@expo-pico/*` package actually calls into.
  *
@@ -40,13 +64,17 @@ export declare const PPS_ALL_SERVICES: readonly PicoPlatformServiceName[];
  */
 export declare const PPS_SERVICES_BY_PACKAGE: Readonly<Record<string, readonly PicoPlatformServiceName[]>>;
 /**
- * Modules inside {@link PPS_GROUP} that {@link PPS_VERSION} applies to.
+ * The version a module inside {@link PPS_GROUP} is pinned to, or
+ * `undefined` for a module the pin leaves alone.
  *
- * The group also holds `pps_platform_java_base`, `matrix_psf_api`,
- * `sdk.lib.annotations` and `coreservice.library`, each on its own
- * independent version line. Pinning the whole group would force those to
- * a version that was never published, so the pin is deliberately narrow.
+ * Covers `pps_sdk_base` and the eleven services. The group also holds
+ * `pps_platform_java_base`, `matrix_psf_api`, `sdk.lib.annotations` and
+ * `coreservice.library`, each on its own version line. Pinning the whole
+ * group would force those to a version that was never published, so the
+ * pin is deliberately narrow.
  */
+export declare function ppsPinnedVersion(name: string): string | undefined;
+/** Whether {@link ppsPinnedVersion} pins this module. */
 export declare function isPinnedPpsModule(name: string): boolean;
 /**
  * Filename patterns that must never be picked up from `android/app/libs/`.
@@ -103,13 +131,13 @@ export declare function resolvePpsConfigurations(buildVariant: 'mobile' | 'pico'
  * The `constraints` sub-block is what makes this safe to combine with a
  * hand-written declaration: a consumer (or a third-party plugin) that adds
  * `com.pico.pps:platform-service-auth` without a version, or at an older
- * one, resolves to {@link PPS_VERSION} rather than landing a second copy
+ * one, resolves to its pinned version rather than landing a second copy
  * of the service and its `pps_sdk_base` on the classpath. Constraints stay
  * on `implementation` — every variant's compile classpath extends it, so
  * one declaration pins the group no matter which flavor requests it, and a
  * constraint alone puts nothing on the classpath.
  */
-export declare function renderPpsDependenciesBlock(services: readonly PicoPlatformServiceName[], marker: string, configurations?: readonly string[], version?: string): string;
+export declare function renderPpsDependenciesBlock(services: readonly PicoPlatformServiceName[], marker: string, configurations?: readonly string[]): string;
 /**
  * Render the resolution pin for the project-level `build.gradle`.
  *
@@ -118,12 +146,13 @@ export declare function renderPpsDependenciesBlock(services: readonly PicoPlatfo
  * libraries included — so a PPS coordinate requested from a library
  * module lands on the same version the app packages.
  *
- * Scoped by {@link isPinnedPpsModule}: the group also carries
- * `pps_platform_java_base` (0.0.1-rc.0), `sdk.lib.annotations`
- * (0.0.1-alpha.0), `matrix_psf_api` (1.0.0) and `coreservice.library`
- * (2.1.0-alpha.13), none of which have a ${PPS_VERSION} release.
+ * Scoped by {@link ppsPinnedVersion}: the group also carries
+ * `pps_platform_java_base` (0.0.1-rc.0, its only release),
+ * `sdk.lib.annotations` (0.0.1-alpha.0), `coreservice.library`
+ * (2.1.0-alpha.13) and `matrix_psf_api`, which follows the version
+ * `pps_sdk_base`'s POM names (1.1.3 at this pin). None of them is forced.
  */
-export declare function renderPpsResolutionPin(marker: string, version?: string): string;
+export declare function renderPpsResolutionPin(marker: string): string;
 /**
  * Render the `app/libs` drop-in block for offline / air-gapped builds.
  *
@@ -140,9 +169,11 @@ declare const _default: {
     PPS_GROUP: string;
     PPS_VERSION: string;
     PPS_ALL_SERVICES: readonly PicoPlatformServiceName[];
+    PPS_SERVICE_VERSIONS: Readonly<Record<PicoPlatformServiceName, string>>;
     PPS_SERVICES_BY_PACKAGE: Readonly<Record<string, readonly PicoPlatformServiceName[]>>;
     PPS_LOCAL_AAR_EXCLUDES: readonly string[];
     isPinnedPpsModule: typeof isPinnedPpsModule;
+    ppsPinnedVersion: typeof ppsPinnedVersion;
     resolvePpsServices: typeof resolvePpsServices;
     resolvePpsConfigurations: typeof resolvePpsConfigurations;
     createPackageResolver: typeof createPackageResolver;

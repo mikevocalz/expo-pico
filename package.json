@@ -23,6 +23,16 @@
       "types": "./plugin/build/viro/index.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/withPico.d.ts"
+      ],
+      "plugin/viro": [
+        "./plugin/build/viro/index.d.ts"
+      ]
+    }
+  },
   "bin": {
     "expo-pico-doctor": "./cli/build/doctor.js"
   },
@@ -51,8 +61,8 @@
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
     "expo-location": "*",
-    "react-native-nitro-modules": "*",
-    "nitro-core": "*"
+    "react-native-nitro-modules": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "nitro-core": ">=1.0.0-alpha.nightly.120.g33ef045b96c0"
   },
   "peerDependenciesMeta": {
     "expo": {
@@ -71,7 +81,12 @@
   "files": [
     "LICENSE",
     "build",
-    "android",
+    "android/build.gradle",
+    "android/CMakeLists.txt",
+    "android/src",
+    "android/eskiu-runtime",
+    "android/one-launcher-tile.gradle",
+    "android/pico-window-positions.gradle",
     "cli/build",
     "plugin/build",
     "plugin/assets",
@@ -87,8 +102,8 @@
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
   },
-  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
+  "gitHead": "853bdad57e665c00e2a63a9f1287fb8102a47cce",
   "expoPico": {
-    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1"
+    "sourceCommit": "853bdad57e665c00e2a63a9f1287fb8102a47cce"
   }
 }

@@ -34,8 +34,6 @@ data class PicoDetectedPlane(
   @Keep
   val normal: PicoVec3
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDetectedPlane) return false

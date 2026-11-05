@@ -43,7 +43,24 @@ export declare const VIRO_VR_ACTION = "com.viro.intent.action.VR";
  * Returns true when the manifest changed.
  */
 export declare function moveVRActivityOffMain(manifest: Manifest): boolean;
-/** Applies {@link moveVRActivityOffMain} to app/src/main/AndroidManifest.xml on disk. */
+/**
+ * Activity-level meta-data naming the renderer's immersive activity.
+ * `PicoCore.enterImmersiveScene()` finds the activity by this marker: its
+ * intent filters are renamed here and dropped in the PICO overlay, so a
+ * filter lookup cannot find it. Must match `IMMERSIVE_ACTIVITY_META` in
+ * android/src/nitro/Context+immersiveActivityName.kt.
+ */
+export declare const IMMERSIVE_ACTIVITY_META = "expo.modules.pico.IMMERSIVE_ACTIVITY";
+/**
+ * Puts `IMMERSIVE_ACTIVITY_META=true` on `.VRActivity` and removes it from
+ * every other activity, so exactly one activity carries it. Returns true
+ * when the manifest changed.
+ */
+export declare function markImmersiveActivity(manifest: Manifest): boolean;
+/**
+ * Applies {@link moveVRActivityOffMain} and {@link markImmersiveActivity} to
+ * app/src/main/AndroidManifest.xml on disk.
+ */
 export declare function moveVRActivityOffMainOnDisk(platformProjectRoot: string): Promise<void>;
 /**
  * Reads app/src/main and every app/src/<flavor> manifest on disk and throws

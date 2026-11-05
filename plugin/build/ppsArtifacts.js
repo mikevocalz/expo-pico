@@ -16,7 +16,8 @@
  * `docs/PPS-ARTIFACTS.md` for the resolution dump and how to reproduce it.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PPS_LOCAL_AAR_EXCLUDES = exports.PPS_SERVICES_BY_PACKAGE = exports.PPS_ALL_SERVICES = exports.PPS_VERSION = exports.PPS_GROUP = void 0;
+exports.PPS_LOCAL_AAR_EXCLUDES = exports.PPS_SERVICES_BY_PACKAGE = exports.PPS_SERVICE_VERSIONS = exports.PPS_ALL_SERVICES = exports.PPS_VERSION = exports.PPS_GROUP = void 0;
+exports.ppsPinnedVersion = ppsPinnedVersion;
 exports.isPinnedPpsModule = isPinnedPpsModule;
 exports.resolvePpsServices = resolvePpsServices;
 exports.createPackageResolver = createPackageResolver;
@@ -27,15 +28,22 @@ exports.renderLocalAarBlock = renderLocalAarBlock;
 /** Maven group shared by every PPS artifact. */
 exports.PPS_GROUP = 'com.pico.pps';
 /**
- * The PPS line this release pins.
+ * The `com.pico.pps:pps_sdk_base` version this release pins.
  *
  * Pinning matters more than usual here: all eleven service artifacts
- * depend on `com.pico.pps:pps_sdk_base`, so a single service resolved at
- * a different version drags a second `pps_sdk_base` into the graph and
- * Gradle picks the newest — silently pairing services with a base they
- * were not compiled against.
+ * depend on `pps_sdk_base`, so a service resolved at a different version
+ * drags a second `pps_sdk_base` into the graph and Gradle picks the newest,
+ * silently pairing services with a base they were not compiled against.
+ *
+ * Why 1.1.3: `platform-service-push` 1.1.3 and `platform-service-sport`
+ * 1.1.3 declare `pps_sdk_base:1.1.3` in their POMs. The 1.1.2 services
+ * declare `pps_sdk_base:1.1.2`, but 1.1.2 and 1.1.3 have the same public
+ * API (`javap -public` diff is empty, and so is the diff for the
+ * `matrix_psf_api` they each pull in), and every `pps_sdk_base` member the
+ * service bytecode references resolves in 1.1.3, so every chosen POM runs
+ * against the same base.
  */
-exports.PPS_VERSION = '1.0.0';
+exports.PPS_VERSION = '1.1.3';
 /** Every service artifact published under {@link PPS_GROUP}. */
 exports.PPS_ALL_SERVICES = [
     'achievement',
@@ -50,6 +58,35 @@ exports.PPS_ALL_SERVICES = [
     'speech',
     'sport',
 ];
+/**
+ * The version each service artifact is pinned to: the newest stable release
+ * in its `maven-metadata.xml` on the Volcengine repo, pre-releases ignored.
+ *
+ * `push` and `sport` are at 1.1.3. The other wrapped services stop at 1.1.2.
+ * `compliance`, `entitlement` and `speech` have only ever published 1.0.0;
+ * their POMs ask for `pps_sdk_base:1.0.0`, which the pin lifts to
+ * {@link PPS_VERSION}. Every `pps_sdk_base` member their bytecode references
+ * exists in 1.1.3. The only members removed since 1.0.0 are synthetic
+ * `LoaderManager` accessors (`access$getCurrentActivity$p` and friends).
+ *
+ * A single version for every service is not an option: it would make the
+ * full-set fallback in {@link resolvePpsServices}, or an explicit
+ * `platformService.services` list, request a coordinate that was never
+ * published.
+ */
+exports.PPS_SERVICE_VERSIONS = {
+    achievement: '1.1.2',
+    auth: '1.1.2',
+    compliance: '1.0.0',
+    entitlement: '1.0.0',
+    friend: '1.1.2',
+    iap: '1.1.2',
+    leaderboard: '1.1.2',
+    push: '1.1.3',
+    social: '1.1.2',
+    speech: '1.0.0',
+    sport: '1.1.3',
+};
 /**
  * Which service artifacts each `@expo-pico/*` package actually calls into.
  *
@@ -75,15 +112,29 @@ exports.PPS_SERVICES_BY_PACKAGE = {
     '@expo-pico/subscription': ['iap'],
 };
 /**
- * Modules inside {@link PPS_GROUP} that {@link PPS_VERSION} applies to.
+ * The version a module inside {@link PPS_GROUP} is pinned to, or
+ * `undefined` for a module the pin leaves alone.
  *
- * The group also holds `pps_platform_java_base`, `matrix_psf_api`,
- * `sdk.lib.annotations` and `coreservice.library`, each on its own
- * independent version line. Pinning the whole group would force those to
- * a version that was never published, so the pin is deliberately narrow.
+ * Covers `pps_sdk_base` and the eleven services. The group also holds
+ * `pps_platform_java_base`, `matrix_psf_api`, `sdk.lib.annotations` and
+ * `coreservice.library`, each on its own version line. Pinning the whole
+ * group would force those to a version that was never published, so the
+ * pin is deliberately narrow.
  */
+function ppsPinnedVersion(name) {
+    if (name === 'pps_sdk_base')
+        return exports.PPS_VERSION;
+    const prefix = 'platform-service-';
+    if (!name.startsWith(prefix))
+        return undefined;
+    const service = name.slice(prefix.length);
+    return exports.PPS_ALL_SERVICES.includes(service)
+        ? exports.PPS_SERVICE_VERSIONS[service]
+        : undefined;
+}
+/** Whether {@link ppsPinnedVersion} pins this module. */
 function isPinnedPpsModule(name) {
-    return name.startsWith('platform-service-') || name === 'pps_sdk_base';
+    return ppsPinnedVersion(name) !== undefined;
 }
 /**
  * Filename patterns that must never be picked up from `android/app/libs/`.
@@ -179,21 +230,21 @@ function resolvePpsConfigurations(buildVariant) {
  * The `constraints` sub-block is what makes this safe to combine with a
  * hand-written declaration: a consumer (or a third-party plugin) that adds
  * `com.pico.pps:platform-service-auth` without a version, or at an older
- * one, resolves to {@link PPS_VERSION} rather than landing a second copy
+ * one, resolves to its pinned version rather than landing a second copy
  * of the service and its `pps_sdk_base` on the classpath. Constraints stay
  * on `implementation` — every variant's compile classpath extends it, so
  * one declaration pins the group no matter which flavor requests it, and a
  * constraint alone puts nothing on the classpath.
  */
-function renderPpsDependenciesBlock(services, marker, configurations = ['implementation'], version = exports.PPS_VERSION) {
+function renderPpsDependenciesBlock(services, marker, configurations = ['implementation']) {
     const ordered = dedupe(services);
     const constraintLines = [
-        `        implementation "${exports.PPS_GROUP}:pps_sdk_base:${version}"`,
-        ...exports.PPS_ALL_SERVICES.map((svc) => `        implementation "${exports.PPS_GROUP}:platform-service-${svc}:${version}"`),
+        `        implementation "${exports.PPS_GROUP}:pps_sdk_base:${exports.PPS_VERSION}"`,
+        ...exports.PPS_ALL_SERVICES.map((svc) => `        implementation "${exports.PPS_GROUP}:platform-service-${svc}:${exports.PPS_SERVICE_VERSIONS[svc]}"`),
     ].join('\n');
     const implementationLines = configurations
         .map((configuration) => ordered
-        .map((svc) => `    ${configuration} "${exports.PPS_GROUP}:platform-service-${svc}:${version}"`)
+        .map((svc) => `    ${configuration} "${exports.PPS_GROUP}:platform-service-${svc}:${exports.PPS_SERVICE_VERSIONS[svc]}"`)
         .join('\n'))
         .join('\n\n');
     return `
@@ -206,7 +257,9 @@ ${marker}
 // Every service below depends on com.pico.pps:pps_sdk_base. The
 // constraints block pins the whole pinned set — including services this
 // app does not use — so that a declaration added anywhere else resolves
-// to ${version} instead of dragging a second SDK onto the classpath.
+// to its pinned version instead of dragging a second SDK onto the
+// classpath. Each service is at its newest stable release, so the
+// versions differ; pps_sdk_base is pinned to ${exports.PPS_VERSION} for all of them.
 dependencies {
     constraints {
 ${constraintLines}
@@ -224,22 +277,32 @@ ${implementationLines}
  * libraries included — so a PPS coordinate requested from a library
  * module lands on the same version the app packages.
  *
- * Scoped by {@link isPinnedPpsModule}: the group also carries
- * `pps_platform_java_base` (0.0.1-rc.0), `sdk.lib.annotations`
- * (0.0.1-alpha.0), `matrix_psf_api` (1.0.0) and `coreservice.library`
- * (2.1.0-alpha.13), none of which have a ${PPS_VERSION} release.
+ * Scoped by {@link ppsPinnedVersion}: the group also carries
+ * `pps_platform_java_base` (0.0.1-rc.0, its only release),
+ * `sdk.lib.annotations` (0.0.1-alpha.0), `coreservice.library`
+ * (2.1.0-alpha.13) and `matrix_psf_api`, which follows the version
+ * `pps_sdk_base`'s POM names (1.1.3 at this pin). None of them is forced.
  */
-function renderPpsResolutionPin(marker, version = exports.PPS_VERSION) {
+function renderPpsResolutionPin(marker) {
+    const pins = [
+        ['pps_sdk_base', exports.PPS_VERSION],
+        ...exports.PPS_ALL_SERVICES.map((svc) => [`platform-service-${svc}`, exports.PPS_SERVICE_VERSIONS[svc]]),
+    ]
+        .map(([name, version]) => `        "${name}": "${version}",`)
+        .join('\n');
     return `
 ${marker}
 allprojects {
+    def expoPicoPpsPins = [
+${pins}
+    ]
     configurations.configureEach {
         resolutionStrategy.eachDependency { details ->
             def requested = details.requested
-            if (requested.group == "${exports.PPS_GROUP}" &&
-                (requested.name.startsWith("platform-service-") || requested.name == "pps_sdk_base")) {
-                details.useVersion "${version}"
-                details.because "expo-pico-core pins the PICO Platform Service SDK to a single version"
+            def pinned = requested.group == "${exports.PPS_GROUP}" ? expoPicoPpsPins[requested.name] : null
+            if (pinned != null) {
+                details.useVersion pinned
+                details.because "expo-pico-core pins the PICO Platform Service SDK so every service shares one pps_sdk_base"
             }
         }
     }
@@ -285,9 +348,11 @@ exports.default = {
     PPS_GROUP: exports.PPS_GROUP,
     PPS_VERSION: exports.PPS_VERSION,
     PPS_ALL_SERVICES: exports.PPS_ALL_SERVICES,
+    PPS_SERVICE_VERSIONS: exports.PPS_SERVICE_VERSIONS,
     PPS_SERVICES_BY_PACKAGE: exports.PPS_SERVICES_BY_PACKAGE,
     PPS_LOCAL_AAR_EXCLUDES: exports.PPS_LOCAL_AAR_EXCLUDES,
     isPinnedPpsModule,
+    ppsPinnedVersion,
     resolvePpsServices,
     resolvePpsConfigurations,
     createPackageResolver,

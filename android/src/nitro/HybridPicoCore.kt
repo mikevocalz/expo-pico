@@ -143,29 +143,19 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     get() = PicoDevice.splitList(BuildConfig.PICO_TARGET_DEVICES).toTypedArray()
 
   /**
-   * Resolve this app's immersive activity, if it declares one.
+   * Resolve this app's immersive activity, if this flavor has one.
    *
-   * Matched on PICO's VR intent category rather than a class name, so it finds
-   * whatever the renderer's config plugin generated — Viro's `.VRActivity`, or
-   * an app's own. Restricted to this package: `queryIntentActivities` would
-   * otherwise happily return the system launcher's VR entries.
-   *
-   * The legacy `com.picovr.` category is checked too, because devices still on
-   * PICO OS 5 filter on that one.
+   * The config plugin marks the renderer's immersive activity (Viro's
+   * `.VRActivity`) with [IMMERSIVE_ACTIVITY_META], which survives the
+   * one-launcher-tile rules that strip or rename its intent filters. Phone
+   * builds (`xrMode` `mobile`) get null: the activity is in the main manifest
+   * of every flavor, and a phone renders the scene inline instead.
    */
   private fun resolveImmersiveActivity(): Intent? {
+    if (BuildConfig.PICO_XR_MODE == "mobile") return null
     val context = PicoDevice.context() ?: return null
-    val pm = context.packageManager
-    for (category in IMMERSIVE_CATEGORIES) {
-      val probe = Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(context.packageName)
-      val match = runCatching { pm.queryIntentActivities(probe, 0) }
-        .getOrDefault(emptyList())
-        .firstOrNull() ?: continue
-      return Intent(Intent.ACTION_MAIN)
-        .addCategory(category)
-        .setClassName(context.packageName, match.activityInfo.name)
-    }
-    return null
+    val name = context.immersiveActivityName() ?: return null
+    return Intent().setClassName(context.packageName, name)
   }
 
   /**
@@ -182,6 +172,12 @@ class HybridPicoCore : HybridPicoCoreSpec() {
     if (activity.componentName.className != immersive) return Promise.resolved(false)
     activity.finish()
     return Promise.resolved(true)
+  }
+
+  override fun requestImmersivePermission(permission: String): Promise<PicoPermissionStatus> {
+    val activity = ImmersiveActivityTracker.immersiveActivity()
+      ?: return Promise.resolved(PicoPermissionStatus.NO_IMMERSIVE_ACTIVITY)
+    return activity.requestPermissionStatus(permission)
   }
 
   override fun hasImmersiveActivity(): Promise<Boolean> =
@@ -278,8 +274,12 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   ): PicoCapabilitySnapshotEntry {
     val declared = name.declaredIn(declaredCapabilities)
     val feature = name.systemFeature
-    val featureAvailable = feature?.let { f ->
-      pm?.let { runCatching { it.hasSystemFeature(f) }.getOrDefault(false) }
+    val candidates =
+      if (name == PicoCapabilityName.EYETRACKING) PICO_EYE_TRACKING_FEATURES else listOfNotNull(feature)
+    val featureAvailable = feature?.let {
+      pm?.let { manager ->
+        candidates.any { f -> runCatching { manager.hasSystemFeature(f) }.getOrDefault(false) }
+      }
     }
     val sdkClass = name.sdkClass
     val sdkAvailable = sdkClass?.let { PicoDevice.classPresent(it) } ?: true
@@ -307,22 +307,16 @@ class HybridPicoCore : HybridPicoCoreSpec() {
   companion object : HybridPicoCoreSpec.Companion {
     override fun constructor(): HybridPicoCore = HybridPicoCore()
 
-    /**
-     * VR intent categories for this flavor. react-viro generates VRActivity in
-     * the main manifest with only the Meta category, so every flavor (the phone
-     * one included) would resolve it. The Meta category is therefore searched
-     * only in the `quest` flavor; PICO keys on its own categories, current
-     * first then the OS 5 legacy name.
-     */
-    private val IMMERSIVE_CATEGORIES: List<String> =
-      if (BuildConfig.PICO_XR_MODE == "quest") {
-        listOf("com.oculus.intent.category.VR")
-      } else {
-        listOf("com.pico.intent.category.VR", "com.picovr.intent.category.VR")
-      }
-
     const val SWAN_RUNTIME_CLASS = "expo.modules.pico.swan.PicoSwanRuntime"
     const val OS5_RUNTIME_CLASS = "expo.modules.pico.os5.PicoOs5Runtime"
+
+    /**
+     * Feature names that mean PICO eye tracking hardware. PICO documents the
+     * permission but no uses-feature string, so either name counts. The first
+     * is what the plugin declares; `PICO_EYE_TRACKING_FEATURES` in
+     * `src/eyeTrackingPermission.ts` lists the same names.
+     */
+    val PICO_EYE_TRACKING_FEATURES = listOf("pico.hardware.eyetracking", "picovr.software.eye_tracking")
 
     /**
      * The manifest feature each capability corresponds to, or null where
@@ -335,7 +329,7 @@ class HybridPicoCore : HybridPicoCoreSpec() {
         PicoCapabilityName.HANDTRACKING -> "picovr.software.hand_tracking"
         PicoCapabilityName.PASSTHROUGH -> "picovr.software.seethrough"
         PicoCapabilityName.SCENEUNDERSTANDING -> "picovr.software.scene_understanding"
-        PicoCapabilityName.EYETRACKING -> "picovr.software.eye_tracking"
+        PicoCapabilityName.EYETRACKING -> PICO_EYE_TRACKING_FEATURES.first()
         PicoCapabilityName.FACETRACKING -> "picovr.software.face_tracking"
         PicoCapabilityName.BODYTRACKING -> "picovr.software.body_tracking"
         PicoCapabilityName.BOUNDARY -> "picovr.software.boundary"

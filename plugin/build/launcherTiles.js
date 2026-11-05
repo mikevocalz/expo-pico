@@ -33,12 +33,13 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VIRO_VR_ACTION = exports.LAUNCHER_VISIBLE_CATEGORIES = exports.MAIN_ACTION = void 0;
+exports.IMMERSIVE_ACTIVITY_META = exports.VIRO_VR_ACTION = exports.LAUNCHER_VISIBLE_CATEGORIES = exports.MAIN_ACTION = void 0;
 exports.isLauncherVisibleFilter = isLauncherVisibleFilter;
 exports.launcherVisibleActivities = launcherVisibleActivities;
 exports.launcherTileError = launcherTileError;
 exports.assertAtMostOneLauncherTile = assertAtMostOneLauncherTile;
 exports.moveVRActivityOffMain = moveVRActivityOffMain;
+exports.markImmersiveActivity = markImmersiveActivity;
 exports.moveVRActivityOffMainOnDisk = moveVRActivityOffMainOnDisk;
 exports.assertOneLauncherTileOnDisk = assertOneLauncherTileOnDisk;
 exports.applyMarkedGradleScript = applyMarkedGradleScript;
@@ -77,6 +78,10 @@ function isLauncherVisibleFilter(filter) {
     return (actions.some((a) => nameOf(a) === exports.MAIN_ACTION) &&
         categories.some((c) => exports.LAUNCHER_VISIBLE_CATEGORIES.includes(nameOf(c) ?? '')));
 }
+function isRemovalMarker(filter) {
+    const node = filter.$?.['tools:node'];
+    return node === 'remove' || node === 'removeAll';
+}
 function activitiesOf(manifest) {
     const app = (manifest.manifest.application?.[0] ?? {});
     return [...(app.activity ?? []), ...(app['activity-alias'] ?? [])];
@@ -110,7 +115,10 @@ function launcherVisibleActivities(main, flavor) {
         if (node === 'replace' || filters.some((f) => f.$?.['tools:node'] === 'removeAll')) {
             names.delete(name);
         }
-        if (filters.some(isLauncherVisibleFilter))
+        // A filter marked tools:node="remove" is a removal marker for a filter a
+        // library manifest declares (withMetaEntryRemovals writes one for
+        // Viro's MAIN + Meta VR filter); it never reaches the merged manifest.
+        if (filters.some((f) => !isRemovalMarker(f) && isLauncherVisibleFilter(f)))
             names.add(name);
     }
     return [...names];
@@ -154,13 +162,57 @@ function moveVRActivityOffMain(manifest) {
     }
     return changed;
 }
-/** Applies {@link moveVRActivityOffMain} to app/src/main/AndroidManifest.xml on disk. */
+/**
+ * Activity-level meta-data naming the renderer's immersive activity.
+ * `PicoCore.enterImmersiveScene()` finds the activity by this marker: its
+ * intent filters are renamed here and dropped in the PICO overlay, so a
+ * filter lookup cannot find it. Must match `IMMERSIVE_ACTIVITY_META` in
+ * android/src/nitro/Context+immersiveActivityName.kt.
+ */
+exports.IMMERSIVE_ACTIVITY_META = 'expo.modules.pico.IMMERSIVE_ACTIVITY';
+/**
+ * Puts `IMMERSIVE_ACTIVITY_META=true` on `.VRActivity` and removes it from
+ * every other activity, so exactly one activity carries it. Returns true
+ * when the manifest changed.
+ */
+function markImmersiveActivity(manifest) {
+    let changed = false;
+    for (const activity of activitiesOf(manifest)) {
+        const immersive = VR_ACTIVITY_NAMES.includes(nameOf(activity) ?? '');
+        const meta = activity['meta-data'] ?? [];
+        const others = meta.filter((m) => nameOf(m) !== exports.IMMERSIVE_ACTIVITY_META);
+        const current = meta.find((m) => nameOf(m) === exports.IMMERSIVE_ACTIVITY_META);
+        if (immersive) {
+            if (current?.$?.['android:value'] === 'true' && others.length === meta.length - 1)
+                continue;
+            activity['meta-data'] = [
+                ...others,
+                { $: { 'android:name': exports.IMMERSIVE_ACTIVITY_META, 'android:value': 'true' } },
+            ];
+            changed = true;
+        }
+        else if (current) {
+            if (others.length > 0)
+                activity['meta-data'] = others;
+            else
+                delete activity['meta-data'];
+            changed = true;
+        }
+    }
+    return changed;
+}
+/**
+ * Applies {@link moveVRActivityOffMain} and {@link markImmersiveActivity} to
+ * app/src/main/AndroidManifest.xml on disk.
+ */
 async function moveVRActivityOffMainOnDisk(platformProjectRoot) {
     const mainPath = path.join(platformProjectRoot, 'app', 'src', 'main', 'AndroidManifest.xml');
     if (!fs.existsSync(mainPath))
         return;
     const main = await config_plugins_1.AndroidConfig.Manifest.readAndroidManifestAsync(mainPath);
-    if (moveVRActivityOffMain(main)) {
+    const moved = moveVRActivityOffMain(main);
+    const marked = markImmersiveActivity(main);
+    if (moved || marked) {
         await config_plugins_1.AndroidConfig.Manifest.writeAndroidManifestAsync(mainPath, main);
     }
 }

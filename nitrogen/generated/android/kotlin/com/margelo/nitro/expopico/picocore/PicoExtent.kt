@@ -25,8 +25,6 @@ data class PicoExtent(
   @Keep
   val height: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoExtent) return false

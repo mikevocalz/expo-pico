@@ -40,23 +40,13 @@ abstract class HybridPicoPanelHostSpec: HybridObject() {
   @Keep
   abstract fun closePanel(name: String): Promise<Unit>
 
+  @DoNotStrip
+  @Keep
   abstract fun addOnPanelOpenedListener(listener: Callback<(event: PanelOpenedEvent) -> Unit>): ListenerSubscription
 
   @DoNotStrip
   @Keep
-  private fun addOnPanelOpenedListener_cxx(listener: Callback_void_PanelOpenedEvent): ListenerSubscription {
-    val __result = addOnPanelOpenedListener(listener)
-    return __result
-  }
-
   abstract fun addOnPanelClosedListener(listener: Callback<(event: PanelClosedEvent) -> Unit>): ListenerSubscription
-
-  @DoNotStrip
-  @Keep
-  private fun addOnPanelClosedListener_cxx(listener: Callback_void_PanelClosedEvent): ListenerSubscription {
-    val __result = addOnPanelClosedListener(listener)
-    return __result
-  }
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {

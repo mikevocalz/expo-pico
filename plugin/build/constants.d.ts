@@ -96,6 +96,8 @@ export declare const PICO_MAIN_APP_MARKER = "// expo-pico-core: PicoCorePackage 
 export declare const PICO_MAIN_APP_IMPORT_MARKER = "// expo-pico-core: PicoCorePackage import";
 export declare const PICO_MAIN_APP_FLAGS_MARKER = "// expo-pico-core: New Architecture flag guard for the Viro VR activity hop";
 export declare const PICO_MAIN_APP_FLAGS_IMPORT_MARKER = "// expo-pico-core: New Architecture flag guard imports";
+export declare const PICO_MAIN_APP_TRACKER_MARKER = "// expo-pico-core: immersive activity tracker";
+export declare const PICO_MAIN_APP_TRACKER_IMPORT_MARKER = "// expo-pico-core: immersive activity tracker import";
 export declare const PICO_SETTINGS_MARKER = "// expo-pico-core: pico subprojects";
 export declare const PICO_FEATURES: {
     readonly HAND_TRACKING: "pico.hardware.handtracking";

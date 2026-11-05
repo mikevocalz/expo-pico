@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PICO_FLAVOR_ABI_FILTERS = exports.PICO_NATIVE_LIBRARIES = exports.PICO_PROHIBITED_PERMISSIONS = exports.PROFILE_MIN_SDK = exports.TARGET_PROFILE_MAP = exports.DEVICE_TARGET_MAP = exports.PICO_PERMISSIONS = exports.PICO_FEATURES = exports.PICO_SETTINGS_MARKER = exports.PICO_MAIN_APP_FLAGS_IMPORT_MARKER = exports.PICO_MAIN_APP_FLAGS_MARKER = exports.PICO_MAIN_APP_IMPORT_MARKER = exports.PICO_MAIN_APP_MARKER = exports.XR_MODE_MANIFEST_VALUE = exports.PICO_QUERY_PACKAGES = exports.LAUNCHER_CATEGORIES = exports.APP_TYPE_MANIFEST_VALUE = exports.MANIFEST_META = exports.PICO_SPATIAL_SDK_VERSION = exports.PICO_PLATFORM_SDK_VERSION = exports.PICO_PLATFORM_SDK_GROUP = exports.PICO_SDK_GROUP = exports.PICO_MAVEN_REPO = void 0;
+exports.PICO_FLAVOR_ABI_FILTERS = exports.PICO_NATIVE_LIBRARIES = exports.PICO_PROHIBITED_PERMISSIONS = exports.PROFILE_MIN_SDK = exports.TARGET_PROFILE_MAP = exports.DEVICE_TARGET_MAP = exports.PICO_PERMISSIONS = exports.PICO_FEATURES = exports.PICO_SETTINGS_MARKER = exports.PICO_MAIN_APP_TRACKER_IMPORT_MARKER = exports.PICO_MAIN_APP_TRACKER_MARKER = exports.PICO_MAIN_APP_FLAGS_IMPORT_MARKER = exports.PICO_MAIN_APP_FLAGS_MARKER = exports.PICO_MAIN_APP_IMPORT_MARKER = exports.PICO_MAIN_APP_MARKER = exports.XR_MODE_MANIFEST_VALUE = exports.PICO_QUERY_PACKAGES = exports.LAUNCHER_CATEGORIES = exports.APP_TYPE_MANIFEST_VALUE = exports.MANIFEST_META = exports.PICO_SPATIAL_SDK_VERSION = exports.PICO_PLATFORM_SDK_VERSION = exports.PICO_PLATFORM_SDK_GROUP = exports.PICO_SDK_GROUP = exports.PICO_MAVEN_REPO = void 0;
 exports.PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
 exports.PICO_SDK_GROUP = 'com.pvr';
 exports.PICO_PLATFORM_SDK_GROUP = 'com.pvr.platform';
@@ -107,6 +107,8 @@ exports.PICO_MAIN_APP_MARKER = '// expo-pico-core: PicoCorePackage registration'
 exports.PICO_MAIN_APP_IMPORT_MARKER = '// expo-pico-core: PicoCorePackage import';
 exports.PICO_MAIN_APP_FLAGS_MARKER = '// expo-pico-core: New Architecture flag guard for the Viro VR activity hop';
 exports.PICO_MAIN_APP_FLAGS_IMPORT_MARKER = '// expo-pico-core: New Architecture flag guard imports';
+exports.PICO_MAIN_APP_TRACKER_MARKER = '// expo-pico-core: immersive activity tracker';
+exports.PICO_MAIN_APP_TRACKER_IMPORT_MARKER = '// expo-pico-core: immersive activity tracker import';
 exports.PICO_SETTINGS_MARKER = '// expo-pico-core: pico subprojects';
 exports.PICO_FEATURES = {
     HAND_TRACKING: 'pico.hardware.handtracking',
