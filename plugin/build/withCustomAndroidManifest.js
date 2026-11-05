@@ -43,7 +43,7 @@ const constants_1 = require("./constants");
  * This plugin uses withDangerousMod to directly manipulate files and
  * modifies the app build.gradle to add flavor dimensions.
  */
-const withCustomAndroidManifest = (config, options = {}) => {
+const withCustomAndroidManifest = (config, options) => {
     // Add flavor dimensions to build.gradle
     config = withQuestFlavorDimensions(config);
     // Create Horizon-specific AndroidManifest
@@ -128,6 +128,19 @@ function createQuestManifest(options) {
             application: [],
         },
     };
+    if (options.horizonMinSdkVersion !== undefined || options.horizonTargetSdkVersion !== undefined) {
+        manifest.manifest.$['xmlns:metavr'] = 'http://schemas.meta.com/metavr-sdk';
+        const sdkAttributes = {};
+        if (options.horizonMinSdkVersion !== undefined) {
+            sdkAttributes['metavr:minSdkVersion'] = String(options.horizonMinSdkVersion);
+        }
+        if (options.horizonTargetSdkVersion !== undefined) {
+            sdkAttributes['metavr:targetSdkVersion'] = String(options.horizonTargetSdkVersion);
+        }
+        // Expo's Android manifest types do not yet include Meta's namespaced element.
+        const horizonManifest = manifest.manifest;
+        horizonManifest['metavr:uses-metavr-sdk'] = [{ $: sdkAttributes }];
+    }
     // Block prohibited permissions
     for (const permission of constants_1.PROHIBITED_PERMISSIONS) {
         const fullPermissionName = permission.includes('.')
@@ -173,13 +186,19 @@ function createQuestManifest(options) {
         });
     }
     // Add MainActivity with panel size
-    if (options.defaultHeight || options.defaultWidth) {
+    if (options.defaultHeight || options.defaultWidth || options.minWidth || options.minHeight) {
         const layoutAttrs = {};
         if (options.defaultHeight) {
             layoutAttrs['android:defaultHeight'] = options.defaultHeight;
         }
         if (options.defaultWidth) {
             layoutAttrs['android:defaultWidth'] = options.defaultWidth;
+        }
+        if (options.minWidth) {
+            layoutAttrs['android:minWidth'] = options.minWidth;
+        }
+        if (options.minHeight) {
+            layoutAttrs['android:minHeight'] = options.minHeight;
         }
         application.activity.push({
             $: {

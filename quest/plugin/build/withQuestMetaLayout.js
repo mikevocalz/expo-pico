@@ -85,7 +85,7 @@ const path = __importStar(require("path"));
  */
 exports.META_LAYOUT_GRADLE_MARKER = '// expo-pico-core: Meta VR Layout SDK (quest only)';
 const META_LAYOUT_GRADLE_END = '// expo-pico-core: end Meta VR Layout SDK';
-exports.METAVRX_BOM = 'com.meta.metavrx:metavrx-bom:1.2026.0.0';
+exports.METAVRX_BOM = 'com.meta.metavrx:metavrx-bom:1.2026.1.0';
 exports.META_LAYOUT_GROUP = 'com.meta.metavrx.layout';
 exports.META_LAYOUT_ARTIFACTS = [
     `${exports.META_LAYOUT_GROUP}:layout-react-compat`,

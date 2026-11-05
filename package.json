@@ -1,6 +1,6 @@
 {
   "name": "expo-horizon-core",
-  "version": "57.0.3",
+  "version": "58.0.1",
   "description": "ExpoHorizon common features.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -9,6 +9,7 @@
     "plugin/build",
     "ios",
     "android/build.gradle",
+    "android/consumer-rules.pro",
     "android/src",
     "app.plugin.js",
     "expo-module.config.json",
@@ -35,9 +36,9 @@
     "react": "*",
     "react-native": "*"
   },
-  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
+  "gitHead": "853bdad57e665c00e2a63a9f1287fb8102a47cce",
   "expoPico": {
-    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
-    "upstream": "expo-horizon-core@57.0.3"
+    "sourceCommit": "853bdad57e665c00e2a63a9f1287fb8102a47cce",
+    "upstream": "expo-horizon-core@58.0.1"
   }
 }

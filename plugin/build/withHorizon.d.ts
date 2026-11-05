@@ -8,23 +8,48 @@ export type HorizonOptions = {
      */
     horizonAppId?: string;
     /**
+     * Minimum Meta VR OS SDK version for the Quest build, independent of Android's API level.
+     * Omitted by default so existing apps keep their OS compatibility.
+     * Older OS releases may ignore the declaration; also guard newer APIs at runtime.
+     * @see https://developers.meta.com/vr/documentation/android-apps/metavr-os-sdk-versioning/
+     */
+    horizonMinSdkVersion?: number;
+    /**
+     * Meta VR OS SDK behavior version targeted by the Quest build.
+     * Must be at least horizonMinSdkVersion when both are set. Omitted by default.
+     * @see https://developers.meta.com/vr/documentation/android-apps/metavr-os-sdk-versioning/
+     */
+    horizonTargetSdkVersion?: number;
+    /**
      * Default panel height in dp.
      * @example "640dp"
-     * @see https://developers.meta.com/horizon/documentation/android-apps/panel-sizing
+     * @see https://developers.meta.com/vr/essentials/horizon-os-panel-sizing/
      */
     defaultHeight?: string;
     /**
      * Default panel width in dp.
      * @example "1024dp"
-     * @see https://developers.meta.com/horizon/documentation/android-apps/panel-sizing
+     * @see https://developers.meta.com/vr/essentials/horizon-os-panel-sizing/
      */
     defaultWidth?: string;
     /**
-     * Pipe-separated list of supported Quest devices.
+     * Minimum panel width in dp for the Quest build. Omitted by default.
+     * Must be a positive dp dimension.
+     * @example "600dp"
+     */
+    minWidth?: string;
+    /**
+     * Minimum panel height in dp for the Quest build. Omitted by default.
+     * Must be a positive dp dimension.
+     * @example "400dp"
+     */
+    minHeight?: string;
+    /**
+     * Required pipe-separated list of supported Quest devices.
      * @example "quest2|quest3|quest3s"
      * @see https://developers.meta.com/horizon/resources/publish-mobile-manifest/
      */
-    supportedDevices?: string;
+    supportedDevices: string;
     /**
      * Set to `true` to disable VR headtracking feature.
      * By default, adds `android.hardware.vr.headtracking` to the Android Manifest.

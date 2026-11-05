@@ -4,6 +4,7 @@ exports.withQuestGradle = void 0;
 exports.updateQuestFlavorBlock = updateQuestFlavorBlock;
 exports.updateQuestProjectGradle = updateQuestProjectGradle;
 const config_plugins_1 = require("@expo/config-plugins");
+const withQuestMetaLayout_1 = require("./withQuestMetaLayout");
 const QUEST_FLAVOR_BEGIN = '// expo-horizon-quest: begin quest flavor';
 const QUEST_FLAVOR_END = '// expo-horizon-quest: end quest flavor';
 // Same marker text the PICO plugin uses, so a project with both gets one copy.
@@ -18,6 +19,12 @@ const HORIZON_BUILD_CONFIG_MARKER = '// expo-pico-core: Expo Horizon AGP 9 Build
  * (PICO), it skips. Declaring `quest` here keeps the flavor in both cases.
  * The block never mentions `flavorDimensions`, so expo-horizon-core's own
  * check still adds the dimension when nothing else did.
+ *
+ * Gradle creates `questImplementation` when the `quest` flavor is declared,
+ * so the flavor has to come before the Meta Layout SDK block that calls it
+ * (`withQuestMetaLayout`). Expo runs the two mods in reverse registration
+ * order, so this places the flavor above that block whenever the block is
+ * already in the file, instead of relying on which mod ran first.
  */
 function updateQuestFlavorBlock(contents, options) {
     contents = contents.replace(new RegExp(`\\n${escape(QUEST_FLAVOR_BEGIN)}[\\s\\S]*?${escape(QUEST_FLAVOR_END)}\\n?`, 'g'), '');
@@ -32,8 +39,7 @@ androidComponents {
     }
 }`
         : '';
-    return (contents +
-        `
+    const block = `
 ${QUEST_FLAVOR_BEGIN}
 android {
     productFlavors {
@@ -45,7 +51,15 @@ android {
     }
 }${pickFirst}
 ${QUEST_FLAVOR_END}
-`);
+`;
+    const metaLayout = contents.indexOf(withQuestMetaLayout_1.META_LAYOUT_GRADLE_MARKER);
+    if (metaLayout === -1)
+        return contents + block;
+    const lineStart = contents.lastIndexOf('\n', metaLayout - 1) + 1;
+    return (contents.slice(0, lineStart).replace(/\n*$/, '\n') +
+        block.slice(1) +
+        '\n' +
+        contents.slice(lineStart));
 }
 /**
  * Project-level fixes the quest flavor needs: expo-horizon-core 57.0.2 reads

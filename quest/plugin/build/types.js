@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QUEST_OPTION_NAMES = void 0;
 exports.resolveQuestOptions = resolveQuestOptions;
+const withQuestPanelActivity_1 = require("./withQuestPanelActivity");
 const withQuestRemovals_1 = require("./withQuestRemovals");
 const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 /** The {@linkcode QuestOptions} keys, for splitting a combined plugin entry. */
 exports.QUEST_OPTION_NAMES = [
     'metaLayoutSdk',
+    'detailPanel',
     'storeDeviceTargets',
     'questRemovePermissions',
     'questRemoveFeatures',
@@ -17,12 +19,13 @@ exports.QUEST_OPTION_NAMES = [
 /**
  * Validates {@linkcode QuestOptions} and fills defaults.
  *
- * @throws when `storeDeviceTargets` or `questExcludeDependencies` holds a
- * value Meta or Gradle would reject
+ * @throws when `storeDeviceTargets`, `questExcludeDependencies` or
+ * `detailPanel` holds a value Meta or Gradle would reject
  */
 function resolveQuestOptions(options = {}) {
     return {
         metaLayoutSdk: options.metaLayoutSdk === true,
+        detailPanel: (0, withQuestPanelActivity_1.normalizeDetailPanel)(options.detailPanel),
         storeDeviceTargets: (0, withQuestStoreDeviceTargets_1.normalizeStoreDeviceTargets)(options.storeDeviceTargets),
         questRemovePermissions: (0, withQuestRemovals_1.normalizeNames)(options.questRemovePermissions),
         questRemoveFeatures: (0, withQuestRemovals_1.normalizeNames)(options.questRemoveFeatures),

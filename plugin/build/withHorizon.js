@@ -7,7 +7,16 @@ const config_plugins_1 = require("@expo/config-plugins");
 const withCustomAndroidManifest_1 = __importDefault(require("./withCustomAndroidManifest"));
 const withProhibitedPermissions_1 = require("./withProhibitedPermissions");
 const USE_EXPERIMENTAL_PLUGIN = true;
-const withHorizon = (config, options = {}) => {
+const withHorizon = (config, options) => {
+    if (options === null ||
+        typeof options !== 'object' ||
+        Array.isArray(options) ||
+        typeof options.supportedDevices !== 'string' ||
+        !/^[A-Za-z0-9_-]+(?:\|[A-Za-z0-9_-]+)*$/.test(options.supportedDevices)) {
+        throw new Error('[expo-horizon-core] supportedDevices is required and must be a non-empty pipe-separated string of device names (letters, digits, underscores, or hyphens), e.g. "quest2|quest3|quest3s".');
+    }
+    validateHorizonSdkVersions(options);
+    validatePanelMinimums(options);
     config = withHorizonAppId(config, options);
     if (USE_EXPERIMENTAL_PLUGIN) {
         config = (0, withCustomAndroidManifest_1.default)(config, options);
@@ -23,6 +32,32 @@ const withHorizon = (config, options = {}) => {
     }
     return config;
 };
+function validatePanelMinimums(options) {
+    for (const key of ['minWidth', 'minHeight']) {
+        const value = options[key];
+        if (value !== undefined &&
+            (typeof value !== 'string' ||
+                !/^\d+(?:\.\d+)?dp$/.test(value) ||
+                !Number.isFinite(parseFloat(value)) ||
+                parseFloat(value) <= 0)) {
+            throw new Error(`[expo-horizon-core] ${key} must be a positive dp dimension, e.g. "360dp".`);
+        }
+    }
+}
+function validateHorizonSdkVersions(options) {
+    for (const key of ['horizonMinSdkVersion', 'horizonTargetSdkVersion']) {
+        const version = options[key];
+        if (version !== undefined &&
+            (!Number.isInteger(version) || version < 61 || version > 2147483647)) {
+            throw new Error(`[expo-horizon-core] ${key} must be an integer between 61 and 2147483647.`);
+        }
+    }
+    if (options.horizonMinSdkVersion !== undefined &&
+        options.horizonTargetSdkVersion !== undefined &&
+        options.horizonTargetSdkVersion < options.horizonMinSdkVersion) {
+        throw new Error('[expo-horizon-core] horizonTargetSdkVersion must be greater than or equal to horizonMinSdkVersion.');
+    }
+}
 const withHorizonEnabled = (config) => {
     return (0, config_plugins_1.withGradleProperties)(config, (config) => {
         config.modResults.push({
@@ -33,7 +68,7 @@ const withHorizonEnabled = (config) => {
         return config;
     });
 };
-const withHorizonAppId = (config, options = {}) => {
+const withHorizonAppId = (config, options) => {
     return (0, config_plugins_1.withGradleProperties)(config, (config) => {
         const horizonAppId = options.horizonAppId ?? '';
         config.modResults = config.modResults.filter((item) => item.type !== 'property' || item.key !== 'horizonAppId');
@@ -45,10 +80,13 @@ const withHorizonAppId = (config, options = {}) => {
         return config;
     });
 };
-const withPanelSize = (config, options = {}) => {
+const withPanelSize = (config, options) => {
     return (0, config_plugins_1.withAndroidManifest)(config, (config) => {
         // Only add layout if at least one dimension is provided
-        if (!options.defaultHeight && !options.defaultWidth) {
+        if (!options.defaultHeight &&
+            !options.defaultWidth &&
+            !options.minWidth &&
+            !options.minHeight) {
             return config;
         }
         const mainActivity = config.modResults.manifest?.application?.[0]?.activity?.find((activity) => activity.$?.['android:name'] === '.MainActivity');
@@ -63,6 +101,12 @@ const withPanelSize = (config, options = {}) => {
             if (options.defaultWidth) {
                 layoutAttrs['android:defaultWidth'] = options.defaultWidth;
             }
+            if (options.minWidth) {
+                layoutAttrs['android:minWidth'] = options.minWidth;
+            }
+            if (options.minHeight) {
+                layoutAttrs['android:minHeight'] = options.minHeight;
+            }
             mainActivity.layout.push({
                 $: layoutAttrs,
             });
@@ -70,7 +114,7 @@ const withPanelSize = (config, options = {}) => {
         return config;
     });
 };
-const withSupportedDevices = (config, options = {}) => {
+const withSupportedDevices = (config, options) => {
     return (0, config_plugins_1.withAndroidManifest)(config, (config) => {
         // Only add meta-data if supportedDevices is explicitly provided
         if (!options.supportedDevices) {
@@ -91,7 +135,7 @@ const withSupportedDevices = (config, options = {}) => {
         return config;
     });
 };
-const withVrHeadtracking = (config, options = {}) => {
+const withVrHeadtracking = (config, options) => {
     return (0, config_plugins_1.withAndroidManifest)(config, (config) => {
         // Add VR headtracking by default unless explicitly disabled
         if (options.disableVrHeadtracking === true) {

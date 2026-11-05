@@ -9,6 +9,12 @@ import type { ResolvedQuestOptions } from './types';
  * (PICO), it skips. Declaring `quest` here keeps the flavor in both cases.
  * The block never mentions `flavorDimensions`, so expo-horizon-core's own
  * check still adds the dimension when nothing else did.
+ *
+ * Gradle creates `questImplementation` when the `quest` flavor is declared,
+ * so the flavor has to come before the Meta Layout SDK block that calls it
+ * (`withQuestMetaLayout`). Expo runs the two mods in reverse registration
+ * order, so this places the flavor above that block whenever the block is
+ * already in the file, instead of relying on which mod ran first.
  */
 export declare function updateQuestFlavorBlock(contents: string, options: ResolvedQuestOptions): string;
 /**

@@ -5,24 +5,29 @@ const types_1 = require("./types");
 const withMetaEntryRemovals_1 = require("./withMetaEntryRemovals");
 const withQuestGradle_1 = require("./withQuestGradle");
 const withQuestMetaLayout_1 = require("./withQuestMetaLayout");
+const withQuestPanelActivity_1 = require("./withQuestPanelActivity");
 const withQuestRemovals_1 = require("./withQuestRemovals");
 const withQuestRenderModel_1 = require("./withQuestRenderModel");
 const withQuestRendererOverlay_1 = require("./withQuestRendererOverlay");
 const withQuestStoreDeviceTargets_1 = require("./withQuestStoreDeviceTargets");
 /**
  * Meta Horizon quest-flavor extras: flavor settings, Meta VR Layout SDK
- * wiring, quest-only removals, Store device targets, the Viro renderer
+ * wiring, the detail panel activity, quest-only removals, Store device targets, the Viro renderer
  * overlay, and Meta entries kept out of the mobile flavor. Runs after the upstream expo-horizon-core plugin, which owns the
  * flavor and its manifest.
  */
 const withHorizonQuest = (config, rawOptions) => {
     const options = (0, types_1.resolveQuestOptions)(rawOptions ?? {});
-    config = (0, withQuestGradle_1.withQuestGradle)(config, options);
+    // Config plugins run the last registered mod first. Registering the Meta
+    // Layout block first makes it the later write, so its questImplementation
+    // lines land below the quest flavor that withQuestGradle appends.
     config = (0, withQuestMetaLayout_1.withQuestMetaLayout)(config, options);
+    config = (0, withQuestGradle_1.withQuestGradle)(config, options);
     config = (0, withQuestRemovals_1.withQuestRemovals)(config, options);
     config = (0, withQuestRendererOverlay_1.withQuestRendererOverlay)(config, options);
     config = (0, withQuestRenderModel_1.withQuestRenderModel)(config, options);
     config = (0, withQuestStoreDeviceTargets_1.withQuestStoreDeviceTargets)(config, options);
+    config = (0, withQuestPanelActivity_1.withQuestPanelActivity)(config, options);
     return (0, withMetaEntryRemovals_1.withMetaEntryRemovals)(config);
 };
 exports.default = withHorizonQuest;

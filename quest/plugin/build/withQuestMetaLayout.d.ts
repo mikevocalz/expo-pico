@@ -41,7 +41,7 @@ import type { ResolvedQuestOptions } from './types';
  * `isHorizonBuild`.
  */
 export declare const META_LAYOUT_GRADLE_MARKER = "// expo-pico-core: Meta VR Layout SDK (quest only)";
-export declare const METAVRX_BOM = "com.meta.metavrx:metavrx-bom:1.2026.0.0";
+export declare const METAVRX_BOM = "com.meta.metavrx:metavrx-bom:1.2026.1.0";
 export declare const META_LAYOUT_GROUP = "com.meta.metavrx.layout";
 export declare const META_LAYOUT_ARTIFACTS: readonly ["com.meta.metavrx.layout:layout-react-compat", "com.meta.metavrx.layout:layout-window-react-compat"];
 /** Source dir, relative to `android/app`, added to every non-quest flavor. */
