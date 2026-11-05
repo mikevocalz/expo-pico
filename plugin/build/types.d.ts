@@ -513,11 +513,7 @@ export interface ResolvedPicoSwanOptions {
 }
 export interface ResolvedPicoOptions {
     enabled: boolean;
-    /**
-     * True when a PICO app ID resolved (`platformService.picoAppId`, falling
-     * back to `picoAppId`). Without one the plugin builds no pico or dual
-     * flavor and behaves as `buildVariant: 'mobile'`, `xrMode: 'mobile'`.
-     */
+    /** True when a PICO or dual native build flavor is requested. Independent of Platform Service identity. */
     isPicoEnabled: boolean;
     picoAppId: string;
     buildVariant: 'mobile' | 'pico' | 'dual';

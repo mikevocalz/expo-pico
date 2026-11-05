@@ -36,7 +36,7 @@ exports.PICO_SWAN_DEFAULTS = {
 };
 exports.PICO_OPTION_DEFAULTS = {
     enabled: true,
-    isPicoEnabled: false,
+    isPicoEnabled: true,
     picoAppId: '',
     buildVariant: 'pico',
     xrMode: 'pico-os5',
@@ -98,12 +98,11 @@ function resolveOptions(options = {}) {
     assertRealAppId('platformService.foreign.picoAppId', options.platformService?.foreign?.picoAppId);
     const platformService = resolvePlatformServiceOptions(options.platformService, 
     /* legacyPicoAppId */ options.picoAppId);
-    // No app ID, no PICO build: the pico flavor exists only once the app asks
-    // for it with an ID. Everything below then resolves as a mobile build.
-    const isPicoEnabled = platformService.picoAppId !== null;
-    const buildVariant = isPicoEnabled
-        ? (options.buildVariant ?? exports.PICO_OPTION_DEFAULTS.buildVariant)
-        : 'mobile';
+    // XR rendering must work without a PICO Platform Services account. The
+    // native build flavor is an explicit choice, not a side effect of PPS
+    // identity; account, achievements and IAP remain gated separately.
+    const buildVariant = options.buildVariant ?? exports.PICO_OPTION_DEFAULTS.buildVariant;
+    const isPicoEnabled = buildVariant !== 'mobile';
     const defaultXrMode = buildVariant === 'mobile' ? 'mobile' : 'pico-os5';
     const swan = {
         ...exports.PICO_SWAN_DEFAULTS,
@@ -115,13 +114,10 @@ function resolveOptions(options = {}) {
             ? (options.picoSwan.swanSdkArtifact ?? null)
             : exports.PICO_SWAN_DEFAULTS.swanSdkArtifact,
     };
-    const xrMode = isPicoEnabled ? (options.xrMode ?? defaultXrMode) : 'mobile';
-    // appType default tracks xrMode. Mobile builds default to 2d (no immersive
-    // launcher categories injected); PICO modes default to vr. The user can
-    // override with 'mr' for passthrough-first apps.
-    const appType = isPicoEnabled
-        ? (options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr'))
-        : '2d';
+    const xrMode = options.xrMode ?? defaultXrMode;
+    // The launcher contract follows XR mode, not PPS identity. The user can
+    // still explicitly select vr/mr for diagnostic coverage on mobile builds.
+    const appType = options.appType ?? (xrMode === 'mobile' ? '2d' : 'vr');
     // When xrMode is 'pico-swan', lift minSdkVersion floor to Swan's
     // documented requirement unless the user explicitly overrides it.
     const minSdkVersion = options.minSdkVersion ??
@@ -140,6 +136,9 @@ function resolveOptions(options = {}) {
     return {
         ...exports.PICO_OPTION_DEFAULTS,
         ...options,
+        // `...options` copies an explicit `picoAppId: undefined` (an unset env var
+        // in app.config) over the default; withPicoStrings needs a string.
+        picoAppId: nonEmpty(options.picoAppId) ?? '',
         isPicoEnabled,
         buildVariant,
         xrMode,
@@ -242,7 +241,7 @@ function assertRealAppId(field, value) {
         'PICO Developer Console. Set ' +
         field +
         ' to that ID (for example from the PICO_APP_ID environment variable), or leave it ' +
-        'unset to build without the pico flavor.');
+        'unset: the pico flavor still builds, but PICO OS will not launch it on a headset.');
 }
 function nonEmpty(value) {
     if (value == null)

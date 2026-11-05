@@ -29,9 +29,8 @@ export interface DiagnosticCheckFinding {
  *
  * Covered checks (each has a stable id):
  *
- *   1. `identity.missing` (info) — no `picoAppId` /
- *      `platformService.picoAppId`, so PICO is off and no pico flavor is
- *      built. The only finding returned in that case.
+ *   1. `identity.missing` (info) — the PICO XR flavor remains active without
+ *      Platform Service credentials; account/IAP calls require an app ID.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive

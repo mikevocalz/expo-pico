@@ -102,8 +102,8 @@
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
   },
-  "gitHead": "853bdad57e665c00e2a63a9f1287fb8102a47cce",
+  "gitHead": "1a2bf6b2fb60e517c0268161beb2330dba642ecf",
   "expoPico": {
-    "sourceCommit": "853bdad57e665c00e2a63a9f1287fb8102a47cce"
+    "sourceCommit": "1a2bf6b2fb60e517c0268161beb2330dba642ecf"
   }
 }
