@@ -62,32 +62,17 @@ abstract class HybridPicoRtcSpec: HybridObject() {
   @Keep
   abstract fun setAudioOutputVolume(volume: Double): Promise<Unit>
 
+  @DoNotStrip
+  @Keep
   abstract fun addUserJoinedListener(listener: Callback<(event: RtcUserJoinedEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addUserJoinedListener_cxx(listener: Callback_void_RtcUserJoinedEvent): Double {
-    val __result = addUserJoinedListener(listener)
-    return __result
-  }
-
   abstract fun addUserLeftListener(listener: Callback<(event: RtcUserLeftEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addUserLeftListener_cxx(listener: Callback_void_RtcUserLeftEvent): Double {
-    val __result = addUserLeftListener(listener)
-    return __result
-  }
-
   abstract fun addRtcStateChangeListener(listener: Callback<(event: RtcStateChangeEvent) -> Unit>): Double
-
-  @DoNotStrip
-  @Keep
-  private fun addRtcStateChangeListener_cxx(listener: Callback_void_RtcStateChangeEvent): Double {
-    val __result = addRtcStateChangeListener(listener)
-    return __result
-  }
 
   @DoNotStrip
   @Keep
@@ -137,8 +122,7 @@ abstract class HybridPicoRtcSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoRtcSpec {
-      val __result = HybridPicoRtc.constructor()
-      return __result
+      return HybridPicoRtc.constructor()
     }
   }
 }
