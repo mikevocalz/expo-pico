@@ -16,8 +16,11 @@ import java.lang.ref.WeakReference
  *
  * Callbacks run on the main thread; [immersiveActivity] is read from Nitro's
  * threads, hence the volatile reference.
+ *
+ * Public so the plugin-written `MainApplication.onCreate` can install it before
+ * any activity exists; [PicoCorePackage] installs it again as a fallback.
  */
-internal object ImmersiveActivityTracker : Application.ActivityLifecycleCallbacks {
+object ImmersiveActivityTracker : Application.ActivityLifecycleCallbacks {
   private var installed = false
   private var immersiveClass: String? = null
 
@@ -25,6 +28,7 @@ internal object ImmersiveActivityTracker : Application.ActivityLifecycleCallback
   private var current: WeakReference<Activity>? = null
 
   /** Registers once per process. A build with no marked activity registers nothing. */
+  @JvmStatic
   @Synchronized
   fun install(application: Application) {
     if (installed) return
@@ -34,7 +38,7 @@ internal object ImmersiveActivityTracker : Application.ActivityLifecycleCallback
   }
 
   /** The immersive activity when it is alive and not finishing, else null. */
-  fun immersiveActivity(): Activity? =
+  internal fun immersiveActivity(): Activity? =
     current?.get()?.takeUnless { it.isFinishing || it.isDestroyed }
 
   override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

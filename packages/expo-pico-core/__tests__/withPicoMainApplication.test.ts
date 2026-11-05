@@ -181,3 +181,50 @@ describe('withPicoMainApplication on a quest-only build (xrMode mobile)', () => 
     expect(usesViroVrActivity({})).toBe(false);
   });
 });
+
+describe('immersive activity tracker install', () => {
+  // The tracker used to install from PicoCorePackage.createNativeModules, which
+  // runs only once React initializes. A VRActivity the system restores before
+  // that was never seen, so requestImmersivePermission answered
+  // no_immersive_activity while the activity was on screen. Installing from
+  // Application.onCreate sees every activity the process creates.
+  const options = resolveOptions({ xrMode: 'pico-os5' });
+  const JAVA_WITH_ON_CREATE = JAVA_TEMPLATE.replace(
+    '    @Override\n    protected List',
+    '    @Override\n    public void onCreate() {\n        super.onCreate();\n    }\n\n    @Override\n    protected List'
+  );
+
+  it('installs the tracker first thing in a Kotlin onCreate', () => {
+    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+    expect(out).toContain('import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker');
+    const superAt = out.indexOf('super.onCreate()');
+    const installAt = out.indexOf('ImmersiveActivityTracker.install(this)');
+    expect(installAt).toBeGreaterThan(superAt);
+    expect(installAt).toBeLessThan(out.indexOf('loadReactNative(this)'));
+  });
+
+  it('installs the tracker in a Java onCreate', () => {
+    const out = injectIntoJavaMainApplication(JAVA_WITH_ON_CREATE, options)!;
+    expect(out).toContain('import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker;');
+    expect(out).toMatch(/super\.onCreate\(\);\n.*\n\s*ImmersiveActivityTracker\.install\(this\);/);
+  });
+
+  it('does not duplicate the install on repeat runs', () => {
+    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+    const twice = injectIntoKotlinMainApplication(once, options)!;
+    expect(twice).toBe(once);
+    const javaOnce = injectIntoJavaMainApplication(JAVA_WITH_ON_CREATE, options)!;
+    expect(injectIntoJavaMainApplication(javaOnce, options)).toBe(javaOnce);
+  });
+
+  it('exposes install to MainApplication, callable from Kotlin and Java', () => {
+    const fs = require('fs') as typeof import('fs');
+    const path = require('path') as typeof import('path');
+    const kt = fs.readFileSync(
+      path.join(__dirname, '..', 'android', 'src', 'nitro', 'ImmersiveActivityTracker.kt'),
+      'utf8'
+    );
+    expect(kt).toMatch(/^object ImmersiveActivityTracker\b/m);
+    expect(kt).toMatch(/@JvmStatic\s+@Synchronized\s+fun install\(application: Application\)/);
+  });
+});

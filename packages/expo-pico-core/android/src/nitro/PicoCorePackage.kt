@@ -46,8 +46,10 @@ class PicoCorePackage(private val platform: PicoXRPlatform) : ReactPackage {
         Log.i(TAG, "PicoCorePackage initialized with platform=$platform")
         // Lets core reach the resumed Activity; see PicoActivityHolder.
         PicoActivityHolder.attach(reactContext)
-        // Tracks the immersive activity for requestImmersivePermission. Phone
-        // builds render the scene inline and have none to track.
+        // Tracks the immersive activity for requestImmersivePermission. The
+        // plugin-written MainApplication.onCreate installs it first; this
+        // covers a MainApplication the plugin could not edit. Phone builds
+        // render the scene inline and have none to track.
         if (BuildConfig.PICO_XR_MODE != "mobile") {
             (reactContext.applicationContext as? Application)?.let(ImmersiveActivityTracker::install)
         }
