@@ -107,7 +107,12 @@
   "files": [
     "LICENSE",
     "build",
-    "android",
+    "android/build.gradle",
+    "android/CMakeLists.txt",
+    "android/src",
+    "android/eskiu-runtime",
+    "android/one-launcher-tile.gradle",
+    "android/pico-window-positions.gradle",
     "cli/build",
     "plugin/build",
     "plugin/assets",

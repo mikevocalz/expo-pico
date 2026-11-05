@@ -37,10 +37,11 @@ import {
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const { prepareHorizonCore } = createRequire(import.meta.url)('./lib/android-patches.cjs');
 
-const ROOT = resolve(new URL('..', import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const REPO_SLUG = 'mikevocalz/expo-pico';
 const BRANCH_PREFIX = 'release/';
 

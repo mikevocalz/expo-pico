@@ -19,8 +19,11 @@ import { withQuestStoreDeviceTargets } from './withQuestStoreDeviceTargets';
  */
 const withHorizonQuest: ConfigPlugin<QuestOptions | void> = (config, rawOptions) => {
   const options = resolveQuestOptions(rawOptions ?? {});
-  config = withQuestGradle(config, options);
+  // Config plugins run the last registered mod first. Registering the Meta
+  // Layout block first makes it the later write, so its questImplementation
+  // lines land below the quest flavor that withQuestGradle appends.
   config = withQuestMetaLayout(config, options);
+  config = withQuestGradle(config, options);
   config = withQuestRemovals(config, options);
   config = withQuestRendererOverlay(config, options);
   config = withQuestRenderModel(config, options);

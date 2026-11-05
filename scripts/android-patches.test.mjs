@@ -4,11 +4,12 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const { applyPatch, patchFor, prepareHorizonCore } = require('./lib/android-patches.cjs');
 
-const FIXTURES = new URL('./fixtures/', import.meta.url).pathname;
+const FIXTURES = fileURLToPath(new URL('./fixtures/', import.meta.url));
 
 // Copies the pristine upstream package fixture into a scratch stage dir, the
 // same shape build-release-branches.mjs gets from `npm pack`.

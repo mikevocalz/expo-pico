@@ -14,8 +14,9 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const strict = process.argv.includes('--strict');
 const NITRO_PACKAGES = ['react-native-nitro-modules', 'nitrogen', 'nitro-core'];
 const SKIP_DIRS = ['node_modules', '.git', 'build', 'dist', '.expo', '.turbo', 'generated'];
