@@ -9,6 +9,17 @@ export type PicoXRMode = 'mobile' | 'pico-os5' | 'pico-swan' | 'quest';
 export type PicoAppType = 'vr' | 'mr' | '2d';
 export type PicoTargetProfile = 'legacy' | 'pico4' | 'pico4ultra' | 'swan' | 'unknown';
 
+/**
+ * Outcome of `requestImmersivePermission`. `no_immersive_activity` means the
+ * request got no answer: the immersive activity was not alive, so nothing was
+ * asked, or it was destroyed before the user answered the dialog.
+ */
+export type PicoPermissionStatus =
+  | 'granted'
+  | 'denied'
+  | 'never_ask_again'
+  | 'no_immersive_activity';
+
 export type PicoCapabilityName =
   | 'handTracking'
   | 'passthrough'
@@ -117,22 +128,23 @@ export declare class PicoCore extends HybridObject {
   getCapabilitySnapshot(): Promise<PicoCapabilitySnapshotEntry[]>;
 
   /**
-   * Start this app's immersive activity — the one declaring PICO's VR intent
-   * category — so it takes over the display.
+   * Start this app's immersive activity so it takes over the display.
    *
-   * PICO launches an app as a flat 2D panel. An OpenXR renderer drawing inside
-   * that panel stays inside it: the panel is still there, floating in the
-   * scene, because the scene *is* the panel. Exclusive display needs a separate
-   * Activity carrying `com.pico.intent.category.VR`, which is what
-   * `withPicoLauncherActivity` writes onto `.VRActivity`.
+   * PICO and Horizon OS launch an app as a flat 2D panel. An OpenXR renderer
+   * drawing inside that panel stays inside it: the panel is still there,
+   * floating in the scene, because the scene *is* the panel. Exclusive display
+   * needs a separate Activity, which is Viro's `.VRActivity`.
    *
-   * The activity is discovered through `PackageManager` rather than named, so
-   * this works whatever the renderer's plugin generated. Resolves `false` when
-   * no such activity is declared.
+   * The config plugin marks that activity with the
+   * `expo.modules.pico.IMMERSIVE_ACTIVITY` meta-data, and this finds it
+   * through `PackageManager` by that marker. Its intent filters are renamed
+   * or removed so it never shows as a second library tile, so the marker,
+   * not a filter, is what identifies it. Resolves `false` on phone builds
+   * and when no activity is marked.
    */
   enterImmersiveScene(): Promise<boolean>;
 
-  /** Whether an activity declaring the PICO VR category exists in this app. */
+  /** Whether this headset build has a marked immersive activity. */
   hasImmersiveActivity(): Promise<boolean>;
 
   /**
@@ -148,6 +160,22 @@ export declare class PicoCore extends HybridObject {
    * the panel by mistake.
    */
   exitImmersiveScene(): Promise<boolean>;
+
+  /**
+   * Ask for one runtime permission from the immersive activity itself.
+   *
+   * `PermissionsAndroid.request` goes through the React context's current
+   * activity, and while the immersive activity is in front that can still be
+   * the 2D panel's MainActivity. The system then opens the grant dialog in the
+   * panel's task, the panel comes forward, and react-viro's VRActivity finishes
+   * itself when another activity of the app resumes: XR closed about 0.4 s
+   * after entry on a Quest 3S. Asking through the immersive activity keeps the
+   * dialog in its task, so the panel never resumes.
+   *
+   * Resolves without prompting when the permission is already granted, and
+   * with `no_immersive_activity` when that activity is not alive.
+   */
+  requestImmersivePermission(permission: string): Promise<PicoPermissionStatus>;
   /** Undefined when the capability has no system-feature key to check. */
   isCapabilityAvailable(name: PicoCapabilityName): Promise<boolean | undefined>;
 }

@@ -3,7 +3,7 @@ import { Android, type HybridObject } from 'react-native-nitro-modules';
 import type { PicoPanelHost } from './PicoPanelHost.nitro';
 
 /**
- * PICO OS 5 windows for this app. `new PicoWindows()` is cheap; panels come
+ * Extra panels for this app on PICO OS 5 and Meta Horizon OS. `new PicoWindows()` is cheap; panels come
  * from {@linkcode PicoWindows.createPanelHost}.
  *
  * Android only. On other platforms the constructor throws.
@@ -14,7 +14,8 @@ export declare class PicoWindows extends HybridObject {
 
   /**
    * True when this APK declares the panel activity: a PICO build with the
-   * `windows.panelActivity` plugin option left on. When false,
+   * `windows.panelActivity` plugin option left on, or a Meta Horizon OS
+   * (`quest`) build with the expo-horizon-quest `detailPanel` option. When false,
    * {@linkcode PicoWindows.createPanelHost} rejects; render the content in
    * the main window instead.
    */

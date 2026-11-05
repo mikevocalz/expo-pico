@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "types": ["jest"],
+    "types": ["jest", "node"],
     "typeRoots": ["../node_modules/@types"],
     "ignoreDeprecations": "6.0"
   },

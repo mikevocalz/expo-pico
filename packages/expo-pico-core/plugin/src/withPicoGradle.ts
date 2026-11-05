@@ -144,6 +144,37 @@ android.productFlavors.configureEach { flavor ->
 `;
 }
 
+/** The unconditional block earlier plugin versions wrote inside `android {}`. */
+const LEGACY_MISSING_DIM_BLOCK =
+  /\n[ \t]*\/\/ expo-pico-core: missing dimension strategy\n[ \t]*defaultConfig \{\n[ \t]*missingDimensionStrategy "device", "mobile"\n[ \t]*\}\n/;
+
+/**
+ * `buildVariant: 'mobile'` adds no flavors, but the core library has a
+ * `device` dimension, so an app without one must say which variant it wants.
+ *
+ * Only when the app has no `device` dimension of its own. expo-horizon-core
+ * gives the app `mobile` and `quest` flavors in that dimension, and a
+ * defaultConfig `missingDimensionStrategy` overrides the flavor's own value:
+ * questDebug then requested `device=mobile` and packaged expo-horizon-core's
+ * mobile variant (`isHorizonBuild == false`), so a Quest build ran the phone
+ * layout. The check runs in `finalizeDsl`, after every plugin's flavors are
+ * declared, so plugin order does not matter. It calls the getter on purpose:
+ * expo-horizon-core skips writing its flavors when the file already holds
+ * both the property's name and `productFlavors`.
+ */
+export function renderMissingDimensionBlock(): string {
+  return `
+${MISSING_DIM_MARKER}
+androidComponents {
+    finalizeDsl { extension ->
+        if (!extension.getFlavorDimensions().contains("device")) {
+            extension.defaultConfig.missingDimensionStrategy("device", "mobile")
+        }
+    }
+}
+`;
+}
+
 /**
  * Removes the identity gate an earlier plugin version wrote into
  * app/build.gradle. PICO is now off until a picoAppId is set, so there is
@@ -222,19 +253,9 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
         }
       }
     } else {
+      contents = contents.replace(LEGACY_MISSING_DIM_BLOCK, '');
       if (!gradleContains(contents, MISSING_DIM_MARKER)) {
-        const dimStrategyBlock = `
-    ${MISSING_DIM_MARKER}
-    defaultConfig {
-        missingDimensionStrategy "device", "mobile"
-    }
-`;
-        const result = insertAfterPattern(contents, /android\s*\{/, dimStrategyBlock);
-        if (result) {
-          contents = result;
-        } else {
-          console.warn('[expo-pico-core] Could not find android {} block in app/build.gradle');
-        }
+        contents += renderMissingDimensionBlock();
       }
     }
 

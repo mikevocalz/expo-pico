@@ -141,3 +141,132 @@ describe('New Architecture flag guard', () => {
     warn.mockRestore();
   });
 });
+
+describe('withPicoMainApplication on a quest-only build (xrMode mobile)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const {
+    withPicoMainApplication,
+    usesViroVrActivity,
+  } = require('../plugin/src/withPicoMainApplication');
+
+  async function run(plugins: unknown[]): Promise<string> {
+    const config = withPicoMainApplication(
+      { name: 'x', slug: 'x', plugins },
+      resolveOptions({ xrMode: 'mobile' })
+    );
+    const mod = config.mods?.android?.mainApplication;
+    if (!mod) return KT_TEMPLATE;
+    const applied = await mod({
+      modRequest: { nextMod: (result: unknown) => result },
+      modResults: { contents: KT_TEMPLATE, language: 'kt' },
+    });
+    return applied.modResults.contents;
+  }
+
+  it('adds the flag guard when react-viro generates a VRActivity', async () => {
+    // Without it, Enter XR on a Quest 3S crashed in ReactHostImpl.onHostPause:
+    // "Pausing an activity that is not the current activity".
+    const out = await run([['@reactvision/react-viro', { xRMode: ['QUEST'] }]]);
+    expect(out).toContain('skipActivityIdentityAssertionOnHostPause(): Boolean = true');
+  });
+
+  it('leaves a phone app without react-viro untouched', async () => {
+    expect(await run(['expo-router'])).toBe(KT_TEMPLATE);
+  });
+
+  it('detects the plugin by name, with or without options', () => {
+    expect(usesViroVrActivity({ plugins: ['@reactvision/react-viro'] })).toBe(true);
+    expect(usesViroVrActivity({ plugins: [['@reactvision/react-viro', {}]] })).toBe(true);
+    expect(usesViroVrActivity({ plugins: ['expo-horizon-core'] })).toBe(false);
+    expect(usesViroVrActivity({})).toBe(false);
+  });
+});
+
+describe('immersive activity tracker install', () => {
+  // The tracker used to install from PicoCorePackage.createNativeModules, which
+  // runs only once React initializes. A VRActivity the system restores before
+  // that was never seen, so requestImmersivePermission answered
+  // no_immersive_activity while the activity was on screen. Installing from
+  // Application.onCreate sees every activity the process creates.
+  const options = resolveOptions({ xrMode: 'pico-os5' });
+  const JAVA_WITH_ON_CREATE = JAVA_TEMPLATE.replace(
+    '    @Override\n    protected List',
+    '    @Override\n    public void onCreate() {\n        super.onCreate();\n    }\n\n    @Override\n    protected List'
+  );
+
+  it('installs the tracker first thing in a Kotlin onCreate', () => {
+    const out = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+    expect(out).toContain('import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker');
+    const superAt = out.indexOf('super.onCreate()');
+    const installAt = out.indexOf('ImmersiveActivityTracker.install(this)');
+    expect(installAt).toBeGreaterThan(superAt);
+    expect(installAt).toBeLessThan(out.indexOf('loadReactNative(this)'));
+  });
+
+  it('installs the tracker in a Java onCreate', () => {
+    const out = injectIntoJavaMainApplication(JAVA_WITH_ON_CREATE, options)!;
+    expect(out).toContain('import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker;');
+    expect(out).toMatch(/super\.onCreate\(\);\n.*\n\s*ImmersiveActivityTracker\.install\(this\);/);
+  });
+
+  it('does not duplicate the install on repeat runs', () => {
+    const once = injectIntoKotlinMainApplication(KT_TEMPLATE, options)!;
+    const twice = injectIntoKotlinMainApplication(once, options)!;
+    expect(twice).toBe(once);
+    const javaOnce = injectIntoJavaMainApplication(JAVA_WITH_ON_CREATE, options)!;
+    expect(injectIntoJavaMainApplication(javaOnce, options)).toBe(javaOnce);
+  });
+
+  it('exposes install to MainApplication, callable from Kotlin and Java', () => {
+    const fs = require('fs') as typeof import('fs');
+    const path = require('path') as typeof import('path');
+    const kt = fs.readFileSync(
+      path.join(__dirname, '..', 'android', 'src', 'nitro', 'ImmersiveActivityTracker.kt'),
+      'utf8'
+    );
+    expect(kt).toMatch(/^object ImmersiveActivityTracker\b/m);
+    expect(kt).toMatch(/@JvmStatic\s+@Synchronized\s+fun install\(application: Application\)/);
+  });
+});
+
+describe('usesViroVrActivity with path and function plugin entries', () => {
+  // A path or function entry for react-viro skipped the flag guard, and the
+  // Quest crash fixed in 38f5356 came back: "Pausing an activity that is not
+  // the current activity".
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { usesViroVrActivity } = require('../plugin/src/withPicoMainApplication');
+  const path = require('path') as typeof import('path');
+  const projectRoot = path.resolve(__dirname, '..', '..', '..', 'example');
+  const withRoot = (plugins: unknown[]) => ({ plugins, _internal: { projectRoot } });
+
+  it('matches a subpath of the package', () => {
+    expect(usesViroVrActivity(withRoot(['@reactvision/react-viro/app.plugin']))).toBe(true);
+    expect(usesViroVrActivity(withRoot([['@reactvision/react-viro/app.plugin.js', {}]]))).toBe(
+      true
+    );
+  });
+
+  it('matches a relative or absolute path into the package', () => {
+    const rel = '../node_modules/@reactvision/react-viro/app.plugin.js';
+    expect(usesViroVrActivity(withRoot([rel]))).toBe(true);
+    expect(usesViroVrActivity(withRoot([path.resolve(projectRoot, rel)]))).toBe(true);
+  });
+
+  it('matches the plugin function itself', () => {
+    // What `import withViro from '@reactvision/react-viro/app.plugin'` gives.
+    const mod = require(
+      require.resolve('@reactvision/react-viro/app.plugin.js', {
+        paths: [projectRoot],
+      })
+    );
+    const withViro = mod.default ?? mod;
+    expect(typeof withViro).toBe('function');
+    expect(usesViroVrActivity(withRoot([withViro]))).toBe(true);
+    expect(usesViroVrActivity(withRoot([[withViro, { xRMode: ['QUEST'] }]]))).toBe(true);
+  });
+
+  it('does not match other plugins', () => {
+    expect(usesViroVrActivity(withRoot(['./plugins/withSomething', () => ({})]))).toBe(false);
+    expect(usesViroVrActivity(withRoot(['@reactvision/react-viro-extras']))).toBe(false);
+  });
+});

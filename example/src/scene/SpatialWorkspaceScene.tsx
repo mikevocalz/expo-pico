@@ -23,7 +23,7 @@ import {
   XrController,
 } from './xrInput';
 
-import { resolveWorkspace, type ResolvedSurface, type SurfacePose } from '../layout/workspace';
+import { resolveWorkspace, type ResolvedSurface, type SurfacePose } from './sceneSurfaces';
 // Importing from the cube scene also registers its materials (cube tints,
 // focusRing, panelPlate, panelTextWash, floor), which this scene reuses.
 import { CUBE_SHELL_ACTIVE, CUBE_SHELL_REST, EDGE, TINTS } from './InteractiveCubeScene';
@@ -55,7 +55,7 @@ import { CUBE_SHELL_ACTIVE, CUBE_SHELL_REST, EDGE, TINTS } from './InteractiveCu
  *
  * Panels are drawn by Viro because the PICO native layout bridge does not open
  * Subwindow/Toolbar primitives yet. When it does, the intents in
- * `layout/workspace.ts` stay put and only this presenter changes.
+ * `scene/sceneSurfaces.ts` stay put and only this presenter changes.
  */
 
 // Viro's d.ts declares this point type but the package root does not export it.

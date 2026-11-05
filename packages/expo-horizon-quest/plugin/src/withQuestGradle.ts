@@ -1,6 +1,7 @@
 import { ConfigPlugin, withAppBuildGradle, withProjectBuildGradle } from '@expo/config-plugins';
 
 import type { ResolvedQuestOptions } from './types';
+import { META_LAYOUT_GRADLE_MARKER } from './withQuestMetaLayout';
 
 const QUEST_FLAVOR_BEGIN = '// expo-horizon-quest: begin quest flavor';
 const QUEST_FLAVOR_END = '// expo-horizon-quest: end quest flavor';
@@ -18,6 +19,12 @@ const HORIZON_BUILD_CONFIG_MARKER =
  * (PICO), it skips. Declaring `quest` here keeps the flavor in both cases.
  * The block never mentions `flavorDimensions`, so expo-horizon-core's own
  * check still adds the dimension when nothing else did.
+ *
+ * Gradle creates `questImplementation` when the `quest` flavor is declared,
+ * so the flavor has to come before the Meta Layout SDK block that calls it
+ * (`withQuestMetaLayout`). Expo runs the two mods in reverse registration
+ * order, so this places the flavor above that block whenever the block is
+ * already in the file, instead of relying on which mod ran first.
  */
 export function updateQuestFlavorBlock(contents: string, options: ResolvedQuestOptions): string {
   contents = contents.replace(
@@ -35,9 +42,7 @@ androidComponents {
     }
 }`
     : '';
-  return (
-    contents +
-    `
+  const block = `
 ${QUEST_FLAVOR_BEGIN}
 android {
     productFlavors {
@@ -49,7 +54,15 @@ android {
     }
 }${pickFirst}
 ${QUEST_FLAVOR_END}
-`
+`;
+  const metaLayout = contents.indexOf(META_LAYOUT_GRADLE_MARKER);
+  if (metaLayout === -1) return contents + block;
+  const lineStart = contents.lastIndexOf('\n', metaLayout - 1) + 1;
+  return (
+    contents.slice(0, lineStart).replace(/\n*$/, '\n') +
+    block.slice(1) +
+    '\n' +
+    contents.slice(lineStart)
   );
 }
 

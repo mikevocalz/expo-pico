@@ -6,8 +6,10 @@ import * as path from 'path';
 import {
   applyOneLauncherTileGradle,
   assertAtMostOneLauncherTile,
+  IMMERSIVE_ACTIVITY_META,
   launcherVisibleActivities,
   MAIN_ACTION,
+  markImmersiveActivity,
   VIRO_VR_ACTION,
 } from '../plugin/src/launcherTiles';
 import { resolveOptions } from './support/picoOptions';
@@ -276,4 +278,112 @@ describe('launcher tile helpers', () => {
     expect(second).not.toContain('../old/');
     expect(second.match(/apply from/g)).toHaveLength(1);
   });
+});
+
+describe('immersive activity marker', () => {
+  const markerOf = (activity: any) =>
+    (activity?.['meta-data'] ?? []).filter(
+      (m: any) => m.$['android:name'] === IMMERSIVE_ACTIVITY_META
+    );
+  const mainActivity = (m: Manifest): any =>
+    (m.manifest.application?.[0].activity ?? []).find(
+      (a: any) => a.$['android:name'] === '.MainActivity'
+    );
+
+  // PicoCore.enterImmersiveScene() resolves VRActivity by this marker. Device
+  // QA on 2026-11-04 found the old filter lookup returned nothing once the
+  // filters were stripped, so Enter XR fell back to the inline scene.
+  test.each([
+    ['current Viro', VIRO_VR_ACTIVITY],
+    ['published Viro', PUBLISHED_VIRO_VR_ACTIVITY],
+  ])('%s: prebuild marks .VRActivity in main and nothing else', async (_name, vr) => {
+    const root = makeProject(manifestXml(`${LAUNCHER_ACTIVITY}\n${vr}`));
+    await prebuild(root);
+    const main = await read(root, 'main');
+    expect(markerOf(vrActivity(main))).toEqual([
+      { $: { 'android:name': IMMERSIVE_ACTIVITY_META, 'android:value': 'true' } },
+    ]);
+    expect(markerOf(mainActivity(main))).toEqual([]);
+    expect(launcherVisibleActivities(main)).toEqual(['.MainActivity']);
+  });
+
+  test('the marker survives the PICO overlay dropping every intent-filter', async () => {
+    const root = makeProject(manifestXml(`${LAUNCHER_ACTIVITY}\n${VIRO_VR_ACTIVITY}`));
+    await prebuild(root);
+    const pico = await read(root, 'pico');
+    expect(vrActivity(pico)['intent-filter']).toEqual([{ $: { 'tools:node': 'removeAll' } }]);
+    expect(vrActivity(pico).$['tools:node']).toBe('merge');
+    expect(markerOf(vrActivity(await read(root, 'main')))).toHaveLength(1);
+  });
+
+  test('is idempotent and moves a stray marker off other activities', () => {
+    const manifest: any = {
+      manifest: {
+        $: {},
+        application: [
+          {
+            $: {},
+            activity: [
+              {
+                $: { 'android:name': '.MainActivity' },
+                'meta-data': [
+                  { $: { 'android:name': IMMERSIVE_ACTIVITY_META, 'android:value': 'true' } },
+                ],
+              },
+              { $: { 'android:name': '.VRActivity' } },
+            ],
+          },
+        ],
+      },
+    };
+    expect(markImmersiveActivity(manifest)).toBe(true);
+    expect(markerOf(mainActivity(manifest))).toEqual([]);
+    expect(mainActivity(manifest)['meta-data']).toBeUndefined();
+    expect(markerOf(vrActivity(manifest))).toHaveLength(1);
+    expect(markImmersiveActivity(manifest)).toBe(false);
+  });
+});
+
+test('a tools:node="remove" filter in a flavor is a removal marker, not a tile', () => {
+  const main: any = {
+    manifest: {
+      application: [
+        {
+          activity: [
+            {
+              $: { 'android:name': '.MainActivity' },
+              'intent-filter': [
+                {
+                  action: [{ $: { 'android:name': MAIN_ACTION } }],
+                  category: [{ $: { 'android:name': 'android.intent.category.LAUNCHER' } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+  const pico: any = {
+    manifest: {
+      application: [
+        {
+          activity: [
+            {
+              $: { 'android:name': '.VRActivity', 'tools:node': 'merge' },
+              'intent-filter': [
+                { $: { 'tools:node': 'removeAll' } },
+                {
+                  $: { 'tools:node': 'remove' },
+                  action: [{ $: { 'android:name': MAIN_ACTION } }],
+                  category: [{ $: { 'android:name': 'com.oculus.intent.category.VR' } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+  expect(launcherVisibleActivities(main, pico)).toEqual(['.MainActivity']);
 });

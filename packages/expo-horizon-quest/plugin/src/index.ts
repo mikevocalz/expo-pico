@@ -5,6 +5,7 @@ import { resolveQuestOptions } from './types';
 import { withMetaEntryRemovals } from './withMetaEntryRemovals';
 import { withQuestGradle } from './withQuestGradle';
 import { withQuestMetaLayout } from './withQuestMetaLayout';
+import { withQuestPanelActivity } from './withQuestPanelActivity';
 import { withQuestRemovals } from './withQuestRemovals';
 import { withQuestRenderModel } from './withQuestRenderModel';
 import { withQuestRendererOverlay } from './withQuestRendererOverlay';
@@ -12,7 +13,7 @@ import { withQuestStoreDeviceTargets } from './withQuestStoreDeviceTargets';
 
 /**
  * Meta Horizon quest-flavor extras: flavor settings, Meta VR Layout SDK
- * wiring, quest-only removals, Store device targets, the Viro renderer
+ * wiring, the detail panel activity, quest-only removals, Store device targets, the Viro renderer
  * overlay, and Meta entries kept out of the mobile flavor. Runs after the upstream expo-horizon-core plugin, which owns the
  * flavor and its manifest.
  */
@@ -27,6 +28,7 @@ const withHorizonQuest: ConfigPlugin<QuestOptions | void> = (config, rawOptions)
   config = withQuestRendererOverlay(config, options);
   config = withQuestRenderModel(config, options);
   config = withQuestStoreDeviceTargets(config, options);
+  config = withQuestPanelActivity(config, options);
   return withMetaEntryRemovals(config);
 };
 

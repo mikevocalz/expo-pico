@@ -22,6 +22,8 @@ import type {
 
 export * from './types';
 export * from './layout';
+export * from './shell';
+export * from './mainContent';
 
 import { layoutReadinessFromProbe, type PicoSpatialLayoutBridgeStatus } from './layout';
 

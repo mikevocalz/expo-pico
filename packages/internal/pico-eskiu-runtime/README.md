@@ -9,6 +9,6 @@ Internal systems-runtime source for the PICO arm64 path.
 
 PICO's Java/Kotlin SDK calls intentionally stay out of Eskiu; routing them through extra JNI hops would make the stack heavier, not lighter.
 
-Requires eskiuc >= 0.9.3. Install the pinned, checksum-verified release with `scripts/install-eskiuc.sh` (no sudo), then run `yarn eskiu:doctor` before a PICO native build. Without eskiuc the build still succeeds, but icon meshes throw `ESKIU_RUNTIME_UNAVAILABLE`.
+Requires eskiuc at exactly the version in `cmake/eskiu-version.txt`. Install that checksum-verified release with `scripts/install-eskiuc.sh` (no sudo; it goes to `~/.local/eskiu-<version>`), then run `yarn eskiu:doctor` before a native build. `ExpoPicoEskiu.cmake` looks in the directory of `$ESKIUC`, then `~/.local/eskiu-<version>/bin`, then `PATH`, and stops the arm64 configure with an error when it finds no eskiuc at that version, so a stale compiler on `PATH` cannot build the runtime.
 
 `yarn test:eskiu` compiles `src/runtime.esk` for the host and for `aarch64-linux-android`, runs `test/icon_test.c`, and writes PNGs of the curated Lucide meshes.

@@ -171,3 +171,34 @@ describe('picoSwan resolution', () => {
     expect(result.picoSwan.scaffoldSwanSourceSet).toBe(true);
   });
 });
+
+describe('placeholder PICO app IDs', () => {
+  // PICO OS closes the app at launch without a registered ID
+  // (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), so a sample value must stop
+  // prebuild instead of producing an APK that can never run.
+  test.each(['1234567', 'your-pico-app-id', 'REPLACE_WITH_PICO_APP_ID', '<app id>', '0000000'])(
+    'picoAppId %p fails and names the field',
+    (id) => {
+      expect(() => resolveOptions({ picoAppId: id })).toThrow(
+        /picoAppId is set to the placeholder/
+      );
+    }
+  );
+
+  test('names the nested platformService fields', () => {
+    expect(() => resolveOptions({ platformService: { picoAppId: '1234567' } })).toThrow(
+      /platformService\.picoAppId is set to the placeholder "1234567"/
+    );
+    expect(() =>
+      resolveOptions({ platformService: { foreign: { picoAppId: 'your-pico-app-id' } } })
+    ).toThrow(/platformService\.foreign\.picoAppId/);
+  });
+
+  test('accepts a real-looking ID and an unset one', () => {
+    expect(resolveOptions({ picoAppId: 'a1b2c3d4e5f60718293a4b5c6d7e8f90' }).isPicoEnabled).toBe(
+      true
+    );
+    expect(resolveOptions({ picoAppId: '' }).isPicoEnabled).toBe(false);
+    expect(resolveOptions({}).isPicoEnabled).toBe(false);
+  });
+});

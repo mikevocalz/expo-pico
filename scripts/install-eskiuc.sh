@@ -6,21 +6,26 @@
 # Downloads the release tarball, checks it against the SHA-256 pinned below and
 # against the release's SHA256SUMS, then unpacks it into the prefix. Prints the
 # compiler path; under GitHub Actions it also exports ESKIUC and adds bin/ to PATH.
+#
+# The version lives in packages/internal/pico-eskiu-runtime/cmake/eskiu-version.txt,
+# which ExpoPicoEskiu.cmake also reads to reject any other eskiuc. Bump it there
+# and update the three checksums below together.
 set -euo pipefail
 
-ESKIU_VERSION="0.14.0"
+VERSION_FILE="$(cd "$(dirname "$0")/.." && pwd)/packages/internal/pico-eskiu-runtime/cmake/eskiu-version.txt"
+ESKIU_VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
 REPO="eskiu-lang/eskiu"
 
 case "$(uname -s)-$(uname -m)" in
   Darwin-arm64)
     ASSET="eskiuc-macos-arm64.tar.gz"
-    SHA256="ced8ed271e0db5b8ea09c4ce6487049ffa1d7eb102d3758624c2c16c642f0bfd" ;;
+    SHA256="70c3630d8a5ea4cc34c3dfffc3fc93e1b0e780a6a1faea138d832f8c1d894f92" ;;
   Linux-x86_64)
     ASSET="eskiuc-linux-x86_64.tar.gz"
-    SHA256="4d6bb09c9995991e32c178fd5d4bcdd85e4652c750ce4f578c386fd5e8f2eb50" ;;
+    SHA256="b3ccb5fedd92bc6cb0dee1580464d183696aeba97155299ee4ecb9ee920e568d" ;;
   Linux-aarch64 | Linux-arm64)
     ASSET="eskiuc-linux-arm64.tar.gz"
-    SHA256="0824bbd90913bed7bc85254fc2bf4c0ee1e76c095dcd6aa7380097f7e3a6eb19" ;;
+    SHA256="055e13099ad6797c0a47a5a7a392d80be40fad7781e81879f4c6880dac37d667" ;;
   *)
     echo "install-eskiuc: no eskiuc ${ESKIU_VERSION} build for $(uname -s)-$(uname -m)" >&2
     exit 1 ;;
