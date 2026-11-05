@@ -31,8 +31,6 @@ data class GetEntriesOptions(
   @Keep
   val pageToken: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is GetEntriesOptions) return false
