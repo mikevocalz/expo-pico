@@ -31,8 +31,9 @@ function warnOnce() {
 
   console.warn(
     '[pico/notifications] bridge unavailable — PPS Push SDK not on ' +
-      'classpath. Verify com.pico.pps:platform-service-push is resolving on ' +
-      'Bytedance maven (or that the AAR is in android/app/libs/).'
+      'classpath. expo-pico-core declares com.pico.pps:platform-service-push ' +
+      'on the pico flavor and Gradle resolves it from the Bytedance Maven: ' +
+      'check this is a picoDebug build and that Gradle could reach the repo.'
   );
 }
 

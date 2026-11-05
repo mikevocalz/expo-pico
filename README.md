@@ -1,6 +1,6 @@
 # expo-pico-app-kit
 
-[![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
+[![n/a](https://img.shields.io/badge/PPS_1.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 App-side orchestration layer for the `expo-pico-*` family. One import,
@@ -92,10 +92,11 @@ In dev (`__DEV__`) the boot logs the capability table:
 ## AAR drop-in
 
 The seven `account / iap / achievement / leaderboard / friend / push /
-social` rows go live automatically when you add the PICO Platform Service
-SDK from the Bytedance maven (`expo-pico-core`'s gradle plugin wires
-the repo URL for you). Drop the matching `com.pico.pps:platform-service-*`
-dependencies in your app's `build.gradle` under `picoImplementation`.
+social` rows need no drop-in. `expo-pico-core`'s Gradle plugin registers
+the Bytedance Maven repo and declares the matching
+`com.pico.pps:platform-service-*` dependencies for every installed
+`@expo-pico/*` package, on the PICO flavors only. Don't add them to
+`build.gradle` yourself.
 
 The remaining six rows (`haptics`, `windowContainer`, `eyeGaze`,
 `sceneMesh`, `faceTracking`, `bodyTracking`) go live once you:
@@ -104,9 +105,12 @@ The remaining six rows (`haptics`, `windowContainer`, `eyeGaze`,
 2. Download the PICO Native SDK (haptics) and PICO Spatial
    SDK (everything else) AARs
 3. Drop the .aar files into `android/app/libs/`
-4. Add `picoImplementation fileTree(dir: 'libs', include: ['*.aar'])`
-   to your app's `build.gradle`
-5. Rebuild
+4. Rebuild
+
+`expo-pico-core` already adds a `fileTree` over `android/app/libs/` on the
+PICO flavors. It excludes the PPS artifacts it resolves from Maven, so a
+stray copy of one of those cannot cause a duplicate-class failure. A
+hand-written, unfiltered `fileTree` would remove that guard.
 
 The wrappers detect the new classes on the classpath via reflection.
 No JS-side change required.
