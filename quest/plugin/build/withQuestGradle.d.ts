@@ -1,8 +1,19 @@
 import { ConfigPlugin } from '@expo/config-plugins';
 import type { ResolvedQuestOptions } from './types';
 /**
- * The quest flavor's settings, appended to `app/build.gradle` and rewritten on
- * every prebuild.
+ * Start of the line that opens the first top-level `dependencies { ... }`
+ * block calling a quest configuration, or -1. A `dependencies` block nested in
+ * `buildscript` (indented or not) never matches, and braces inside strings and
+ * comments do not count, so generated Gradle with braces in text still scans
+ * correctly.
+ */
+export declare function findQuestDependenciesBlock(contents: string): number;
+/**
+ * The quest flavor's settings, rewritten on every prebuild. Gradle must create
+ * `questImplementation` before evaluating any dependency that calls it, so the
+ * block goes above the Meta Layout SDK block and above a top-level
+ * `dependencies` block that already uses a quest configuration
+ * ({@linkcode findQuestDependenciesBlock}); otherwise it is appended.
  *
  * expo-horizon-core declares `mobile` and `quest` only when the file has no
  * flavors yet; when another plugin declared the `device` dimension first
