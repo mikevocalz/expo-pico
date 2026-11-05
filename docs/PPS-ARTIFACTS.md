@@ -204,11 +204,11 @@ npx expo-pico-doctor
 
 Three checks cover this file:
 
-| Check                           | Severity | Fires when                                                                                                                                        |
-| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pps-artifact-shadowed-by-libs` | warning  | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests. |
-| `pps-block-injected-twice`      | error    | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice.                                     |
-| `pps-coordinate-version-skew`   | warning  | A `com.pico.pps` coordinate is requested at an unpinned version. The pin overrides it, so the version written there has no effect.                |
+| Check                           | Severity | Fires when                                                                                                                                                                                                                             |
+| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pps-artifact-shadowed-by-libs` | warning  | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests.                                                                                      |
+| `pps-block-injected-twice`      | error    | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice.                                                                                                                          |
+| `pps-coordinate-version-skew`   | warning  | A `com.pico.pps` coordinate is requested at an unpinned version. Inside the plugin's block, an older plugin wrote it and `npx expo prebuild` rewrites it. Elsewhere, the pin overrides it, so the version written there has no effect. |
 
 ## Still open
 
