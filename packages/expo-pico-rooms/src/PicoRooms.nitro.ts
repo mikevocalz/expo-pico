@@ -70,7 +70,7 @@ export interface MatchmakingFoundEvent {
 }
 
 /**
- * PPS 1.0.x removed dedicated rooms. Every method here returns
+ * PPS 1.x removed dedicated rooms. Every method here returns
  * NOT_IN_PPS_1_0 today; the interface is kept so a future PPS release can
  * wire it without an API break. Run live session state on Fishjam or Colyseus.
  */

@@ -449,8 +449,11 @@ class HybridPicoSocial : HybridPicoSocialSpec() {
   companion object : HybridPicoSocialSpec.Companion {
     override fun constructor(): HybridPicoSocial = HybridPicoSocial()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
 
     /**
      * `OpenUserInfo.presenceStatus` is a bare `Integer`; the published

@@ -1,0 +1,27 @@
+buildscript {
+    ext {
+        minSdkVersion = 24
+    }
+}
+
+allprojects {
+    repositories {
+    }
+}
+
+// expo-pico-core: single-version pin for com.pico.pps:*
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            def requested = details.requested
+            if (requested.group == "com.pico.pps" &&
+                (requested.name.startsWith("platform-service-") || requested.name == "pps_sdk_base")) {
+                details.useVersion "1.0.0"
+                details.because "expo-pico-core pins the PICO Platform Service SDK to a single version"
+            }
+        }
+    }
+}
+
+// app: kept across prebuilds
+ext.appOwned = true

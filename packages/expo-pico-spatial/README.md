@@ -1,6 +1,6 @@
 # expo-pico-spatial
 
-[![seam](https://img.shields.io/badge/PPS_1.0.x-seam-6B7280?style=flat-square)](../../README.md#packages)
+[![seam](https://img.shields.io/badge/PPS_1.x-seam-6B7280?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Spatial mode helpers, container APIs, and runtime seams for PICO OS 6 Spatial SDK.

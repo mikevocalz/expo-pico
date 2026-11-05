@@ -1,6 +1,6 @@
 # expo-pico-rooms
 
-[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
+[![partial](https://img.shields.io/badge/PPS_1.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform room lifecycle for Expo apps.
@@ -8,9 +8,9 @@ PICO platform room lifecycle for Expo apps.
 Read-only room discovery on top of the PICO Platform SDK friend service.
 Creation, joining and membership management are **not** available — see below.
 
-> ## Read-only on PPS 1.0.x
+> ## Read-only on PPS 1.x
 >
-> **PPS 1.0.x removed dedicated rooms.** The only surviving surface is
+> **PPS 1.x removed dedicated rooms.** The only surviving surface is
 > _read-only_ and comes from the `friend` service, which is why
 > `ppsArtifacts.ts` maps this package to `['friend']` and nothing else.
 >
@@ -24,8 +24,8 @@ Creation, joining and membership management are **not** available — see below.
 > not report. `maxMembers` is the only real capacity figure, and `data` is
 > always empty because PPS attaches no key/value payload to a room.
 >
-> Note that PPS marks `getFriendsAndRooms` `@Deprecated("Legacy")` in the 1.0.0
-> artifact with no named replacement, so even this read path is on notice.
+> Note that PPS marks `getFriendsAndRooms` `@Deprecated("Legacy")` in the 1.0.0 and 1.1.2
+> artifacts with no named replacement, so even this read path is on notice.
 >
 > Everything that mutates room state — `createRoom`, `joinRoom`, `leaveRoom`,
 > `kickUser`, `updateRoomData`, `requestMatchmaking`, `cancelMatchmaking` —
@@ -86,7 +86,7 @@ if (result.status === 'success') {
 
 Not implemented — `requestMatchmaking()` and `cancelMatchmaking()` throw
 `NOT_IN_PPS_1_0` unconditionally, and `addMatchmakingFoundListener()` never
-fires. PPS 1.0.x removed the matchmaking surface in the PVR->PPS rewrite.
+fires. PPS 1.x removed the matchmaking surface in the PVR->PPS rewrite.
 
 `createRoom()` is not a fallback here — it rejects too. Own the room state in a
 real-time backend and use PICO only for identity and for surfacing the invite:
@@ -112,7 +112,7 @@ await sendInvites({
 
 ## Extension Seams
 
-PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.0.0`, `…:social:1.0.0`) resolve automatically on `picoDebug` builds — no AAR drop is required. Matchmaking is not a partially-wired endpoint: PPS 1.0.x has no matchmaking API at all, so both matchmaking calls throw `NOT_IMPLEMENTED` regardless of build flavor or hardware.
+PPS friend / social Maven artifacts (`com.pico.pps:platform-service-friend:1.1.2`, `…:social:1.1.2`) resolve automatically on `picoDebug` builds — no AAR drop is required. Matchmaking is not a partially-wired endpoint: PPS 1.x has no matchmaking API at all, so both matchmaking calls throw `NOT_IMPLEMENTED` regardless of build flavor or hardware.
 
 ## Status
 

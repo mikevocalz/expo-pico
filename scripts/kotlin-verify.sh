@@ -12,6 +12,9 @@
 # SAM-convert.
 #
 # Usage:  bash kotlin-verify.sh /path/to/expo-pico
+#
+# The versions below match PPS_SERVICE_VERSIONS and PPS_VERSION in
+# packages/expo-pico-core/plugin/src/ppsArtifacts.ts. Keep them in step.
 set -euo pipefail
 REPO="${1:?usage: kotlin-verify.sh <repo-root>}"
 WORK="$(mktemp -d)"
@@ -32,9 +35,11 @@ repositories {
 }
 configurations { pps }
 dependencies {
-    ['auth','iap','friend','social','achievement','leaderboard','push'].each {
-        pps "com.pico.pps:platform-service-${it}:1.0.0"
+    [auth: '1.1.2', iap: '1.1.2', friend: '1.1.2', social: '1.1.2',
+     achievement: '1.1.2', leaderboard: '1.1.2', push: '1.1.3'].each { svc, v ->
+        pps "com.pico.pps:platform-service-${svc}:${v}"
     }
+    pps "com.pico.pps:pps_sdk_base:1.1.3"
 }
 tasks.register('copyAll', Copy) { from configurations.pps; into 'out' }
 G

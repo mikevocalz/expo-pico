@@ -34,7 +34,7 @@ Both files below are tracked in git; a clean checkout has them.
 
 | File                            |     Bytes | sha256                                                             | BuildID                                    |
 | ------------------------------- | --------: | ------------------------------------------------------------------ | ------------------------------------------ |
-| `arm64-v8a/libopenxr_loader.so` | 1 662 344 | `50d699172cac4b5dabe0b02bc2a478d49073411778c11eead1dd0d605211da1e` | `6c806a72052f8e325f1311d217340323edd7db85` |
+| `arm64-v8a/libopenxr_loader.so` | 1 661 048 | `49a3cb45735a23e596711ba3127e407cd34a0ce2ed09dbd4f1d1839006b96d0f` | `a2a145bb646b29f8517dbe01348eacae0cd2349a` |
 | `arm64-v8a/libviro_renderer.so` | 7 542 552 | `0d6d8ee103c478765951d1c76a10bdfe4e884aaf602dc6649b7eacf86846938f` | `537521ed90299918caad7cb4fb3abc3bd35ec226` |
 
 Both are stripped, and both pass the 16KB check at `0x4000`:
@@ -45,7 +45,7 @@ Both are stripped, and both pass the 16KB check at `0x4000`:
   packages/expo-pico-core/plugin/assets/jniLibs/arm64-v8a/libviro_renderer.so
 ```
 
-## `libopenxr_loader.so` — Khronos 1.1.62
+## `libopenxr_loader.so` — Khronos 1.1.65
 
 Always overlaid when `xrMode !== 'mobile'` and `openXrLoaderOverlay` is on.
 
@@ -54,7 +54,12 @@ PICO OS / Android 14+ refuse to load a `.so` whose `PT_LOAD` segments are
 and the failure is silent at install time and a native-load error at runtime.
 This copy is 16KB-aligned.
 
-- Source: `org.khronos.openxr:openxr_loader_for_android:1.1.62` (Maven Central)
+- Source: `org.khronos.openxr:openxr_loader_for_android:1.1.65` (Maven Central),
+  `jni/arm64-v8a/libopenxr_loader.so` from the AAR. The AAR's sha1
+  (`b81c1049f63302428fbf473d1b310de51c32b969`) matches the `.sha1` Maven
+  Central publishes.
+- Exports the same 56 dynamic symbols as 1.1.62, which covers all 45 `xr*`
+  symbols `libviro_renderer.so` imports.
 - Licence: Apache-2.0
 
 ## `libviro_renderer.so` — PICO interaction profiles
