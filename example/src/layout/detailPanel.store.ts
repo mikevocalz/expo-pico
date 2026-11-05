@@ -16,6 +16,12 @@ interface ShellState {
   railPlacement: SpatialWindowPlacement;
   select: (id: DetailId) => void;
   clear: () => void;
+  /**
+   * The pushed detail screen for `id` went away (Close, hardware BACK, a
+   * gesture). Clears the selection if it is still `id`, and turns a `failed`
+   * status back to `closed` so the next detail tries the panel again.
+   */
+  leaveDetailScreen: (id: DetailId) => void;
   setStatus: (status: DetailPanelStatus) => void;
   setPanelHost: (host: PicoPanelHost) => void;
   setRailPlacement: (placement: SpatialWindowPlacement) => void;
@@ -33,6 +39,12 @@ export const useShellStore = create<ShellState>((set) => ({
   railPlacement: 'inline',
   select: (id) => set({ selectedId: id }),
   clear: () => set({ selectedId: null }),
+  leaveDetailScreen: (id) =>
+    set((state) =>
+      state.selectedId === id
+        ? { selectedId: null, status: state.status === 'failed' ? 'closed' : state.status }
+        : {}
+    ),
   setStatus: (status) => set({ status }),
   setPanelHost: (panelHost) => set({ panelHost }),
   setRailPlacement: (railPlacement) => set({ railPlacement }),
