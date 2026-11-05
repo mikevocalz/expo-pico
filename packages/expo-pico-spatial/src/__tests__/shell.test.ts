@@ -15,6 +15,8 @@ const TOKENS: SpatialShellTokens = {
   cornerRadiusDp: 24,
   detailWidthDp: 420,
   detailHeightDp: 600,
+  mainWidthDp: 1280,
+  mainHeightDp: 800,
 };
 
 describe('createSpatialShell', () => {

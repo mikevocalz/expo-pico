@@ -16,6 +16,8 @@
  * docs/adr/0001-spatial-shell-rail-main-detail.md.
  */
 
+import { fitMainContent, type MainContentFrame } from './mainContent';
+
 /** Horizontal anchor names from Meta's `SpatialAnchor`. `left`/`right` never mirror in RTL. */
 export type SpatialAnchorHorizontal = 'start' | 'end' | 'left' | 'right';
 
@@ -86,6 +88,13 @@ export interface SpatialShellTokens {
   /** The detail panel's size. Width and height must differ (PICO OS 5 ignores a square size). */
   detailWidthDp: number;
   detailHeightDp: number;
+  /**
+   * The main panel's launch size, the `<layout>` default the manifest
+   * declares. Its aspect is the one the main content keeps when the user
+   * resizes the panel.
+   */
+  mainWidthDp: number;
+  mainHeightDp: number;
 }
 
 /** Geometry every platform reads. Built by {@linkcode createSpatialShell}. */
@@ -104,6 +113,10 @@ export interface SpatialShell {
   readonly railStripWidthDp: number;
   /** The detail panel's launch size. */
   readonly detailPanelSizeDp: Readonly<{ widthDp: number; heightDp: number }>;
+  /** Width over height of the main panel's launch size. */
+  readonly mainContentAspectRatio: number;
+  /** {@linkcode fitMainContent} at {@linkcode mainContentAspectRatio}. */
+  fitMainContent(width: number, height: number): MainContentFrame | null;
 }
 
 function assertPositive(name: string, value: number): void {
@@ -143,6 +156,8 @@ export function createSpatialShell(tokens: SpatialShellTokens): SpatialShell {
     return itemCount * tokens.railItemDp + 2 * tokens.railPaddingDp;
   };
 
+  const mainContentAspectRatio = tokens.mainWidthDp / tokens.mainHeightDp;
+
   return {
     tokens: Object.freeze({ ...tokens }),
     railHeightDp,
@@ -160,6 +175,8 @@ export function createSpatialShell(tokens: SpatialShellTokens): SpatialShell {
       widthDp: Math.round(detailWidthDp),
       heightDp: Math.round(detailHeightDp),
     }),
+    mainContentAspectRatio,
+    fitMainContent: (width, height) => fitMainContent(width, height, mainContentAspectRatio),
   };
 }
 
