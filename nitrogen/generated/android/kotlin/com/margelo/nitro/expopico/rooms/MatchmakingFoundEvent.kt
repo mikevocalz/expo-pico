@@ -25,8 +25,6 @@ data class MatchmakingFoundEvent(
   @Keep
   val poolName: String
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is MatchmakingFoundEvent) return false

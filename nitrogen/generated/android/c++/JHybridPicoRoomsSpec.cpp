@@ -165,23 +165,23 @@ namespace margelo::nitro::expopico::rooms {
     auto __result = __method(_javaPart, CxxPart::getClass());
     return __result;
   }
-  jdouble JHybridPicoRoomsSpec::addRoomUpdatedListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart> /* listener */)>("addRoomUpdatedListener_cxx");
+  jdouble JHybridPicoRoomsSpec::addRoomUpdatedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUpdatedEvent::JavaPart>> /* listener */)>("addRoomUpdatedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoRoomsSpec::addRoomUserJoinedListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart> /* listener */)>("addRoomUserJoinedListener_cxx");
+  jdouble JHybridPicoRoomsSpec::addRoomUserJoinedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserJoinedEvent::JavaPart>> /* listener */)>("addRoomUserJoinedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoRoomsSpec::addRoomUserLeftListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart> /* listener */)>("addRoomUserLeftListener_cxx");
+  jdouble JHybridPicoRoomsSpec::addRoomUserLeftListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_RoomUserLeftEvent::JavaPart>> /* listener */)>("addRoomUserLeftListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoRoomsSpec::addMatchmakingFoundListener(const jni::local_ref<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart> /* listener */)>("addMatchmakingFoundListener_cxx");
+  jdouble JHybridPicoRoomsSpec::addMatchmakingFoundListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::rooms::JCallback_void_MatchmakingFoundEvent::JavaPart>> /* listener */)>("addMatchmakingFoundListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

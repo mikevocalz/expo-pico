@@ -25,8 +25,6 @@ data class MatchmakingOptions(
   @Keep
   val data: Map<String, String>?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is MatchmakingOptions) return false
