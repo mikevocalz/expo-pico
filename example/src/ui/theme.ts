@@ -79,6 +79,12 @@ export const shellSize = {
   railPadding: space.sm + 4,
   detailWidth: 420,
   detailHeight: 600,
+  /**
+   * The main panel's launch size on headsets, as app.config.ts declares it
+   * (defaultWidth/defaultHeight). Its aspect is the one MainContentFrame keeps.
+   */
+  mainWidth: 1280,
+  mainHeight: 800,
   /** The bottom tab bar on phones. */
   tabBarHeight: 64,
 } as const;

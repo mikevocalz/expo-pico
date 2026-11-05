@@ -19,6 +19,9 @@ export const SHELL = createSpatialShell({
   cornerRadiusDp: radius.lg,
   detailWidthDp: shellSize.detailWidth,
   detailHeightDp: shellSize.detailHeight,
+  // The launch size app.config.ts declares for the quest and pico main panel.
+  mainWidthDp: shellSize.mainWidth,
+  mainHeightDp: shellSize.mainHeight,
 });
 
 export type DestinationId = 'home' | 'diagnostics' | 'harness';

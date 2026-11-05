@@ -6,6 +6,7 @@ import { getPicoRuntimeInfo } from '@expo-pico/core';
 import { useShellStore } from '../layout/detailPanel.store';
 import { navigationPlacement, type NavigationPlacement } from '../layout/navigation';
 import { PicoMainFrame } from '../layout/PicoMainFrame';
+import { MainContentFrame } from '../layout/MainContentFrame';
 import { DESTINATIONS, SHELL } from '../layout/shell';
 import { useHostedSpatialWindow } from '../layout/useHostedSpatialWindow';
 import { isSpatial } from '../platform';
@@ -21,7 +22,9 @@ const SPATIAL = isSpatial(getPicoRuntimeInfo());
  * `navigationPlacement`).
  *
  * Headsets: the rail on the main panel's left, in its own window (a Meta
- * Layout SDK window on Horizon OS, the main window's strip on PICO). While
+ * Layout SDK window on Horizon OS, the main window's strip on PICO). The
+ * route keeps the panel's launch aspect when the user resizes it
+ * (`MainContentFrame`). While
  * that window is pending or refused, or the build cannot open one, the rail
  * draws as a column on the left inside the main panel. Never the tab bar.
  *
@@ -48,7 +51,9 @@ function HeadsetShell({ children }: { children: React.ReactNode }): React.JSX.El
 
   return (
     <PicoMainFrame>
-      <RailFrame placement={placement}>{children}</RailFrame>
+      <RailFrame placement={placement}>
+        <MainContentFrame framed>{children}</MainContentFrame>
+      </RailFrame>
     </PicoMainFrame>
   );
 }

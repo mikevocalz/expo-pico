@@ -40,10 +40,14 @@ Harlem Might measured outward Layout SDK windows on a Quest 3S, Horizon OS 207 (
 - `expo-horizon-quest` (folded into the expo-horizon-core release): the `detailPanel` option declares the core panel activity in the quest manifest with its `<layout>` size.
 - `example/`: the React side (`SpatialWindowHost`, `useHostedSpatialWindow`, `PicoMainFrame`, `DetailPanelHost`, the Zustand stores) and the app's own rail, tab bar and detail content. These stay in the app because they render Meta's `@metavr/*` components, which `metaLayoutSdk` requires as direct app dependencies, and they bind to the app's router and theme. No expo-pico package renders UI today (`@expo-pico/app-kit`'s README says so). Harlem Might and MoyoLearn keep the same hosts in the app for the same reason.
 
+### The main content keeps its aspect when the panel is resized
+
+Horizon OS and PICO OS 5 let the user drag the main panel's corner to any shape. Meta's panel-sizing page lists "resize with a fixed aspect ratio" as a capability without naming a manifest switch, and Android ignores `android:minAspectRatio`/`maxAspectRatio` on resizeable activities, so the window itself is not locked. Instead the content is: `MainContentFrame` (example) measures the main panel and lays the route out in the largest centred frame at the launch aspect (1280x800dp, 1.6), filling the rest with the surface color. The geometry is `fitMainContent` and `SpatialShell.fitMainContent` in `@expo-pico/spatial`, with the ratio taken from the shell's `mainWidthDp`/`mainHeightDp` tokens. It works the same on both headsets, leaves the window bounds (and so the rail window and detail panel) alone, and skips phones, tablets and the inline XR route. Ported from MoyoLearn's `apps/mobile/src/spatial/{main-content-geometry.ts,MainContentFrame.tsx}`.
+
 ## Sources
 
 - Harlem Might: `docs/spatial-layout/adr/0005-spatial-shell-rail-window.md`, `docs/spatial-layout/adr/0006-place-detail-panel-activity.md`, `apps/mobile/src/spatial/{railWindow.ts,SpatialWindowHost.tsx,spatialWindowHost.store.ts,useHostedSpatialWindow.ts,placeDetailPanel.ts,metaWindowsCore.ts}`, `apps/mobile/modules/spatial-panels` (`SpatialPanelActivity`, `app.plugin.js`).
-- MoyoLearn: `apps/mobile/src/spatial/{railWindow.ts,panelWindowsCore.ts,panelWindows.tsx,spatialWindows.ts,SpatialWindowHost.tsx,useHostedSpatialWindow.ts,metaWindowTypes.ts}`.
+- MoyoLearn: `apps/mobile/src/spatial/{railWindow.ts,panelWindowsCore.ts,panelWindows.tsx,spatialWindows.ts,SpatialWindowHost.tsx,useHostedSpatialWindow.ts,metaWindowTypes.ts,main-content-geometry.ts,main-content-geometry.test.ts,MainContentFrame.tsx}`.
 - Structure-only references (Mobbin): [Fireflies](https://mobbin.com/screens/440008bf-bf0c-486f-bd38-c77df867470d) (icon rail beside content), [Front](https://mobbin.com/screens/9bded131-2394-46cf-bcbd-a44ab7be10cb) (detail pane with title and close beside the list), [Productboard](https://mobbin.com/screens/fb2d0afb-9515-46d4-af56-cf2c5bd026ab) (closable detail beside the list).
 
 ## Consequences
