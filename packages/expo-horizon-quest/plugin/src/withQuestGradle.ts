@@ -10,16 +10,23 @@ const SUBPROJECT_MISSING_DIM_MARKER = '// expo-pico-core: subprojects missing-di
 const HORIZON_BUILD_CONFIG_MARKER =
   '// expo-pico-core: Expo Horizon AGP 9 BuildConfig compatibility';
 
+/** A `quest` flavor configuration, such as `questImplementation` or `questDebugApi`. */
+const QUEST_CONFIGURATION =
+  /\bquest(?:Debug|Release)?(?:Implementation|Api|CompileOnly|RuntimeOnly)\b/;
+
 /**
- * Find a top-level Groovy dependencies block, not a buildscript/repositories
- * child that happens to start in column zero. Generated Gradle can contain
- * braces in strings and comments, so scan lexical boundaries before deciding.
+ * Start of the line that opens the first top-level `dependencies { ... }`
+ * block calling a quest configuration, or -1. A `dependencies` block nested in
+ * `buildscript` (indented or not) never matches, and braces inside strings and
+ * comments do not count, so generated Gradle with braces in text still scans
+ * correctly.
  */
-export function findAppDependenciesBlock(contents: string): number {
+export function findQuestDependenciesBlock(contents: string): number {
   let depth = 0;
   let state: 'code' | 'line' | 'block' | 'quote' | 'triple' = 'code';
   let quote = '';
   let lineStart = 0;
+  let open = -1;
   for (let index = 0; index < contents.length; index += 1) {
     const char = contents[index];
     const next = contents[index + 1];
@@ -69,21 +76,29 @@ export function findAppDependenciesBlock(contents: string): number {
     if (
       depth === 0 &&
       (index === lineStart || contents.slice(lineStart, index).trim() === '') &&
-      contents.startsWith('dependencies', index) &&
-      /^dependencies[ \t]*\{/.test(contents.slice(index))
+      /^dependencies[ \t]*\{/.test(contents.slice(index, index + 32))
     ) {
-      return lineStart;
+      open = lineStart;
     }
-    if (char === '{') depth += 1;
-    else if (char === '}') depth = Math.max(0, depth - 1);
+    if (char === '{') {
+      depth += 1;
+    } else if (char === '}') {
+      depth = Math.max(0, depth - 1);
+      if (depth === 0 && open !== -1) {
+        if (QUEST_CONFIGURATION.test(contents.slice(open, index))) return open;
+        open = -1;
+      }
+    }
   }
   return -1;
 }
 
 /**
- * The quest flavor's settings, declared before the app module's dependencies
- * block and rewritten on every prebuild. Gradle must create `questImplementation`
- * before evaluating dependencies that reference it (including the Meta VR SDK).
+ * The quest flavor's settings, rewritten on every prebuild. Gradle must create
+ * `questImplementation` before evaluating any dependency that calls it, so the
+ * block goes above the Meta Layout SDK block and above a top-level
+ * `dependencies` block that already uses a quest configuration
+ * ({@linkcode findQuestDependenciesBlock}); otherwise it is appended.
  *
  * expo-horizon-core declares `mobile` and `quest` only when the file has no
  * flavors yet; when another plugin declared the `device` dimension first
@@ -126,16 +141,15 @@ android {
 }${pickFirst}
 ${QUEST_FLAVOR_END}
 `;
-  // The flavor must precede every `questImplementation(...)` call: the Meta
-  // Layout SDK block (withQuestMetaLayout) and the app module's top-level
-  // `dependencies` block, which may carry other quest-only artifacts. When
-  // PICO declares the `device` dimension first, expo-horizon-core skips
-  // declaring Quest, so appending the flavor after either is too late.
-  // findAppDependenciesBlock matches only the depth-zero block, never a
-  // nested buildscript `dependencies`.
+  // The flavor must precede every quest configuration call: the Meta Layout
+  // SDK block (withQuestMetaLayout) and any top-level `dependencies` block
+  // that already calls `questImplementation` and friends. When PICO declares
+  // the `device` dimension first, expo-horizon-core skips declaring Quest, so
+  // appending the flavor after either is too late. With neither present the
+  // flavor is appended and the rest of the file stays as it was.
   const anchors = [
     contents.indexOf(META_LAYOUT_GRADLE_MARKER),
-    findAppDependenciesBlock(contents),
+    findQuestDependenciesBlock(contents),
   ].filter((index) => index !== -1);
   if (anchors.length === 0) return contents + block;
   const anchor = Math.min(...anchors);
