@@ -193,8 +193,7 @@ abstract class HybridPicoCoreSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoCoreSpec {
-      val __result = HybridPicoCore.constructor()
-      return __result
+      return HybridPicoCore.constructor()
     }
   }
 }

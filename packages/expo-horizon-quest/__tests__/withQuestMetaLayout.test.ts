@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
+import withHorizonQuest from '../plugin/src/index';
 import { resolveQuestOptions as resolveOptions } from '../plugin/src/types';
 import {
   META_LAYOUT_GRADLE_MARKER,
@@ -117,6 +118,28 @@ describe('applyMetaLayoutGradle', () => {
 
   it('writes nothing when never enabled', () => {
     expect(applyMetaLayoutGradle(BASE_GRADLE, false)).toBe(BASE_GRADLE);
+  });
+
+  it('writes the quest flavor before its questImplementation block', async () => {
+    // Under a PICO build the app has no quest flavor until expo-horizon-quest
+    // appends one. Gradle evaluates app/build.gradle top to bottom, so a
+    // `questImplementation` line above that flavor fails the whole build.
+    // Config plugins run the last registered mod first, so the registration
+    // order in plugin/src/index.ts decides which block lands on top.
+    type GradleMod = (c: unknown) => Promise<{ modResults: { contents: string } }>;
+    const config = withHorizonQuest({ name: 'x', slug: 'x' } as never, {
+      metaLayoutSdk: true,
+    }) as unknown as { mods: { android: { appBuildGradle: GradleMod } } };
+    const { modResults } = await config.mods.android.appBuildGradle({
+      name: 'x',
+      slug: 'x',
+      modResults: { contents: BASE_GRADLE, language: 'groovy' },
+      modRequest: { platform: 'android', projectRoot: '/x', platformProjectRoot: '/x/android' },
+    });
+    const flavor = modResults.contents.indexOf('// expo-horizon-quest: begin quest flavor');
+    const meta = modResults.contents.indexOf(META_LAYOUT_GRADLE_MARKER);
+    expect(flavor).toBeGreaterThan(-1);
+    expect(meta).toBeGreaterThan(flavor);
   });
 });
 

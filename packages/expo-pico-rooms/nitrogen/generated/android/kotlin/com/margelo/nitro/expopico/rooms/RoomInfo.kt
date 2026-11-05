@@ -40,8 +40,6 @@ data class RoomInfo(
   @Keep
   val members: Array<RoomMember>
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RoomInfo) return false

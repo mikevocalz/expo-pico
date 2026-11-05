@@ -20,15 +20,15 @@ namespace margelo::nitro::expopico::picocore {
   struct JListenerSubscription final : public jni::JavaClass<JListenerSubscription> {
     static constexpr auto kJavaDescriptor = "Lcom/margelo/nitro/expopico/picocore/ListenerSubscription;";
 
-    static jni::local_ref<JListenerSubscription> create(jni::alias_ref<margelo::nitro::expopico::picocore::JCallback_void::JavaPart> remove) {
+    static jni::local_ref<JListenerSubscription> create(jni::alias_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void::JavaPart>> remove) {
       static const auto clazz = javaClassStatic();
-      static const auto create = clazz->getStaticMethod<JListenerSubscription(jni::alias_ref<margelo::nitro::expopico::picocore::JCallback_void::JavaPart>)>("fromCpp");
+      static const auto create = clazz->getStaticMethod<JListenerSubscription(jni::alias_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void::JavaPart>>)>("fromCpp");
       return create(clazz, remove);
     }
 
-    jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void::JavaPart> getRemove() const {
-      static const auto method = javaClassStatic()->getMethod<margelo::nitro::expopico::picocore::JCallback_void::JavaPart()>("getRemove_cxx");
-      return method(this->self());
+    jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void::JavaPart>> getRemove() const {
+      static const auto field = javaClassStatic()->getField<JCallback<margelo::nitro::expopico::picocore::JCallback_void::JavaPart>>("remove");
+      return getFieldValue(field);
     }
   };
 

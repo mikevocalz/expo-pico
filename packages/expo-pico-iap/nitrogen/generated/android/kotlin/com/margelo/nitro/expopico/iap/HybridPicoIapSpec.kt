@@ -101,8 +101,7 @@ abstract class HybridPicoIapSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoIapSpec {
-      val __result = HybridPicoIap.constructor()
-      return __result
+      return HybridPicoIap.constructor()
     }
   }
 }

@@ -25,8 +25,6 @@ data class DestinationListResult(
   @Keep
   val nextPageToken: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is DestinationListResult) return false

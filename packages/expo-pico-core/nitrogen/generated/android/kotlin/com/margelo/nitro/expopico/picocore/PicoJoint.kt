@@ -25,8 +25,6 @@ data class PicoJoint(
   @Keep
   val rotation: PicoQuat
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoJoint) return false

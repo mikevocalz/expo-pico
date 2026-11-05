@@ -28,8 +28,6 @@ data class RtcUserJoinedEvent(
   @Keep
   val elapsed: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcUserJoinedEvent) return false

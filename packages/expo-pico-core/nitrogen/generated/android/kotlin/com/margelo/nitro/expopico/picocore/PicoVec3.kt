@@ -28,8 +28,6 @@ data class PicoVec3(
   @Keep
   val z: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoVec3) return false

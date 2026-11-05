@@ -43,8 +43,6 @@ data class PicoEyePose(
   @Keep
   val rightPupilDiameterMm: Double?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoEyePose) return false

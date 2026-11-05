@@ -94,45 +94,25 @@ abstract class HybridPicoSpatialSpec: HybridObject() {
   @Keep
   abstract fun getGazeSnapshot(): Promise<GazePose?>
 
-  abstract fun addGazeListener(listener: Callback<(gaze: GazePose) -> Unit>): Double
-
   @DoNotStrip
   @Keep
-  private fun addGazeListener_cxx(listener: Callback_void_GazePose): Double {
-    val __result = addGazeListener(listener)
-    return __result
-  }
+  abstract fun addGazeListener(listener: Callback<(gaze: GazePose) -> Unit>): Double
 
   @DoNotStrip
   @Keep
   abstract fun getSceneMesh(): Promise<SceneMeshRaw>
 
+  @DoNotStrip
+  @Keep
   abstract fun addSceneMeshUpdateListener(listener: Callback<(mesh: SceneMeshRaw) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addSceneMeshUpdateListener_cxx(listener: Callback_void_SceneMeshRaw): Double {
-    val __result = addSceneMeshUpdateListener(listener)
-    return __result
-  }
-
   abstract fun addFaceListener(listener: Callback<(blendShapes: Map<String, Double>) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addFaceListener_cxx(listener: Callback_void_std__unordered_map_std__string__double_): Double {
-    val __result = addFaceListener(listener)
-    return __result
-  }
-
   abstract fun addBodyListener(listener: Callback<(joints: Array<SpatialBodyJoint>) -> Unit>): Double
-
-  @DoNotStrip
-  @Keep
-  private fun addBodyListener_cxx(listener: Callback_void_std__vector_SpatialBodyJoint_): Double {
-    val __result = addBodyListener(listener)
-    return __result
-  }
 
   @DoNotStrip
   @Keep
@@ -182,8 +162,7 @@ abstract class HybridPicoSpatialSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoSpatialSpec {
-      val __result = HybridPicoSpatial.constructor()
-      return __result
+      return HybridPicoSpatial.constructor()
     }
   }
 }

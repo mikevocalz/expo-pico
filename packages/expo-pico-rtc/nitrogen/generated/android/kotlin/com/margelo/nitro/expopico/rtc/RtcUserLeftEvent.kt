@@ -28,8 +28,6 @@ data class RtcUserLeftEvent(
   @Keep
   val reason: RtcLeaveReason
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcUserLeftEvent) return false

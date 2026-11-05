@@ -28,8 +28,6 @@ data class PicoHandPose(
   @Keep
   val aimEnabled: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoHandPose) return false

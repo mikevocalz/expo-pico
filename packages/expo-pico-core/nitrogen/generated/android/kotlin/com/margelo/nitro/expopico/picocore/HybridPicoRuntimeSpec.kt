@@ -178,14 +178,9 @@ abstract class HybridPicoRuntimeSpec: HybridObject() {
   @Keep
   abstract fun setPassthroughLevel(enabled: Boolean, level: Double): Promise<Unit>
 
-  abstract fun addPassthroughDialListener(listener: Callback<(event: PassthroughLevelEvent) -> Unit>): Double
-
   @DoNotStrip
   @Keep
-  private fun addPassthroughDialListener_cxx(listener: Callback_void_PassthroughLevelEvent): Double {
-    val __result = addPassthroughDialListener(listener)
-    return __result
-  }
+  abstract fun addPassthroughDialListener(listener: Callback<(event: PassthroughLevelEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
@@ -239,8 +234,7 @@ abstract class HybridPicoRuntimeSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoRuntimeSpec {
-      val __result = HybridPicoRuntime.constructor()
-      return __result
+      return HybridPicoRuntime.constructor()
     }
   }
 }

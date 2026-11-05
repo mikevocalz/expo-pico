@@ -101,7 +101,7 @@ npx expo run:android --variant picoDebug
 The packages install from GitHub release branches, not npm. [docs/INSTALL-FROM-GITHUB.md](./docs/INSTALL-FROM-GITHUB.md) lists the branch for every package, the peers each one needs, and how to pin a commit.
 
 ```bash
-yarn add "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
+yarn add "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
 # (add siblings as needed, each from its own release/<name> branch)
 ```
 
@@ -220,7 +220,7 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 
 ## Compatibility
 
-- Expo SDK 58 (current baseline). React Native 0.88.0-rc.3. React 19.3. Hermes.
+- Expo SDK 58 (current baseline). React Native 0.88.1. React 19.3. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).

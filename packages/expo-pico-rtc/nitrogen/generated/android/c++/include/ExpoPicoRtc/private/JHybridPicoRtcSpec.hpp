@@ -92,9 +92,9 @@ namespace margelo::nitro::expopico::rtc {
     jni::local_ref<JTypedPromise<void>> leaveChannel();
     jni::local_ref<JTypedPromise<void>> muteLocalAudio(jboolean muted);
     jni::local_ref<JTypedPromise<void>> setAudioOutputVolume(jdouble volume);
-    jdouble addUserJoinedListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart>& listener);
-    jdouble addUserLeftListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart>& listener);
-    jdouble addRtcStateChangeListener(const jni::local_ref<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart>& listener);
+    jdouble addUserJoinedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserJoinedEvent::JavaPart>>& listener);
+    jdouble addUserLeftListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcUserLeftEvent::JavaPart>>& listener);
+    jdouble addRtcStateChangeListener(const jni::local_ref<JCallback<margelo::nitro::expopico::rtc::JCallback_void_RtcStateChangeEvent::JavaPart>>& listener);
     void removeListener(jdouble id);
 
   public:

@@ -191,8 +191,8 @@ namespace margelo::nitro::expopico::spatial {
     auto __result = __method(_javaPart, CxxPart::getClass());
     return __result;
   }
-  jdouble JHybridPicoSpatialSpec::addGazeListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart> /* listener */)>("addGazeListener_cxx");
+  jdouble JHybridPicoSpatialSpec::addGazeListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_GazePose::JavaPart>> /* listener */)>("addGazeListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
@@ -201,18 +201,18 @@ namespace margelo::nitro::expopico::spatial {
     auto __result = __method(_javaPart, CxxPart::getClass());
     return __result;
   }
-  jdouble JHybridPicoSpatialSpec::addSceneMeshUpdateListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart> /* listener */)>("addSceneMeshUpdateListener_cxx");
+  jdouble JHybridPicoSpatialSpec::addSceneMeshUpdateListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_SceneMeshRaw::JavaPart>> /* listener */)>("addSceneMeshUpdateListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoSpatialSpec::addFaceListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart> /* listener */)>("addFaceListener_cxx");
+  jdouble JHybridPicoSpatialSpec::addFaceListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__unordered_map_std__string__double_::JavaPart>> /* listener */)>("addFaceListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoSpatialSpec::addBodyListener(const jni::local_ref<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart> /* listener */)>("addBodyListener_cxx");
+  jdouble JHybridPicoSpatialSpec::addBodyListener(const jni::local_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::spatial::JCallback_void_std__vector_SpatialBodyJoint_::JavaPart>> /* listener */)>("addBodyListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

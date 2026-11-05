@@ -110,14 +110,9 @@ abstract class HybridPicoSocialSpec: HybridObject() {
   @Keep
   abstract fun launchApp(options: LaunchAppOptions): Promise<String>
 
-  abstract fun addLaunchDetailsListener(listener: Callback<(details: PicoLaunchDetails) -> Unit>): Double
-
   @DoNotStrip
   @Keep
-  private fun addLaunchDetailsListener_cxx(listener: Callback_void_PicoLaunchDetails): Double {
-    val __result = addLaunchDetailsListener(listener)
-    return __result
-  }
+  abstract fun addLaunchDetailsListener(listener: Callback<(details: PicoLaunchDetails) -> Unit>): Double
 
   @DoNotStrip
   @Keep
@@ -187,8 +182,7 @@ abstract class HybridPicoSocialSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoSocialSpec {
-      val __result = HybridPicoSocial.constructor()
-      return __result
+      return HybridPicoSocial.constructor()
     }
   }
 }

@@ -35,9 +35,13 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(new URL('..', import.meta.url).pathname);
+const { prepareHorizonCore } = createRequire(import.meta.url)('./lib/android-patches.cjs');
+
+const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const REPO_SLUG = 'mikevocalz/expo-pico';
 const BRANCH_PREFIX = 'release/';
 
@@ -211,7 +215,7 @@ for (const [name, w] of selected) {
 }
 
 // expo-horizon-core: the example app pins it; ship that exact upstream release
-// (software-mansion-labs/expo-horizon) with the one patch this repo needs, plus
+// (software-mansion-labs/expo-horizon) with this repo's AGP 9 patches, plus
 // the quest-flavor extras.
 {
   const exampleManifest = readJson(join(ROOT, 'example/package.json'));
@@ -222,19 +226,10 @@ for (const [name, w] of selected) {
   const stageDir = join(outDir, shortName('expo-horizon-core'));
   packInto([`expo-horizon-core@${version}`], tmpdir(), stageDir);
 
-  // AGP 9 stopped generating BuildConfig by default, and the module reads
-  // BuildConfig.META_HORIZON_APP_ID. Same change as the local .vendor checkout.
-  const gradleFile = join(stageDir, 'android/build.gradle');
-  const gradle = readFileSync(gradleFile, 'utf8');
-  if (!gradle.includes('buildConfig true')) {
-    const patched = gradle.replace(
-      /^android \{\n/m,
-      'android {\n  // AGP 9 no longer generates BuildConfig by default; META_HORIZON_APP_ID needs it.\n' +
-        '  buildFeatures {\n    buildConfig true\n  }\n'
-    );
-    if (patched === gradle) throw new Error('expo-horizon-core: android { anchor not found');
-    writeFileSync(gradleFile, patched);
-  }
+  // AGP 9 fixes: buildConfig for 57.x, and the same
+  // scripts/patches/android/expo-horizon-core@<version>.patch the example's
+  // postinstall applies (58.0.1 renames lintOptions to lint).
+  prepareHorizonCore(stageDir, version);
   // Quest-flavor extras (packages/expo-horizon-quest) ride along under quest/,
   // and app.plugin.js runs upstream first, then them, from one plugin entry.
   const questDir = join(ROOT, 'packages/expo-horizon-quest');

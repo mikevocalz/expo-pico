@@ -46,8 +46,6 @@ data class SubscriptionProduct(
   @Keep
   val introductoryFormattedPrice: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SubscriptionProduct) return false

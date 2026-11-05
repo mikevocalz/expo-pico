@@ -22,8 +22,6 @@ data class PanelOpenedEvent(
   @Keep
   val name: String
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PanelOpenedEvent) return false

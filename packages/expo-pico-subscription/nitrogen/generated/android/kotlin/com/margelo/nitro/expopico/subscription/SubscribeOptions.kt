@@ -25,8 +25,6 @@ data class SubscribeOptions(
   @Keep
   val promoCode: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SubscribeOptions) return false

@@ -28,8 +28,6 @@ data class WriteScoreOptions(
   @Keep
   val forceUpdate: Boolean?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is WriteScoreOptions) return false

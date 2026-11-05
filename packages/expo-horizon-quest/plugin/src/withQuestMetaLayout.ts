@@ -54,7 +54,7 @@ import type { ResolvedQuestOptions } from './types';
 export const META_LAYOUT_GRADLE_MARKER = '// expo-pico-core: Meta VR Layout SDK (quest only)';
 const META_LAYOUT_GRADLE_END = '// expo-pico-core: end Meta VR Layout SDK';
 
-export const METAVRX_BOM = 'com.meta.metavrx:metavrx-bom:1.2026.0.0';
+export const METAVRX_BOM = 'com.meta.metavrx:metavrx-bom:1.2026.1.0';
 export const META_LAYOUT_GROUP = 'com.meta.metavrx.layout';
 export const META_LAYOUT_ARTIFACTS = [
   `${META_LAYOUT_GROUP}:layout-react-compat`,

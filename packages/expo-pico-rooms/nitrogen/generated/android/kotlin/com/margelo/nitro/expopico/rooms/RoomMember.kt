@@ -31,8 +31,6 @@ data class RoomMember(
   @Keep
   val isPresent: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RoomMember) return false

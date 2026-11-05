@@ -12,6 +12,10 @@
 
 namespace margelo::nitro::expopico::notifications {
 
+  jni::local_ref<JCallback_void_PicoPushRevocation::JFunction_cxx> JCallback_void_PicoPushRevocation::JFunction_cxx::create(jni::alias_ref<JCallback<JavaPart>> callback) {
+    return newInstance(callback);
+  }
+
   JNIRetainedValue<void>::Type JCallback_void_PicoPushRevocation::JFunction_cxx::invoke(JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::notifications::JPicoPushRevocation>>::Type revocation) const {
     static const auto __method = javaClassStatic()->getMethod<void(jni::alias_ref<JPicoPushRevocation>)>("call");
     __method(self(), JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::notifications::JPicoPushRevocation>>::borrow(revocation));
@@ -33,12 +37,9 @@ namespace margelo::nitro::expopico::notifications {
     callAndForget(revocation);
   }
 
-  jni::local_ref<JCallback_void_PicoPushRevocation::JavaPart> JCallback_void_PicoPushRevocation::fromCxx_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JCxxCallback::javaobject> callback) {
-    return create(getCallback(callback));
-  }
-
-  jni::local_ref<JCallback_void_PicoPushRevocation::JavaPart> JCallback_void_PicoPushRevocation::fromFunction_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JFunction_cxx> function) {
-    return create(CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function))));
+  JCallback_void_PicoPushRevocation::CallbackType JCallback_void_PicoPushRevocation::fromKotlin(jni::alias_ref<JCallback<JavaPart>> callback) {
+    auto function = JFunction_cxx::create(callback);
+    return CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function)));
   }
 
   void JCallback_void_PicoPushRevocation::registerNatives() {
@@ -46,8 +47,6 @@ namespace margelo::nitro::expopico::notifications {
       makeNativeMethod("callSync_cxx", JCallback_void_PicoPushRevocation::callSync_cxx),
       makeNativeMethod("callAsync_cxx", JCallback_void_PicoPushRevocation::callAsync_cxx),
       makeNativeMethod("callAndForget_cxx", JCallback_void_PicoPushRevocation::callAndForget_cxx),
-      makeNativeMethod("fromCxx_cxx", JCallback_void_PicoPushRevocation::fromCxx_cxx),
-      makeNativeMethod("fromFunction_cxx", JCallback_void_PicoPushRevocation::fromFunction_cxx),
     });
   }
 

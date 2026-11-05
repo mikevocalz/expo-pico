@@ -34,8 +34,6 @@ data class SpatialAnchorResult(
   @Keep
   val rotation: SpatialQuat
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialAnchorResult) return false

@@ -25,8 +25,6 @@ data class AchievementUnlockedEvent(
   @Keep
   val unlockedAtMs: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is AchievementUnlockedEvent) return false
