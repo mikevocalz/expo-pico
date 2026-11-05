@@ -22,6 +22,8 @@ jobs:
       - run: yarn typecheck
       - run: yarn audit:native-bridge:strict
       - run: yarn test
+      # Root scripts: the shared AGP 9 patch helper, Nitro peer ranges, and the pico CLI.
+      - run: yarn test:scripts
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
