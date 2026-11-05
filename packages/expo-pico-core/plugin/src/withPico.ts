@@ -45,8 +45,8 @@ import { withPicoWindowPositions } from './withPicoWindowPositions';
  *  12. PICO renderer and loader overlays (pico and dual flavors)
  *
  * The Meta Horizon `quest` flavor and everything in it belong to the
- * expo-horizon-core plugin entry. With no PICO app ID this plugin builds no
- * pico flavor (see `ResolvedPicoOptions.isPicoEnabled`).
+ * expo-horizon-core plugin entry. PICO XR flavors are independent of
+ * Platform Service app credentials (see `ResolvedPicoOptions.isPicoEnabled`).
  */
 const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) => {
   const options = resolveOptions(rawOptions ?? {});

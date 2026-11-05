@@ -11,7 +11,7 @@
     "quest": "expo run:android --variant questDebug",
     "quest:release": "expo run:android --variant questRelease",
     "prebuild": "expo prebuild --clean",
-    "prebuild:pico": "test -n \"$PICO_APP_ID\" || { echo 'prebuild:pico needs PICO_APP_ID: the app ID the PICO Developer Console issued for com.example.expopico.' >&2; exit 1; } && expo prebuild --clean --platform android --no-install",
+    "prebuild:pico": "test -n \"$PICO_APP_ID\" || echo 'prebuild:pico: PICO_APP_ID is unset. The pico flavor still builds, but PICO OS will not launch it until it carries the app ID the PICO Developer Console issued for com.example.expopico.' >&2; expo prebuild --clean --platform android --no-install",
     "prebuild:quest": "expo prebuild --clean --platform android --no-install",
     "build:pico": "yarn prebuild:pico && cd android && ./gradlew assemblePicoDebug -PreactNativeArchitectures=arm64-v8a --no-daemon",
     "build:quest": "yarn prebuild:quest && cd android && ./gradlew assembleQuestDebug -PreactNativeArchitectures=arm64-v8a --no-daemon",

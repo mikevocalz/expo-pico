@@ -62,7 +62,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     expect(out.stdout).toContain('No issues');
   });
 
-  it('reports identity.missing as INFO (exit 0) when no picoAppId is set: PICO is off', () => {
+  it('reports missing platform credentials as INFO but keeps XR enabled', () => {
     const dir = writeFixture({
       expo: {
         name: 't',
@@ -100,8 +100,8 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     const parsed = JSON.parse(out.stdout);
     expect(parsed.findings.some((f: any) => f.id === 'identity.missing')).toBe(true);
     expect(parsed.summary.errorCount).toBe(0);
-    expect(parsed.resolvedOptions.isPicoEnabled).toBe(false);
-    expect(parsed.resolvedOptions.xrMode).toBe('mobile');
+    expect(parsed.resolvedOptions.isPicoEnabled).toBe(true);
+    expect(parsed.resolvedOptions.xrMode).toBe('pico-swan');
   });
 
   it('exits 2 when expo-pico-core plugin is missing from app.config', () => {
@@ -122,7 +122,7 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
       expo: { name: 't', slug: 't', plugins: ['@expo-pico/core'] },
     });
     const out = runDoctor(dir);
-    // No app ID, so PICO is off: one identity.missing info line.
+    // PICO XR is enabled; Platform Services credentials remain optional.
     expect(out.stdout).toContain('identity.missing');
     expect(out.status).toBe(0);
   });

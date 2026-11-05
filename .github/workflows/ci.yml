@@ -53,7 +53,7 @@ jobs:
               "slug": "smoke",
               "plugins": [[
                 "@expo-pico/core",
-                { "xrMode": "pico-os6", "appType": "vr",
+                { "xrMode": "pico-os5", "appType": "vr",
                   "platformService": { "picoAppId": "APP", "picoAppKey": "KEY" } }
               ]]
             }
@@ -61,6 +61,27 @@ jobs:
           JSON
           node packages/expo-pico-core/cli/build/doctor.js \
             --project /tmp/doctor-smoke --fail-on-warning
+      - name: Doctor proves XR prebuild stays enabled without PPS credentials
+        run: |
+          mkdir -p /tmp/doctor-pico-no-id
+          cat > /tmp/doctor-pico-no-id/app.config.json <<'JSON'
+          {
+            "expo": {
+              "name": "credential-free-pico",
+              "slug": "credential-free-pico",
+              "newArchEnabled": true,
+              "orientation": "default",
+              "plugins": [["@expo-pico/core", {
+                "buildVariant": "pico",
+                "xrMode": "pico-os5",
+                "appType": "mr"
+              }]]
+            }
+          }
+          JSON
+          node packages/expo-pico-core/cli/build/doctor.js \
+            --project /tmp/doctor-pico-no-id --json > /tmp/doctor-pico-no-id/result.json
+          node -e "const r=require('/tmp/doctor-pico-no-id/result.json'); if (!r.resolvedOptions?.isPicoEnabled || r.resolvedOptions?.buildVariant !== 'pico' || r.resolvedOptions?.xrMode !== 'pico-os5' || r.summary?.errorCount !== 0 || !r.findings?.some(x => x.id === 'identity.missing' && x.severity === 'info')) process.exit(1);"
 
       # Advisory: report whether any changesets are pending so PR
       # authors see the impact on the next release before merge.
@@ -128,13 +149,16 @@ jobs:
           yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
       - run: yarn example:prebuild:android
       - run: yarn example:assemble:mobile
-      # No PICO_APP_ID in this job, so the example has no pico flavor; the
-      # example-android-pico job builds it.
+      # No PICO_APP_ID in this job. The pico flavor must still be generated
+      # and assemble (#42); example-android-pico builds it again with an ID.
       - run: yarn example:assemble:quest
-      - name: No pico variant without a PICO app ID
+      - name: PICO flavor is generated without a Developer Console app ID
         run: |
+          test -z "${PICO_APP_ID:-}"
+          test -z "${PICO_PLATFORM_APP_ID:-}"
           cd example/android
-          ! ./gradlew -q :app:tasks --all | grep -i picoDebug
+          ./gradlew -q :app:tasks --all | grep -q assemblePicoDebug
+      - run: yarn example:assemble:pico
       - name: Quest APK has no PICO entries, mobile APK has no Meta entries
         run: |
           aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | tail -1)

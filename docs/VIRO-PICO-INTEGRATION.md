@@ -11,11 +11,17 @@ PICO is a native Viro platform, alongside Quest and visionOS. The three reposito
 
 `PICO` and `QUEST` use Viro's existing OpenXR renderer and shared `VRActivity` / `VRQuestScene` entry. That component name remains for compatibility. visionOS retains its native immersive-space path and a plain `ViroScene` root. PICO CLI operates around this stack; it does not replace Viro with a Spatial SDK or Unity project.
 
-## October 1, 2026 integration status
+## November 4, 2026 integration status
 
 The workspace is now aligned to Expo SDK 58 / React Native 0.88.1, the public example uses ViroReact 3.0.2 plus the published `expo-horizon-core@58.0.1` for reproducible CI, obsolete SDK57 patch-package overrides have been removed, and the SDK 58 Yarn lockfile has been regenerated from the upgraded workspace manifests.
 
-The coordinated Viro work is no longer waiting on the old draft companion branches. ViroReact v3.0.2 plus the fork-specific XR work has been consolidated onto the fork's `main`, and ViroCore v3.0.2 plus the PICO/OpenXR capability work is also on `main`. The older `codex/pico-cli-bridge` PRs in those repositories were closed as superseded. Expo-PICO remains the flavor/platform layer and should consume rebuilt artifacts from those current main lines.
+**Native source**: [mikevocalz/viro](https://github.com/mikevocalz/viro) `main` declares `3.1.0-moyo.0` (commit `8075d97bb3584a04a76a0cda7846dfe5fc2ae483`, tagged `v3.1.0-moyo.0`); [mikevocalz/virocore](https://github.com/mikevocalz/virocore) `main` contains the corresponding 3.1.0 engine sources (commit `8a5bdc47aa0f47d9c6249461ef5f07fe77fe60ac`). Upstream [ReactVision/viro #574](https://github.com/ReactVision/viro/pull/574) is a pending 3.1.0 release PR; **do not assume the stock npm `@reactvision/react-viro@3.0.2` example contains those native changes**.
+
+**Expo integration**: Expo SDK 58 / React Native 0.88 / React 19.3. `@expo-pico/core` now creates the `pico` flavor without `PICO_APP_ID` or a Platform Service app key. No registered PICO account is needed to build the XR renderer; account, achievements, IAP and other authenticated Platform Service calls remain credential-gated. Launching is a separate gate: PICO OS 5 closes an immersive build at startup when its app ID is not registered for the package ([PICO-ENTITLEMENT-BLOCKS-LAUNCH.md](PICO-ENTITLEMENT-BLOCKS-LAUNCH.md)), so a device run still needs a registered `PICO_APP_ID`. The example config enables `xRMode: ['QUEST', 'PICO']` and the corresponding native plugins.
+
+**Binary gate**: the example still uses the published Viro 3.0.2 dependency and its legacy compatibility overlays. Building the 3.1.0 source pair, replacing the Android AARs, and rebuilding Apple/visionOS and web/WASM binaries remain separate release steps; source version checks and CI unit tests do not establish a working compiled 3.1.0 renderer. After a _paired, verified_ Viro 3.1.0 native build, disable compatibility overlays and prove the APK's arm64 ELF alignment plus ZIP alignment.
+
+The React bridge, native renderer, OpenXR loader, controller profile and world-mesh/VPS capabilities must come from a compatible artifact set. Do not mix a new Java/JNI bridge with an older `libviro_renderer.so` or let an overlay silently replace the renderer under test.
 
 ## Configure the coordinated fork build
 

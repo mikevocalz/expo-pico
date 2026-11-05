@@ -1,13 +1,14 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
 /**
- * The pico flavor exists once a PICO app ID is exported, the same way the
- * quest flavor reads HORIZON_APP_ID: `PICO_APP_ID=<id> yarn prebuild:pico`.
- * PICO OS closes an app whose ID is not registered for its package, so
+ * The pico flavor is always generated: building it needs no PICO Developer
+ * Console account. PICO_APP_ID is optional at prebuild, but PICO OS 5 closes
+ * an immersive app at launch unless its ID is registered for the package
+ * (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), and Platform Service calls need
+ * it too, so a device run still wants `PICO_APP_ID=<id> yarn prebuild:pico`.
  * @expo-pico/core rejects sample values such as `1234567` at prebuild.
  */
 const picoAppId = process.env.PICO_APP_ID?.trim() || undefined;
-const picoEnabled = Boolean(picoAppId || process.env.PICO_PLATFORM_APP_ID?.trim());
 
 /** @expo-pico/core options for the pico flavor (PICO 4, PICO 4 Ultra, Swan). */
 const PICO_CORE_OPTIONS = {
@@ -198,7 +199,7 @@ export default ({ config }: ConfigContext): ExpoConfig & { newArchEnabled: boole
         // Must match expo-horizon-core's supportedDevices: both plugins write
         // com.oculus.supportedDevices and the manifest merger rejects a mismatch.
         android: {
-          xRMode: picoEnabled ? ['QUEST', 'PICO'] : ['QUEST'],
+          xRMode: ['QUEST', 'PICO'],
           questSupportedDevices: 'quest3|quest3s|vrglasses',
         },
       },
@@ -245,10 +246,11 @@ export default ({ config }: ConfigContext): ExpoConfig & { newArchEnabled: boole
         questExcludeDependencies: ['com.google.android.gms:play-services-location'],
       },
     ],
-    // Always listed: with or without an app ID it keeps one launcher tile
-    // and marks Viro's VRActivity for enterImmersiveScene(). The pico flavor
-    // and everything after this entry need PICO_APP_ID.
-    ['@expo-pico/core', picoEnabled ? { picoAppId, ...PICO_CORE_OPTIONS } : {}],
-    ...(picoEnabled ? PICO_FEATURE_PLUGINS : []),
+    // Keeps one launcher tile, marks Viro's VRActivity for
+    // enterImmersiveScene() and builds the pico flavor with or without an app
+    // ID. The feature plugins below only add pico-flavor permissions; their
+    // Platform Service calls fail at runtime until the app has an ID.
+    ['@expo-pico/core', { picoAppId, ...PICO_CORE_OPTIONS }],
+    ...PICO_FEATURE_PLUGINS,
   ],
 });

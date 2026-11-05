@@ -177,8 +177,8 @@ androidComponents {
 
 /**
  * Removes the identity gate an earlier plugin version wrote into
- * app/build.gradle. PICO is now off until a picoAppId is set, so there is
- * nothing to gate.
+ * app/build.gradle. The pico flavor no longer depends on a picoAppId, so
+ * there is nothing to gate.
  */
 export function removeIdentityGate(contents: string): string {
   return contents.replace(

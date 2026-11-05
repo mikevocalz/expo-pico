@@ -123,7 +123,9 @@ export default {
           xrMode: 'pico-os5',
           appType: 'vr',
           buildVariant: 'pico',
-          // Required for a PICO build. Without it core adds no pico flavor.
+          // Optional for the build: the pico flavor exists without it. PICO OS 5
+          // will not launch an immersive app whose ID is not registered for the
+          // package (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), and PPS calls need it.
           picoAppId: process.env.PICO_APP_ID,
           platformService: {
             picoAppId: process.env.PICO_PLATFORM_APP_ID,

@@ -18,13 +18,15 @@ Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project 
 
 | `expo-pico-core` | Expo SDK | React Native | React | Architecture          |
 | ---------------- | -------- | ------------ | ----- | --------------------- |
-| 0.1.x → 1.0      | 56       | 0.86         | 19.2  | New Architecture only |
+| 1.0.x            | 58       | 0.88         | 19.3  | New Architecture only |
 
 ## Install
 
 ```bash
-yarn add @expo-pico/core
+yarn add @expo-pico/core react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
 ```
+
+Headset-only XR builds need **no Platform Service credentials**. A PICO Developer Console app ID/key is only required for account, achievements, leaderboards, IAP and similar Platform Service calls. The config plugin generates the `pico` flavor without those values; no manual native file edits are needed.
 
 ## Quick start
 
@@ -43,7 +45,7 @@ export default {
       [
         '@expo-pico/core',
         {
-          xrMode: 'pico-swan',
+          xrMode: 'pico-os5', // PICO 4/4 Ultra; use pico-swan only for Swan devices
           appType: 'vr',
           buildVariant: 'pico',
           platformService: {

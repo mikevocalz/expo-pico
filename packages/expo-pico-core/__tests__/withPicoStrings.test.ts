@@ -46,6 +46,14 @@ describe('withPicoStrings — core resources', () => {
     expect(spatial._).toBe('shared-space');
   });
 
+  it('writes an empty pico_app_id when the app passes picoAppId: undefined', () => {
+    // app.config often forwards an unset env var as `picoAppId: undefined`.
+    // The string must still carry text, or Expo's XML writer rejects it.
+    const config = seedEmpty();
+    run(config, resolveOptions({ picoAppId: undefined, platformService: {} }));
+    expect(getStringResource(config, 'pico_app_id')._).toBe('');
+  });
+
   it('uses platformService.picoAppId when provided (preferred over legacy field)', () => {
     const config = seedEmpty();
     run(
