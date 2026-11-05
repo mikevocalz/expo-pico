@@ -75,7 +75,7 @@ npm also reports missing peers, so list the peers the same way as for pnpm.
 
 `release/horizon-core` is the upstream [software-mansion-labs/expo-horizon](https://github.com/software-mansion-labs/expo-horizon) `expo-horizon-core` 57.0.3, with one patch: `android/build.gradle` turns on `buildFeatures.buildConfig`. AGP 9 stopped generating `BuildConfig` by default, and the module reads `BuildConfig.META_HORIZON_APP_ID`. The packed manifest records the upstream version in `expoPico.upstream`.
 
-`example/package.json` now pins the npm release `expo-horizon-core@58.0.1`, which turns on `buildConfig` itself. Its `android/build.gradle` still uses the `lintOptions` block that AGP 9 removed, so `scripts/patches/android/expo-horizon-core@58.0.1.patch` renames it to `lint`. The branch stays on 57.0.3 until it is re-cut from 58.0.1.
+`example/package.json` now pins the npm release `expo-horizon-core@58.0.1`, which turns on `buildConfig` itself. Its `android/build.gradle` still uses the `lintOptions` block that AGP 9 removed, so `scripts/patches/android/expo-horizon-core@58.0.1.patch` renames it to `lint`. The example's postinstall and `scripts/build-release-branches.mjs` apply that same file through `scripts/lib/android-patches.cjs`, so the next `release/horizon-core` cut from 58.0.1 ships with `lint`. The release build fails if `lintOptions` is still there after patching. The branch stays on 57.0.3 until it is re-cut.
 
 ## Native code
 

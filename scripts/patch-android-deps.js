@@ -6,6 +6,9 @@
  * if the installed version differs, the patch context may silently misapply, so
  * we fail loudly instead of producing a broken Android build.
  *
+ * The patch list and the apply routine live in scripts/lib/android-patches.cjs,
+ * which scripts/build-release-branches.mjs also uses for release/horizon-core.
+ *
  * Idempotent: an already-applied patch is detected via `git apply --check -R`
  * and skipped, so repeated installs/postinstalls are safe.
  *
@@ -13,43 +16,26 @@
  * patch file to the new version, and regenerate it with:
  *   diff -u <pristine-file> <patched-file> | sed -e '1s|^--- .*|--- a/<relpath>|' -e '2s|^+++ .*|+++ b/<relpath>|'
  */
-const { execFileSync } = require('child_process');
-const { readdirSync, readFileSync, existsSync } = require('fs');
+const { readFileSync } = require('fs');
 const { dirname, join } = require('path');
+const { PATCH_DIR, listPatches, applyPatch } = require('./lib/android-patches.cjs');
 
 const repoRoot = join(__dirname, '..');
-const patchDir = join(__dirname, 'patches', 'android');
-
-const patchNameRe = /^(.+)@(\d+\.\d+\.\d+(?:-[^\s]+)?)\.patch$/;
-
-function gitApply(args, cwd) {
-  return execFileSync('git', ['apply', ...args], { cwd, stdio: 'pipe' });
-}
 
 function fail(msg) {
   console.error(`\n[patch-android-deps] ERROR: ${msg}\n`);
   process.exitCode = 1;
 }
 
-if (!existsSync(patchDir)) {
-  console.log('[patch-android-deps] no patches directory; nothing to do.');
-  process.exit(0);
+let patches;
+try {
+  patches = listPatches(PATCH_DIR);
+} catch (err) {
+  fail(err.message);
+  patches = [];
 }
 
-const patchFiles = readdirSync(patchDir).filter((f) => f.endsWith('.patch'));
-if (patchFiles.length === 0) {
-  process.exit(0);
-}
-
-for (const file of patchFiles) {
-  const m = file.match(patchNameRe);
-  if (!m) {
-    fail(`patch filename '${file}' must be '<package>@<exact-version>.patch'.`);
-    continue;
-  }
-  const [, pkg, expectedVersion] = m;
-  const patchPath = join(patchDir, file);
-
+for (const { file, pkg, version: expectedVersion, path: patchPath } of patches) {
   let pkgDir;
   try {
     pkgDir = dirname(require.resolve(`${pkg}/package.json`, { paths: [repoRoot] }));
@@ -70,24 +56,16 @@ for (const file of patchFiles) {
     continue;
   }
 
-  // Already applied? --check -R succeeds iff the patch can be reversed.
   try {
-    gitApply(['--check', '-R', patchPath], pkgDir);
-    console.log(`[patch-android-deps] ${pkg}@${installedVersion}: already applied, skipping.`);
-    continue;
-  } catch {
-    /* not applied yet — fall through */
-  }
-
-  try {
-    gitApply(['--check', patchPath], pkgDir);
-    gitApply([patchPath], pkgDir);
-    console.log(`[patch-android-deps] ${pkg}@${installedVersion}: applied ${file}.`);
+    if (applyPatch(pkgDir, patchPath) === 'already-applied') {
+      console.log(`[patch-android-deps] ${pkg}@${installedVersion}: already applied, skipping.`);
+    } else {
+      console.log(`[patch-android-deps] ${pkg}@${installedVersion}: applied ${file}.`);
+    }
   } catch (err) {
-    const detail = err.stderr ? err.stderr.toString().trim() : String(err);
     fail(
       `${pkg}@${expectedVersion}: patch does not apply cleanly — ` +
-        `the upstream file changed under us. Regenerate scripts/patches/android/${file}.\n${detail}`
+        `the upstream file changed under us. Regenerate scripts/patches/android/${file}.\n${err.message}`
     );
   }
 }

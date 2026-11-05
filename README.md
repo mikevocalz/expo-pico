@@ -220,7 +220,7 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 
 ## Compatibility
 
-- Expo SDK 58 (current baseline). React Native 0.88.0-rc.3. React 19.3. Hermes.
+- Expo SDK 58 (current baseline). React Native 0.88.1. React 19.3. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).

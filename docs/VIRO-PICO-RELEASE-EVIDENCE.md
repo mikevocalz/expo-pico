@@ -124,7 +124,7 @@ The 17.6 value is incidental, not required. Upstream `ab1fbe9` ("fix building is
 target from 9.1 to 17.6, while the only real fix in that commit is two `#include <vector>` lines.
 No availability-annotated symbol forces 17.6.
 
-F = 15.1 was the React Native 0.86 baseline used during the original investigation; the current Expo 58 line uses React Native 0.88.0-rc.3.
+F = 15.1 was the React Native 0.86 baseline used during the original investigation; the current Expo 58 line uses React Native 0.88.1.
 
 A trial build at the proposed target compiled 275 translation units at
 `-target arm64-apple-ios15.1` with zero availability diagnostics, on device and simulator both.
