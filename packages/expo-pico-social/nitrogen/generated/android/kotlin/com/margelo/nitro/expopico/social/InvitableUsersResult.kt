@@ -25,8 +25,6 @@ data class InvitableUsersResult(
   @Keep
   val nextPageToken: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is InvitableUsersResult) return false

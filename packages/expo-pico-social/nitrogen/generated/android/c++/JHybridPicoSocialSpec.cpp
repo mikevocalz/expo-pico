@@ -213,8 +213,8 @@ namespace margelo::nitro::expopico::social {
     auto __result = __method(_javaPart, CxxPart::getClass(), options);
     return __result;
   }
-  jdouble JHybridPicoSocialSpec::addLaunchDetailsListener(const jni::local_ref<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart> /* listener */)>("addLaunchDetailsListener_cxx");
+  jdouble JHybridPicoSocialSpec::addLaunchDetailsListener(const jni::local_ref<JCallback<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::social::JCallback_void_PicoLaunchDetails::JavaPart>> /* listener */)>("addLaunchDetailsListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

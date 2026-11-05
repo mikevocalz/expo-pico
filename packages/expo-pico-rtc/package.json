@@ -18,6 +18,13 @@
       "types": "./plugin/build/src/withPicoRtc.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/src/withPicoRtc.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "nitrogen && tsc",
     "build:plugin": "tsc --project plugin/tsconfig.json",
@@ -52,23 +59,23 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/react": "19.3.0",
-    "expo": "~58.0.19",
+    "expo": "~58.0.23",
     "@expo-pico/core": "*",
     "jest": "^29.7.0",
-    "react-native": "0.88.0",
+    "react-native": "0.88.1",
     "ts-jest": "^29.4.9",
     "typescript": "~6.0.3",
-    "react-native-nitro-modules": "1.0.0-alpha.nightly.100.g107f6fc66597",
-    "nitrogen": "1.0.0-alpha.nightly.100.g107f6fc66597",
-    "nitro-core": "1.0.0-alpha.nightly.100.g107f6fc66597"
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "nitrogen": "1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "nitro-core": "1.0.0-alpha.nightly.120.g33ef045b96c0"
   },
   "peerDependencies": {
     "expo": ">=58.0.0 <59",
     "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
-    "react-native-nitro-modules": "*",
-    "nitro-core": "*"
+    "react-native-nitro-modules": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "nitro-core": ">=1.0.0-alpha.nightly.120.g33ef045b96c0"
   },
   "peerDependenciesMeta": {
     "expo": {

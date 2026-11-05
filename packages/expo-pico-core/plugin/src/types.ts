@@ -654,6 +654,7 @@ export const PICO_OPTION_DEFAULTS: ResolvedPicoOptions = {
  */
 const QUEST_OPTION_KEYS = [
   'metaLayoutSdk',
+  'detailPanel',
   'storeDeviceTargets',
   'questRemovePermissions',
   'questRemoveFeatures',
@@ -668,6 +669,10 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
         'Move them to the expo-horizon-core plugin entry.'
     );
   }
+
+  assertRealAppId('picoAppId', options.picoAppId);
+  assertRealAppId('platformService.picoAppId', options.platformService?.picoAppId);
+  assertRealAppId('platformService.foreign.picoAppId', options.platformService?.foreign?.picoAppId);
 
   const platformService = resolvePlatformServiceOptions(
     options.platformService,
@@ -803,6 +808,47 @@ function resolvePlatformServiceOptions(
     hasIdentity,
     hasIapIdentity,
   };
+}
+
+/**
+ * Values that stand in for a PICO app ID in docs, templates and samples. PICO
+ * OS ends an app at launch when its ID is not registered for the package
+ * (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), so a build carrying one of these
+ * can never run; prebuild stops instead.
+ */
+const PLACEHOLDER_APP_IDS = new Set([
+  '1234567',
+  '12345678',
+  '123456789',
+  '1234567890',
+  'my-app',
+  'your-pico-app-id',
+  'your_pico_app_id',
+  'replace_with_pico_app_id',
+  'replace-with-pico-app-id',
+  'ci-placeholder-app-id',
+]);
+
+const PLACEHOLDER_APP_ID_PATTERN =
+  /^(?:0+|x+|<.*>|\$\{.*\}|(?:your|replace|placeholder|changeme|todo|insert)\b.*)$/i;
+
+/** True when `value` is a stand-in such as `1234567` or `your-pico-app-id`. */
+export function isPlaceholderAppId(value: string): boolean {
+  const id = value.trim();
+  return PLACEHOLDER_APP_IDS.has(id.toLowerCase()) || PLACEHOLDER_APP_ID_PATTERN.test(id);
+}
+
+function assertRealAppId(field: string, value: string | undefined): void {
+  const id = nonEmpty(value);
+  if (id === null || !isPlaceholderAppId(id)) return;
+  throw new Error(
+    `[expo-pico-core] ${field} is set to the placeholder ${JSON.stringify(id)}. PICO OS ` +
+      'closes an app at launch unless its app ID is registered for the package in the ' +
+      'PICO Developer Console. Set ' +
+      field +
+      ' to that ID (for example from the PICO_APP_ID environment variable), or leave it ' +
+      'unset: the pico flavor still builds, but PICO OS will not launch it on a headset.'
+  );
 }
 
 function nonEmpty(value: string | null | undefined): string | null {

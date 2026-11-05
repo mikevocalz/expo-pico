@@ -115,13 +115,13 @@ namespace margelo::nitro::expopico::notifications {
     auto __result = __method(_javaPart, CxxPart::getClass());
     return __result;
   }
-  jdouble JHybridPicoNotificationsSpec::addPushMessageListener(const jni::local_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart> /* listener */)>("addPushMessageListener_cxx");
+  jdouble JHybridPicoNotificationsSpec::addPushMessageListener(const jni::local_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart>> /* listener */)>("addPushMessageListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoNotificationsSpec::addPushRevocationListener(const jni::local_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart> /* listener */)>("addPushRevocationListener_cxx");
+  jdouble JHybridPicoNotificationsSpec::addPushRevocationListener(const jni::local_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart>> /* listener */)>("addPushRevocationListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

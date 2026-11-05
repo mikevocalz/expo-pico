@@ -1,6 +1,9 @@
 import { requireOptionalNativeModule } from 'expo';
+import { Platform } from 'react-native';
 
-import type { PicoRuntimeInfo, PicoXRMode } from '@expo-pico/core';
+import { isHeadsetDevice, type DeviceConstants } from './layout/navigation';
+
+import { isPicoBuild, type PicoRuntimeInfo, type PicoXRMode } from '@expo-pico/core';
 
 /**
  * Build-time platform for the example's 2D and immersive surfaces.
@@ -30,7 +33,26 @@ export function isHeadsetBuild(info: Pick<PicoRuntimeInfo, 'xrMode'>): boolean {
   return isHorizonBuild || info.xrMode !== 'mobile';
 }
 
+/**
+ * True on headset hardware or a headset build. The device check means a
+ * flavor that resolved to the phone variant still gets the headset layout
+ * (the left rail), never the phone tab bar.
+ */
+export function isSpatial(info: Pick<PicoRuntimeInfo, 'xrMode' | 'isPicoDevice'>): boolean {
+  return (
+    isHeadsetBuild(info) ||
+    info.isPicoDevice ||
+    isHeadsetDevice(Platform.OS, Platform.constants as DeviceConstants | undefined)
+  );
+}
+
 /** Runtime name for chips and badges. PICO and phone builds keep the raw mode. */
 export function xrModeLabel(mode: PicoXRMode): string {
   return isHorizonBuild || mode === 'quest' ? 'Horizon OS' : mode;
 }
+
+/**
+ * True in the pico flavor (PICO OS 5 and Swan). Read once: the flavor cannot
+ * change while the app runs.
+ */
+export const isPicoHeadsetBuild: boolean = isPicoBuild();

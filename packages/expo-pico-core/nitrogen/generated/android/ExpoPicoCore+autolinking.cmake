@@ -48,6 +48,7 @@ target_sources(ExpoPicoCore PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoIconMeshData.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoJoint.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoMotionTracker.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoPermissionStatus.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoQuat.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoSensorType.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JPicoTargetProfile.cpp"

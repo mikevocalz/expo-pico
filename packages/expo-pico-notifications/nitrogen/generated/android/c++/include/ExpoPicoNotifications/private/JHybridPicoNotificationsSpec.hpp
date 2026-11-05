@@ -85,8 +85,8 @@ namespace margelo::nitro::expopico::notifications {
     jni::local_ref<JTypedPromise<jni::local_ref<JNotificationPermissionResult>>> requestPermissions();
     jni::local_ref<JTypedPromise<jni::local_ref<JNotificationToken>>> registerForPushNotifications();
     jni::local_ref<JTypedPromise<void>> unregisterForPushNotifications();
-    jdouble addPushMessageListener(const jni::local_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart>& listener);
-    jdouble addPushRevocationListener(const jni::local_ref<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart>& listener);
+    jdouble addPushMessageListener(const jni::local_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushMessage::JavaPart>>& listener);
+    jdouble addPushRevocationListener(const jni::local_ref<JCallback<margelo::nitro::expopico::notifications::JCallback_void_PicoPushRevocation::JavaPart>>& listener);
     void removeListener(jdouble id);
 
   public:

@@ -73,8 +73,6 @@ data class PicoDeclaredCapabilities(
   @Keep
   val entitlementCheck: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredCapabilities) return false

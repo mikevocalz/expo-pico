@@ -78,41 +78,21 @@ abstract class HybridPicoRoomsSpec: HybridObject() {
   @Keep
   abstract fun cancelMatchmaking(): Promise<Unit>
 
+  @DoNotStrip
+  @Keep
   abstract fun addRoomUpdatedListener(listener: Callback<(event: RoomUpdatedEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addRoomUpdatedListener_cxx(listener: Callback_void_RoomUpdatedEvent): Double {
-    val __result = addRoomUpdatedListener(listener)
-    return __result
-  }
-
   abstract fun addRoomUserJoinedListener(listener: Callback<(event: RoomUserJoinedEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addRoomUserJoinedListener_cxx(listener: Callback_void_RoomUserJoinedEvent): Double {
-    val __result = addRoomUserJoinedListener(listener)
-    return __result
-  }
-
   abstract fun addRoomUserLeftListener(listener: Callback<(event: RoomUserLeftEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
-  private fun addRoomUserLeftListener_cxx(listener: Callback_void_RoomUserLeftEvent): Double {
-    val __result = addRoomUserLeftListener(listener)
-    return __result
-  }
-
   abstract fun addMatchmakingFoundListener(listener: Callback<(event: MatchmakingFoundEvent) -> Unit>): Double
-
-  @DoNotStrip
-  @Keep
-  private fun addMatchmakingFoundListener_cxx(listener: Callback_void_MatchmakingFoundEvent): Double {
-    val __result = addMatchmakingFoundListener(listener)
-    return __result
-  }
 
   @DoNotStrip
   @Keep
@@ -162,8 +142,7 @@ abstract class HybridPicoRoomsSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoRoomsSpec {
-      val __result = HybridPicoRooms.constructor()
-      return __result
+      return HybridPicoRooms.constructor()
     }
   }
 }

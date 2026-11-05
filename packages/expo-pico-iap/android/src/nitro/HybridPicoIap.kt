@@ -146,8 +146,11 @@ class HybridPicoIap : HybridPicoIapSpec() {
   companion object : HybridPicoIapSpec.Companion {
     override fun constructor(): HybridPicoIap = HybridPicoIap()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
 
     /**
      * `Product.price` is a decimal string in major currency units.

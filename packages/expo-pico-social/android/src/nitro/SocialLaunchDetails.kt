@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * PPS 1.0 launch-intent plumbing, owned by the process rather than by one
+ * PPS 1.x launch-intent plumbing, owned by the process rather than by one
  * `HybridPicoSocial`.
  *
  * What PPS offers (javap on platform-service-social-1.0.0):

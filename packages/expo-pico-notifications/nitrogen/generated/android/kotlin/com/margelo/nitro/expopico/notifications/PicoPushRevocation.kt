@@ -28,8 +28,6 @@ data class PicoPushRevocation(
   @Keep
   val revokeData: String
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoPushRevocation) return false

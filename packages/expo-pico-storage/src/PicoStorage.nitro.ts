@@ -55,7 +55,7 @@ export interface StorageSyncProgressEvent {
 }
 
 /**
- * PPS 1.0.x removed cloud storage. Every method returns NOT_IN_PPS_1_0 today.
+ * PPS 1.x removed cloud storage. Every method returns NOT_IN_PPS_1_0 today.
  * Back per-player state with your own service keyed off the account userId,
  * or expo-secure-store for local-only data.
  */

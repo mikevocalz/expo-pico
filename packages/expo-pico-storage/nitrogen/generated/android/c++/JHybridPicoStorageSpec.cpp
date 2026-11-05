@@ -149,18 +149,18 @@ namespace margelo::nitro::expopico::storage {
     auto __result = __method(_javaPart, CxxPart::getClass());
     return __result;
   }
-  jdouble JHybridPicoStorageSpec::addStorageConflictListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart> /* listener */)>("addStorageConflictListener_cxx");
+  jdouble JHybridPicoStorageSpec::addStorageConflictListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart>> /* listener */)>("addStorageConflictListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoStorageSpec::addStorageSyncProgressListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart> /* listener */)>("addStorageSyncProgressListener_cxx");
+  jdouble JHybridPicoStorageSpec::addStorageSyncProgressListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart>> /* listener */)>("addStorageSyncProgressListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jdouble JHybridPicoStorageSpec::addStorageSyncCompleteListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart> /* listener */)>("addStorageSyncCompleteListener_cxx");
+  jdouble JHybridPicoStorageSpec::addStorageSyncCompleteListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jdouble(jni::alias_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart>> /* listener */)>("addStorageSyncCompleteListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

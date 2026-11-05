@@ -1,6 +1,6 @@
 # expo-pico-subscription
 
-[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
+[![partial](https://img.shields.io/badge/PPS_1.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform subscription billing and entitlement for Expo apps.
@@ -28,7 +28,7 @@ if (isAccountAvailable()) {
 ## Status
 
 - Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `IapClient` + entitlement helpers from `com.pico.pps:platform-service-iap:1.0.0` (and `…:entitlement:1.0.0`) are pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `IapClient` + entitlement helpers from `com.pico.pps:platform-service-iap:1.1.2` (and `…:entitlement:1.0.0`) are pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -110,7 +110,7 @@ if (result.status === 'subscribed') {
 
 ## Extension Seams
 
-The PPS `IapClient` Maven artifact (`com.pico.pps:platform-service-iap:1.0.0`) resolves automatically on `picoDebug` builds; no AAR drop is required. A handful of subscription endpoints may still surface `NOT_IMPLEMENTED` until they ship in a future PPS release.
+The PPS `IapClient` Maven artifact (`com.pico.pps:platform-service-iap:1.1.2`) resolves automatically on `picoDebug` builds; no AAR drop is required. A handful of subscription endpoints may still surface `NOT_IMPLEMENTED` until they ship in a future PPS release.
 
 ## Requirements
 

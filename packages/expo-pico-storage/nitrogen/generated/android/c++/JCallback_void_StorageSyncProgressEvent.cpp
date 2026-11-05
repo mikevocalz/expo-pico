@@ -12,6 +12,10 @@
 
 namespace margelo::nitro::expopico::storage {
 
+  jni::local_ref<JCallback_void_StorageSyncProgressEvent::JFunction_cxx> JCallback_void_StorageSyncProgressEvent::JFunction_cxx::create(jni::alias_ref<JCallback<JavaPart>> callback) {
+    return newInstance(callback);
+  }
+
   JNIRetainedValue<void>::Type JCallback_void_StorageSyncProgressEvent::JFunction_cxx::invoke(JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::storage::JStorageSyncProgressEvent>>::Type event) const {
     static const auto __method = javaClassStatic()->getMethod<void(jni::alias_ref<JStorageSyncProgressEvent>)>("call");
     __method(self(), JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::storage::JStorageSyncProgressEvent>>::borrow(event));
@@ -33,12 +37,9 @@ namespace margelo::nitro::expopico::storage {
     callAndForget(event);
   }
 
-  jni::local_ref<JCallback_void_StorageSyncProgressEvent::JavaPart> JCallback_void_StorageSyncProgressEvent::fromCxx_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JCxxCallback::javaobject> callback) {
-    return create(getCallback(callback));
-  }
-
-  jni::local_ref<JCallback_void_StorageSyncProgressEvent::JavaPart> JCallback_void_StorageSyncProgressEvent::fromFunction_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JFunction_cxx> function) {
-    return create(CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function))));
+  JCallback_void_StorageSyncProgressEvent::CallbackType JCallback_void_StorageSyncProgressEvent::fromKotlin(jni::alias_ref<JCallback<JavaPart>> callback) {
+    auto function = JFunction_cxx::create(callback);
+    return CallbackType::make(JNICallable<JFunction_cxx, NativeSignature>(jni::make_global(function)));
   }
 
   void JCallback_void_StorageSyncProgressEvent::registerNatives() {
@@ -46,8 +47,6 @@ namespace margelo::nitro::expopico::storage {
       makeNativeMethod("callSync_cxx", JCallback_void_StorageSyncProgressEvent::callSync_cxx),
       makeNativeMethod("callAsync_cxx", JCallback_void_StorageSyncProgressEvent::callAsync_cxx),
       makeNativeMethod("callAndForget_cxx", JCallback_void_StorageSyncProgressEvent::callAndForget_cxx),
-      makeNativeMethod("fromCxx_cxx", JCallback_void_StorageSyncProgressEvent::fromCxx_cxx),
-      makeNativeMethod("fromFunction_cxx", JCallback_void_StorageSyncProgressEvent::fromFunction_cxx),
     });
   }
 

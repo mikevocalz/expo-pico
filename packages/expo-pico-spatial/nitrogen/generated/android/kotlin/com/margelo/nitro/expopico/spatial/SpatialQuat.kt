@@ -31,8 +31,6 @@ data class SpatialQuat(
   @Keep
   val w: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialQuat) return false

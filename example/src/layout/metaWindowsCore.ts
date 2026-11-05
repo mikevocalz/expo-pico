@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { MetaWindowSpec } from './workspace';
+import type { SpatialWindowPlacement, SpatialWindowSpec } from '@expo-pico/spatial';
 
 /**
  * The parts of `@metavr/layout-compat` and `@metavr/layout-window-compat`
  * this app uses, typed locally so this file never imports them. Meta's own
  * types are Flow-generated and declare `children` as Flow's `Node`.
  */
-export type MetaWindowPlacement = 'inline' | 'spatial' | 'pending' | 'dropped';
+export type MetaWindowPlacement = SpatialWindowPlacement;
 
 export interface MetaLayoutModules {
   layout: {
@@ -18,7 +18,7 @@ export interface MetaLayoutModules {
     useSpatialScene: () => { isSpatialAvailable: boolean };
   };
   window: {
-    SpatialWindow: React.ComponentType<Record<string, unknown> & { children?: React.ReactNode }>;
+    SpatialWindow: React.ComponentType<SpatialWindowSpec & { children?: React.ReactNode }>;
     createWindowScene: (options?: { fallback?: 'inline' | 'drop' }) => unknown;
     useSpatialWindowState: (label: string) => { placement: MetaWindowPlacement };
   };
@@ -29,8 +29,12 @@ export interface MetaWindows {
   readonly linked: boolean;
   /** Wraps the app once. A fragment when the SDK is not linked. */
   SceneProvider: (props: { children?: React.ReactNode }) => React.ReactElement;
-  /** A spatial window with inline fallback, or its children in place. */
-  Window: (props: { spec: MetaWindowSpec; children?: React.ReactNode }) => React.ReactElement;
+  /**
+   * Meta's `<SpatialWindow>` with `window` spread through unchanged, or its
+   * children in place when the SDK is not linked. Render it only from
+   * `SpatialWindowHost`, which puts windows at the main surface's origin.
+   */
+  Window: (props: { window: SpatialWindowSpec; children?: React.ReactNode }) => React.ReactElement;
   /** Placement of one window. Always `inline` when the SDK is not linked. */
   usePlacement: (label: string) => MetaWindowPlacement;
   /** Whether this host can place spatial windows at all. */
@@ -86,20 +90,8 @@ export function createMetaWindows(
     linked: true,
     SceneProvider: ({ children }) =>
       React.createElement(layout.SpatialSceneProvider, { initializer }, children),
-    Window: ({ spec, children }) =>
-      React.createElement(
-        window.SpatialWindow,
-        {
-          label: spec.label,
-          windowWidth: spec.width,
-          windowHeight: spec.height,
-          anchor: spec.anchor,
-          offset: spec.zStep ? { z: spec.zStep } : undefined,
-          priority: spec.priority,
-          fallback: 'inline',
-        },
-        children
-      ),
+    Window: ({ window: props, children }) =>
+      React.createElement(window.SpatialWindow, props, children),
     usePlacement: (label) => window.useSpatialWindowState(label).placement,
     useSpatialAvailable: () => layout.useSpatialScene().isSpatialAvailable,
   };

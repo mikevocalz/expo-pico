@@ -28,8 +28,6 @@ data class StorageSyncProgressEvent(
   @Keep
   val totalCount: Double
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSyncProgressEvent) return false

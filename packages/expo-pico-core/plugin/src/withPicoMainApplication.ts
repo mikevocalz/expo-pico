@@ -1,24 +1,31 @@
 import { ConfigPlugin, withMainApplication } from '@expo/config-plugins';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import {
   PICO_MAIN_APP_FLAGS_IMPORT_MARKER,
   PICO_MAIN_APP_FLAGS_MARKER,
   PICO_MAIN_APP_IMPORT_MARKER,
   PICO_MAIN_APP_MARKER,
+  PICO_MAIN_APP_TRACKER_IMPORT_MARKER,
+  PICO_MAIN_APP_TRACKER_MARKER,
 } from './constants';
 import type { ResolvedPicoOptions } from './types';
 import { insertImportAfterPackage, insertLinesAfter } from './util/insertLinesHelper';
 
 /**
- * MainApplication edits for PICO builds (`xrMode` other than `'mobile'`):
+ * MainApplication edits for PICO builds (`xrMode` other than `'mobile'`) and for
+ * any build that has react-viro's `VRActivity` (`usesViroVrActivity`):
  *
  *   - Adds the New Architecture flag guard for the Viro VR activity hop
  *     (Kotlin only; see `injectNewArchFlagGuard`).
  *   - Strips the `PicoCorePackage` registration older prebuilds injected.
  *     React Native autolinking registers it (see react-native.config.js).
+ *   - Installs `ImmersiveActivityTracker` from `Application.onCreate` (see
+ *     `injectTrackerInstall`).
  */
 export const withPicoMainApplication: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
-  if (options.xrMode === 'mobile') {
+  if (options.xrMode === 'mobile' && !usesViroVrActivity(config)) {
     return config;
   }
 
@@ -38,7 +45,68 @@ export function injectIntoKotlinMainApplication(
   source: string,
   _options: ResolvedPicoOptions
 ): string | null {
-  return injectNewArchFlagGuard(stripLegacyPackageRegistration(source));
+  return injectNewArchFlagGuard(
+    injectTrackerInstall(stripLegacyPackageRegistration(source), 'kotlin')
+  );
+}
+
+const VIRO_PACKAGE = '@reactvision/react-viro';
+
+type PluginConfig = { plugins?: unknown[]; _internal?: { [k: string]: unknown } };
+
+/**
+ * True when `@reactvision/react-viro` is a config plugin, which generates the
+ * immersive `VRActivity` that shares the app's ReactHost. A quest-only app
+ * (no `picoAppId`, so `xrMode` stays `'mobile'`) has that activity too and
+ * needs the flag guard: without it, entering XR on a Quest 3S crashed with
+ * `AssertionError: Pausing an activity that is not the current activity ...
+ * Current activity: VRActivity Paused activity: MainActivity`.
+ *
+ * Matches the package name, a subpath of it, a relative or absolute path into
+ * the package, and the plugin function itself.
+ */
+export function usesViroVrActivity(config: PluginConfig): boolean {
+  const root = config._internal?.projectRoot;
+  const projectRoot = typeof root === 'string' ? root : process.cwd();
+  return (config.plugins ?? []).some((entry) => {
+    const plugin = Array.isArray(entry) ? entry[0] : entry;
+    if (typeof plugin === 'string') return pluginPackageName(plugin, projectRoot) === VIRO_PACKAGE;
+    if (typeof plugin === 'function') return plugin === viroPluginFunction(projectRoot);
+    return false;
+  });
+}
+
+/** The npm package a string plugin entry belongs to, or null if none is found. */
+function pluginPackageName(entry: string, projectRoot: string): string | null {
+  if (!entry.startsWith('.') && !path.isAbsolute(entry)) {
+    const parts = entry.split('/');
+    return entry.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+  }
+  let dir = path.resolve(projectRoot, entry);
+  while (dir !== path.dirname(dir)) {
+    const pkgJson = path.join(dir, 'package.json');
+    if (fs.existsSync(pkgJson)) {
+      try {
+        return (JSON.parse(fs.readFileSync(pkgJson, 'utf8')) as { name?: string }).name ?? null;
+      } catch {
+        return null;
+      }
+    }
+    dir = path.dirname(dir);
+  }
+  return null;
+}
+
+/** react-viro's config plugin function as the project resolves it, or null. */
+function viroPluginFunction(projectRoot: string): unknown {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require(require.resolve(`${VIRO_PACKAGE}/app.plugin.js`, { paths: [projectRoot] }));
+    // The same unwrap Expo applies when it loads a plugin module.
+    return (mod as { default?: unknown }).default ?? mod;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -82,14 +150,18 @@ function stripLegacyPackageRegistration(source: string): string {
  * plain `override()` rejects a second one.
  */
 function injectNewArchFlagGuard(source: string): string {
-  let contents = stripLineWithMarker(source, PICO_MAIN_APP_FLAGS_MARKER);
-
   const guardBlock =
     `    ${PICO_MAIN_APP_FLAGS_MARKER}\n` +
     `    ReactNativeFeatureFlags.dangerouslyForceOverride(\n` +
     `        object : ReactNativeNewArchitectureFeatureFlagsDefaults() {\n` +
     `          override fun skipActivityIdentityAssertionOnHostPause(): Boolean = true\n` +
     `        })`;
+  // Drop the whole block a previous run wrote, not only its first line.
+  let contents = stripLineWithMarker(
+    source,
+    PICO_MAIN_APP_FLAGS_MARKER,
+    guardBlock.split('\n').length - 1
+  );
 
   const inserted = insertLinesAfter(contents, guardBlock, 'loadReactNative(this)');
   if (!inserted) {
@@ -114,7 +186,36 @@ export function injectIntoJavaMainApplication(
   source: string,
   _options: ResolvedPicoOptions
 ): string | null {
-  return stripLegacyPackageRegistration(source);
+  return injectTrackerInstall(stripLegacyPackageRegistration(source), 'java');
+}
+
+/**
+ * Installs `ImmersiveActivityTracker` right after `super.onCreate()`, before
+ * any activity exists. `requestImmersivePermission` asks the tracker for the
+ * live immersive activity. `PicoCorePackage.createNativeModules` also
+ * installs it, but only once React starts, so a `VRActivity` the system
+ * restored before that was never recorded. `install` is idempotent and
+ * registers nothing in a build without a marked immersive activity.
+ */
+function injectTrackerInstall(source: string, language: 'kotlin' | 'java'): string {
+  const semi = language === 'java' ? ';' : '';
+  const anchor = `super.onCreate()${semi}`;
+  const block =
+    `    ${PICO_MAIN_APP_TRACKER_MARKER}\n` + `    ImmersiveActivityTracker.install(this)${semi}`;
+  const inserted = insertLinesAfter(source, block, anchor);
+  if (!inserted) {
+    console.warn(
+      `[expo-pico-core] Could not find \`${anchor}\` in MainApplication; the immersive ` +
+        'activity tracker installs when React starts instead, and misses a VRActivity ' +
+        'restored before that.'
+    );
+    return source;
+  }
+  return insertImportAfterPackage(
+    inserted,
+    `${PICO_MAIN_APP_TRACKER_IMPORT_MARKER}\n` +
+      `import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker${semi}`
+  );
 }
 
 /**

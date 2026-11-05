@@ -133,9 +133,10 @@ dependencies {
     // `implementation` here would put the SDK into every @expo-pico AAR and
     // hand AGP several copies to reconcile.
     //
-    // Version is pinned to match PPS_VERSION in plugin/src/ppsArtifacts.ts.
-    compileOnly "com.pico.pps:platform-service-leaderboard:1.0.0"
-    compileOnly "com.pico.pps:pps_sdk_base:1.0.0"
+    // Versions match PPS_SERVICE_VERSIONS (services) and PPS_VERSION
+    // (pps_sdk_base) in expo-pico-core's plugin/src/ppsArtifacts.ts.
+    compileOnly "com.pico.pps:platform-service-leaderboard:1.1.2"
+    compileOnly "com.pico.pps:pps_sdk_base:1.1.3"
 }
 
 // Adds the nitrogen-generated Kotlin to this module's source set. Run

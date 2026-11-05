@@ -28,8 +28,6 @@ data class RoomUserLeftEvent(
   @Keep
   val reason: RoomLeaveReason
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RoomUserLeftEvent) return false

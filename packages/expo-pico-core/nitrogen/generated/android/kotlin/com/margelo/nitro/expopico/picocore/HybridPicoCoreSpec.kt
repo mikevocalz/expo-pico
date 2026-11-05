@@ -147,6 +147,10 @@ abstract class HybridPicoCoreSpec: HybridObject() {
 
   @DoNotStrip
   @Keep
+  abstract fun requestImmersivePermission(permission: String): Promise<PicoPermissionStatus>
+
+  @DoNotStrip
+  @Keep
   abstract fun isCapabilityAvailable(name: PicoCapabilityName): Promise<Boolean?>
 
   // Default implementation of `HybridObject.toString()`
@@ -193,8 +197,7 @@ abstract class HybridPicoCoreSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoCoreSpec {
-      val __result = HybridPicoCore.constructor()
-      return __result
+      return HybridPicoCore.constructor()
     }
   }
 }

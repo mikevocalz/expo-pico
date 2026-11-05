@@ -24,22 +24,29 @@ of them can produce a duplicate declaration.
 
 ## What is actually on the classpath
 
-Resolved from the public Volcengine Maven with a real Gradle run — 48
-artifacts for all eleven services:
+Each service is pinned to its newest stable release, and `pps_sdk_base` to
+1.1.3, the version the 1.1.3 services' POMs name. The 1.1.2 POMs name
+`pps_sdk_base:1.1.2`; 1.1.2 and 1.1.3 have the same public API, and every
+base member the service bytecode references resolves in 1.1.3. Versions in
+this table come from the POMs on the public Volcengine Maven:
 
-| Artifact                                                                                                                  | Version        | Notes                                  |
-| ------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------- |
-| `com.pico.pps:platform-service-{achievement,auth,compliance,entitlement,friend,iap,leaderboard,push,social,speech,sport}` | 1.0.0          | The services                           |
-| `com.pico.pps:pps_sdk_base`                                                                                               | 1.0.0          | **Depended on by all eleven**          |
-| `com.pico.pps:pps_platform_java_base`                                                                                     | 0.0.1-rc.0     | `achievement`, `leaderboard` only      |
-| `com.pico.pps:matrix_psf_api`                                                                                             | 1.0.0          | `base`, `social`                       |
-| `com.pico.pps:sdk.lib.annotations`                                                                                        | 0.0.1-alpha.0  | Annotations                            |
-| `com.pico.pps:coreservice.library`                                                                                        | 2.1.0-alpha.13 | Transitive                             |
-| `com.squareup.wire:wire-runtime`                                                                                          | 2.3.0-RC1      | Payloads are Wire protobuf             |
-| `io.reactivex.rxjava2:rxjava` / `rxandroid`                                                                               | 2.2.6 / 2.1.1  | `Task.runTask` takes an RxJava `Maybe` |
+| Artifact                                                                         | Version        | Notes                                  |
+| -------------------------------------------------------------------------------- | -------------- | -------------------------------------- |
+| `com.pico.pps:platform-service-{achievement,auth,friend,iap,leaderboard,social}` | 1.1.2          | Services                               |
+| `com.pico.pps:platform-service-{push,sport}`                                     | 1.1.3          | Services                               |
+| `com.pico.pps:platform-service-{compliance,entitlement,speech}`                  | 1.0.0          | Services with no later release         |
+| `com.pico.pps:pps_sdk_base`                                                      | 1.1.3          | **Depended on by all eleven**          |
+| `com.pico.pps:pps_platform_java_base`                                            | 0.0.1-rc.0     | `achievement`, `leaderboard` only      |
+| `com.pico.pps:matrix_psf_api`                                                    | 1.1.3          | `base`, `iap`, `social`                |
+| `com.pico.pps:sdk.lib.annotations`                                               | 0.0.1-alpha.0  | Annotations                            |
+| `com.pico.pps:coreservice.library`                                               | 2.1.0-alpha.13 | Transitive                             |
+| `com.squareup.wire:wire-runtime`                                                 | 2.3.0-RC1      | Payloads are Wire protobuf             |
+| `io.reactivex.rxjava2:rxjava` / `rxandroid`                                      | 2.2.6 / 2.1.1  | `Task.runTask` takes an RxJava `Maybe` |
 
-A duplicate-class scan across all 48 resolved artifacts finds **no
-collisions**. Declaring all eleven services together is safe; the SDK's own
+A duplicate-class scan across the 48 artifacts of a real Gradle resolution
+(run when every service was at 1.0.0) found **no collisions**. The
+transitive set has not changed since: the newer POMs list the same
+artifacts, at the versions above. Declaring all eleven services together is safe; the SDK's own
 graph is internally consistent.
 
 Reproduce it:
@@ -57,10 +64,12 @@ repositories {
 }
 configurations { pps }
 dependencies {
-    ['auth','iap','friend','social','achievement','leaderboard','push',
-     'entitlement','compliance','sport','speech'].each {
-        pps "com.pico.pps:platform-service-${it}:1.0.0"
+    [auth: '1.1.2', iap: '1.1.2', friend: '1.1.2', social: '1.1.2',
+     achievement: '1.1.2', leaderboard: '1.1.2', push: '1.1.3', sport: '1.1.3',
+     entitlement: '1.0.0', compliance: '1.0.0', speech: '1.0.0'].each { svc, v ->
+        pps "com.pico.pps:platform-service-${svc}:${v}"
     }
+    pps "com.pico.pps:pps_sdk_base:1.1.3"
 }
 tasks.register('copyAll', Copy) { from configurations.pps; into 'out' }
 EOF
@@ -134,13 +143,15 @@ Two guards, both generated:
   project-level `build.gradle`, so an autolinked React Native library that
   requests a PPS coordinate resolves the same way.
 
-With the pin, the run above resolves everything to `1.0.0`.
+With the pin, `pps_sdk_base` resolves to 1.1.3 and each service to the
+version in the table above.
 
-The pin is deliberately narrow — `platform-service-*` and `pps_sdk_base`
-only. The group also carries `pps_platform_java_base` (0.0.1-rc.0),
-`sdk.lib.annotations` (0.0.1-alpha.0) and `coreservice.library`
-(2.1.0-alpha.13), none of which have a 1.0.0 release; forcing the whole
-group would ask Gradle for versions that were never published.
+The pin is deliberately narrow: the eleven services and `pps_sdk_base`,
+each at its own version. The group also carries `pps_platform_java_base`
+(0.0.1-rc.0, its only release), `sdk.lib.annotations` (0.0.1-alpha.0),
+`coreservice.library` (2.1.0-alpha.13) and `matrix_psf_api`, which follows
+`pps_sdk_base`'s POM. Forcing the whole group would ask Gradle for versions
+that were never published.
 
 ## Which services get declared
 
@@ -193,11 +204,11 @@ npx expo-pico-doctor
 
 Three checks cover this file:
 
-| Check                           | Severity | Fires when                                                                                                                                        |
-| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pps-artifact-shadowed-by-libs` | warning  | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests. |
-| `pps-block-injected-twice`      | error    | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice.                                     |
-| `pps-coordinate-version-skew`   | warning  | A `com.pico.pps` coordinate is requested at an unpinned version. The pin overrides it, so the version written there has no effect.                |
+| Check                           | Severity | Fires when                                                                                                                                                                                                                             |
+| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pps-artifact-shadowed-by-libs` | warning  | `android/app/libs` holds a file Maven already supplies. Excluded from the build, so it is inert — but it is not doing what its presence suggests.                                                                                      |
+| `pps-block-injected-twice`      | error    | The plugin's dependency block appears more than once in `app/build.gradle`. Every artifact is declared twice.                                                                                                                          |
+| `pps-coordinate-version-skew`   | warning  | A `com.pico.pps` coordinate is requested at an unpinned version. Inside the plugin's block, an older plugin wrote it and `npx expo prebuild` rewrites it. Elsewhere, the pin overrides it, so the version written there has no effect. |
 
 ## Still open
 

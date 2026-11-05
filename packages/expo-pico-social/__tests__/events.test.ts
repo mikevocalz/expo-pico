@@ -1,6 +1,6 @@
-// Event wiring for @expo-pico/social against PPS 1.0.x.
+// Event wiring for @expo-pico/social against PPS 1.x.
 //
-// PPS 1.0.x pushes launch-intent changes only (ISocialClient.
+// PPS 1.x pushes launch-intent changes only (ISocialClient.
 // setLaunchIntentChangeCallback). Friend presence, friend requests and
 // received invites have no PPS listener, so those three JS listeners must not
 // register anything on the HybridObject.
@@ -77,7 +77,7 @@ afterEach(() => {
   warn.mockRestore();
 });
 
-describe('listeners with no PPS 1.0.x push mechanism', () => {
+describe('listeners with no PPS 1.x push mechanism', () => {
   const cases: Array<[string, (cb: () => void) => { remove(): void }]> = [
     ['addFriendPresenceChangedListener', addFriendPresenceChangedListener],
     ['addFriendRequestReceivedListener', addFriendRequestReceivedListener],

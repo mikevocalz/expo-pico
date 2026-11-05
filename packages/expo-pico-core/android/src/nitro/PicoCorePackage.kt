@@ -1,6 +1,8 @@
 package expo.modules.pico
 
+import android.app.Application
 import android.util.Log
+import com.margelo.nitro.expopico.picocore.ImmersiveActivityTracker
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
@@ -44,6 +46,13 @@ class PicoCorePackage(private val platform: PicoXRPlatform) : ReactPackage {
         Log.i(TAG, "PicoCorePackage initialized with platform=$platform")
         // Lets core reach the resumed Activity; see PicoActivityHolder.
         PicoActivityHolder.attach(reactContext)
+        // Tracks the immersive activity for requestImmersivePermission. The
+        // plugin-written MainApplication.onCreate installs it first; this
+        // covers a MainApplication the plugin could not edit. Phone builds
+        // render the scene inline and have none to track.
+        if (BuildConfig.PICO_XR_MODE != "mobile") {
+            (reactContext.applicationContext as? Application)?.let(ImmersiveActivityTracker::install)
+        }
         loadNitroModules()
         // MainApplication passes the app's configured xrMode to every flavor.
         // The mobile and quest flavors of a pico/dual app must not start a

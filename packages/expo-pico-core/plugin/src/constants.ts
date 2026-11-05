@@ -112,6 +112,9 @@ export const PICO_MAIN_APP_FLAGS_MARKER =
   '// expo-pico-core: New Architecture flag guard for the Viro VR activity hop';
 export const PICO_MAIN_APP_FLAGS_IMPORT_MARKER =
   '// expo-pico-core: New Architecture flag guard imports';
+export const PICO_MAIN_APP_TRACKER_MARKER = '// expo-pico-core: immersive activity tracker';
+export const PICO_MAIN_APP_TRACKER_IMPORT_MARKER =
+  '// expo-pico-core: immersive activity tracker import';
 export const PICO_SETTINGS_MARKER = '// expo-pico-core: pico subprojects';
 
 export const PICO_FEATURES = {

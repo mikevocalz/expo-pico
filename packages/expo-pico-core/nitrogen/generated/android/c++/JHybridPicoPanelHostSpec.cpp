@@ -85,13 +85,13 @@ namespace margelo::nitro::expopico::picocore {
     auto __result = __method(_javaPart, CxxPart::getClass(), name);
     return __result;
   }
-  jni::local_ref<JListenerSubscription> JHybridPicoPanelHostSpec::addOnPanelOpenedListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JListenerSubscription>(jni::alias_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart> /* listener */)>("addOnPanelOpenedListener_cxx");
+  jni::local_ref<JListenerSubscription> JHybridPicoPanelHostSpec::addOnPanelOpenedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JListenerSubscription>(jni::alias_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelOpenedEvent::JavaPart>> /* listener */)>("addOnPanelOpenedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }
-  jni::local_ref<JListenerSubscription> JHybridPicoPanelHostSpec::addOnPanelClosedListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart>& listener) {
-    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JListenerSubscription>(jni::alias_ref<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart> /* listener */)>("addOnPanelClosedListener_cxx");
+  jni::local_ref<JListenerSubscription> JHybridPicoPanelHostSpec::addOnPanelClosedListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart>>& listener) {
+    static const auto __method = CxxPart::getClass()->getNonvirtualMethod<jni::local_ref<JListenerSubscription>(jni::alias_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PanelClosedEvent::JavaPart>> /* listener */)>("addOnPanelClosedListener");
     auto __result = __method(_javaPart, CxxPart::getClass(), listener);
     return __result;
   }

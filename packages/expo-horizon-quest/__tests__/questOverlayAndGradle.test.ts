@@ -33,6 +33,7 @@ describe('resolveQuestOptions', () => {
   it('defaults everything off except the arm64 filter', () => {
     expect(resolveQuestOptions()).toEqual({
       metaLayoutSdk: false,
+      detailPanel: null,
       storeDeviceTargets: null,
       questRemovePermissions: [],
       questRemoveFeatures: [],

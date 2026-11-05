@@ -1,6 +1,7 @@
 import { ConfigPlugin, withAppBuildGradle, withProjectBuildGradle } from '@expo/config-plugins';
 
 import type { ResolvedQuestOptions } from './types';
+import { META_LAYOUT_GRADLE_MARKER } from './withQuestMetaLayout';
 
 const QUEST_FLAVOR_BEGIN = '// expo-horizon-quest: begin quest flavor';
 const QUEST_FLAVOR_END = '// expo-horizon-quest: end quest flavor';
@@ -89,6 +90,12 @@ export function findAppDependenciesBlock(contents: string): number {
  * (PICO), it skips. Declaring `quest` here keeps the flavor in both cases.
  * The block never mentions `flavorDimensions`, so expo-horizon-core's own
  * check still adds the dimension when nothing else did.
+ *
+ * Gradle creates `questImplementation` when the `quest` flavor is declared,
+ * so the flavor has to come before the Meta Layout SDK block that calls it
+ * (`withQuestMetaLayout`). Expo runs the two mods in reverse registration
+ * order, so this places the flavor above that block whenever the block is
+ * already in the file, instead of relying on which mod ran first.
  */
 export function updateQuestFlavorBlock(contents: string, options: ResolvedQuestOptions): string {
   contents = contents.replace(
@@ -106,7 +113,7 @@ androidComponents {
     }
 }`
     : '';
-  const questBlock = `
+  const block = `
 ${QUEST_FLAVOR_BEGIN}
 android {
     productFlavors {
@@ -119,14 +126,26 @@ android {
 }${pickFirst}
 ${QUEST_FLAVOR_END}
 `;
-  // When PICO declares the `device` dimension first, expo-horizon-core
-  // skips declaring Quest. Appending Quest after dependencies is too late:
-  // `questImplementation(...)` then fails during Gradle evaluation.
-  // Match only the top-level app block, never nested buildscript deps.
-  const depsIndex = findAppDependenciesBlock(contents);
-  return depsIndex < 0
-    ? contents + questBlock
-    : contents.slice(0, depsIndex) + questBlock + contents.slice(depsIndex);
+  // The flavor must precede every `questImplementation(...)` call: the Meta
+  // Layout SDK block (withQuestMetaLayout) and the app module's top-level
+  // `dependencies` block, which may carry other quest-only artifacts. When
+  // PICO declares the `device` dimension first, expo-horizon-core skips
+  // declaring Quest, so appending the flavor after either is too late.
+  // findAppDependenciesBlock matches only the depth-zero block, never a
+  // nested buildscript `dependencies`.
+  const anchors = [
+    contents.indexOf(META_LAYOUT_GRADLE_MARKER),
+    findAppDependenciesBlock(contents),
+  ].filter((index) => index !== -1);
+  if (anchors.length === 0) return contents + block;
+  const anchor = Math.min(...anchors);
+  const lineStart = contents.lastIndexOf('\n', anchor - 1) + 1;
+  return (
+    contents.slice(0, lineStart).replace(/\n*$/, '\n') +
+    block.slice(1) +
+    '\n' +
+    contents.slice(lineStart)
+  );
 }
 
 /**

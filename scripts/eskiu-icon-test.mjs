@@ -12,7 +12,7 @@
  * 3. Rasterises each curated icon's mesh to <out>/png/<name>.png (white strokes
  *    on black) so the geometry can be checked by eye.
  *
- * Needs eskiuc >= 0.9.3 (ESKIUC or PATH) and a C compiler (CC or cc).
+ * Needs the pinned eskiuc (cmake/eskiu-version.txt; ESKIUC or PATH) and a C compiler (CC or cc).
  */
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';

@@ -1,6 +1,6 @@
 # expo-pico-core
 
-[![stable](https://img.shields.io/badge/PPS_1.0.x-stable-0B0B0C?style=flat-square)](../../README.md#packages)
+[![stable](https://img.shields.io/badge/PPS_1.x-stable-0B0B0C?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Expo config plugin, runtime module, and diagnostics CLI for PICO OS 6 / Project Swan XR devices.
@@ -258,7 +258,7 @@ const trackers = await capabilities.motionTracker.list();
 const sensors = await capabilities.sensors.getHighRate();
 ```
 
-The capability runtime is reflection-gated on the Kotlin side. For the modern PPS surfaces (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) there's nothing to "drop in" — `withPicoGradle` registers the public Bytedance Maven repo and pulls `com.pico.pps:platform-service-*:1.0.0` into the `picoDebug` flavor automatically, so the PPS classes resolve at runtime with no further setup. The reflection layer is what lets sibling packages stay decoupled across PPS / legacy PVR class-name variance and across the `mobile` vs `picoDebug` split. For the narrower legacy surfaces still gated by the older PVR-prefixed SDKs (`PXR_Plugin` programmatic passthrough/haptics, the Spatial SDK) you still drop the legacy AAR into `vendor/pico-sdk/` or `android/app/libs/`; the probes light up the same way.
+The capability runtime is reflection-gated on the Kotlin side. For the modern PPS surfaces (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) there's nothing to "drop in" — `withPicoGradle` registers the public Bytedance Maven repo and pulls `com.pico.pps:platform-service-*` into the `picoDebug` flavor automatically, so the PPS classes resolve at runtime with no further setup. The reflection layer is what lets sibling packages stay decoupled across PPS / legacy PVR class-name variance and across the `mobile` vs `picoDebug` split. For the narrower legacy surfaces still gated by the older PVR-prefixed SDKs (`PXR_Plugin` programmatic passthrough/haptics, the Spatial SDK) you still drop the legacy AAR into `vendor/pico-sdk/` or `android/app/libs/`; the probes light up the same way.
 
 ## PICO OS 5 window rules
 
@@ -379,7 +379,7 @@ Each sibling adds a narrow native surface and a matching JS API. All are peer-de
 - New Architecture only. `newArchEnabled: true` is required.
 - Plugin emits a single `withDangerousMod` when writing the PICO-flavor source-set manifest. That is the only filesystem mutation; every other mutation uses safe structured mods.
 - Some hardware capability keys are best-known seams, flagged in the options table. Emitted with `android:required="false"` so misnames are install-safe.
-- PICO Platform Service SDK (PPS) bindings (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) are live on `picoDebug` builds — `withPicoGradle` pulls `com.pico.pps:platform-service-*:1.0.0` from the public Bytedance Maven automatically, so consumers don't drop any AAR. PPS-backed siblings only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time. A narrower set of legacy surfaces (`expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics and all of `expo-pico-spatial`) still rides the older PVR-prefixed AARs (`com.pvr.platform:platform-sdk:3.2.0`, `com.pvr.spatial:spatial-sdk:1.0.0`) — those are not on public Maven and do require dropping the AAR into `vendor/pico-sdk/` or `android/app/libs/`.
+- PICO Platform Service SDK (PPS) bindings (account, IAP, social, friend, leaderboards, achievements, notifications, entitlement, compliance, sport, speech) are live on `picoDebug` builds — `withPicoGradle` pulls `com.pico.pps:platform-service-*` from the public Bytedance Maven automatically, so consumers don't drop any AAR. PPS-backed siblings only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time. A narrower set of legacy surfaces (`expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics and all of `expo-pico-spatial`) still rides the older PVR-prefixed AARs (`com.pvr.platform:platform-sdk:3.2.0`, `com.pvr.spatial:spatial-sdk:1.0.0`) — those are not on public Maven and do require dropping the AAR into `vendor/pico-sdk/` or `android/app/libs/`.
 
 ## Links
 

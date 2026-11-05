@@ -162,6 +162,78 @@ describeWhenBuilt('expo-pico-doctor CLI', () => {
     expect(ids1).toContain('capabilities.ignored-under-mobile');
     expect(ids1).toContain('refresh-rates.ignored-under-mobile');
   });
+
+  it('flags PPS coordinates against the version each module is pinned to', () => {
+    const dir = writeFixture({
+      expo: {
+        name: 't',
+        slug: 't',
+        plugins: [
+          [
+            '@expo-pico/core',
+            {
+              xrMode: 'pico-os5',
+              appType: 'vr',
+              platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
+            },
+          ],
+        ],
+      },
+    });
+    fs.mkdirSync(path.join(dir, 'android', 'app'), { recursive: true });
+    // compliance never published 1.1.2, so 1.0.0 is its pin. auth at 1.0.0
+    // here is hand-written: it sits outside the plugin's PPS block.
+    fs.writeFileSync(
+      path.join(dir, 'android', 'app', 'build.gradle'),
+      [
+        'dependencies {',
+        '    picoImplementation "com.pico.pps:platform-service-compliance:1.0.0"',
+        '    picoImplementation "com.pico.pps:platform-service-auth:1.0.0"',
+        '    picoImplementation "com.pico.pps:platform-service-iap:1.1.2"',
+        '}',
+      ].join('\n')
+    );
+    const parsed = JSON.parse(runDoctor(dir, ['--json']).stdout);
+    const skew = parsed.findings.find((f: any) => f.id === 'pps-coordinate-version-skew');
+    expect(skew).toBeDefined();
+    expect(skew.message).toContain('com.pico.pps:platform-service-auth:1.0.0');
+    expect(skew.message).not.toContain('platform-service-compliance');
+    expect(skew.message).not.toContain('platform-service-iap');
+    expect(skew.message).toContain('Remove it.');
+    expect(skew.message).not.toContain('prebuild');
+  });
+
+  it('tells a project with an older generated PPS block to prebuild again', () => {
+    const dir = writeFixture({
+      expo: {
+        name: 't',
+        slug: 't',
+        plugins: [
+          [
+            '@expo-pico/core',
+            {
+              xrMode: 'pico-os5',
+              appType: 'vr',
+              platformService: { picoAppId: 'APP', picoAppKey: 'KEY' },
+            },
+          ],
+        ],
+      },
+    });
+    fs.mkdirSync(path.join(dir, 'android', 'app'), { recursive: true });
+    fs.copyFileSync(
+      path.join(__dirname, 'fixtures/pps/legacy-1.0.0/app-build.gradle'),
+      path.join(dir, 'android', 'app', 'build.gradle')
+    );
+    const parsed = JSON.parse(runDoctor(dir, ['--json']).stdout);
+    const skew = parsed.findings.find((f: any) => f.id === 'pps-coordinate-version-skew');
+    expect(skew).toBeDefined();
+    expect(skew.message).toContain('com.pico.pps:platform-service-auth:1.0.0');
+    expect(skew.message).toContain('older plugin version');
+    expect(skew.message).toContain('`npx expo prebuild`');
+    expect(skew.message).not.toContain('--clean');
+    expect(skew.message).not.toContain('Remove it.');
+  });
 });
 
 if (!BIN_EXISTS) {

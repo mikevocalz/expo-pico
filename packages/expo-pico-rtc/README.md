@@ -1,13 +1,13 @@
 # expo-pico-rtc
 
-[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![unavailable](https://img.shields.io/badge/PPS_1.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Typed seam for real-time voice communication (RTC) on PICO OS 6.
 
-> ## Unavailable on PPS 1.0.x
+> ## Unavailable on PPS 1.x
 >
-> **PPS 1.0.x removed RTC.** There is no `platform-service-rtc` artifact on
+> **PPS 1.x removed RTC.** There is no `platform-service-rtc` artifact on
 > the PICO repo, so nothing here can be wired — this is not a missing
 > integration that can be reverse-engineered, the service does not exist.
 > Every async method rejects with `NOT_IN_PPS_1_0`, on device and off.
@@ -96,7 +96,7 @@ result.
 - `getRtcServiceStatus()`: implemented — always reports unavailable, since no
   RTC service exists to detect.
 - **Every async API: `NOT_IN_PPS_1_0`.** Not "pending a future release" in any
-  scheduled sense; PPS 1.0.x deleted the surface.
+  scheduled sense; PPS 1.x deleted the surface.
 
 ## Requirements
 

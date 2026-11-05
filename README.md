@@ -26,32 +26,32 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 
 ## Packages
 
-| Package                                                         | Status      | PPS 1.0.x backing                                                                                                                                                                                                                      |
-| --------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`expo-pico-core`](./packages/expo-pico-core)                   | stable      | Build config, flavors, launcher contract, `expo-pico-doctor` CLI. The **XR runtime surface** (hand / eye / body / trackers / boundary) is a seam — see below                                                                           |
-| [`expo-pico-account`](./packages/expo-pico-account)             | live        | `PicoSignInClient.getSignInClient` → `getUserInfo / signIn / signOut / getAccessToken`                                                                                                                                                 |
-| [`expo-pico-iap`](./packages/expo-pico-iap)                     | live        | `PicoIapClient.getIapClient` → `getProductList / purchaseProduct / consumeProduct / getPurchasedProductList`                                                                                                                           |
-| [`expo-pico-subscription`](./packages/expo-pico-subscription)   | partial     | routed through `IapClient` (PPS has no separate sub client); `cancelSubscription()` is `NOT_IN_PPS_1_0` — cancelling happens in the PICO Store                                                                                         |
-| [`expo-pico-achievements`](./packages/expo-pico-achievements)   | live        | `AchievementClient.getArchievementClient` (PICO typo intentional): `unlock / addCount / addFields / getAllDefinitions / getProgressByName`                                                                                             |
-| [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)   | live        | `LeaderboardClient.getLeaderboardClient`: `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry`                                                                                               |
-| [`expo-pico-social`](./packages/expo-pico-social)               | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) plus `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.0.x |
-| [`expo-pico-notifications`](./packages/expo-pico-notifications) | live        | `PPSPushClient.getClientImpl` → `register(appId, fcmToken, IRegisterPPSPushCallback)` via reflection Proxy                                                                                                                             |
-| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | seam        | Eye / face / body / scene-mesh / anchors. Independent of PPS, and **not yet wired**: 8 of 11 methods reject with `XR_SDK_NOT_LINKED`, and no code path calls the XR SDK even when `pico-spatial-sdk.aar` is present                    |
-| [`expo-pico-rooms`](./packages/expo-pico-rooms)                 | partial     | PPS 1.0.x removed dedicated rooms. `getFriendsAndRooms()` / `getRoomInfo()` read the friend discovery feed; every mutating call is `NOT_IN_PPS_1_0`. For create/join run state on Fishjam / Colyseus                                   |
-| [`expo-pico-rtc`](./packages/expo-pico-rtc)                     | unavailable | PPS 1.0.x removed RTC. Use `@fishjam-cloud/react-native-webrtc`                                                                                                                                                                        |
-| [`expo-pico-storage`](./packages/expo-pico-storage)             | unavailable | PPS 1.0.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local                                                                                                  |
-| [`expo-pico-app-kit`](./packages/expo-pico-app-kit)             | n/a         | Orchestration over the siblings: boot probe, capability cache, no-op-safe wrappers. Calls no PPS service directly                                                                                                                      |
-| [`expo-pico-template`](./packages/expo-pico-template)           | n/a         | Starter app preconfigured for PICO OS 6 / Swan. `npx create-expo-app --template expo-pico-template`                                                                                                                                    |
+| Package                                                         | Status      | PPS 1.x backing                                                                                                                                                                                                                      |
+| --------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`expo-pico-core`](./packages/expo-pico-core)                   | stable      | Build config, flavors, launcher contract, `expo-pico-doctor` CLI. The **XR runtime surface** (hand / eye / body / trackers / boundary) is a seam — see below                                                                         |
+| [`expo-pico-account`](./packages/expo-pico-account)             | live        | `PicoSignInClient.getSignInClient` → `getUserInfo / signIn / signOut / getAccessToken`                                                                                                                                               |
+| [`expo-pico-iap`](./packages/expo-pico-iap)                     | live        | `PicoIapClient.getIapClient` → `getProductList / purchaseProduct / consumeProduct / getPurchasedProductList`                                                                                                                         |
+| [`expo-pico-subscription`](./packages/expo-pico-subscription)   | partial     | routed through `IapClient` (PPS has no separate sub client); `cancelSubscription()` is `NOT_IN_PPS_1_0` — cancelling happens in the PICO Store                                                                                       |
+| [`expo-pico-achievements`](./packages/expo-pico-achievements)   | live        | `AchievementClient.getArchievementClient` (PICO typo intentional): `unlock / addCount / addFields / getAllDefinitions / getProgressByName`                                                                                           |
+| [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)   | live        | `LeaderboardClient.getLeaderboardClient`: `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry`                                                                                             |
+| [`expo-pico-social`](./packages/expo-pico-social)               | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) plus `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.x |
+| [`expo-pico-notifications`](./packages/expo-pico-notifications) | live        | `PPSPushClient.getClientImpl` → `register(appId, fcmToken, IRegisterPPSPushCallback)` via reflection Proxy                                                                                                                           |
+| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | seam        | Eye / face / body / scene-mesh / anchors. Independent of PPS, and **not yet wired**: 8 of 11 methods reject with `XR_SDK_NOT_LINKED`, and no code path calls the XR SDK even when `pico-spatial-sdk.aar` is present                  |
+| [`expo-pico-rooms`](./packages/expo-pico-rooms)                 | partial     | PPS 1.x removed dedicated rooms. `getFriendsAndRooms()` / `getRoomInfo()` read the friend discovery feed; every mutating call is `NOT_IN_PPS_1_0`. For create/join run state on Fishjam / Colyseus                                   |
+| [`expo-pico-rtc`](./packages/expo-pico-rtc)                     | unavailable | PPS 1.x removed RTC. Use `@fishjam-cloud/react-native-webrtc`                                                                                                                                                                        |
+| [`expo-pico-storage`](./packages/expo-pico-storage)             | unavailable | PPS 1.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local                                                                                                  |
+| [`expo-pico-app-kit`](./packages/expo-pico-app-kit)             | n/a         | Orchestration over the siblings: boot probe, capability cache, no-op-safe wrappers. Calls no PPS service directly                                                                                                                    |
+| [`expo-pico-template`](./packages/expo-pico-template)           | n/a         | Starter app preconfigured for PICO OS 6 / Swan. `npx create-expo-app --template expo-pico-template`                                                                                                                                  |
 
 Every package README carries the same chip, so status travels with the package.
 
-| Chip                                                                                        | Meaning                                                                                                                                                                                     |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)               | The bridge calls the real PPS 1.0.x SDK and returns real data.                                                                                                                              |
-| ![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)         | Some methods wired; the rest return `NOT_IN_PPS_1_0` with a hint naming what PPS does offer.                                                                                                |
-| ![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square) | PPS 1.0.x publishes no artifact for this service, so every method returns `NOT_IN_PPS_1_0`. Kept as a typed seam so a future release can wire it without an API break.                      |
-| ![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)               | Calls no PPS service directly, so the axis does not apply.                                                                                                                                  |
-| ![seam](https://img.shields.io/badge/PPS_1.0.x-seam-6B7280?style=flat-square)               | The TypeScript and Kotlin surface exists and is typed, but nothing is wired behind it yet. Distinct from `unavailable`: the platform API is real, this project just has not implemented it. |
+| Chip                                                                                      | Meaning                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![live](https://img.shields.io/badge/PPS_1.x-live-1F6F3F?style=flat-square)               | The bridge calls the real PPS 1.x SDK and returns real data.                                                                                                                                |
+| ![partial](https://img.shields.io/badge/PPS_1.x-partial-946200?style=flat-square)         | Some methods wired; the rest return `NOT_IN_PPS_1_0` with a hint naming what PPS does offer.                                                                                                |
+| ![unavailable](https://img.shields.io/badge/PPS_1.x-unavailable-6B7280?style=flat-square) | PPS 1.x publishes no artifact for this service, so every method returns `NOT_IN_PPS_1_0`. Kept as a typed seam so a future release can wire it without an API break.                        |
+| ![n/a](https://img.shields.io/badge/PPS_1.x-n%2Fa-0B0B0C?style=flat-square)               | Calls no PPS service directly, so the axis does not apply.                                                                                                                                  |
+| ![seam](https://img.shields.io/badge/PPS_1.x-seam-6B7280?style=flat-square)               | The TypeScript and Kotlin surface exists and is typed, but nothing is wired behind it yet. Distinct from `unavailable`: the platform API is real, this project just has not implemented it. |
 
 > ### The XR runtime is not implemented
 >
@@ -77,7 +77,7 @@ ship that service.
 
 ### Activating the platform-service bridges
 
-PICO ships PPS 1.0.x on the public Volcengine maven (`https://artifact.bytedance.com/repository/Volcengine/`). `expo-pico-core`'s Gradle plugin adds the repo and the 11 `com.pico.pps:platform-service-{auth,iap,achievement,...}:1.0.0` coords automatically. No AAR drop-in, no developer-console login required. Install `@expo-pico/core`, prebuild, and the bridges are live on first launch.
+PICO ships PPS 1.x on the public Volcengine maven (`https://artifact.bytedance.com/repository/Volcengine/`). `expo-pico-core`'s Gradle plugin adds the repo and the 11 `com.pico.pps:platform-service-{auth,iap,achievement,...}` coords automatically, each at its newest stable release (1.1.2 or 1.1.3; 1.0.0 for compliance, entitlement and speech, which have nothing newer). No AAR drop-in, no developer-console login required. Install `@expo-pico/core`, prebuild, and the bridges are live on first launch.
 
 The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [vendor/pico-sdk/README.md](./vendor/pico-sdk/README.md). (`docs/PLATFORM-SDK.md`, linked here previously, never existed.)
 
@@ -101,7 +101,7 @@ npx expo run:android --variant picoDebug
 The packages install from GitHub release branches, not npm. [docs/INSTALL-FROM-GITHUB.md](./docs/INSTALL-FROM-GITHUB.md) lists the branch for every package, the peers each one needs, and how to pin a commit.
 
 ```bash
-yarn add "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.100.g107f6fc66597
+yarn add "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
 # (add siblings as needed, each from its own release/<name> branch)
 ```
 
@@ -123,7 +123,9 @@ export default {
           xrMode: 'pico-os5',
           appType: 'vr',
           buildVariant: 'pico',
-          // Required for a PICO build. Without it core adds no pico flavor.
+          // Optional for the build: the pico flavor exists without it. PICO OS 5
+          // will not launch an immersive app whose ID is not registered for the
+          // package (docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md), and PPS calls need it.
           picoAppId: process.env.PICO_APP_ID,
           platformService: {
             picoAppId: process.env.PICO_PLATFORM_APP_ID,
@@ -220,11 +222,11 @@ Enterprise on PVR 2.x without the legacy AAR drop-in — see
 
 ## Compatibility
 
-- Expo SDK 58 (current baseline). React Native 0.88.0-rc.3. React 19.3. Hermes.
+- Expo SDK 58 (current baseline). React Native 0.88.1. React 19.3. Hermes.
 - New Architecture only (Fabric + TurboModules).
 - Android only.
 - Devices: see [Supported devices](#supported-devices).
-- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.62 to satisfy the system loader on PICO OS 5.
+- 16KB ELF page-alignment (Android 14+). `expo-pico-core` overlays a Khronos `libopenxr_loader.so` 1.1.65 to satisfy the system loader on PICO OS 5.
 
 ## Doctor
 
@@ -288,11 +290,11 @@ The `quest` flavor (`npm run quest` in `example/`) targets Meta Horizon OS: Ques
 
 At runtime the `quest` flavor reports `xrMode: 'quest'` and `isPicoBuild: false` from `getPicoRuntimeInfo()`, and `enterImmersiveScene()` starts the same VRActivity it uses on PICO.
 
-#### Spatial windows (Meta VR Layout SDK)
+#### Spatial layout: rail, main panel, detail panel
 
-In the `quest` flavor, the launcher opens Library, Details and Controls as [Meta VR Layout SDK](https://developers.meta.com/horizon/documentation/android-apps/meta-vr-layout-sdk) windows around its main panel: Library on the start edge, Details on the end edge, Controls below. Stage remains the immersive Viro scene. Each window uses `fallback="inline"`, so on Horizon OS releases before v207 (and on PICO and phone builds) the same content renders inside the main panel.
+Every headset build uses one layout ([ADR 0001](docs/adr/0001-spatial-shell-rail-main-detail.md)). The rail holds the destinations a phone shows in its bottom tab bar, in a narrow panel flush against the main panel's left edge. The main panel shows the current destination. A detail panel opens beside the main panel only for detail content, with its title and a Close button; closing it leaves rail and main.
 
-Meta's React Native integration reserves two window slots, so one of the three always stays inline. Priorities decide which: Library (20) beats Details (10) beats Controls (0). Controls holds **Enter XR Scene**, so the primary action stays in the main panel unless a third slot opens. Sizes, anchors and priorities live in `example/src/layout/workspace.ts` (`META_WINDOWS`).
+`createSpatialShell` in `@expo-pico/spatial` turns design tokens into that geometry for both headsets. On Meta Horizon OS the rail is the app's one [Meta VR Layout SDK](https://developers.meta.com/horizon/documentation/android-apps/meta-vr-layout-sdk) window, anchored `{ parent: 'left', child: 'right' }` with no offset, and it renders from the app root so presses inside it complete (`example/src/layout/SpatialWindowHost.tsx`). On PICO OS 5, which cannot attach one window to another, the rail draws in a transparent strip of the main window. The detail panel is a second activity on the same React Native runtime on both: set `detailPanel: { defaultWidth, defaultHeight }` on the `expo-horizon-core` entry for quest; the pico flavor declares it by default (`windows.panelActivity`). Open it with `new PicoWindows().createPanelHost()` (`example/src/layout/DetailPanelHost.tsx`).
 
 Setup is `metaLayoutSdk: true` on the `expo-horizon-core` plugin entry plus `@metavr/layout-compat` and `@metavr/layout-window-compat` as direct app dependencies. The plugin writes the MetaVRX BOM and both artifacts as `questImplementation`, which survives `expo prebuild --clean`. Each npm package autolinks a library project that declares its AAR as `api`, and the window AAR adds `horizonos.permission.MANAGE_APP_VOLUMETRIC_WINDOWS`. To keep both out of `pico` and `mobile`, the plugin excludes `com.meta.metavrx.layout` from every non-quest classpath and gives those flavors empty stand-ins for the two `ReactPackage` classes the generated `PackageList` creates. The library projects declare minSdk 29, so the plugin also lists them in the main manifest's `tools:overrideLibrary`; off quest they hold only codegen specs that nothing calls, which keeps the phone flavor at its own minSdk. The library projects stay linked in every flavor because the AAR classes extend their codegen output, so JS must only render Meta's components on Horizon builds. `example/src/layout/metaWindows.ts` checks `isHorizonBuild` and otherwise renders each window's children in place.
 

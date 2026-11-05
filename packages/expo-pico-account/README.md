@@ -1,6 +1,6 @@
 # expo-pico-account
 
-[![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
+[![live](https://img.shields.io/badge/PPS_1.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform account, session, and identity APIs for Expo apps.
@@ -28,7 +28,7 @@ empty results or `SERVICE_UNAVAILABLE` rather than throwing.
 ## Status
 
 - Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSignInClient` from `com.pico.pps:platform-service-auth:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time (detected automatically; see [Runtime diagnostics](#runtime-diagnostics)).
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSignInClient` from `com.pico.pps:platform-service-auth:1.1.2` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time (detected automatically; see [Runtime diagnostics](#runtime-diagnostics)).
 - Platform: Android only (PICO is Android-only).
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -134,7 +134,7 @@ for the full artifact list and the two cases that can still duplicate
 
 ## Limitations
 
-- Account bindings ride the modern PPS Maven artifact (`com.pico.pps:platform-service-auth:1.0.0`), which `withPicoGradle` resolves from public Maven on `picoDebug` builds. No AAR drop is required; bridge methods return real data automatically on PICO hardware.
+- Account bindings ride the modern PPS Maven artifact (`com.pico.pps:platform-service-auth:1.1.2`), which `withPicoGradle` resolves from public Maven on `picoDebug` builds. No AAR drop is required; bridge methods return real data automatically on PICO hardware.
 - `login()` / `logout()` are deliberately `notImplementedError`: PICO OS owns the account session at device level. Apps receive an already-authenticated session on launch.
 
 ## Links

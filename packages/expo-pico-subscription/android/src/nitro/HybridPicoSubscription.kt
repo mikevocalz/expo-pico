@@ -223,8 +223,11 @@ class HybridPicoSubscription : HybridPicoSubscriptionSpec() {
   companion object : HybridPicoSubscriptionSpec.Companion {
     override fun constructor(): HybridPicoSubscription = HybridPicoSubscription()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
 
     // PeriodType as PPS numbers it: INVALID, NONE, HOUR, DAY, WEEK, MONTH,
     // QUARTER, YEAR. Read off the published enum, not assumed.

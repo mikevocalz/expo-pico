@@ -63,3 +63,28 @@ export const type = {
   label: { fontSize: 11, fontWeight: '600', letterSpacing: 1.2 },
   mono: { fontSize: 12, fontWeight: '500' },
 } as const;
+
+/**
+ * The spatial shell's sizes in dp (rail, main, detail; see
+ * `src/layout/shell.ts`). The rail is a 64dp destination slot plus label
+ * room, so every target clears Meta's 48dp minimum; the detail panel is a
+ * portrait 420x600, inside Meta's 384-1440dp panel range and not square, which
+ * PICO OS 5 needs.
+ */
+export const shellSize = {
+  railWidth: 96,
+  railItem: 72,
+  /** The selected-item indicator: a square with radius.sm corners. */
+  railIndicator: 40,
+  railPadding: space.sm + 4,
+  detailWidth: 420,
+  detailHeight: 600,
+  /**
+   * The main panel's launch size on headsets, as app.config.ts declares it
+   * (defaultWidth/defaultHeight). Its aspect is the one MainContentFrame keeps.
+   */
+  mainWidth: 1280,
+  mainHeight: 800,
+  /** The bottom tab bar on phones. */
+  tabBarHeight: 64,
+} as const;

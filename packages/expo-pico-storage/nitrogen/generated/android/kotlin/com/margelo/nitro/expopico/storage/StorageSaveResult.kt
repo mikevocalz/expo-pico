@@ -31,8 +31,6 @@ data class StorageSaveResult(
   @Keep
   val resolvedValue: String
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSaveResult) return false

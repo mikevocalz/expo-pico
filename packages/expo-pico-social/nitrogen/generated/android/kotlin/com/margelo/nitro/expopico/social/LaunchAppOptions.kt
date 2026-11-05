@@ -28,8 +28,6 @@ data class LaunchAppOptions(
   @Keep
   val deepLinkMessage: String?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is LaunchAppOptions) return false

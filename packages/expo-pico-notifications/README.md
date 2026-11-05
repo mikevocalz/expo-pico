@@ -1,6 +1,6 @@
 # expo-pico-notifications
 
-[![live](https://img.shields.io/badge/PPS_1.0.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
+[![live](https://img.shields.io/badge/PPS_1.x-live-1F6F3F?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO push notification registration and token APIs for Expo apps.
@@ -28,7 +28,7 @@ if (isAccountAvailable()) {
 ## Status
 
 - Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. The PPS push client from `com.pico.pps:platform-service-push:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Registration / token bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. The PPS push client from `com.pico.pps:platform-service-push:1.1.3` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Registration / token bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6. Requires the user to have PICO Platform Services available (default on PICO hardware).
 

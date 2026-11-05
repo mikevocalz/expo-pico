@@ -50,7 +50,7 @@ Within three business days of receiving a report we will:
   - Validates the `glTF` magic bytes before writing to disk.
   - Is skippable via `EXPO_PICO_SKIP_DEMO_MODEL=1`.
   - Never touches any file outside `example/assets/models/`.
-- No sibling package ships native binaries. The modern PICO Platform Service SDK (PPS) is resolved by Gradle from the public Bytedance Maven repo (`com.pico.pps:*:1.0.0`); only the narrower legacy PVR-prefixed AARs (`com.pvr.platform:*`, `com.pvr.spatial:*`) are consumer-supplied via `vendor/pico-sdk/` or `android/app/libs/`.
+- No sibling package ships native binaries. The modern PICO Platform Service SDK (PPS) is resolved by Gradle from the public Bytedance Maven repo (`com.pico.pps:*`); only the narrower legacy PVR-prefixed AARs (`com.pvr.platform:*`, `com.pvr.spatial:*`) are consumer-supplied via `vendor/pico-sdk/` or `android/app/libs/`.
 
 ## Credential handling
 

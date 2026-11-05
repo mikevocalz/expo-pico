@@ -62,14 +62,9 @@ abstract class HybridPicoAchievementsSpec: HybridObject() {
   @Keep
   abstract fun addAchievementBitfield(apiName: String, bitfield: String): Promise<AddBitfieldResult>
 
-  abstract fun addAchievementUnlockedListener(listener: Callback<(event: AchievementUnlockedEvent) -> Unit>): Double
-
   @DoNotStrip
   @Keep
-  private fun addAchievementUnlockedListener_cxx(listener: Callback_void_AchievementUnlockedEvent): Double {
-    val __result = addAchievementUnlockedListener(listener)
-    return __result
-  }
+  abstract fun addAchievementUnlockedListener(listener: Callback<(event: AchievementUnlockedEvent) -> Unit>): Double
 
   @DoNotStrip
   @Keep
@@ -119,8 +114,7 @@ abstract class HybridPicoAchievementsSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoAchievementsSpec {
-      val __result = HybridPicoAchievements.constructor()
-      return __result
+      return HybridPicoAchievements.constructor()
     }
   }
 }

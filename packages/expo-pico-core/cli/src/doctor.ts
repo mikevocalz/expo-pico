@@ -32,7 +32,12 @@ import {
   runDiagnosticChecks,
   type DiagnosticCheckFinding,
 } from '../../plugin/build/withPicoDiagnostics';
-import { PPS_GROUP, PPS_LOCAL_AAR_EXCLUDES, PPS_VERSION } from '../../plugin/build/ppsArtifacts';
+import {
+  PPS_GROUP,
+  PPS_LOCAL_AAR_EXCLUDES,
+  ppsPinnedVersion,
+} from '../../plugin/build/ppsArtifacts';
+import { markedBlockRange } from '../../plugin/build/utils';
 
 interface CliArgs {
   projectRoot: string;
@@ -285,8 +290,8 @@ function checkDuplicatePicoArtifacts(
         `android/app/libs contains ${shadowed.length} file(s) that ${PPS_GROUP} ` +
         `already supplies from Maven: ${shadowed.join(', ')}. They are excluded ` +
         'from the generated fileTree so the build still succeeds, but nothing ' +
-        'loads them — delete them, or pin a different version through the ' +
-        "plugin's platformService.services option instead of vendoring.",
+        'loads them. Delete them: the plugin already declares the Maven copy, and ' +
+        'platformService.services selects which services land, not their version.',
     });
   }
 
@@ -320,24 +325,48 @@ function checkDuplicatePicoArtifacts(
     `${PPS_GROUP.replace(/\./g, '\\.')}:(platform-service-[a-z]+|pps_sdk_base):([^"'\\s]+)`,
     'g'
   );
-  const skewed = new Set<string>();
+  // A skewed line inside the plugin's own PPS block was written by an older
+  // plugin version; the next prebuild rewrites that block in place.
+  let block: { start: number; end: number } | undefined;
+  try {
+    block = markerCount === 1 ? markedBlockRange(appGradle, DEPS_MARKER) : undefined;
+  } catch {
+    block = undefined;
+  }
+  const generated = new Set<string>();
+  const handWritten = new Set<string>();
   for (const match of appGradle.matchAll(coordinate)) {
     const [, name, version] = match;
-    if (version !== PPS_VERSION) {
-      skewed.add(`${PPS_GROUP}:${name}:${version}`);
-    }
+    const pinned = ppsPinnedVersion(name);
+    if (pinned === undefined || version === pinned) continue;
+    const at = match.index ?? 0;
+    const inBlock = block !== undefined && at >= block.start && at < block.end;
+    (inBlock ? generated : handWritten).add(`${PPS_GROUP}:${name}:${version}`);
   }
 
-  if (skewed.size > 0) {
+  if (generated.size > 0 || handWritten.size > 0) {
+    const parts: string[] = [];
+    if (handWritten.size > 0) {
+      parts.push(
+        `app/build.gradle requests ${handWritten.size} ${PPS_GROUP} coordinate(s) at a ` +
+          `version expo-pico-core does not pin: ${[...handWritten].sort().join(', ')}. ` +
+          'The resolution pin overrides them so the services and their shared ' +
+          'pps_sdk_base stay in step, which means the version written here has no ' +
+          'effect. Remove it.'
+      );
+    }
+    if (generated.size > 0) {
+      parts.push(
+        `The expo-pico-core PPS block in app/build.gradle still carries an older ` +
+          `plugin version's pins: ${[...generated].sort().join(', ')}. Run ` +
+          '`npx expo prebuild` and the plugin rewrites the block with its current ' +
+          'pins, along with the resolution pin in android/build.gradle.'
+      );
+    }
     findings.push({
       id: 'pps-coordinate-version-skew',
       severity: 'warning',
-      message:
-        `app/build.gradle requests ${skewed.size} ${PPS_GROUP} coordinate(s) at a ` +
-        `version expo-pico-core does not pin: ${[...skewed].sort().join(', ')}. ` +
-        `The resolution pin forces them to ${PPS_VERSION} so the services and ` +
-        'their shared pps_sdk_base stay in step, which means the version written ' +
-        'here has no effect. Remove it, or bump the plugin.',
+      message: parts.join(' '),
     });
   }
 

@@ -67,7 +67,7 @@ export interface InviteReceivedEvent {
 }
 
 /**
- * accept/decline/block/unblock were removed in PPS 1.0.x. They stay on the
+ * accept/decline/block/unblock were removed in PPS 1.x. They stay on the
  * interface as typed seams returning NOT_IN_PPS_1_0 so a future PPS release
  * can wire them without a breaking API change.
  */
@@ -189,7 +189,7 @@ export declare class PicoSocial extends HybridObject {
   /** Shares up to a handful of images to the PICO social feed. */
   shareImages(imagePaths: string[]): Promise<boolean>;
 
-  // PPS 1.0.x pushes no friend-presence, friend-request or invite events, so
+  // PPS 1.x pushes no friend-presence, friend-request or invite events, so
   // the spec has no listener for them. The JS add*Listener functions warn
   // NOT_IN_PPS_1_0 and return a no-op subscription instead.
   removeListener(id: number): void;

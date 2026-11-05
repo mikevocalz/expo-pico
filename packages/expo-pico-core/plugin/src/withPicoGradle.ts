@@ -16,7 +16,7 @@ import {
 } from './ppsArtifacts';
 import type { ResolvedPicoOptions } from './types';
 import { resolveTargetProfile } from './types';
-import { gradleContains, insertAfterPattern } from './utils';
+import { gradleContains, insertAfterPattern, replaceMarkedBlock } from './utils';
 
 const FLAVOR_MARKER = '// expo-pico-core: flavor dimensions';
 const MISSING_DIM_MARKER = '// expo-pico-core: missing dimension strategy';
@@ -144,10 +144,41 @@ android.productFlavors.configureEach { flavor ->
 `;
 }
 
+/** The unconditional block earlier plugin versions wrote inside `android {}`. */
+const LEGACY_MISSING_DIM_BLOCK =
+  /\n[ \t]*\/\/ expo-pico-core: missing dimension strategy\n[ \t]*defaultConfig \{\n[ \t]*missingDimensionStrategy "device", "mobile"\n[ \t]*\}\n/;
+
+/**
+ * `buildVariant: 'mobile'` adds no flavors, but the core library has a
+ * `device` dimension, so an app without one must say which variant it wants.
+ *
+ * Only when the app has no `device` dimension of its own. expo-horizon-core
+ * gives the app `mobile` and `quest` flavors in that dimension, and a
+ * defaultConfig `missingDimensionStrategy` overrides the flavor's own value:
+ * questDebug then requested `device=mobile` and packaged expo-horizon-core's
+ * mobile variant (`isHorizonBuild == false`), so a Quest build ran the phone
+ * layout. The check runs in `finalizeDsl`, after every plugin's flavors are
+ * declared, so plugin order does not matter. It calls the getter on purpose:
+ * expo-horizon-core skips writing its flavors when the file already holds
+ * both the property's name and `productFlavors`.
+ */
+export function renderMissingDimensionBlock(): string {
+  return `
+${MISSING_DIM_MARKER}
+androidComponents {
+    finalizeDsl { extension ->
+        if (!extension.getFlavorDimensions().contains("device")) {
+            extension.defaultConfig.missingDimensionStrategy("device", "mobile")
+        }
+    }
+}
+`;
+}
+
 /**
  * Removes the identity gate an earlier plugin version wrote into
- * app/build.gradle. PICO is now off until a picoAppId is set, so there is
- * nothing to gate.
+ * app/build.gradle. The pico flavor no longer depends on a picoAppId, so
+ * there is nothing to gate.
  */
 export function removeIdentityGate(contents: string): string {
   return contents.replace(
@@ -222,19 +253,9 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
         }
       }
     } else {
+      contents = contents.replace(LEGACY_MISSING_DIM_BLOCK, '');
       if (!gradleContains(contents, MISSING_DIM_MARKER)) {
-        const dimStrategyBlock = `
-    ${MISSING_DIM_MARKER}
-    defaultConfig {
-        missingDimensionStrategy "device", "mobile"
-    }
-`;
-        const result = insertAfterPattern(contents, /android\s*\{/, dimStrategyBlock);
-        if (result) {
-          contents = result;
-        } else {
-          console.warn('[expo-pico-core] Could not find android {} block in app/build.gradle');
-        }
+        contents += renderMissingDimensionBlock();
       }
     }
 
@@ -257,22 +278,33 @@ export const withPicoAppBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config
     // `xrMode` and `buildVariant` are independent, so a `pico-os5` app
     // built as `dual` also produces mobile* and quest* variants that must
     // not carry the PICO SDK.
+    //
+    // Rewritten on every prebuild, not only when the marker is missing, so
+    // an android/ prebuilt by an older release picks up the new pins.
     const ppsConfigurations = resolvePpsConfigurations(options.buildVariant);
-    if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_DEPS_MARKER)) {
+    if (options.xrMode !== 'mobile') {
       const services = resolvePpsServices(
         options.platformService.services,
         createPackageResolver(projectRoot)
       );
-      contents =
-        contents + '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER, ppsConfigurations);
+      contents = replaceMarkedBlock(
+        contents,
+        PPS_DEPS_MARKER,
+        '\n' + renderPpsDependenciesBlock(services, PPS_DEPS_MARKER, ppsConfigurations)
+      );
     }
 
     // PICO Platform SDK AAR drop-in (offline fallback). Consumers who
     // need to vendor the AARs into source control (air-gapped CI, etc.)
     // can drop them into android/app/libs/. Anything PPS already resolves
-    // from maven is excluded by name — see renderLocalAarBlock.
-    if (options.xrMode !== 'mobile' && !gradleContains(contents, APP_LIBS_AAR_MARKER)) {
-      contents = contents + '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER, ppsConfigurations);
+    // from maven is excluded by name — see renderLocalAarBlock. Rewritten
+    // in place like the block above, so the exclude list stays current.
+    if (options.xrMode !== 'mobile') {
+      contents = replaceMarkedBlock(
+        contents,
+        APP_LIBS_AAR_MARKER,
+        '\n' + renderLocalAarBlock(APP_LIBS_AAR_MARKER, ppsConfigurations)
+      );
     }
 
     // Upgrade the old generated global pickFirst block, including when users
@@ -416,8 +448,14 @@ subprojects { sub ->
     // module in the build, so an autolinked library that requests a PPS
     // coordinate resolves to the version the app actually packages
     // instead of putting a second copy of the SDK on the classpath.
-    if (options.xrMode !== 'mobile' && !gradleContains(contents, PPS_PIN_MARKER)) {
-      contents += renderPpsResolutionPin(PPS_PIN_MARKER);
+    // Replaced in place when present: an android/ prebuilt by an older
+    // release still carries that release's pin (`useVersion "1.0.0"`).
+    if (options.xrMode !== 'mobile') {
+      contents = replaceMarkedBlock(
+        contents,
+        PPS_PIN_MARKER,
+        renderPpsResolutionPin(PPS_PIN_MARKER)
+      );
     }
 
     config.modResults.contents = contents;

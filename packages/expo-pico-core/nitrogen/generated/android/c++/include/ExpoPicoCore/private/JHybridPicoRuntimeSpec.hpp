@@ -130,7 +130,7 @@ namespace margelo::nitro::expopico::picocore {
     jni::local_ref<JTypedPromise<jni::local_ref<JOptional<jni::JString>>>> getHrtfProfile();
     jni::local_ref<JTypedPromise<void>> pulseHaptic(const jni::local_ref<JPicoHapticHand>& hand, jdouble amplitude, jdouble durationMs);
     jni::local_ref<JTypedPromise<void>> setPassthroughLevel(jboolean enabled, jdouble level);
-    jdouble addPassthroughDialListener(const jni::local_ref<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart>& listener);
+    jdouble addPassthroughDialListener(const jni::local_ref<JCallback<margelo::nitro::expopico::picocore::JCallback_void_PassthroughLevelEvent::JavaPart>>& listener);
     jni::local_ref<JPicoIconMeshData> getIconMesh(const jni::local_ref<jni::JString>& svgElements, jdouble strokeWidth, jdouble tolerance);
     void removeListener(jdouble id);
 

@@ -4,8 +4,11 @@
 // registerImmersiveScene() asks when it mounts in the immersive activity;
 // enterImmersiveScene(), which runs on the 2D panel, never asks.
 //
-// The native module and PermissionsAndroid are both mocked; each test loads a
-// fresh copy of the package so the once-per-process guard starts clean.
+// The request goes through the native requestImmersivePermission, never
+// PermissionsAndroid: that one uses the React context's current activity,
+// which can still be the 2D panel, and a dialog in the panel's task closes XR.
+// The native module is mocked; each test loads a fresh copy of the package so
+// the once-per-process guard starts clean.
 
 import type { ReactElement } from 'react';
 
@@ -13,6 +16,10 @@ const mockInfo: Record<string, unknown> = {};
 let mockDeclared: Array<{ name: string; granted: boolean }> = [];
 const mockEnter = jest.fn(() => true);
 const mockGetDeclaredPermissions = jest.fn(() => mockDeclared);
+let mockFeatures = new Set<string>();
+let mockPicoEyeTrackingDeclared = true;
+const mockHasSystemFeature = jest.fn((name: string) => mockFeatures.has(name));
+const mockRequest = jest.fn<Promise<string>, [string]>();
 
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: {
@@ -24,7 +31,12 @@ jest.mock('react-native-nitro-modules', () => ({
               get xrMode() {
                 return mockInfo.xrMode;
               },
+              get declaredCapabilities() {
+                return { eyeTracking: mockPicoEyeTrackingDeclared };
+              },
               getDeclaredPermissions: async () => mockGetDeclaredPermissions(),
+              hasSystemFeature: async (feature: string) => mockHasSystemFeature(feature),
+              requestImmersivePermission: (permission: string) => mockRequest(permission),
               enterImmersiveScene: async () => mockEnter(),
             };
           }
@@ -42,8 +54,7 @@ jest.mock('react', () => ({
   useEffect: (effect: () => void) => effect(),
 }));
 
-const mockCheck = jest.fn<Promise<boolean>, [string]>();
-const mockRequest = jest.fn<Promise<string>, [string]>();
+const mockPermissionsAndroidRequest = jest.fn();
 const mockPlatform = { OS: 'android' };
 
 jest.mock('react-native', () => {
@@ -51,17 +62,16 @@ jest.mock('react-native', () => {
   return {
     ...stub,
     Platform: mockPlatform,
-    PermissionsAndroid: {
-      RESULTS: { GRANTED: 'granted', DENIED: 'denied', NEVER_ASK_AGAIN: 'never_ask_again' },
-      check: mockCheck,
-      request: mockRequest,
-    },
+    PermissionsAndroid: { request: mockPermissionsAndroidRequest },
   };
 });
 
 const HORIZON = 'com.oculus.permission.EYE_TRACKING';
 const PICO = 'com.picovr.permission.EYE_TRACKING';
 const HORIZONOS = 'horizonos.permission.EYE_TRACKING';
+const HORIZON_FEATURE = 'oculus.software.eye_tracking';
+const PICO_FEATURE = 'pico.hardware.eyetracking';
+const PICO_ALT_FEATURE = 'picovr.software.eye_tracking';
 
 type Core = typeof import('../index');
 type Root = (props: object) => ReactElement;
@@ -100,7 +110,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockPlatform.OS = 'android';
   mockDeclared = [];
-  mockCheck.mockResolvedValue(false);
+  mockFeatures = new Set([HORIZON_FEATURE, PICO_FEATURE]);
+  mockPicoEyeTrackingDeclared = true;
   mockRequest.mockResolvedValue('granted');
   warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
 });
@@ -130,7 +141,6 @@ describe('immersive root eye tracking permission', () => {
     await settle();
 
     expect(element.type).toBe(Scene);
-    expect(mockCheck).toHaveBeenCalledWith(HORIZON);
     expect(mockRequest).toHaveBeenCalledWith(HORIZON);
     expect(warn).not.toHaveBeenCalled();
   });
@@ -158,7 +168,6 @@ describe('immersive root eye tracking permission', () => {
 
   it('does not request when the permission is already granted', async () => {
     mockDeclared = [{ name: HORIZON, granted: true }];
-    mockCheck.mockResolvedValue(true);
     load('quest');
 
     mountImmersiveRoot();
@@ -174,7 +183,7 @@ describe('immersive root eye tracking permission', () => {
     mountImmersiveRoot();
     await settle();
 
-    expect(mockCheck).not.toHaveBeenCalled();
+    expect(mockHasSystemFeature).not.toHaveBeenCalled();
     expect(mockRequest).not.toHaveBeenCalled();
   });
 
@@ -277,5 +286,94 @@ describe('immersive root eye tracking permission', () => {
     await core.ensureEyeTrackingPermission('quest');
 
     expect(mockRequest.mock.calls).toEqual([[HORIZON], [PICO]]);
+  });
+});
+
+describe('immersive permission routing and device features', () => {
+  it('asks through the immersive activity, never through PermissionsAndroid', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    load('quest');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockRequest).toHaveBeenCalledWith(HORIZON);
+    expect(mockPermissionsAndroidRequest).not.toHaveBeenCalled();
+  });
+
+  it('does not ask on a Quest without eye tracking hardware (Quest 3S)', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    mockFeatures = new Set();
+    load('quest');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockHasSystemFeature).toHaveBeenCalledWith(HORIZON_FEATURE);
+    expect(mockRequest).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('does not ask on a PICO headset without eye tracking hardware (PICO 4 Ultra)', async () => {
+    mockDeclared = [{ name: PICO, granted: false }];
+    mockFeatures = new Set([HORIZON_FEATURE]);
+    load('pico-os5');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockHasSystemFeature).toHaveBeenCalledWith(PICO_FEATURE);
+    expect(mockHasSystemFeature).toHaveBeenCalledWith(PICO_ALT_FEATURE);
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it('asks on a PICO headset that reports only picovr.software.eye_tracking', async () => {
+    mockDeclared = [{ name: PICO, granted: false }];
+    mockFeatures = new Set([PICO_ALT_FEATURE]);
+    load('pico-os5');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockRequest).toHaveBeenCalledWith(PICO);
+  });
+
+  it('does not ask on PICO when the build did not enable eyeTracking', async () => {
+    mockDeclared = [{ name: PICO, granted: false }];
+    mockPicoEyeTrackingDeclared = false;
+    load('pico-os5');
+
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockGetDeclaredPermissions).not.toHaveBeenCalled();
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it('asks again on the next mount when the immersive activity was not alive', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    mockRequest.mockResolvedValueOnce('no_immersive_activity');
+    load('quest');
+
+    mountImmersiveRoot();
+    await settle();
+    mountImmersiveRoot();
+    await settle();
+
+    expect(mockRequest).toHaveBeenCalledTimes(2);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('keeps the scene and does not re-prompt after a denial', async () => {
+    mockDeclared = [{ name: HORIZON, granted: false }];
+    mockRequest.mockResolvedValue('denied');
+    load('quest');
+
+    for (let i = 0; i < 3; i++) {
+      expect(mountImmersiveRoot().type).toBe(Scene);
+      await settle();
+    }
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
   });
 });

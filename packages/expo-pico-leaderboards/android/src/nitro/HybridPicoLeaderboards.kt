@@ -210,8 +210,11 @@ class HybridPicoLeaderboards : HybridPicoLeaderboardsSpec() {
   companion object : HybridPicoLeaderboardsSpec.Companion {
     override fun constructor(): HybridPicoLeaderboards = HybridPicoLeaderboards()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
 
     /** Page size when `GetEntriesOptions.pageSize` is not set. */
     const val DEFAULT_PAGE_SIZE = 20
