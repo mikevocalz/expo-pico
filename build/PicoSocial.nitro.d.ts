@@ -51,7 +51,7 @@ export interface InviteReceivedEvent {
     data: Record<string, string>;
 }
 /**
- * accept/decline/block/unblock were removed in PPS 1.0.x. They stay on the
+ * accept/decline/block/unblock were removed in PPS 1.x. They stay on the
  * interface as typed seams returning NOT_IN_PPS_1_0 so a future PPS release
  * can wire them without a breaking API change.
  */

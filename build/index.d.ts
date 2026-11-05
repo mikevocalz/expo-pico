@@ -17,18 +17,18 @@ export declare function setPresence(options: PresenceOptions): Promise<void>;
 export declare function clearPresence(): Promise<void>;
 export declare function sendInvites(options: InviteOptions): Promise<import("./PicoSocial.nitro").SentInvite[]>;
 /**
- * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * Unavailable on PPS 1.x: warns once with `NOT_IN_PPS_1_0` and never fires.
  * PPS has no presence-change push. Call `getFriendList()` when you need the
  * current friend list.
  */
 export declare function addFriendPresenceChangedListener(_listener: (event: FriendPresenceChangedEvent) => void): Subscription;
 /**
- * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * Unavailable on PPS 1.x: warns once with `NOT_IN_PPS_1_0` and never fires.
  * PPS has no friend-request push, and no API to list incoming requests.
  */
 export declare function addFriendRequestReceivedListener(_listener: (request: FriendRequest) => void): Subscription;
 /**
- * Unavailable on PPS 1.0.x: warns once with `NOT_IN_PPS_1_0` and never fires.
+ * Unavailable on PPS 1.x: warns once with `NOT_IN_PPS_1_0` and never fires.
  * An accepted invite reaches the app as a launch instead: read
  * `getLaunchDetails()` at startup and subscribe with
  * `addLaunchDetailsListener()`, then check for `launchType === 'invite'`.

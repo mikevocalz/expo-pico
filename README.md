@@ -1,6 +1,6 @@
 # expo-pico-social
 
-[![partial](https://img.shields.io/badge/PPS_1.0.x-partial-946200?style=flat-square)](../../README.md#packages)
+[![partial](https://img.shields.io/badge/PPS_1.x-partial-946200?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 PICO platform social APIs for Expo apps. Friends, presence, invites, and launch details on PICO OS 6 devices.
@@ -43,7 +43,7 @@ if (isAccountAvailable()) {
 ## Status
 
 - Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSocialClient` (plus the friend client) from `com.pico.pps:platform-service-social:1.0.0` and `…:friend:1.0.0` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
+- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSocialClient` (plus the friend client) from `com.pico.pps:platform-service-social:1.1.2` and `…:friend:1.1.2` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time.
 - Platform: Android only.
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
@@ -145,13 +145,13 @@ if (isSocialAvailable()) {
 | `getPendingFriendRequests()`           | Returns all pending incoming `FriendRequest[]`             |
 | `getLaunchDetails()`                   | Why the app was launched (invite, deep link, normal). Sync |
 | `addLaunchDetailsListener(cb)`         | Fires when a new launch intent arrives while running       |
-| `addFriendPresenceChangedListener(cb)` | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
-| `addFriendRequestReceivedListener(cb)` | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
-| `addInviteReceivedListener(cb)`        | Not in PPS 1.0.x. Warns `NOT_IN_PPS_1_0`, never fires      |
+| `addFriendPresenceChangedListener(cb)` | Not in PPS 1.x. Warns `NOT_IN_PPS_1_0`, never fires        |
+| `addFriendRequestReceivedListener(cb)` | Not in PPS 1.x. Warns `NOT_IN_PPS_1_0`, never fires        |
+| `addInviteReceivedListener(cb)`        | Not in PPS 1.x. Warns `NOT_IN_PPS_1_0`, never fires        |
 
 ## Events
 
-PPS 1.0.x has one push mechanism on the social side:
+PPS 1.x has one push mechanism on the social side:
 `ISocialClient.setLaunchIntentChangeCallback`. `addLaunchDetailsListener()` is
 wired to it. The native module calls `PicoSocialClient.init(activity)` so PPS
 sees the launch intent, and forwards intents from `onNewIntent` to PPS, which
@@ -163,7 +163,7 @@ matching listeners stay exported so existing code compiles, but each logs one
 `NOT_IN_PPS_1_0` warning and returns a subscription that never fires.
 
 - Presence: call `getFriendList()` when you need current state.
-- Friend requests: PPS 1.0.x has no API for incoming requests at all.
+- Friend requests: PPS 1.x has no API for incoming requests at all.
 - Invites: an accepted invite launches (or re-launches) the app. Read
   `getLaunchDetails()` and `addLaunchDetailsListener()` for
   `launchType === 'invite'`.
