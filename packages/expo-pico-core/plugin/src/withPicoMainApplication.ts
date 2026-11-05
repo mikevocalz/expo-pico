@@ -1,4 +1,6 @@
 import { ConfigPlugin, withMainApplication } from '@expo/config-plugins';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import {
   PICO_MAIN_APP_FLAGS_IMPORT_MARKER,
@@ -48,6 +50,10 @@ export function injectIntoKotlinMainApplication(
   );
 }
 
+const VIRO_PACKAGE = '@reactvision/react-viro';
+
+type PluginConfig = { plugins?: unknown[]; _internal?: { [k: string]: unknown } };
+
 /**
  * True when `@reactvision/react-viro` is a config plugin, which generates the
  * immersive `VRActivity` that shares the app's ReactHost. A quest-only app
@@ -55,11 +61,52 @@ export function injectIntoKotlinMainApplication(
  * needs the flag guard: without it, entering XR on a Quest 3S crashed with
  * `AssertionError: Pausing an activity that is not the current activity ...
  * Current activity: VRActivity Paused activity: MainActivity`.
+ *
+ * Matches the package name, a subpath of it, a relative or absolute path into
+ * the package, and the plugin function itself.
  */
-export function usesViroVrActivity(config: { plugins?: unknown[] }): boolean {
-  return (config.plugins ?? []).some(
-    (entry) => (Array.isArray(entry) ? entry[0] : entry) === '@reactvision/react-viro'
-  );
+export function usesViroVrActivity(config: PluginConfig): boolean {
+  const root = config._internal?.projectRoot;
+  const projectRoot = typeof root === 'string' ? root : process.cwd();
+  return (config.plugins ?? []).some((entry) => {
+    const plugin = Array.isArray(entry) ? entry[0] : entry;
+    if (typeof plugin === 'string') return pluginPackageName(plugin, projectRoot) === VIRO_PACKAGE;
+    if (typeof plugin === 'function') return plugin === viroPluginFunction(projectRoot);
+    return false;
+  });
+}
+
+/** The npm package a string plugin entry belongs to, or null if none is found. */
+function pluginPackageName(entry: string, projectRoot: string): string | null {
+  if (!entry.startsWith('.') && !path.isAbsolute(entry)) {
+    const parts = entry.split('/');
+    return entry.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+  }
+  let dir = path.resolve(projectRoot, entry);
+  while (dir !== path.dirname(dir)) {
+    const pkgJson = path.join(dir, 'package.json');
+    if (fs.existsSync(pkgJson)) {
+      try {
+        return (JSON.parse(fs.readFileSync(pkgJson, 'utf8')) as { name?: string }).name ?? null;
+      } catch {
+        return null;
+      }
+    }
+    dir = path.dirname(dir);
+  }
+  return null;
+}
+
+/** react-viro's config plugin function as the project resolves it, or null. */
+function viroPluginFunction(projectRoot: string): unknown {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require(require.resolve(`${VIRO_PACKAGE}/app.plugin.js`, { paths: [projectRoot] }));
+    // The same unwrap Expo applies when it loads a plugin module.
+    return (mod as { default?: unknown }).default ?? mod;
+  } catch {
+    return null;
+  }
 }
 
 /**

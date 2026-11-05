@@ -228,3 +228,45 @@ describe('immersive activity tracker install', () => {
     expect(kt).toMatch(/@JvmStatic\s+@Synchronized\s+fun install\(application: Application\)/);
   });
 });
+
+describe('usesViroVrActivity with path and function plugin entries', () => {
+  // A path or function entry for react-viro skipped the flag guard, and the
+  // Quest crash fixed in 38f5356 came back: "Pausing an activity that is not
+  // the current activity".
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { usesViroVrActivity } = require('../plugin/src/withPicoMainApplication');
+  const path = require('path') as typeof import('path');
+  const projectRoot = path.resolve(__dirname, '..', '..', '..', 'example');
+  const withRoot = (plugins: unknown[]) => ({ plugins, _internal: { projectRoot } });
+
+  it('matches a subpath of the package', () => {
+    expect(usesViroVrActivity(withRoot(['@reactvision/react-viro/app.plugin']))).toBe(true);
+    expect(usesViroVrActivity(withRoot([['@reactvision/react-viro/app.plugin.js', {}]]))).toBe(
+      true
+    );
+  });
+
+  it('matches a relative or absolute path into the package', () => {
+    const rel = '../node_modules/@reactvision/react-viro/app.plugin.js';
+    expect(usesViroVrActivity(withRoot([rel]))).toBe(true);
+    expect(usesViroVrActivity(withRoot([path.resolve(projectRoot, rel)]))).toBe(true);
+  });
+
+  it('matches the plugin function itself', () => {
+    // What `import withViro from '@reactvision/react-viro/app.plugin'` gives.
+    const mod = require(
+      require.resolve('@reactvision/react-viro/app.plugin.js', {
+        paths: [projectRoot],
+      })
+    );
+    const withViro = mod.default ?? mod;
+    expect(typeof withViro).toBe('function');
+    expect(usesViroVrActivity(withRoot([withViro]))).toBe(true);
+    expect(usesViroVrActivity(withRoot([[withViro, { xRMode: ['QUEST'] }]]))).toBe(true);
+  });
+
+  it('does not match other plugins', () => {
+    expect(usesViroVrActivity(withRoot(['./plugins/withSomething', () => ({})]))).toBe(false);
+    expect(usesViroVrActivity(withRoot(['@reactvision/react-viro-extras']))).toBe(false);
+  });
+});
