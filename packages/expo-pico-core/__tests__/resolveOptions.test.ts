@@ -209,9 +209,10 @@ describe('placeholder PICO app IDs', () => {
     );
     // An unset ID is not a placeholder: the pico flavor still builds, with no
     // Platform Service identity.
-    for (const options of [{ picoAppId: '' }, {}]) {
+    for (const options of [{ picoAppId: '' }, { picoAppId: undefined }, {}]) {
       const result = resolveOptions(options);
       expect(result.isPicoEnabled).toBe(true);
+      expect(result.picoAppId).toBe('');
       expect(result.platformService.picoAppId).toBeNull();
     }
   });

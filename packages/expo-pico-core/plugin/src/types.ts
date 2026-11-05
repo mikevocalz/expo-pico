@@ -725,6 +725,9 @@ export function resolveOptions(options: PicoPluginOptions = {}): ResolvedPicoOpt
   return {
     ...PICO_OPTION_DEFAULTS,
     ...options,
+    // `...options` copies an explicit `picoAppId: undefined` (an unset env var
+    // in app.config) over the default; withPicoStrings needs a string.
+    picoAppId: nonEmpty(options.picoAppId) ?? '',
     isPicoEnabled,
     buildVariant,
     xrMode,
