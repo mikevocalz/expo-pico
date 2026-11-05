@@ -25,8 +25,6 @@ data class NotificationPermissionResult(
   @Keep
   val prompted: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is NotificationPermissionResult) return false

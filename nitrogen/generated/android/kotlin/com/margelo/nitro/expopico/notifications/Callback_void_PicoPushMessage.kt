@@ -42,7 +42,8 @@ class Callback_void_PicoPushMessage @DoNotStrip @Keep private constructor(hybrid
   }
 
   /**
-   * Lets C++ call a Kotlin callback with JNI types, e.g. `Long` instead of `ULong`.
+   * Lets C++ call a callback implemented in Kotlin through a JNI entry point.
+   * C++ creates it when such a callback crosses JNI.
    */
   @DoNotStrip
   @Keep
@@ -65,30 +66,4 @@ class Callback_void_PicoPushMessage @DoNotStrip @Keep private constructor(hybrid
   @DoNotStrip
   @Keep
   private external fun callAndForget_cxx(message: PicoPushMessage): Unit
-
-  companion object {
-    /**
-     * Returns the given [callback] as its JNI representation.
-     * A callback from another module keeps its C++ `Callback<...>`, and
-     * a callback created in Kotlin is wrapped in a C++ `Callback<...>` that calls it.
-     */
-    @JvmStatic
-    fun fromKotlin(callback: Callback<(message: PicoPushMessage) -> Unit>): Callback_void_PicoPushMessage {
-      return when (callback) {
-        is Callback_void_PicoPushMessage -> callback
-        is CxxCallback -> fromCxx_cxx(callback)
-        else -> fromFunction_cxx(Function_cxx(callback))
-      }
-    }
-
-    @JvmStatic
-    @DoNotStrip
-    @Keep
-    private external fun fromCxx_cxx(callback: CxxCallback): Callback_void_PicoPushMessage
-
-    @JvmStatic
-    @DoNotStrip
-    @Keep
-    private external fun fromFunction_cxx(function: Function_cxx): Callback_void_PicoPushMessage
-  }
 }

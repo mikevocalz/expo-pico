@@ -193,7 +193,10 @@ class HybridPicoNotifications : HybridPicoNotificationsSpec() {
   companion object : HybridPicoNotificationsSpec.Companion {
     override fun constructor(): HybridPicoNotifications = HybridPicoNotifications()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.3"
   }
 }
