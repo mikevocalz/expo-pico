@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import {
   PPS_ALL_SERVICES,
   PPS_GROUP,
@@ -220,44 +223,77 @@ describe('renderLocalAarBlock', () => {
 });
 
 describe('pinned PPS versions', () => {
-  // Stable versions listed in each artifact's maven-metadata.xml on
-  // https://artifact.bytedance.com/repository/Volcengine/com/pico/pps/,
-  // read 2026-11-04. Pre-releases (alpha, rc) left out. A pin outside this
-  // list asks Gradle for a coordinate that does not exist.
-  const PUBLISHED: Record<string, string[]> = {
-    pps_sdk_base: ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3'],
-    'platform-service-achievement': ['0.0.1', '0.0.3', '1.0.0', '1.1.1', '1.1.2'],
-    'platform-service-auth': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
-    'platform-service-compliance': ['1.0.0'],
-    'platform-service-entitlement': ['1.0.0'],
-    'platform-service-friend': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
-    'platform-service-iap': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
-    'platform-service-leaderboard': ['0.0.1', '0.0.3', '1.0.0', '1.1.2'],
-    'platform-service-push': ['1.0.0', '1.1.2', '1.1.3'],
-    'platform-service-social': ['0.0.1', '0.0.3', '1.0.0', '1.1.0', '1.1.1', '1.1.2'],
-    'platform-service-speech': ['1.0.0'],
-    'platform-service-sport': ['1.0.0', '1.1.3'],
+  // __tests__/fixtures/pps/ holds verbatim copies of the Volcengine repo
+  // (https://artifact.bytedance.com/repository/Volcengine/com/pico/pps/),
+  // fetched 2026-11-04:
+  //   metadata/<artifact>.xml        <artifact>/maven-metadata.xml
+  //   pom/<artifact>-<version>.pom   the POM of each pinned coordinate
+  // maven-metadata.xml's <release> and <latest> are often pre-releases
+  // (platform-service-iap says 1.1.3-alpha.0), so the newest stable release is
+  // taken from <versions>. The POM is what shows a coordinate was published.
+  // To refresh after a PICO release, re-download both and update the pins.
+  const FIXTURES = path.join(__dirname, 'fixtures/pps');
+  const read = (...parts: string[]) => fs.readFileSync(path.join(FIXTURES, ...parts), 'utf8');
+  const tag = (xml: string, name: string) =>
+    [...xml.matchAll(new RegExp(`<${name}>([^<]+)</${name}>`, 'g'))].map((m) => m[1]);
+  const STABLE = /^\d+\.\d+\.\d+$/;
+  const byVersion = (a: string, b: string) => {
+    const [x, y] = [a, b].map((v) => v.split('.').map(Number));
+    for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i];
+    return 0;
   };
+  const PINNED = ['pps_sdk_base', ...PPS_ALL_SERVICES.map((s) => `platform-service-${s}`)];
+  const stableVersions = (name: string) =>
+    tag(read('metadata', `${name}.xml`), 'version').filter((v) => STABLE.test(v));
+  const pom = (name: string, version: string) => read('pom', `${name}-${version}.pom`);
+  // The pps_sdk_base version a service POM asks for.
+  const baseInPom = (xml: string) =>
+    xml.match(/<artifactId>pps_sdk_base<\/artifactId>\s*<version>([^<]+)<\/version>/)?.[1];
 
-  it('pins every module to a version that was published', () => {
-    for (const [name, versions] of Object.entries(PUBLISHED)) {
-      expect(versions).toContain(ppsPinnedVersion(name));
+  it('has a metadata fixture for every pinned module and nothing else', () => {
+    const files = fs
+      .readdirSync(path.join(FIXTURES, 'metadata'))
+      .map((f) => f.replace(/\.xml$/, ''));
+    expect(files.sort()).toEqual([...PINNED].sort());
+    for (const name of PINNED) {
+      expect(tag(read('metadata', `${name}.xml`), 'artifactId')).toEqual([name]);
+    }
+  });
+
+  it('pins every module to a version its maven-metadata.xml lists', () => {
+    for (const name of PINNED) {
+      expect(stableVersions(name)).toContain(ppsPinnedVersion(name));
     }
   });
 
   it('pins every module to its newest stable release', () => {
-    const newest = (versions: string[]) =>
-      [...versions].sort((a, b) => {
-        const [x, y] = [a, b].map((v) => v.split('.').map(Number));
-        for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i];
-        return 0;
-      })[versions.length - 1];
-    for (const [name, versions] of Object.entries(PUBLISHED)) {
-      expect(`${name}:${ppsPinnedVersion(name)}`).toBe(`${name}:${newest(versions)}`);
+    for (const name of PINNED) {
+      const newest = [...stableVersions(name)].sort(byVersion).pop();
+      expect(`${name}:${ppsPinnedVersion(name)}`).toBe(`${name}:${newest}`);
     }
   });
 
-  it('renders only published coordinates for the full-set fallback', () => {
+  it('has a published POM for every pinned coordinate', () => {
+    for (const name of PINNED) {
+      const version = ppsPinnedVersion(name)!;
+      const xml = pom(name, version);
+      expect(tag(xml, 'groupId')[0]).toBe(PPS_GROUP);
+      expect(tag(xml, 'artifactId')[0]).toBe(name);
+      expect(tag(xml, 'version')[0]).toBe(version);
+    }
+  });
+
+  it('pins pps_sdk_base to the newest base any pinned service POM asks for', () => {
+    const asked = PPS_ALL_SERVICES.map((s) => {
+      const name = `platform-service-${s}`;
+      const base = baseInPom(pom(name, ppsPinnedVersion(name)!));
+      expect(`${name}:${base}`).toMatch(/:\d+\.\d+\.\d+$/);
+      return base!;
+    });
+    expect(asked.sort(byVersion).pop()).toBe(PPS_VERSION);
+  });
+
+  it('renders only coordinates with a published POM for the full-set fallback', () => {
     const block = renderPpsDependenciesBlock(
       resolvePpsServices(null, () => false),
       DEPS_MARKER
@@ -266,7 +302,7 @@ describe('pinned PPS versions', () => {
     const rendered = [...block.matchAll(coordinate)];
     expect(rendered.length).toBeGreaterThan(PPS_ALL_SERVICES.length);
     for (const [, name, version] of rendered) {
-      expect(PUBLISHED[name]).toContain(version);
+      expect(() => pom(name, version)).not.toThrow();
     }
   });
 });
