@@ -40,8 +40,6 @@ data class ActiveSubscription(
   @Keep
   val status: EntitlementStatus
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is ActiveSubscription) return false
