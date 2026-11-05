@@ -40,6 +40,8 @@ const platform_service_common_1 = require("@expo-pico/platform-service-common");
 const PicoSpatial_nitro_1 = require("./PicoSpatial.nitro");
 __exportStar(require("./types"), exports);
 __exportStar(require("./layout"), exports);
+__exportStar(require("./shell"), exports);
+__exportStar(require("./mainContent"), exports);
 const layout_1 = require("./layout");
 const PKG = '@expo-pico/spatial';
 const NO_CAPABILITIES = {

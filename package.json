@@ -18,6 +18,13 @@
       "types": "./plugin/build/src/withPicoSpatial.d.ts"
     }
   },
+  "typesVersions": {
+    "*": {
+      "plugin": [
+        "./plugin/build/src/withPicoSpatial.d.ts"
+      ]
+    }
+  },
   "keywords": [
     "expo",
     "pico",
@@ -42,8 +49,8 @@
     "@expo-pico/core": ">=1.1.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
-    "react-native-nitro-modules": "*",
-    "nitro-core": "*",
+    "react-native-nitro-modules": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "nitro-core": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
     "@expo-pico/platform-service-common": "^1.0.0"
   },
   "peerDependenciesMeta": {
@@ -75,8 +82,8 @@
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
   },
-  "gitHead": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1",
+  "gitHead": "853bdad57e665c00e2a63a9f1287fb8102a47cce",
   "expoPico": {
-    "sourceCommit": "9be55e4ea3cc32e69424c50aa4101a1a9f0cefd1"
+    "sourceCommit": "853bdad57e665c00e2a63a9f1287fb8102a47cce"
   }
 }

@@ -25,8 +25,6 @@ data class SpatialPose(
   @Keep
   val orientation: SpatialQuat
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialPose) return false

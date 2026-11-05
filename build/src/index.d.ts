@@ -2,6 +2,8 @@ import { type Subscription } from '@expo-pico/platform-service-common';
 import type { PicoSpaceState, PicoContainerType, SpatialCapabilities, SpatialAnchorHandle, SpatialPose, WindowContainerProperties, GazePose, SceneMesh, FaceBlendShapes, BodyJoint } from './types';
 export * from './types';
 export * from './layout';
+export * from './shell';
+export * from './mainContent';
 import { type PicoSpatialLayoutBridgeStatus } from './layout';
 /**
  * Current space state.

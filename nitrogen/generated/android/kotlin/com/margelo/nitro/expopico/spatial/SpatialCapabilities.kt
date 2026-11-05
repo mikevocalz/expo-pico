@@ -37,8 +37,6 @@ data class SpatialCapabilities(
   @Keep
   val spatialSdkAvailable: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialCapabilities) return false

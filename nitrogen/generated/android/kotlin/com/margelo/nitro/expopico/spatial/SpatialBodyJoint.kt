@@ -28,8 +28,6 @@ data class SpatialBodyJoint(
   @Keep
   val rotation: SpatialQuat
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialBodyJoint) return false
