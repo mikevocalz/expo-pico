@@ -125,8 +125,7 @@ abstract class HybridPicoAccountSpec: HybridObject() {
     @DoNotStrip
     @Keep
     private fun constructor_cxx(): HybridPicoAccountSpec {
-      val __result = HybridPicoAccount.constructor()
-      return __result
+      return HybridPicoAccount.constructor()
     }
   }
 }

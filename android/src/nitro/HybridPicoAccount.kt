@@ -60,8 +60,8 @@ class HybridPicoAccount : HybridPicoAccountSpec() {
    * The PPS line this build compiled against.
    *
    * Deliberately the pinned constant rather than something read off the
-   * device: `expo-pico-core` pins every `com.pico.pps:*` coordinate to one
-   * version, so this is what is actually on the classpath. Reporting a
+   * device: `expo-pico-core` pins each `com.pico.pps:*` service to a
+   * single version, so this is what is actually on the classpath. Reporting a
    * device-side number here would describe the PICO OS service, which is a
    * different thing and is what `sdkStatus` covers.
    */
@@ -230,7 +230,10 @@ class HybridPicoAccount : HybridPicoAccountSpec() {
   companion object : HybridPicoAccountSpec.Companion {
     override fun constructor(): HybridPicoAccount = HybridPicoAccount()
 
-    /** Kept in step with `PPS_VERSION` in `plugin/src/ppsArtifacts.ts`. */
-    const val PPS_VERSION = "1.0.0"
+    /**
+     * This package's PPS service version. Kept in step with
+     * `PPS_SERVICE_VERSIONS` in expo-pico-core's `plugin/src/ppsArtifacts.ts`.
+     */
+    const val PPS_VERSION = "1.1.2"
   }
 }
