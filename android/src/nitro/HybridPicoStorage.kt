@@ -77,7 +77,7 @@ class HybridPicoStorage : HybridPicoStorageSpec() {
 
   private fun notInPps(what: String): Throwable =
     UnsupportedOperationException(
-      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.0.x " +
+      "NOT_IN_PPS_1_0: $what has no PICO Platform Service backing. PPS 1.x " +
         "publishes no cloud-storage artifact."
     )
 

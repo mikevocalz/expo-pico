@@ -1,15 +1,15 @@
 # expo-pico-storage
 
-[![unavailable](https://img.shields.io/badge/PPS_1.0.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
+[![unavailable](https://img.shields.io/badge/PPS_1.x-unavailable-6B7280?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Typed seam for PICO platform cloud storage on PICO OS 6.
 
 > Part of the [`expo-pico`](https://github.com/mikevocalz/expo-pico) package family.
 
-> ## Unavailable on PPS 1.0.x
+> ## Unavailable on PPS 1.x
 >
-> **PPS 1.0.x removed cloud storage.** No `platform-service-storage` artifact
+> **PPS 1.x removed cloud storage.** No `platform-service-storage` artifact
 > exists on the PICO repo, so there is nothing to reverse-engineer or wire up.
 > Every async method rejects with `NOT_IN_PPS_1_0` regardless of build flavor
 > or hardware. `ppsArtifacts.ts` maps `@expo-pico/storage` to an empty service
@@ -44,7 +44,7 @@ plugins: [
 ## Status
 
 - Maturity: typed seam, not a working integration.
-- PICO Platform Service SDK (PPS) linkage: **none.** PPS 1.0.x ships no storage
+- PICO Platform Service SDK (PPS) linkage: **none.** PPS 1.x ships no storage
   artifact, so `expo-pico-core`'s Gradle plugin adds no storage dependency and
   every method rejects with `NOT_IN_PPS_1_0`. This is unaffected by build
   flavor, hardware, or Gradle connectivity — the earlier claim that it was

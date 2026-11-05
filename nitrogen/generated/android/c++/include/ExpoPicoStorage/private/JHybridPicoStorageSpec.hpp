@@ -98,9 +98,9 @@ namespace margelo::nitro::expopico::storage {
     jni::local_ref<JTypedPromise<jni::local_ref<JStorageSyncResult>>> syncStorage();
     jni::local_ref<JTypedPromise<jni::local_ref<JStorageQuota>>> getStorageQuota();
     jni::local_ref<JTypedPromise<void>> clearLocalCache();
-    jdouble addStorageConflictListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart>& listener);
-    jdouble addStorageSyncProgressListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart>& listener);
-    jdouble addStorageSyncCompleteListener(const jni::local_ref<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart>& listener);
+    jdouble addStorageConflictListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageConflictEvent::JavaPart>>& listener);
+    jdouble addStorageSyncProgressListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncProgressEvent::JavaPart>>& listener);
+    jdouble addStorageSyncCompleteListener(const jni::local_ref<JCallback<margelo::nitro::expopico::storage::JCallback_void_StorageSyncResult::JavaPart>>& listener);
     void removeListener(jdouble id);
 
   public:

@@ -7,9 +7,10 @@
 
 #pragma once
 
+#include <NitroModules/JCallback.hpp>
 #include <NitroModules/JNICallable.hpp>
 #include <NitroModules/JNICallback.hpp>
-#include <NitroModules/JSIConverter+JNICallback.hpp>
+#include <NitroModules/JSIConverter+JCallback.hpp>
 #include <NitroModules/JNIConverter+Promise.hpp>
 #include <NitroModules/JSIConverter+JTypedPromise.hpp>
 #include <ExpoPicoStorage/private/JStorageConflictEvent.hpp>
@@ -30,19 +31,20 @@ namespace margelo::nitro::expopico::storage {
      */
     struct JFunction_cxx : jni::JavaClass<JFunction_cxx> {
       static constexpr auto kJavaDescriptor = "Lcom/margelo/nitro/expopico/storage/Callback_void_StorageConflictEvent$Function_cxx;";
+      static jni::local_ref<JFunction_cxx> create(jni::alias_ref<JCallback<JavaPart>> callback);
       JNIRetainedValue<void>::Type invoke(JNIRetainedValue<jni::local_ref<margelo::nitro::expopico::storage::JStorageConflictEvent>>::Type event) const;
     };
 
   public:
     static jni::local_ref<JavaPart> create(CallbackType callback);
+    /** Wraps a callback implemented in Kotlin in a C++ `Callback<...>`. */
+    static CallbackType fromKotlin(jni::alias_ref<JCallback<JavaPart>> callback);
     static void registerNatives();
 
   private:
     void callSync_cxx(jni::alias_ref<JStorageConflictEvent> event);
     jni::local_ref<JTypedPromise<void>> callAsync_cxx(jni::alias_ref<JStorageConflictEvent> event);
     void callAndForget_cxx(jni::alias_ref<JStorageConflictEvent> event);
-    static jni::local_ref<JavaPart> fromCxx_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JCxxCallback::javaobject> callback);
-    static jni::local_ref<JavaPart> fromFunction_cxx(jni::alias_ref<jni::JClass>, jni::alias_ref<JFunction_cxx> function);
 
   private:
     friend HybridBase;

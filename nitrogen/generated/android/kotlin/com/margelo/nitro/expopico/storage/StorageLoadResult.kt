@@ -31,8 +31,6 @@ data class StorageLoadResult(
   @Keep
   val found: Boolean
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageLoadResult) return false

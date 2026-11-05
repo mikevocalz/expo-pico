@@ -25,8 +25,6 @@ data class StorageSaveOptions(
   @Keep
   val maxBytes: Double?
 ) {
-
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSaveOptions) return false
