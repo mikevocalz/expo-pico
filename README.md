@@ -1,6 +1,6 @@
 # Your new PICO app
 
-[![n/a](https://img.shields.io/badge/PPS_1.0.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
+[![n/a](https://img.shields.io/badge/PPS_1.x-n%2Fa-0B0B0C?style=flat-square)](../../README.md#packages)
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](../../docs/FAQ.md)
 
 Welcome. This project was bootstrapped from [`expo-pico-template`](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-template) and ships with everything wired to build and install on PICO 4 / 4 Ultra / Swan.
@@ -47,7 +47,7 @@ export PICO_PLATFORM_APP_ID=your-app-id
 export PICO_PLATFORM_APP_KEY=your-app-key
 ```
 
-You get these by registering at [developer.picoxr.com](https://developer.picoxr.com/). The app will still build and launch without them. Any PICO Platform Service SDK (PPS) call (account, IAP, etc.) returns `SERVICE_UNAVAILABLE` until you set the identity env vars and rebuild. The PPS Maven artifacts (`com.pico.pps:platform-service-*:1.0.0`) themselves are pulled in automatically by `expo-pico-core`'s plugin from the public Bytedance Maven repo — no AAR drop is needed.
+You get these by registering at [developer.picoxr.com](https://developer.picoxr.com/). The app will still build and launch without them. Any PICO Platform Service SDK (PPS) call (account, IAP, etc.) returns `SERVICE_UNAVAILABLE` until you set the identity env vars and rebuild. The PPS Maven artifacts (`com.pico.pps:platform-service-*`) themselves are pulled in automatically by `expo-pico-core`'s plugin from the public Bytedance Maven repo — no AAR drop is needed.
 
 ## Adding sibling packages
 
