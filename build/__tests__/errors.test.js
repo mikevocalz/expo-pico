@@ -131,6 +131,26 @@ describe('wrapNativeCall', () => {
             code: 'UNKNOWN',
         });
     });
+    it.each([
+        'NOT_IMPLEMENTED: createSpatialAnchor has no native implementation',
+        'java.lang.IllegalStateException: NOT_IMPLEMENTED: getSceneMesh has no native implementation',
+    ])('preserves an unfinished native method rejection: %s', async (message) => {
+        await expect((0, errors_1.wrapNativeCall)('@expo-pico/spatial', 'getSceneMesh', Promise.reject(new Error(message)))).rejects.toMatchObject({
+            name: 'PicoServiceError',
+            code: errors_1.PicoErrorCode.NOT_IMPLEMENTED,
+            packageName: '@expo-pico/spatial',
+            methodName: 'getSceneMesh',
+        });
+    });
+    it('keeps a recognized structured code ahead of message classification', async () => {
+        await expect((0, errors_1.wrapNativeCall)('pkg', 'method', Promise.reject({
+            code: 'PERMISSION_DENIED',
+            message: 'NOT_IMPLEMENTED: nested diagnostic',
+        }))).rejects.toMatchObject({ code: errors_1.PicoErrorCode.PERMISSION_DENIED });
+    });
+    it('does not classify incidental NOT_IMPLEMENTED text as an error code', async () => {
+        await expect((0, errors_1.wrapNativeCall)('pkg', 'method', Promise.reject(new Error('unexpected NOT_IMPLEMENTED: text')))).rejects.toMatchObject({ code: errors_1.PicoErrorCode.UNKNOWN });
+    });
     it('wraps rejection from null as UNKNOWN', async () => {
         const rejection = Promise.reject(null);
         await expect((0, errors_1.wrapNativeCall)('pkg', 'method', rejection)).rejects.toMatchObject({
