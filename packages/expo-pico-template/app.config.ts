@@ -90,8 +90,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // highSamplingRateSensors: true,
       },
     ],
-    // Add sibling packages here as you install them:
-    // ['@expo-pico/account', {}],
+    // Add plugins exposed by sibling packages as you install them.
+    // Account autolinks and uses Core's configuration; it has no plugin.
     // ['@expo-pico/iap', {}],
     // ['@expo-pico/notifications', { requestPostNotificationsPermission: true }],
     // ['@expo-pico/rtc', { microphonePermission: true }],
