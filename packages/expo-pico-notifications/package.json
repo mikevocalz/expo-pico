@@ -53,7 +53,8 @@
     "provenance": true
   },
   "dependencies": {
-    "@expo-pico/platform-service-common": "^1.0.0"
+    "@expo-pico/platform-service-common": "^1.0.0",
+    "@expo/config-plugins": "~58.0.12"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

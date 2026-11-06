@@ -55,10 +55,10 @@
     "provenance": true
   },
   "dependencies": {
-    "@expo-pico/platform-service-common": "^1.0.0"
+    "@expo-pico/platform-service-common": "^1.0.0",
+    "@expo/config-plugins": "~58.0.12"
   },
   "devDependencies": {
-    "@expo/config-plugins": "~58.0.12",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.0.0",
     "@types/react": "19.3.0",
@@ -74,7 +74,7 @@
   },
   "peerDependencies": {
     "expo": ">=58.0.0 <59",
-    "@expo-pico/core": ">=1.1.0",
+    "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
     "react-native-nitro-modules": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",

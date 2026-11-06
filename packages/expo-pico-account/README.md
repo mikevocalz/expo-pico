@@ -28,17 +28,18 @@ empty results or `SERVICE_UNAVAILABLE` rather than throwing.
 ## Status
 
 - Maturity: alpha
-- PICO Platform Service SDK (PPS) linkage: live on `picoDebug` builds. `PicoSignInClient` from `com.pico.pps:platform-service-auth:1.1.2` is pulled automatically from the public Bytedance Maven repo by `expo-pico-core`'s plugin, so no AAR drop is needed. Bridge methods only return `SERVICE_UNAVAILABLE` on the `mobile` flavor, on non-PICO hardware, or if Gradle was offline at prebuild time (detected automatically; see [Runtime diagnostics](#runtime-diagnostics)).
+- PICO Platform Service SDK (PPS) linkage: `PicoSignInClient` from `com.pico.pps:platform-service-auth:1.1.2` is resolved automatically from Maven during PICO Gradle builds by Core's plugin. No local AAR is required. Runtime service availability depends on the build flavor and device; see [Runtime diagnostics](#runtime-diagnostics).
 - Platform: Android only (PICO is Android-only).
 - Runtime target: PICO OS 6 (PICO 4, 4 Ultra, Swan), New Architecture.
 
 ## Install
 
 ```bash
-yarn add @expo-pico/core @expo-pico/account react-native-nitro-modules
+npm install "github:mikevocalz/expo-pico#release/core" "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/account" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
 ```
 
-`expo-pico-core` is a peer dependency. It must be listed before `expo-pico-account` in your `app.config.ts` plugins array so the flavor manifest, launcher categories, and BuildConfig fields land first.
+Core is a peer dependency and supplies the config plugin. Account autolinks as
+a native module; it has no separate entry in the `app.config.ts` plugins array.
 
 ## Configure
 
@@ -60,7 +61,6 @@ export default {
         appType: 'vr',
       },
     ],
-    '@expo-pico/account',
   ],
 };
 ```

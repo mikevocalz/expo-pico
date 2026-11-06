@@ -16,7 +16,9 @@
 //   - @expo-pico/* `dependencies` moved to `peerDependencies` (pnpm 12 refuses
 //     git subdependencies), except in the app template, where they point at
 //     the matching release branch
-//   - `scripts` and `devDependencies` removed, so nothing builds at install
+//   - library scripts/devDependencies removed; app templates retain their
+//     commands and development dependencies, without package lifecycle hooks
+//   - the pinned Eskiu runtime compiled into core before publication
 //   - `gitHead` and `expoPico.sourceCommit` set to the source commit
 //
 // Short names: the @expo-pico/ scope is dropped (`@expo-pico/core` -> `core`,
@@ -38,6 +40,8 @@ import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildEskiuRuntime } from './lib/build-eskiu-runtime.mjs';
+import { isAppTemplate, prepareReleaseManifest } from './lib/release-manifest.mjs';
 
 const { prepareHorizonCore } = createRequire(import.meta.url)('./lib/android-patches.cjs');
 
@@ -83,8 +87,6 @@ function shortName(pkgName) {
   if (pkgName.startsWith('@expo-pico/')) return pkgName.slice('@expo-pico/'.length);
   throw new Error(`No short-name rule for ${pkgName}`);
 }
-// Packages whose manifest is copied into a new app rather than installed.
-const APP_TEMPLATES = new Set(['@expo-pico/template']);
 const releaseSpec = (pkgName) => `github:${REPO_SLUG}#${BRANCH_PREFIX}${shortName(pkgName)}`;
 
 // ---------------------------------------------------------------------------
@@ -131,8 +133,9 @@ function packInto(packArgs, cwd, stageDir) {
 
 // npm 10 (bundled with Node 22) runs `prepare` during `npm pack` even with
 // --ignore-scripts, and its output lands on stdout ahead of the --json report.
-// Pack a copy of the package with `scripts` removed so no npm version can run
-// a lifecycle script. The workflow has already run `yarn build`.
+// Pack a copy without lifecycle scripts so no npm version can run them.
+// Template commands are needed by the generated app. The workflow has
+// already run `yarn build`.
 function packWorkspace(dir, stageDir) {
   const copy = mkdtempSync(join(tmpdir(), 'expo-pico-src-'));
   const skip = new Set(['node_modules', '.gradle', '.cxx', '.turbo']);
@@ -142,7 +145,7 @@ function packWorkspace(dir, stageDir) {
   });
   const manifestFile = join(copy, 'package.json');
   const manifest = readJson(manifestFile);
-  delete manifest.scripts;
+  prepareReleaseManifest(manifest);
   writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
   packInto([], copy, stageDir);
   rmSync(copy, { recursive: true, force: true });
@@ -155,7 +158,7 @@ function rewriteManifest(stageDir) {
   for (const field of ['dependencies', 'optionalDependencies']) {
     for (const [dep, range] of Object.entries(m[field] ?? {})) {
       if (!isInternal(dep)) continue;
-      if (APP_TEMPLATES.has(m.name)) {
+      if (isAppTemplate(m)) {
         // A template's package.json becomes the app's root manifest, where a
         // git dependency is a direct dependency and installs fine.
         m[field][dep] = releaseSpec(dep);
@@ -171,8 +174,7 @@ function rewriteManifest(stageDir) {
   }
   // Peer ranges stay semver: a git-installed package still reports its
   // package.json version, so `>=1.0.0` is satisfied by release/core.
-  delete m.scripts;
-  delete m.devDependencies;
+  prepareReleaseManifest(m);
   m.gitHead = sourceSha;
   m.expoPico = { ...(m.expoPico ?? {}), sourceCommit: sourceSha };
   writeFileSync(file, JSON.stringify(m, null, 2) + '\n');
@@ -210,6 +212,10 @@ for (const [name, w] of selected) {
     for (const part of ['cmake', 'include', 'src']) {
       cpSync(join(eskiu, part), join(dest, part), { recursive: true });
     }
+    const { manifest } = buildEskiuRuntime(dest, { sourceCommit: sourceSha });
+    console.log(
+      `Compiled Eskiu ${manifest.compilerVersion} for ${manifest.abi}: ${manifest.objectSha256}`
+    );
   }
 
   const m = rewriteManifest(stageDir);
@@ -245,6 +251,16 @@ for (const [name, w] of selected) {
   cpSync(join(questDir, 'release/app.plugin.js'), join(stageDir, 'app.plugin.js'));
 
   const m = rewriteManifest(stageDir);
+  // Bundled Quest plugin code imports this at runtime. Declare it directly
+  // so isolated pnpm installs resolve it without a monorepo hoist.
+  const questManifest = readJson(join(questDir, 'package.json'));
+  const configPluginsVersion =
+    questManifest.dependencies?.['@expo/config-plugins'] ??
+    questManifest.devDependencies?.['@expo/config-plugins'];
+  if (!/^\d+\.\d+\.\d+$/.test(configPluginsVersion ?? '')) {
+    throw new Error('expo-horizon-quest must pin @expo/config-plugins exactly');
+  }
+  m.dependencies = { ...(m.dependencies ?? {}), '@expo/config-plugins': configPluginsVersion };
   m.files = [...new Set([...(m.files ?? []), 'quest'])];
   m.expoPico.upstream = `expo-horizon-core@${version}`;
   writeFileSync(join(stageDir, 'package.json'), JSON.stringify(m, null, 2) + '\n');

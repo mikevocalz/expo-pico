@@ -34,13 +34,9 @@ For a step-by-step porting guide (including a JSX-component mapping table for th
 
 ## 5. Which renderer should I use?
 
-`@reactvision/react-viro`. That's what the example app uses, and the only renderer we run end-to-end CI against. The plugin touches only config / manifest / Gradle (never rendering code), so other OpenXR-loader renderers also work:
+The starter is a native React Native panel and does not need a 3D renderer. For an immersive scene, the example integrates `@reactvision/react-viro`; install a release containing its matching native renderer and bridge artifacts. Follow [Installing from GitHub](./INSTALL-FROM-GITHUB.md) and the [template's renderer setup](../packages/expo-pico-template/README.md#adding-a-3d-renderer).
 
-- `@reactvision/react-viro` (example app; Khronos BrainStem glTF loads through `<Viro3DObject>`; ships immersive on PICO and Meta Quest from one APK). The example pins the stock npm release — no fork and no patches.
-- Unity-as-a-Library
-- Any custom renderer that binds to the system OpenXR loader
-
-List `expo-pico-core` before `@reactvision/react-viro` in `app.config.ts`'s plugins array so the flavor manifest lands first. Viro's plugin additions then merge on top.
+The PICO plugin configures the Android project. It does not turn React Native views into a 3D scene or implement tracking APIs. A different renderer must provide its own PICO-compatible OpenXR integration.
 
 ## 6. Why is `expo-pico-core`'s version 0.1.x but the first release goes to 1.0.0?
 
@@ -48,18 +44,17 @@ Changesets cascades peer-dep changes as major bumps per strict semver (hardcoded
 
 The plugin option API itself is strictly additive. Every option defaults off or tracks an existing option. Configs written for `0.1.x` keep working unchanged on `1.0.0`. The major version reflects install-visible manifest / Gradle changes (launcher contract, ABI filter, `<uses-native-library>`), not a breaking API.
 
-## 7. Do I need the PICO Platform SDK AAR to use this?
+## 7. Do I need to download or rebuild an AAR for every app build?
 
-No for the basics: `expo-pico-core` alone gets you flavor manifests, launcher categories, BuildConfig fields, runtime device detection, and the full prebuild + runtime diagnostics, all without any PICO-proprietary binary.
+No. Install the [GitHub release packages](./INSTALL-FROM-GITHUB.md), configure the plugin, and run the normal Expo Android build. The core release includes its generated Nitro bindings and compiled Eskiu runtime. Reinstalling dependencies or running `expo prebuild --clean` should not require a separate compiler or manual AAR staging.
 
-No for the modern PPS-backed siblings either: account, IAP, notifications, rooms, RTC, leaderboards, achievements, storage, social, subscription. PICO publishes the Platform Service SDK (PPS) as public Maven artifacts — `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,leaderboard,push,entitlement,compliance,sport,speech}` — at `https://artifact.bytedance.com/repository/Volcengine/`. The `withPicoGradle` plugin registers the repo and the dependencies automatically, so on a `picoDebug` build the PPS classes (`com.pico.pps.sdk.iap.IapClient`, `PicoSignInClient`, `LeaderboardClient`, `PicoSocialClient`, etc.) land in the APK and the reflection probe flips each sibling to live with no further action. These siblings only report `SERVICE_UNAVAILABLE` when the active flavor is `mobile`, the host is not PICO hardware, or Gradle was offline at prebuild time.
+PICO Platform Services (PPS) are selected by the config plugin for the sibling packages you install and resolved automatically from [PICO's public Maven repository](https://artifact.bytedance.com/repository/Volcengine/) during the **Gradle build**. Prebuild writes the dependency configuration; it does not download the Maven libraries. Keep the lockfile and normal Gradle cache for repeatable builds. Runtime credentials and device support are separate from installing those dependencies.
 
-Yes, but only for a narrower set of surfaces that still ride the **legacy PVR-prefixed SDKs** (not on public Maven):
+For PICO OS 6 WindowContainer support, install `@expo-pico/spatial` and set its plugin option `enableSpatialSdk: true`. The plugin adds the public Spatial SDK 6 Maven dependencies automatically. `getLayoutBridgeStatus()` distinguishes SDK presence from a device that can run the bridge.
 
-- `expo-pico-core`'s programmatic `setPassthrough()` / `PXR_Plugin` haptics — legacy PICO Platform SDK 3.x (`com.pvr.platform:platform-sdk:3.2.0`)
-- `expo-pico-spatial` (anchors, scene mesh, eye/face/body tracking) — legacy PICO Spatial SDK 1.x (`com.pvr.spatial:spatial-sdk:1.0.0`)
+**An AAR does not complete an unfinished native method.** Core passthrough/haptics/tracking controls and spatial anchors, live space transitions and scene mesh APIs are not implemented in the current native bridge. They report unavailable capabilities or reject with `NOT_IMPLEMENTED`, even when SDK classes are present. Downloading legacy PVR archives or turning on capability flags cannot enable these methods. The implemented SDK 6 WindowContainer open/close bridge is separate.
 
-For those, download the AAR through the PICO Developer Console and drop it into `vendor/pico-sdk/` or `android/app/libs/`. The drop-in path is kept around for these specifically; it is not the path for the modern PPS surfaces.
+An immersive renderer such as Viro also needs its own matching native libraries. Those belong in the renderer's release package; see [native package requirements](./INSTALL-FROM-GITHUB.md#native-code). They are not the PPS libraries and do not need rebuilding for ordinary app changes.
 
 ## 8. How do I check that my app is configured correctly before building?
 
@@ -69,9 +64,9 @@ Run the doctor:
 npx expo-pico-doctor
 ```
 
-It runs the seven prebuild checks against your `app.config` without touching the Android toolchain. `--fail-on-warning` flips it into a strict CI gate.
+It runs the prebuild checks against your `app.config` without touching the Android toolchain. `--fail-on-warning` flips it into a strict CI gate.
 
-## 9. How do I see which SDK surfaces are live at runtime?
+## 9. How do I inspect SDK presence and runtime support?
 
 ```ts
 import { getPlatformSdkProbe, isPlatformSdkPresent } from '@expo-pico/core';
@@ -80,7 +75,7 @@ const probe = await getPlatformSdkProbe();
 // { account: true, iap: false, notifications: true, ... }
 ```
 
-Or open the example app's Diagnostics tab. The `DiagnosticsPanel` renders the probe as a per-surface table with "live" / "seam" labels.
+The probe reports whether expected SDK classes are present. It does not prove that every method is implemented, the device supports it, or the service is initialized. Check the package support matrix and capability getters as well. For Spatial SDK 6 windows, use `getLayoutBridgeStatus()` to check both the SDK and the device.
 
 ## 10. My `app.config.ts` isn't being picked up by `expo-pico-doctor`.
 
@@ -106,9 +101,9 @@ Both are intentional. Neither flavor crashes on the other hardware type.
 
 ## 12. Can I ship just a few of the sibling packages without installing all 12?
 
-Yes. `expo-pico-core` is the only required package. Add siblings à la carte. Each one only pulls in its own native module and adds ~30 KB to the final APK. The sibling packages have zero cross-dependencies; installing `expo-pico-iap` doesn't force you to install `expo-pico-account`.
+Yes. `expo-pico-core` is the only required package. Add siblings à la carte. Add the peers listed in [Installing from GitHub](./INSTALL-FROM-GITHUB.md), including `@expo-pico/platform-service-common` for service packages. Native dependencies and APK size depend on the selected features; installing `@expo-pico/iap` does not require installing `@expo-pico/account`.
 
-The probe reports every surface, but surfaces whose package isn't installed will always show `false`. That's correct.
+The probe checks SDK classes, which may be shared across packages. Treat it as classpath diagnostics rather than a list of installed JavaScript packages.
 
 ## 13. How do I version my own app against `expo-pico-core`?
 
@@ -117,12 +112,12 @@ Your app's `package.json` should declare:
 ```json
 {
   "dependencies": {
-    "@expo-pico/core": "^1.0.0"
+    "@expo-pico/core": "github:mikevocalz/expo-pico#release/core"
   }
 }
 ```
 
-(Assuming 1.0.0 has been published; use the latest version shown on [npm](https://www.npmjs.com/package/expo-pico-core).)
+The packages are distributed through GitHub release branches, not npm. Keep your package-manager lockfile. For an immutable pin, replace `release/core` with a commit SHA from that release branch; see [Pinning a commit](./INSTALL-FROM-GITHUB.md#pinning-a-commit).
 
 The plugin option API is additive, so minor and patch updates are safe. We signal any breaking change with a major bump and call it out in the CHANGELOG.
 
@@ -192,7 +187,15 @@ And one discipline worth stating outright: `topResumedActivity` tells you WHICH
 activity you are looking at. It does not tell you that anything rendered. Only
 the frame does.
 
-## 17. Contributing?
+## 17. Can I build without a PICO app ID?
+
+Yes. The plugin still generates the PICO flavor and a native build without `platformService.picoAppId`. The starter uses `appType: '2d'` for its React Native panel.
+
+An immersive PICO OS 5 launch has an additional device requirement: on the tested PICO 4 Ultra, the OS entitlement service terminated the app when it lacked a registered app ID. Supply the ID registered for your Android package through `platformService.picoAppId` (the starter accepts `PICO_APP_ID` or `PICO_PLATFORM_APP_ID`) before testing an immersive app. A successful build does not establish launch entitlement, and `entitlementCheck: false` does not disable the OS check. See the [hardware investigation](./PICO-ENTITLEMENT-BLOCKS-LAUNCH.md) for the observed limits and evidence.
+
+Account, purchases and other Platform Services also require their service credentials.
+
+## 18. Contributing?
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md). Short version:
 

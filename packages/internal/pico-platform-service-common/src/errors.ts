@@ -2,7 +2,7 @@
  * Shared error taxonomy for the expo-pico SDK family.
  *
  * Rules:
- * - SERVICE_UNAVAILABLE: SDK class not found in this build. Typically: mobile flavor active, non-PICO host, Gradle couldn't resolve PPS Maven artifacts, or (for legacy PVR surfaces only) the legacy PVR AAR wasn't dropped in.
+ * - SERVICE_UNAVAILABLE: the native module or required SDK service is unavailable.
  * - NOT_IMPLEMENTED: method exists but native wiring is not yet complete (seam pending)
  * - NOT_SUPPORTED: feature is unavailable on this OS version or target profile
  * - BILLING_UNAVAILABLE / PURCHASE_*: shared across expo-pico-iap and expo-pico-subscription
@@ -63,11 +63,10 @@ export function isPicoServiceError(err: unknown): err is PicoServiceError {
 // ─── Error factories ─────────────────────────────────────────────────────────
 
 /**
- * SDK class not present in this build. Common causes: mobile flavor active,
- * running on non-PICO hardware, Gradle was offline at prebuild time (so PPS
- * Maven deps didn't resolve), or — for legacy PVR-only surfaces such as
- * `PXR_Plugin` haptics / passthrough and `expo-pico-spatial` — the legacy
- * PVR AAR wasn't dropped into `vendor/pico-sdk/` or `android/app/libs/`.
+ * Native module or SDK service not available in this build. Common causes:
+ * mobile flavor active, an unavailable service on non-PICO hardware, or a
+ * missing native module. Gradle resolves PPS dependencies during the Android
+ * build. An unfinished native method must use NOT_IMPLEMENTED instead.
  * Thrown synchronously by guardService(), not by native bridge.
  */
 export function serviceUnavailableError(pkg: string, method: string): PicoServiceError {
@@ -121,7 +120,9 @@ export function invalidArgumentError(
 
 /**
  * Normalizes a native module rejection into a typed PicoServiceError.
- * Maps known PicoErrorCode strings; falls back to UNKNOWN for unrecognized codes.
+ * Maps known PicoErrorCode strings. Nitro Kotlin rejections can arrive as
+ * plain Error objects, so preserve the explicit NOT_IMPLEMENTED prefix used
+ * by unfinished native APIs when there is no recognized structured code.
  */
 export function nativeRejectionError(
   pkg: string,
@@ -129,8 +130,13 @@ export function nativeRejectionError(
   nativeCode: string,
   nativeMessage: string
 ): PicoServiceError {
-  const code =
+  const explicitCode =
     (PicoErrorCode as Record<string, PicoErrorCode>)[nativeCode] ?? PicoErrorCode.UNKNOWN;
+  const code =
+    explicitCode === PicoErrorCode.UNKNOWN &&
+    /^(?:java\.lang\.IllegalStateException: )?NOT_IMPLEMENTED:/.test(nativeMessage)
+      ? PicoErrorCode.NOT_IMPLEMENTED
+      : explicitCode;
   return new PicoServiceError({
     code,
     packageName: pkg,

@@ -19,14 +19,18 @@ target_compile_features(ExpoPicoCore PUBLIC cxx_std_20)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../nitrogen/generated/android/ExpoPicoCore+autolinking.cmake)
 
 # Eskiu owns allocation-free runtime math/state on PICO arm64. The helper
-# always exposes the stable C ABI headers and falls back cleanly when eskiuc
-# is unavailable for a non-PICO/mobile CI build.
+# always exposes the stable C ABI headers. Release packages carry a validated
+# compiled arm64 object; source development requires the pinned eskiuc compiler.
+# Other ABIs use the C++ bridge's existing fallback.
 #
 # Inside the monorepo the runtime lives in packages/internal. A packed copy of
 # this package (git release branch, npm tarball) carries it at
 # android/eskiu-runtime instead, because packages/internal does not ship.
 set(EXPO_PICO_ESKIU_CMAKE "${CMAKE_CURRENT_LIST_DIR}/eskiu-runtime/cmake/ExpoPicoEskiu.cmake")
-if(NOT EXISTS "${EXPO_PICO_ESKIU_CMAKE}")
+if(EXISTS "${EXPO_PICO_ESKIU_CMAKE}")
+  set(EXPO_PICO_ESKIU_REQUIRE_PREBUILT TRUE)
+else()
+  set(EXPO_PICO_ESKIU_REQUIRE_PREBUILT FALSE)
   set(EXPO_PICO_ESKIU_CMAKE "${CMAKE_CURRENT_LIST_DIR}/../../internal/pico-eskiu-runtime/cmake/ExpoPicoEskiu.cmake")
 endif()
 include(${EXPO_PICO_ESKIU_CMAKE})

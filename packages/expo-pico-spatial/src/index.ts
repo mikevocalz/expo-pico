@@ -60,7 +60,7 @@ function subscribe(register: (h: PicoSpatial) => number): Subscription {
 // ─── Space / container state ─────────────────────────────────────────────────
 
 /**
- * Current space state.
+ * Configured starting space state; live space transitions are not implemented.
  *
  * - 'shared-space': other apps visible; this one runs in a WindowContainer
  * - 'full-space': exclusive use of the spatial environment
@@ -187,13 +187,9 @@ export function closeWindowContainer(
 /**
  * Creates a spatial anchor at the given pose.
  *
- * Requires the legacy PVR Spatial SDK 1.x AAR in `vendor/pico-sdk/` or
- * `android/app/libs/` — distinct from the PPS Maven artifacts that
- * expo-pico-core resolves automatically — plus a PICO 4 Ultra or Neo3 on
- * PICO OS 6+.
- *
- * Rejects with SERVICE_UNAVAILABLE when the SDK is absent, VALIDATION_ERROR
- * for a malformed pose.
+ * The current native bridge rejects with NOT_IMPLEMENTED. Installing an SDK
+ * or enabling plugin flags does not implement this API. A missing native
+ * module still rejects with SERVICE_UNAVAILABLE.
  */
 export async function createSpatialAnchor(pose: SpatialPose): Promise<SpatialAnchorHandle> {
   guardService(native() != null, PKG, 'createSpatialAnchor');
@@ -251,10 +247,13 @@ export function isEyeGazeAvailable(): boolean {
  * Current scene mesh. Native returns flat number arrays; they are normalised
  * here to Float32Array / Uint32Array.
  *
- * Rejects with SERVICE_UNAVAILABLE when the Spatial SDK is absent.
+ * The current native bridge rejects with NOT_IMPLEMENTED. A missing native
+ * module rejects with SERVICE_UNAVAILABLE.
  */
 export async function getSceneMesh(): Promise<SceneMesh> {
-  guardService(native()?.sceneMeshAvailable ?? false, PKG, 'getSceneMesh');
+  // Let the native method distinguish unfinished wiring from a missing SDK.
+  // A false capability flag alone does not mean the SDK is absent.
+  guardService(native() != null, PKG, 'getSceneMesh');
   const raw = await wrapNativeCall(PKG, 'getSceneMesh', native()!.getSceneMesh());
   return toTypedMesh(raw);
 }

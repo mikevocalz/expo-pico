@@ -33,10 +33,21 @@ jobs:
       - run: yarn workspace @expo-pico/core test:gradle
       - run: yarn build
       - run: yarn test:pack
+      # Compile the packaged runtime once, in the release producer. App
+      # consumers below intentionally have no Eskiu compiler installed.
+      - run: bash scripts/install-eskiuc.sh
+      - run: yarn test:release-runtime
       # Same staging the release-branches workflow pushes from main, without
       # the push. Fails on an exports/main entry that the packed output lacks.
       - name: Release branches dry run
         run: node scripts/build-release-branches.mjs --out "$RUNNER_TEMP/release-branches"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packed-release-packages
+          path: ${{ runner.temp }}/release-branches
+          include-hidden-files: true
+          retention-days: 3
+          if-no-files-found: error
 
       # Phase G doctor self-smoke — verifies the built CLI binary runs
       # against a minimal fixture so a broken CLI can't ship from green
@@ -89,6 +100,48 @@ jobs:
       - name: Changeset status
         if: github.event_name == 'pull_request'
         run: yarn changeset status --since=origin/${{ github.base_ref }} || true
+
+  release-consumer:
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package-manager: [npm, pnpm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+      - name: Install isolated package manager
+        if: matrix.package-manager == 'pnpm'
+        run: npm install --global pnpm@12.18.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: packed-release-packages
+          path: ${{ runner.temp }}/release-branches
+      - uses: actions/setup-java@v5
+        if: matrix.package-manager == 'pnpm'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install standard Android toolchain
+        if: matrix.package-manager == 'pnpm'
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          command -v sdkmanager >/dev/null && SDKMANAGER=sdkmanager
+          yes | "$SDKMANAGER" "ndk;27.1.12297006" "cmake;3.22.1"
+      - name: Packaged app installs and survives clean prebuilds
+        if: matrix.package-manager == 'npm'
+        run: node scripts/smoke-release-consumer.mjs --releases "$RUNNER_TEMP/release-branches" --package-manager npm
+      - name: Isolated packaged app builds without a custom compiler or local AARs
+        if: matrix.package-manager == 'pnpm'
+        run: |
+          if command -v eskiuc >/dev/null; then
+            echo "The consumer check must run without an installed Eskiu compiler."
+            exit 1
+          fi
+          node scripts/smoke-release-consumer.mjs --releases "$RUNNER_TEMP/release-branches" --package-manager pnpm --assemble
 
   eskiu:
     runs-on: ubuntu-latest

@@ -49,6 +49,22 @@ describe('withPicoDiagnostics — no app ID', () => {
     const calls = runDiagnostics({ xrMode: 'pico-os5', picoAppId: 'LEGACY' });
     expect(calls.some((c) => c.id === 'identity.missing')).toBe(false);
   });
+
+  it('distinguishes a successful build from OS 5 immersive launch entitlement', () => {
+    const calls = runDiagnostics({ xrMode: 'pico-os5', appType: 'vr', picoAppId: undefined });
+    const identity = calls.find((c) => c.id === 'identity.missing');
+    expect(identity?.message).toContain('PICO XR flavor will build');
+    expect(identity?.message).toContain('entitlement can block immersive launch');
+    expect(identity?.message).toContain('registered for this Android package');
+    expect(identity?.message).not.toContain('headset rendering does not');
+  });
+
+  it('does not apply the OS 5 immersive launch finding to a 2D panel', () => {
+    const calls = runDiagnostics({ xrMode: 'pico-os5', appType: '2d', picoAppId: undefined });
+    const identity = calls.find((c) => c.id === 'identity.missing');
+    expect(identity?.message).toContain('PICO XR flavor will build');
+    expect(identity?.message).not.toContain('entitlement can block immersive launch');
+  });
 });
 
 describe('withPicoDiagnostics — 2d appType with pico xrMode', () => {

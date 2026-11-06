@@ -1,19 +1,17 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
 /**
- * Starter config for a PICO OS 6 / Project Swan app.
+ * Starter config for a PICO 4 / PICO 4 Ultra app.
  *
  * What's already wired:
  *   - New Architecture on (required by `expo-pico-core`).
  *   - `xrMode` set to `pico-os5` for PICO 4 / 4 Ultra. Flip to
  *     `pico-swan` when targeting Swan headsets.
- *   - `appType: 'vr'` — emits `pvr.app.type=vr`, OpenXR
- *     `IMMERSIVE_HMD` + `com.pico.intent.category.VR` on the launcher
- *     activity, and the PICO system-package <queries> block.
+ *   - `appType: '2d'` — a native React Native panel, like Horizon Core's
+ *     base app. Add a renderer before opting into an immersive activity.
  *   - `platformService` reads app ID + key from env. Never commit
  *     credentials — keep them in EAS Secrets or a .env file.
- *   - `handTracking` + `passthrough` opt-in. Add more hardware
- *     capabilities as you need them.
+ *   - Hardware capabilities stay opt-in, with no missing vendor AAR step.
  *
  * Extension points — uncomment and fill as needed:
  *   - `picoMerchantId` / `picoPayKey` for in-app purchases (when
@@ -27,8 +25,9 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
  */
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'my-pico-app',
-  slug: 'my-pico-app',
+  // create-expo-app substitutes these official template placeholders.
+  name: 'Hello App Display Name',
+  slug: 'helloworld',
   version: '1.0.0',
   orientation: 'default',
   // Add your own icon + splash by dropping PNGs into an assets/ directory
@@ -39,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // splash: { image: './assets/splash.png', backgroundColor: '#0b0d1a' },
   newArchEnabled: true,
   android: {
-    package: 'com.example.mypicoapp',
+    package: 'com.example.helloworld',
   },
   plugins: [
     [
@@ -48,17 +47,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // Flip to 'pico-swan' when targeting Project Swan hardware.
         xrMode: 'pico-os5',
 
-        // 'vr' for immersive; 'mr' for passthrough-first; '2d' opts
-        // out of the immersive launcher entirely.
-        appType: 'vr',
+        // The starter renders a normal RN panel. With a configured 3D
+        // renderer, choose 'vr' or 'mr' and set your registered PICO_APP_ID.
+        appType: '2d',
 
         // 'pico' writes the PICO-flavor manifest. 'dual' keeps both
         // mobile and pico flavors for cross-device dev work.
         buildVariant: 'pico',
 
+        // The registered app ID for headset launch. PPS can use its own
+        // identity below; no credentials are needed just to compile the APK.
+        picoAppId: process.env.PICO_APP_ID,
+
         // Platform SDK identity. Populate via EAS Secrets in CI.
-        // Doctor warns at prebuild if `platformService.picoAppId` is
-        // missing under an immersive xrMode.
+        // Doctor reports missing Platform Service identity as information.
         platformService: {
           picoAppId: process.env.PICO_PLATFORM_APP_ID,
           picoAppKey: process.env.PICO_PLATFORM_APP_KEY,
@@ -74,8 +76,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
         // Capability declarations — emit only what you actually use.
         // PICO Store reviewers flag over-declared features.
-        handTracking: true,
-        passthrough: true,
+        // handTracking: true,
+        // passthrough: true,
         // sceneUnderstanding: false,
         // sceneMesh: false,
         // eyeTracking: false,
@@ -85,7 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         // foveatedRendering: false,
         // boundary: false,
         // refreshRates: [72, 90, 120],
-        highSamplingRateSensors: true,
+        // highSamplingRateSensors: true,
       },
     ],
     // Add sibling packages here as you install them:

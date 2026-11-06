@@ -40,6 +40,46 @@ function runDoctor(
 const describeWhenBuilt = BIN_EXISTS ? describe : describe.skip;
 
 describeWhenBuilt('expo-pico-doctor CLI', () => {
+  it('reads a dynamic TypeScript config through the app Expo installation', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'expo-pico-doctor-dynamic-'));
+    try {
+      fs.mkdirSync(path.join(dir, 'node_modules', '@expo-pico'), { recursive: true });
+      fs.symlinkSync(
+        path.dirname(require.resolve('expo/package.json')),
+        path.join(dir, 'node_modules', 'expo'),
+        'dir'
+      );
+      fs.symlinkSync(
+        path.resolve(__dirname, '..'),
+        path.join(dir, 'node_modules', '@expo-pico', 'core'),
+        'dir'
+      );
+      fs.writeFileSync(
+        path.join(dir, 'package.json'),
+        JSON.stringify({ name: 'doctor-dynamic', dependencies: { expo: '~58.0.23' } })
+      );
+      fs.writeFileSync(
+        path.join(dir, 'app.config.ts'),
+        `export default { name: 'dynamic', slug: 'dynamic', plugins: [
+          ['@expo-pico/core', { xrMode: 'pico-os5', appType: '2d', buildVariant: 'pico' }]
+        ] };`
+      );
+      const result = runDoctor(dir, ['--json']);
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).resolvedOptions.appType).toBe('2d');
+      expect(fs.existsSync(path.join(dir, 'android'))).toBe(false);
+      fs.writeFileSync(
+        path.join(dir, 'app.config.ts'),
+        `throw new Error('broken config fixture'); export default {};`
+      );
+      const failed = runDoctor(dir, ['--json']);
+      expect(failed.status).toBe(2);
+      expect(JSON.parse(failed.stdout).detail).toContain('broken config fixture');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('exits 0 and prints "No issues" for a clean config', () => {
     const dir = writeFixture({
       expo: {
