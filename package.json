@@ -1,7 +1,7 @@
 {
   "name": "@expo-pico/template",
   "version": "0.1.1",
-  "description": "Expo app starter template preconfigured for PICO OS 6 / Project Swan. Consume via `npx create-expo-app --template expo-pico-template`.",
+  "description": "Expo app starter for PICO 4 and PICO 4 Ultra, with an optional PICO OS 6 target.",
   "main": "index.js",
   "private": false,
   "license": "MIT",
@@ -26,6 +26,15 @@
     "access": "public",
     "provenance": true
   },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android --variant picoDebug",
+    "pico": "expo run:android --variant picoDebug",
+    "android:pico": "expo run:android --variant picoDebug",
+    "android:mobile": "expo run:android --variant mobileDebug",
+    "prebuild": "expo prebuild --clean",
+    "doctor": "expo-pico-doctor --fail-on-warning"
+  },
   "dependencies": {
     "expo": "~58.0.23",
     "@expo-pico/core": "github:mikevocalz/expo-pico#release/core",
@@ -35,8 +44,14 @@
     "expo-modules-core": "58.0.30",
     "react-native-nitro-modules": "1.0.0-alpha.nightly.120.g33ef045b96c0"
   },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "babel-preset-expo": "~58.0.24",
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3"
+  },
   "expo": {
-    "name": "PICO OS 6 / Swan",
+    "name": "PICO 4 / PICO 4 Ultra",
     "description": "Starter template preconfigured for PICO headsets via expo-pico-core. Ships with xrMode/appType/buildVariant wired, a runtime HUD, and a prebuild doctor script."
   },
   "files": [
@@ -49,8 +64,8 @@
     "index.js",
     ".gitignore"
   ],
-  "gitHead": "1a2bf6b2fb60e517c0268161beb2330dba642ecf",
+  "gitHead": "ac5ed92556907b11b3c92479a64889850f96d910",
   "expoPico": {
-    "sourceCommit": "1a2bf6b2fb60e517c0268161beb2330dba642ecf"
+    "sourceCommit": "ac5ed92556907b11b3c92479a64889850f96d910"
   }
 }
