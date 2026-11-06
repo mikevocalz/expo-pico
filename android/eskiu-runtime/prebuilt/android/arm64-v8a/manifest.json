@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "compilerVersion": "0.14.1",
+  "compilerDescription": "Eskiu 0.14.1 (LLVM 22.1.8)",
+  "target": "aarch64-linux-android",
+  "abi": "arm64-v8a",
+  "relocation": "pic",
+  "freestanding": true,
+  "optimization": "O2",
+  "sourceCommit": "ac5ed92556907b11b3c92479a64889850f96d910",
+  "objectFilename": "expo_pico_eskiu_runtime.o",
+  "objectSha256": "aaccb53c754294ee2bb8c0e95f0d725c199021ba0aa6f8061571b1aba3fc9d50",
+  "sources": [
+    {
+      "path": "cmake/eskiu-version.txt",
+      "sha256": "c6fb87657a4ee72e2b549cdd39c12854fdbecbdfef033c04f523d4bfcb02aa4c"
+    },
+    {
+      "path": "include/expo_pico_eskiu.h",
+      "sha256": "905193b7c6db0036857f33e4c48d3ae77995dfede5c278bdd6220e3030553548"
+    },
+    {
+      "path": "src/icon/path.esk",
+      "sha256": "41f3732d1fe50a2bdbbeaefaea67e0eb1b3e0facb874eaa73245c85e2914c07b"
+    },
+    {
+      "path": "src/icon/stroke.esk",
+      "sha256": "bac2d3628af7a5b81407efb78c3c23dad7c41db6231f2e5e2d95bc982daf4c1f"
+    },
+    {
+      "path": "src/icon/svg.esk",
+      "sha256": "e501b73cac0bf75faa1b9f22283149f78081f4edb18f0488235fa0f2caaef6a0"
+    },
+    {
+      "path": "src/runtime.esk",
+      "sha256": "ae08a43112ec47cedffb18149b1ce67ecefd33fa92b1b75613d30737358816a7"
+    }
+  ]
+}

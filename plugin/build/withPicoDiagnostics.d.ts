@@ -30,7 +30,8 @@ export interface DiagnosticCheckFinding {
  * Covered checks (each has a stable id):
  *
  *   1. `identity.missing` (info) — the PICO XR flavor remains active without
- *      Platform Service credentials; account/IAP calls require an app ID.
+ *      Platform Service credentials; device entitlement can still block
+ *      an OS 5 immersive launch, and account/IAP calls require an app ID.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive

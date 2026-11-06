@@ -11,6 +11,7 @@ const withPicoGradleProperties_1 = require("./withPicoGradleProperties");
 const withPicoLocalProperties_1 = require("./withPicoLocalProperties");
 const withPicoMainApplication_1 = require("./withPicoMainApplication");
 const withPicoNewArchCheck_1 = require("./withPicoNewArchCheck");
+const withPicoNativeArtifacts_1 = require("./withPicoNativeArtifacts");
 const withPicoNitroModules_1 = require("./withPicoNitroModules");
 const withPicoOneLauncherTile_1 = require("./withPicoOneLauncherTile");
 const withPicoOpenXrLoaderOverlay_1 = require("./withPicoOpenXrLoaderOverlay");
@@ -81,6 +82,7 @@ const withPico = (config, rawOptions) => {
     // 16KB ELF alignment overlay — runs last so it sees the final
     // android/ tree (jniLibs are merged at packaging time).
     config = (0, withPicoOpenXrLoaderOverlay_1.withPicoOpenXrLoaderOverlay)(config, options);
+    config = (0, withPicoNativeArtifacts_1.withPicoNativeArtifacts)(config, options);
     return config;
 };
 exports.default = withPico;

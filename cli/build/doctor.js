@@ -15,10 +15,9 @@
  *   1 — at least one error, or --fail-on-warning and >=1 warning
  *   2 — could not load or parse the Expo config
  *
- * Renderer-agnostic: doctor reads `app.config.*` only. It does not
- * spawn any Android toolchain or touch the filesystem beyond the
- * project root, so it's fast to run inside a pre-commit hook or a
- * GitHub Actions PR check.
+ * Doctor reads app configuration and installed native artifacts. It never
+ * launches an Android toolchain or downloads dependencies, so it also works
+ * before prebuild and in a GitHub Actions PR check.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 // Imported from the compiled plugin artifacts so the CLI has a single
@@ -28,6 +27,9 @@ const types_1 = require("../../plugin/build/types");
 const withPicoDiagnostics_1 = require("../../plugin/build/withPicoDiagnostics");
 const ppsArtifacts_1 = require("../../plugin/build/ppsArtifacts");
 const utils_1 = require("../../plugin/build/utils");
+const withPicoNativeArtifacts_1 = require("../../plugin/build/withPicoNativeArtifacts");
+const node_module_1 = require("node:module");
+const node_path_1 = require("node:path");
 function parseArgs(argv) {
     var _a;
     const args = {
@@ -78,14 +80,14 @@ function printHelp() {
     ].join('\n'));
 }
 /**
- * Read plugin entries from `app.config`. Uses `@expo/config` when
- * available (normal Expo project), falls back to requiring the raw
- * `app.config.{ts,js,json}` file when not. Returns `null` when no
+ * Read plugin entries from `app.config`. Uses Expo's config loader when
+ * available (normal Expo project), falls back to reading JSON config
+ * files when not. Returns `null` when no
  * config can be located.
  */
-function loadPluginOptions(projectRoot) {
+function loadPluginOptions(expoConfig) {
     var _a, _b;
-    const raw = loadRawExpoConfig(projectRoot);
+    const raw = expoConfig;
     if (!raw)
         return null;
     const plugins = Array.isArray(raw.plugins)
@@ -104,24 +106,33 @@ function loadPluginOptions(projectRoot) {
     return null;
 }
 /**
- * Best-effort Expo config load. Tries `@expo/config` first (the
+ * Best-effort Expo config load. Tries `expo/config` first (the
  * canonical Expo loader — handles app.config.ts transpilation, merges
  * app.json + app.config.js, etc.). Falls back to reading app.json /
- * app.config.json directly when @expo/config is not installed (e.g.
+ * app.config.json directly when Expo is not installed (e.g.
  * running doctor against a bare-RN project).
  */
 function loadRawExpoConfig(projectRoot) {
     var _a;
+    const requireFromProject = (0, node_module_1.createRequire)((0, node_path_1.resolve)(projectRoot, 'package.json'));
+    let expoConfigPath;
     try {
-        // Dynamic require so doctor runs even when @expo/config isn't
-        // installed (doctor's only runtime dep is `expo-pico-core` itself).
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const expoConfig = require('@expo/config');
-        const { exp } = expoConfig.getConfig(projectRoot, { skipPlugins: true });
-        return exp;
+        // Resolve through the app's Expo dependency. @expo/config is an internal
+        // Expo dependency and is not hoisted beside this CLI by isolated installs.
+        expoConfigPath = requireFromProject.resolve('expo/config');
     }
-    catch {
-        // Fall through to filesystem probe.
+    catch (error) {
+        if (error.code !== 'MODULE_NOT_FOUND')
+            throw error;
+        // Bare projects without Expo can still use static JSON configuration.
+    }
+    if (expoConfigPath) {
+        const expoConfig = requireFromProject(expoConfigPath);
+        // Expo's skipPlugins option deletes the plugins array, which would hide
+        // the very entry doctor is inspecting. Normal config evaluation registers
+        // native mods but does not execute them or generate an Android project.
+        const { exp } = expoConfig.getConfig(projectRoot);
+        return exp;
     }
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('fs');
@@ -332,7 +343,23 @@ function checkDuplicatePicoArtifacts(projectRoot, resolved) {
 }
 function main() {
     const args = parseArgs(process.argv.slice(2));
-    const raw = loadPluginOptions(args.projectRoot);
+    let expoConfig;
+    try {
+        expoConfig = loadRawExpoConfig(args.projectRoot);
+    }
+    catch (error) {
+        const result = {
+            error: 'Could not load Expo configuration',
+            projectRoot: args.projectRoot,
+            detail: error instanceof Error ? error.message : String(error),
+        };
+        if (args.json)
+            process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+        else
+            process.stderr.write(`expo-pico-doctor: ${result.error}: ${result.detail}\n`);
+        process.exit(2);
+    }
+    const raw = loadPluginOptions(expoConfig);
     if (raw === null) {
         const err = {
             error: 'expo-pico-core plugin not found in app.config plugins array',
@@ -371,8 +398,9 @@ function main() {
     })();
     const findings = [
         ...(0, withPicoDiagnostics_1.runDiagnosticChecks)(resolved, { hasDevClient }),
-        ...checkOrientation(loadRawExpoConfig(args.projectRoot), resolved),
+        ...checkOrientation(expoConfig, resolved),
         ...checkDuplicatePicoArtifacts(args.projectRoot, resolved),
+        ...((0, withPicoNativeArtifacts_1.usesPicoArtifacts)(resolved) ? (0, withPicoNativeArtifacts_1.checkPicoNativeArtifacts)(args.projectRoot) : []),
     ];
     const errorCount = findings.filter((f) => f.severity === 'error').length;
     const warnCount = findings.filter((f) => f.severity === 'warning').length;

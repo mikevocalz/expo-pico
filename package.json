@@ -1,7 +1,7 @@
 {
   "name": "@expo-pico/core",
   "version": "1.0.0",
-  "description": "Expo config plugin and runtime module for PICO OS 6 XR devices.",
+  "description": "Expo config plugin and native runtime for PICO 4, PICO 4 Ultra and PICO OS 6 devices.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "exports": {
@@ -56,6 +56,9 @@
     "access": "public",
     "provenance": true
   },
+  "dependencies": {
+    "@expo/config-plugins": "~58.0.12"
+  },
   "peerDependencies": {
     "expo": ">=58.0.0 <59",
     "react": ">=19.3.0 <20",
@@ -102,8 +105,8 @@
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
   },
-  "gitHead": "1a2bf6b2fb60e517c0268161beb2330dba642ecf",
+  "gitHead": "ac5ed92556907b11b3c92479a64889850f96d910",
   "expoPico": {
-    "sourceCommit": "1a2bf6b2fb60e517c0268161beb2330dba642ecf"
+    "sourceCommit": "ac5ed92556907b11b3c92479a64889850f96d910"
   }
 }

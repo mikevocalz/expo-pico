@@ -45,7 +45,8 @@ const TAG = '@expo-pico/core';
  * Covered checks (each has a stable id):
  *
  *   1. `identity.missing` (info) — the PICO XR flavor remains active without
- *      Platform Service credentials; account/IAP calls require an app ID.
+ *      Platform Service credentials; device entitlement can still block
+ *      an OS 5 immersive launch, and account/IAP calls require an app ID.
  *
  *   2. `appType.hidden-launcher` — `appType: '2d'` with a PICO xrMode.
  *      APK builds as PICO-aware but won't appear in the immersive
@@ -82,15 +83,19 @@ const TAG = '@expo-pico/core';
  */
 function runDiagnosticChecks(options, env = {}) {
     const findings = [];
-    // Pure XR apps must remain installable with no PICO Developer Console
-    // account. Only PPS-backed features require a registered app identity.
+    // Build configuration remains usable without an app identity. This does
+    // not bypass the OS 5 entitlement check observed on immersive launches:
+    // docs/PICO-ENTITLEMENT-BLOCKS-LAUNCH.md records the hardware evidence.
     if (options.enabled && options.isPicoEnabled && !options.platformService.picoAppId) {
         findings.push({
             id: 'identity.missing',
             severity: 'info',
             message: 'PICO XR flavor will build without Platform Service credentials. ' +
                 'Account, achievements and IAP require platformService.picoAppId and ' +
-                'their respective keys; headset rendering does not.' +
+                'their respective keys.' +
+                (options.xrMode === 'pico-os5' && options.appType !== '2d'
+                    ? ' PICO OS 5 entitlement can block immersive launch without an app ID registered for this Android package; compiling successfully does not guarantee launch.'
+                    : '') +
                 (process.env.PICO_APP_ID
                     ? ' PICO_APP_ID is set, but app.config does not pass it as platformService.picoAppId.'
                     : ''),
