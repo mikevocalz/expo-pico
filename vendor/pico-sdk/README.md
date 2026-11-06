@@ -1,67 +1,39 @@
-# PICO SDK AARs — Legacy PVR-prefixed SDKs Only
+# Native SDK dependencies
 
-> **Heads up.** The modern **PICO Platform Service SDK (PPS)** —
-> `com.pico.pps:platform-service-{auth,iap,friend,social,achievement,
-leaderboard,push,entitlement,compliance,sport,speech}` — is
-> resolved automatically from the public Bytedance Maven repo
-> (`https://artifact.bytedance.com/repository/Volcengine/`) by
-> `expo-pico-core`'s `withPicoGradle` plugin. **You do NOT drop those
-> into this directory.** PPS-backed siblings (account, IAP, social,
-> friend, leaderboards, achievements, notifications, subscription,
-> rooms, RTC, storage) get the modern client classes from Maven on
-> every `picoDebug` build.
->
-> This directory only holds the **legacy PVR-prefixed AARs** that PICO
-> still distributes through the Developer Console rather than public
-> Maven — used by `expo-pico-core`'s programmatic `setPassthrough()` /
-> `PXR_Plugin` haptics and by all of `expo-pico-spatial`. Those AARs
-> remain proprietary and cannot be bundled in the npm packages.
+**Normal app builds do not require placing AAR files in this directory.**
+Install the [GitHub release packages](../../docs/INSTALL-FROM-GITHUB.md), keep
+your lockfile, and use Expo prebuild followed by the Android Gradle build.
 
-## Required Files (legacy PVR SDKs)
+## Dependencies resolved automatically
 
-| File                                                  | Source                                                  | Purpose                                                                |
-| ----------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `pico-platform-sdk.aar` (legacy PVR Platform SDK 3.x) | PICO Developer Console → App Information → SDK Download | `PXR_Plugin` programmatic passthrough toggle + controller haptics      |
-| `pico-spatial-sdk.aar` (legacy PVR Spatial SDK 1.x)   | PICO Developer Console → App Information → SDK Download | Spatial anchors, scene mesh, eye/face/body tracking, space transitions |
+| Dependency | How it reaches the app |
+| --- | --- |
+| Core Nitro bindings and Eskiu runtime | Included in the `@expo-pico/core` release package. The release producer builds the runtime; consuming apps do not need the Eskiu compiler. |
+| PICO Platform Services (PPS) | The core plugin selects Maven dependencies for installed service packages and registers PICO's public repository. Gradle resolves them during the Android build. |
+| PICO Spatial SDK 6 WindowContainer support | Opt in with `enableSpatialSdk: true` on the `@expo-pico/spatial` plugin. The plugin adds the public Maven SDK dependencies for PICO builds. A compatible OS 6 device is also required. |
+| An immersive renderer, such as Viro | Install a renderer release containing its matching native artifacts. Those libraries are separate from the Platform Services SDK. |
 
-## Download Steps
+PICO's Maven repository is
+[https://artifact.bytedance.com/repository/Volcengine/](https://artifact.bytedance.com/repository/Volcengine/).
+Prebuild generates the Gradle configuration. The Android build resolves the
+libraries and reuses the Gradle cache on later builds. A clean prebuild does
+not require downloading or rebuilding AARs manually.
 
-1. Log in to [PICO Developer Console](https://developer.picoxr.com/)
-2. Navigate to **App Information → SDK Download**
-3. Download the **legacy PVR-prefixed Platform SDK** (3.x) and rename it `pico-platform-sdk.aar`
-4. Download the **legacy PVR-prefixed Spatial SDK** (1.x) and rename it `pico-spatial-sdk.aar`
-5. Place both files in this directory (`vendor/pico-sdk/`)
+## Missing implementation is different from a missing dependency
 
-These are **not** the modern PPS Maven artifacts. PPS pulls in via Gradle
-on every `picoDebug` build with no manual download.
+The current native bridge does not implement core XR passthrough, haptics or
+tracking controls, or spatial anchors, live space transitions and scene mesh
+retrieval. These methods report unavailable capabilities or reject with
+`NOT_IMPLEMENTED`. Adding a legacy SDK archive does not implement them.
+Capability declarations in `app.config.ts` do not implement them either.
 
-## Gradle Wiring
+Spatial SDK 6 WindowContainer open/close has an implemented bridge. Use
+`getLayoutBridgeStatus()` to distinguish an unlinked SDK from an unsupported
+device. `getSpatialSdkProbe()` only reports class presence; it is not proof
+that every API is implemented.
 
-All `expo-pico-*` packages reference these AARs via:
-
-```groovy
-compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
-```
-
-A consuming app may alternatively place the AARs under its own
-`android/app/libs/` and reference them there — whichever path is used,
-ensure the AARs are present before running `./gradlew assemblePicoDebug`.
-
-## License
-
-These AARs are distributed under the PICO Developer Agreement. They may
-**not** be committed to public repositories, bundled in published npm
-packages, or redistributed outside of your own build environment.
-
-This directory is listed in `.gitignore`:
-
-```
-vendor/pico-sdk/*.aar
-```
-
-## Reflection-Safe Builds
-
-All `expo-pico-*` native modules use `Class.forName` reflection to probe
-for SDK classes at runtime. If the AARs are absent the modules degrade
-gracefully: every capability check returns `false` and every SDK call
-rejects with `SERVICE_UNAVAILABLE`. The app will not crash.
+Any legacy local AAR lookup retained in development Gradle files is an
+extension point for custom native integrations, not a required install step.
+A custom integration needs its own native implementation and dependency
+configuration. This project does not provide an automatic download or
+redistribution path for arbitrary vendor SDKs.

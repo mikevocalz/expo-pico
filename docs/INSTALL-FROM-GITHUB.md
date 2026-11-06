@@ -2,7 +2,7 @@
 
 expo-pico is not on npm. Every package installs from a branch of this repo instead, the same way the ViroReact fork does.
 
-Each push to `main` runs [`.github/workflows/release-branches.yml`](../.github/workflows/release-branches.yml). It builds the workspace, runs `npm pack` on each package, and commits the packed contents to that package's own `release/<name>` branch. The package root is the branch root, with `build/`, `plugin/build/`, `cli/build/` and `android/` already in place. The release manifests have no `scripts`, so nothing builds or runs at install time. pnpm needs no `allowBuilds` entry for these packages.
+Each push to `main` runs [`.github/workflows/release-branches.yml`](../.github/workflows/release-branches.yml). It builds the workspace, runs `npm pack` on each package, and commits the packed contents to that package's own `release/<name>` branch. The package root is the branch root, with `build/`, `plugin/build/`, `cli/build/` and `android/` already in place. Library release manifests have no `scripts`, so nothing builds or runs at install time. The app template retains its development commands and dependencies. pnpm needs no `allowBuilds` entry for these packages.
 
 ## Branches
 
@@ -81,13 +81,66 @@ The branch was first cut from 57.0.3, whose only patch turns on `buildFeatures.b
 
 ## Native code
 
-The Android sources ship as source and compile inside your app's Gradle build, as with any Expo module. `@expo-pico/core` carries its Eskiu runtime at `android/eskiu-runtime/`, because `packages/internal` does not exist outside this repo. Its `CMakeLists.txt` looks there first and falls back to the monorepo path.
+The Android Kotlin/C++ sources compile inside your app's normal Gradle build,
+as with any native module. Generated Nitro bindings are already included.
+Config plugins declare their runtime dependencies, including
+`@expo/config-plugins`, so they also resolve with isolated pnpm installations.
+
+`@expo-pico/core` carries its Eskiu runtime at `android/eskiu-runtime/`, together
+with the release-built ARM64 object and its provenance. CMake uses that
+packaged object in consuming apps. You do not install `eskiuc`, copy a vendor
+directory, or rebuild an AAR when reinstalling the package or regenerating
+`android/`. The source checkout retains its pinned compiler path for people
+changing the Eskiu implementation; that compilation belongs to package
+development and the release workflow.
+
+PICO Platform Services are separate Maven dependencies selected by the config
+plugin and resolved during Gradle builds. They do not need local AAR files.
+Viro's immersive engine is a separate dependency: install a Viro release with
+its matching native artifacts when adding a 3D renderer. A missing native
+implementation is not repaired by supplying an unrelated SDK archive.
+
+Doctor and prebuild check that an installed Viro package contains both Android
+AARs and reject Git LFS pointers in their place. Releases with
+`android/native-artifacts.json` also have their renderer and bridge hashes
+checked. A damaged installation calls for reinstalling the complete pinned
+package; normal app builds reuse its native libraries.
+
+### Start a new app
+
+```bash
+npx create-expo-app@latest my-pico-app --template https://github.com/mikevocalz/expo-pico/tree/release%2Ftemplate
+cd my-pico-app
+npm run doctor
+npm run pico
+```
+
+The `%2F` keeps `release/template` together as the branch name in Expo's
+GitHub-template URL parser. The released template retains its app scripts and
+development dependencies. It starts as a native React Native panel for PICO 4
+and PICO 4 Ultra. Add Viro and a registered `PICO_APP_ID` for OS 5 immersive
+launches; choose `pico-swan` explicitly for PICO OS 6 hardware.
+
+### Validate a release as an app consumer
+
+```bash
+node scripts/smoke-release-consumer.mjs --releases /tmp/expo-pico-release
+node scripts/smoke-release-consumer.mjs --releases /tmp/expo-pico-release --package-manager pnpm --assemble
+```
+
+The check creates a separate app, packs and installs the staged packages with
+install scripts disabled, loads a dynamic Expo config through the shipped
+doctor, runs two clean prebuilds, and exports the Android JavaScript bundle.
+The `--assemble` path builds the PICO APK
+without an Eskiu compiler or manually supplied AARs. CI runs the consumer build
+on a fresh runner after the producer uploads its staged packages.
 
 ## Preview a release locally
 
 ```bash
 yarn install --frozen-lockfile
 yarn build
+bash scripts/install-eskiuc.sh
 node scripts/build-release-branches.mjs --out /tmp/expo-pico-release
 ```
 

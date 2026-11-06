@@ -35,6 +35,9 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
       - run: yarn build
+      - name: Install pinned release compiler
+        run: bash scripts/install-eskiuc.sh
+      - run: yarn test:release-runtime
       - name: Commit release branches
         run: |
           git config user.name "github-actions[bot]"

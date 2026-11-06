@@ -11,10 +11,10 @@ Welcome. This project was bootstrapped from [`expo-pico-template`](https://githu
 
 - New Architecture on (`newArchEnabled: true`). Required by `expo-pico-core`.
 - `xrMode: 'pico-os5'`. Selects the PICO OS 5 runtime `PicoCorePackage` starts at app boot. Flip to `'pico-swan'` when you target Swan hardware.
-- `appType: 'vr'`. Emits `pvr.app.type=vr`, OpenXR `IMMERSIVE_HMD` and `com.pico.intent.category.VR` on the launcher activity, and the PICO system-package `<queries>` block. The APK will show up in the PICO launcher's VR section.
+- `appType: '2d'`. Opens the starter's native React Native panel. Add a 3D renderer before opting into an immersive activity.
 - `buildVariant: 'pico'`. Writes the PICO product flavor, ABI filter, and flavor-scoped manifest.
 - `platformService.picoAppId` / `picoAppKey`. Read from `process.env`. Populate via EAS Secrets in CI or a `.env` file locally.
-- `handTracking: true`, `passthrough: true`, `highSamplingRateSensors: true`. Sensible defaults for an immersive app. Every other capability is commented out in `app.config.ts` ready to uncomment.
+- Hardware capabilities are commented out until your app uses them. Declaring a capability does not implement a tracking API or add a renderer.
 
 Starter `App.tsx`:
 
@@ -25,58 +25,61 @@ Starter `App.tsx`:
 ## First run
 
 ```bash
-# 1. Sanity-check the config before touching native files.
-npx expo-pico-doctor
-
-# 2. Regenerate native projects. This creates android/ with the PICO
-#    flavor manifest, launcher categories, ABI filter, and everything
-#    else from expo-pico-core.
-npx expo prebuild --clean
-
-# 3a. Run on standard Android (no headset required; useful for UI dev).
-npx expo run:android --variant mobileDebug
-
-# 3b. Run on a connected PICO headset.
-npx expo run:android --variant picoDebug
+npm run doctor
+npm run pico
 ```
 
-If the doctor warns about `identity.missing`, set these env vars before prebuild:
+Expo generates `android/` on the first run. After changing native configuration,
+run `npm run prebuild`. `npm run android:mobile` builds the standard Android
+variant. The release contains its generated Nitro bindings and compiled Eskiu
+runtime; standard Android build tools are sufficient, with no separate custom
+compiler or manual AAR staging.
+
+`identity.missing` is informational for this panel starter. Set these values
+when your app uses PICO account, purchase or other Platform Services:
 
 ```bash
 export PICO_PLATFORM_APP_ID=your-app-id
 export PICO_PLATFORM_APP_KEY=your-app-key
 ```
 
-You get these by registering at [developer.picoxr.com](https://developer.picoxr.com/). The app will still build and launch without them. Any PICO Platform Service SDK (PPS) call (account, IAP, etc.) returns `SERVICE_UNAVAILABLE` until you set the identity env vars and rebuild. The PPS Maven artifacts (`com.pico.pps:platform-service-*`) themselves are pulled in automatically by `expo-pico-core`'s plugin from the public Bytedance Maven repo — no AAR drop is needed.
+Register the identity at [developer.picoxr.com](https://developer.picoxr.com/).
+PPS libraries are resolved automatically from Maven during the Gradle build.
+For an immersive PICO OS 5 app, also set `PICO_APP_ID` to the ID registered for
+your Android package: building without it is possible, but the headset's
+entitlement check can prevent immersive launch.
 
 ## Adding sibling packages
 
 The template ships only `expo-pico-core`. Add the ones you need:
 
 ```bash
-# Voice + multiplayer:
-yarn add @expo-pico/rtc @expo-pico/rooms @expo-pico/social
+# Shared service helpers and account support:
+npm install "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/account"
 
-# Paid apps:
-yarn add @expo-pico/iap @expo-pico/subscription
-
-# Live services:
-yarn add @expo-pico/account @expo-pico/notifications @expo-pico/achievements @expo-pico/leaderboards
+# Add purchases when needed:
+npm install "github:mikevocalz/expo-pico#release/iap"
 ```
 
-Each sibling needs a plugin entry in `app.config.ts`:
+Packages are installed from GitHub release branches. See the
+[branch map and peer dependencies](https://github.com/mikevocalz/expo-pico/blob/main/docs/INSTALL-FROM-GITHUB.md)
+and [current support matrix](https://github.com/mikevocalz/expo-pico#packages).
+RTC, cloud storage and some spatial/tracking APIs are not implemented by these
+packages; an SDK archive does not enable those methods.
+
+Account autolinks and uses Core's Platform Service configuration; it has no
+separate config plugin. Add plugin entries for packages that expose one:
 
 ```ts
 plugins: [
   ['@expo-pico/core', { /* ... */ }],
-  '@expo-pico/account',
   '@expo-pico/iap',
   ['@expo-pico/notifications', { requestPostNotificationsPermission: true }],
   ['@expo-pico/rtc', { microphonePermission: true }],
 ],
 ```
 
-Per-sibling docs: each package ships a README with a usage snippet, API table, and runtime-probe pattern. Entry points on npm or in the monorepo:
+Per-sibling docs: each package ships a README with a usage snippet, API table, and runtime-probe pattern. Source packages:
 
 - [expo-pico-core](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-core): the plugin family's foundation.
 - [expo-pico-spatial](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-spatial): spatial anchors, containers, space states.
@@ -84,27 +87,29 @@ Per-sibling docs: each package ships a README with a usage snippet, API table, a
 - [expo-pico-iap](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-iap): in-app purchases.
 - [expo-pico-subscription](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-subscription): subscription billing.
 - [expo-pico-notifications](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-notifications): push registration and tokens.
-- [expo-pico-rtc](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rtc): real-time voice.
-- [expo-pico-rooms](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rooms): rooms and matchmaking.
+- [expo-pico-rtc](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rtc): unavailable in PPS; use a supported RTC provider.
+- [expo-pico-rooms](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-rooms): friend/room discovery; room creation and matchmaking need a backend.
 - [expo-pico-social](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-social): friends, presence, invites.
 - [expo-pico-achievements](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-achievements): achievements.
 - [expo-pico-leaderboards](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-leaderboards): leaderboards.
-- [expo-pico-storage](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-storage): cloud storage.
+- [expo-pico-storage](https://github.com/mikevocalz/expo-pico/tree/main/packages/expo-pico-storage): unavailable in PPS; use your backend for cloud storage.
 
 ## Adding a 3D renderer
 
-The plugin is renderer-agnostic. Nothing in it touches the rendering stack. Recommended renderer (what the repo's `example/` app uses):
-
-```bash
-bun add @reactvision/react-viro
-```
-
-Add the Viro config plugin entry to `app.config.ts` after `@expo-pico/core`:
+The starter does not include a 3D renderer. Install a Viro release with matching
+native renderer and bridge artifacts, following the
+[Viro integration guide](https://github.com/mikevocalz/expo-pico/blob/main/docs/VIRO-PICO-INTEGRATION.md).
+Then configure an immersive PICO activity:
 
 ```ts
 plugins: [
-  ['@expo-pico/core', { ... }],
-  ['@reactvision/react-viro', { android: { xRMode: ['QUEST', 'PICO'] } }],
+  ['@reactvision/react-viro', { android: { xRMode: ['PICO'] } }],
+  ['@expo-pico/core', {
+    xrMode: 'pico-os5',
+    buildVariant: 'pico',
+    appType: 'vr',
+    picoAppId: process.env.PICO_APP_ID,
+  }],
 ],
 ```
 

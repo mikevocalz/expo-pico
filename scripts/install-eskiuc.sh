@@ -56,7 +56,7 @@ if [ "$LISTED" != "$SHA256" ]; then
 fi
 
 mkdir -p "$PREFIX"
-tar -xzf "$WORK/$ASSET" -C "$PREFIX"
+tar --no-same-owner -xzf "$WORK/$ASSET" -C "$PREFIX"
 ESKIUC_PATH="$PREFIX/bin/eskiuc"
 "$ESKIUC_PATH" --version
 

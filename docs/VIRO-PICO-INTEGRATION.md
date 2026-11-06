@@ -19,9 +19,25 @@ The workspace is now aligned to Expo SDK 58 / React Native 0.88.1, the public ex
 
 **Expo integration**: Expo SDK 58 / React Native 0.88 / React 19.3. `@expo-pico/core` now creates the `pico` flavor without `PICO_APP_ID` or a Platform Service app key. No registered PICO account is needed to build the XR renderer; account, achievements, IAP and other authenticated Platform Service calls remain credential-gated. Launching is a separate gate: PICO OS 5 closes an immersive build at startup when its app ID is not registered for the package ([PICO-ENTITLEMENT-BLOCKS-LAUNCH.md](PICO-ENTITLEMENT-BLOCKS-LAUNCH.md)), so a device run still needs a registered `PICO_APP_ID`. The example config enables `xRMode: ['QUEST', 'PICO']` and the corresponding native plugins.
 
-**Binary gate**: the example still uses the published Viro 3.0.2 dependency and its legacy compatibility overlays. Building the 3.1.0 source pair, replacing the Android AARs, and rebuilding Apple/visionOS and web/WASM binaries remain separate release steps; source version checks and CI unit tests do not establish a working compiled 3.1.0 renderer. After a _paired, verified_ Viro 3.1.0 native build, disable compatibility overlays and prove the APK's arm64 ELF alignment plus ZIP alignment.
+**Binary gate**: the example still uses the published Viro 3.0.2 dependency and its legacy compatibility overlays. The Viro paired-package workflow builds and verifies the Android renderer and bridge together as a release-maintainer operation. Apple/visionOS and web/WASM binaries remain separate release steps; source version checks and CI unit tests do not establish a working compiled 3.1.0 renderer. After a _paired, verified_ Viro 3.1.0 native build, disable compatibility overlays and prove the APK's arm64 ELF alignment plus ZIP alignment.
 
 The React bridge, native renderer, OpenXR loader, controller profile and world-mesh/VPS capabilities must come from a compatible artifact set. Do not mix a new Java/JNI bridge with an older `libviro_renderer.so` or let an overlay silently replace the renderer under test.
+
+## Install a complete renderer package
+
+An application installs one Viro package containing both native AARs. Gradle
+uses those packaged libraries on every build, including after a clean Expo
+prebuild. Application developers do not build ViroCore or copy individual AARs.
+Install a verified package tarball, or pin the commit of a release branch that
+contains the same verified package contents. Keep that dependency in the app's
+lockfile. A source commit or version label alone does not prove which native
+binaries were shipped.
+
+The fork's unqualified GitHub URL follows its default branch, which can differ
+from `main`. Use an explicit verified release commit. Doctor and Pico prebuild
+check that the installed `@reactvision/react-viro` contains both Android AARs;
+when `android/native-artifacts.json` is present, they also check the recorded
+hashes. Reinstall the complete pinned package if those checks fail.
 
 ## Configure the coordinated fork build
 
@@ -53,12 +69,30 @@ PICO-only configuration now generates `VRActivity.kt` without Quest metadata or 
 
 Legacy loader overrides remain enabled by default for compatibility. Renderer overrides remain opt-in. The loader override is confined to `src/pico` / `src/dual`. The renderer override and its controller asset also go to `src/quest`, since the floor origin and controller mesh are Viro/OpenXR behaviour; `src/main` and `src/mobile` get neither. Variant packaging rules follow the same split. Prebuild tracks file hashes, updates same-size content, and removes known obsolete overrides. It stops with the affected path if a custom override cannot be attributed to the plugin. Disable both overrides when validating the new paired native build, so a staged older `.so` cannot mask it. `openXrLoaderDeclaration` is a separate manifest setting.
 
-## Build and verify the native pair
+## Build and verify a release package
 
-1. Build ViroCore from its integration branch using `./scripts/build-pico-aar.sh --out /absolute/artifacts`. The script verifies arm64 ELF alignment and writes a JSON record of the commit, dirty state and SHA-256.
-2. Stage its renderer AAR into Viro's `android/viro_renderer/viro_renderer-release.aar`. Rebuild `:viro_bridge:assembleRelease` in Viro's Android project, and stage its output in `android/react_viro/react_viro-release.aar`. The Java capability API and JNI symbol must come from the same native build.
-3. Build/package the Viro fork with its required web-renderer dependency, install that package into the consuming Expo app, and run Android prebuild. Build `:app:assemblePicoDebug` with `-PreactNativeArchitectures=arm64-v8a`.
-4. Check the resulting APK, not only the input AAR:
+This step belongs to the Viro release maintainer. From clean Viro and ViroCore
+checkouts with their build tools installed, use Viro's paired-package command:
+
+```sh
+python3 scripts/build-pico-package.py build \
+  --virocore ../virocore \
+  --virocore-commit 8a5bdc47aa0f47d9c6249461ef5f07fe77fe60ac \
+  --out /absolute/artifacts
+```
+
+The command invokes the pinned ViroCore builder, verifies its source and
+alignment metadata, compiles the bridge against that renderer while preserving
+the full compatibility classes JAR, and verifies the actual npm tarball. The
+package manifest records both source commits and hashes. Failed builds restore
+the previous pair. See Viro's
+[native release guide](https://github.com/mikevocalz/viro/blob/main/docs/PICO-NATIVE-RELEASE.md)
+for prerequisites and the equivalent GitHub Actions workflow. Distribute the
+verified complete package to applications.
+
+The consuming application then runs normal Expo prebuild and builds
+`:app:assemblePicoDebug` with `-PreactNativeArchitectures=arm64-v8a`. Check the
+resulting APK as well as the input package:
 
 ```sh
 python3 scripts/verify-16kb-alignment.py /absolute/app-pico-debug.apk
@@ -95,4 +129,6 @@ Optional profiling uses the separately installed PICO tools (`pico-cli perf doct
 
 Before a release, test a real PICO headset's controller profiles, trigger/joystick input, scene push/pop, back/exit, suspend/resume, recentering, passthrough and missing-plane behavior. Repeat Quest lifecycle tests and visionOS startup to protect the shared API. Reconcile iOS deployment targets against rebuilt binary load commands: the imported 15.1 podspec does not prove that an existing ViroKit binary built for 17.6 supports 15.1.
 
-These branches contain source integration and tooling. They do not contain rebuilt Android, WASM, iOS or visionOS binaries, and hardware validation remains required.
+Source integration and tooling alone do not establish binary or hardware
+compatibility. Use the release artifact's provenance to identify the Android
+pair, and complete the device checks above before claiming hardware support.

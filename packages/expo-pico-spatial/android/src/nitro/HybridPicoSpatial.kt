@@ -8,37 +8,25 @@ import expo.modules.pico.spatial.BuildConfig
 import expo.modules.pico.spatial.SpatialContainerBridge
 
 /**
- * `PicoSpatial` — spatial anchors, space transitions and scene data.
+ * `PicoSpatial` — SDK 6 WindowContainer bridge and spatial API contracts.
  *
- * All of this rides on the PICO Spatial Tools SDK and the PICO XR SDK,
- * both of which ship as vendored AARs under `vendor/pico-sdk/` and are
- * declared `compileOnly` so they are never bundled into the published npm
- * package. That directory is gitignored: the AARs are covered by the PICO
- * Developer Agreement and may not be redistributed.
- *
- * As in `@expo-pico/core`, the SDK is therefore reached by name rather
- * than imported — a build with no AAR present has to compile, and a build
- * with one has to work. What this class can answer without the SDK is the
- * declared configuration: `spaceState` and `containerType` come from
- * `BuildConfig`, which the config plugin writes at prebuild, and
- * `capabilities` reports what was declared joined with whether the SDK is
- * actually linked.
+ * WindowContainer open/close use SpatialContainerBridge when the public
+ * Maven SDK is linked and the device supports it. Anchors, live space
+ * transitions and tracking/scene data still need native implementations.
+ * Class presence and app declarations do not make those APIs available.
+ * `spaceState` and `containerType` describe configured starting values.
  */
 class HybridPicoSpatial : HybridPicoSpatialSpec() {
 
   private val spatialSdkLinked: Boolean
-    get() = classPresent(SPATIAL_SDK_CLASS)
-
-  private val xrSdkLinked: Boolean
-    get() = classPresent(PXR_PLUGIN_CLASS)
+    get() = bridgeStatus().sdkLinked
 
   /**
    * The space the app declared it starts in.
    *
    * `spatialMode` is the plugin option: `2d` runs in the shared home
-   * space, immersive modes take the full space. Live transitions need the
-   * SDK, so with none linked this is the configured value rather than an
-   * observed one.
+   * space, immersive modes take the full space. Live transitions are not
+   * implemented, so this is a configured value rather than an observed one.
    */
   override val spaceState: PicoSpaceState
     get() = when (BuildConfig.PICO_SPATIAL_MODE) {
@@ -54,44 +42,41 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
       else -> PicoContainerType.NONE
     }
 
-  /** No version string is exposed on the AAR, so presence is the answer. */
+  /** Compatibility presence marker for the SDK 6 bridge, not a version number. */
   override val spatialSdkVersion: String?
     get() = if (spatialSdkLinked) "present" else null
 
   /**
-   * Declared capability AND linked SDK — both, because either alone
-   * misleads. An app that declared `passthrough` but shipped without the
-   * AAR would otherwise be told passthrough is available right up until
-   * the first call fails.
+   * Only implemented methods can advertise availability. SDK presence is
+   * reported separately and does not imply anchors or tracking work.
    */
   override val capabilities: SpatialCapabilities
     get() = SpatialCapabilities(
-      spaceStates = spatialSdkLinked,
-      spatialAnchors = spatialSdkLinked,
-      sceneUnderstanding = BuildConfig.PICO_SCENE_UNDERSTANDING && xrSdkLinked,
-      passthrough = BuildConfig.PICO_PASSTHROUGH && xrSdkLinked,
-      handTracking = BuildConfig.PICO_HAND_TRACKING && xrSdkLinked,
+      spaceStates = false,
+      spatialAnchors = false,
+      sceneUnderstanding = false,
+      passthrough = false,
+      handTracking = false,
       spatialSdkAvailable = spatialSdkLinked,
     )
 
   override val eyeGazeAvailable: Boolean
-    get() = BuildConfig.PICO_EYE_TRACKING && xrSdkLinked
+    get() = false
 
   override val sceneMeshAvailable: Boolean
-    get() = BuildConfig.PICO_SCENE_MESH && xrSdkLinked
+    get() = false
 
   override val faceTrackingAvailable: Boolean
-    get() = BuildConfig.PICO_FACE_TRACKING && xrSdkLinked
+    get() = false
 
   override val bodyTrackingAvailable: Boolean
-    get() = BuildConfig.PICO_BODY_TRACKING && xrSdkLinked
+    get() = false
 
   /**
    * Which SDK classes are linked, keyed by a stable name.
    *
-   * This is the diagnostic an app calls when something reports
-   * unavailable: it says which AAR is missing, rather than only that
-   * something is.
+   * Diagnostic classpath information only. A present class does not mean
+   * expo-pico has implemented the corresponding native API.
    */
   override fun getSpatialSdkProbe(): Map<String, Boolean> =
     SDK_PROBES.mapValues { (_, className) -> classPresent(className) }
@@ -149,13 +134,13 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
     }
 
   override fun createSpatialAnchor(pose: SpatialPose): Promise<SpatialAnchorResult> =
-    needsSpatialSdk("createSpatialAnchor")
+    unavailableSpatialImplementation("createSpatialAnchor")
 
   override fun setWindowContainerProperties(
     props: WindowContainerProperties
-  ): Promise<Unit> = needsSpatialSdk("setWindowContainerProperties")
+  ): Promise<Unit> = unavailableSpatialImplementation("setWindowContainerProperties")
 
-  override fun requestFullSpace(): Promise<Unit> = needsSpatialSdk("requestFullSpace")
+  override fun requestFullSpace(): Promise<Unit> = unavailableSpatialImplementation("requestFullSpace")
 
   override fun getGazeSnapshot(): Promise<GazePose?> =
     needsCapability("getGazeSnapshot", BuildConfig.PICO_EYE_TRACKING, "eyeTracking")
@@ -164,8 +149,8 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
     needsCapability("getSceneMesh", BuildConfig.PICO_SCENE_MESH, "sceneMesh")
 
   // Streaming surfaces. Registration returns a real id so JS
-  // subscribe/unsubscribe code stays uniform across packages; with no SDK
-  // linked there is nothing producing frames, so nothing is emitted.
+  // subscribe/unsubscribe code stays uniform across packages. Native event
+  // delivery is not implemented, so no frames are emitted even with an SDK.
   override fun addGazeListener(listener: Callback<(gaze: GazePose) -> Unit>): Double = nextListenerId()
 
   override fun addSceneMeshUpdateListener(listener: Callback<(mesh: SceneMeshRaw) -> Unit>): Double =
@@ -192,36 +177,22 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
     runCatching { Class.forName(className, false, HybridPicoSpatial::class.java.classLoader) }
       .isSuccess
 
-  /**
-   * Distinguishes "not declared" from "SDK missing" for the same reason
-   * `@expo-pico/core` does: the first is fixed in `app.config.ts`, the
-   * second by placing the AAR. One generic error sends the developer to
-   * the wrong file.
-   */
+  /** Configuration is useful context, but cannot complete native wiring. */
   private fun <T> needsCapability(
     what: String,
     declared: Boolean,
     optionName: String,
   ): Promise<T> {
-    if (!declared) {
-      return Promise.rejected(
-        IllegalStateException(
-          "CAPABILITY_NOT_DECLARED: $what requires `$optionName: true` in the " +
-            "@expo-pico/core plugin options. Add it and re-run prebuild."
-        )
-      )
-    }
-    return needsSpatialSdk(what)
+    val configurationNote = if (declared) "" else
+      " This app also does not declare `$optionName: true` in @expo-pico/core plugin options."
+    return unavailableSpatialImplementation(what, configurationNote)
   }
 
-  private fun <T> needsSpatialSdk(what: String): Promise<T> =
+  private fun <T> unavailableSpatialImplementation(what: String, configurationNote: String = ""): Promise<T> =
     Promise.rejected(
       IllegalStateException(
-        "SPATIAL_SDK_NOT_LINKED: $what requires the PICO Spatial Tools SDK, which is " +
-          "not on the classpath. The AARs are licensed under the PICO Developer " +
-          "Agreement and cannot be redistributed, so they are not vendored in this " +
-          "package — see vendor/pico-sdk/README.md for how to obtain and place them. " +
-          "Call getSpatialSdkProbe() to see exactly which classes are missing."
+        "NOT_IMPLEMENTED: @expo-pico/spatial.$what has no native implementation in this release. " +
+          "Adding an AAR or enabling plugin flags does not implement this API." + configurationNote
       )
     )
 
@@ -234,7 +205,7 @@ class HybridPicoSpatial : HybridPicoSpatialSpec() {
     const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
 
     val SDK_PROBES = mapOf(
-      // Legacy/private PVR-era Spatial SDK seam still used by the anchor path.
+      // Legacy classpath probe; the anchor API has no native implementation.
       "legacySpatialAnchors" to SPATIAL_SDK_CLASS,
 
       // Public PICO Spatial SDK 6.x runtime probes. Class presence does not

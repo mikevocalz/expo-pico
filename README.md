@@ -36,7 +36,7 @@ New here? [docs/QUICKSTART.md](./docs/QUICKSTART.md) walks you from a fresh proj
 | [`expo-pico-leaderboards`](./packages/expo-pico-leaderboards)   | live        | `LeaderboardClient.getLeaderboardClient`: `getLeaderboardArray / getEntries / getEntriesAfterRank / writeEntry`; emulated `getUserEntry`                                                                                             |
 | [`expo-pico-social`](./packages/expo-pico-social)               | partial     | `PicoFriendClient.getFriendClient` (`getFriends / launchFriendRequestFlow / loadAccountInfo`) plus `PicoSocialClient.getSocialClient` (`setPresence / clearPresence / sendInvites`); accept/decline/block/unblock removed in PPS 1.x |
 | [`expo-pico-notifications`](./packages/expo-pico-notifications) | live        | `PPSPushClient.getClientImpl` → `register(appId, fcmToken, IRegisterPPSPushCallback)` via reflection Proxy                                                                                                                           |
-| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | seam        | Eye / face / body / scene-mesh / anchors. Independent of PPS, and **not yet wired**: 8 of 11 methods reject with `XR_SDK_NOT_LINKED`, and no code path calls the XR SDK even when `pico-spatial-sdk.aar` is present                  |
+| [`expo-pico-spatial`](./packages/expo-pico-spatial)             | partial     | SDK 6 WindowContainer open/close bridge and configuration diagnostics. Anchors, live space transitions and tracking/scene-mesh APIs are unimplemented; native calls reject with `NOT_IMPLEMENTED`.                                   |
 | [`expo-pico-rooms`](./packages/expo-pico-rooms)                 | partial     | PPS 1.x removed dedicated rooms. `getFriendsAndRooms()` / `getRoomInfo()` read the friend discovery feed; every mutating call is `NOT_IN_PPS_1_0`. For create/join run state on Fishjam / Colyseus                                   |
 | [`expo-pico-rtc`](./packages/expo-pico-rtc)                     | unavailable | PPS 1.x removed RTC. Use `@fishjam-cloud/react-native-webrtc`                                                                                                                                                                        |
 | [`expo-pico-storage`](./packages/expo-pico-storage)             | unavailable | PPS 1.x removed cloud storage. Run per-player backend keyed off `account.getUserProfile().userId`, or `expo-secure-store` for local                                                                                                  |
@@ -56,11 +56,12 @@ Every package README carries the same chip, so status travels with the package.
 > ### The XR runtime is not implemented
 >
 > `expo-pico-core`'s hand, eye, face, body, motion-tracker, controller,
-> boundary and scene-mesh methods — 37 of them on `HybridPicoRuntime` — all
-> route to a helper that rejects with `CAPABILITY_NOT_DECLARED` or
-> `XR_SDK_NOT_LINKED`. There is **no branch that calls the PICO XR SDK**, so
-> obtaining the licensed AAR and dropping it into `vendor/pico-sdk/` does not
-> switch them on. `expo-pico-spatial` is the same for 8 of its 11 methods.
+> boundary and scene-mesh methods on `HybridPicoRuntime` reject with
+> `NOT_IMPLEMENTED`; their native XR wiring is unfinished. Adding an AAR or
+> declaring a capability does not implement those calls. The corresponding
+> availability flags remain false. Spatial anchors, live space transitions
+> and tracking/scene-mesh APIs have the same limitation. The implemented
+> Spatial SDK 6 WindowContainer open/close bridge is separate.
 >
 > What does work today is everything PPS-backed (account, IAP, subscription,
 > achievements, leaderboards, social, notifications, rooms discovery), plus
@@ -88,13 +89,30 @@ The legacy AAR-drop-in path is still supported for projects on PVR 2.x; see [ven
 Ships with `expo-pico-core` already wired, a runtime diagnostics HUD, and a pre-flight doctor script.
 
 ```bash
-npx create-expo-app --template @expo-pico/template my-pico-app
+npx create-expo-app@latest my-pico-app --template https://github.com/mikevocalz/expo-pico/tree/release%2Ftemplate
 cd my-pico-app
-yarn install
-npx expo-pico-doctor       # lint the config
-npx expo prebuild --clean  # generate android/
-npx expo run:android --variant picoDebug
+npm run doctor
+npm run pico
 ```
+
+The starter opens a native React Native panel on PICO 4 / 4 Ultra. Add a
+renderer and select `appType: 'vr'` or `'mr'` when you need an immersive scene.
+`expo run:android` generates the Android project automatically on first run.
+After changing native configuration, `npx expo prebuild --clean --platform android`
+recreates it from the plugins.
+
+### Native dependency delivery
+
+Released packages include their compiled Eskiu runtime, config-plugin runtime
+dependencies and generated Nitro bindings. Apps use the standard Android
+toolchain; no separate Eskiu compiler installation or manual PICO AAR copying
+is part of normal setup. PPS libraries are pinned and resolved automatically
+from Maven. A new machine may download dependencies; later builds reuse them.
+
+The release check installs the packed packages into an app outside this
+monorepo, runs two clean prebuilds, and builds the PICO APK with isolated pnpm
+dependencies. See [the installation contract](docs/INSTALL-FROM-GITHUB.md#native-code)
+for the distinction between consuming a package and developing its native code.
 
 ### Option 2: add to an existing Expo app
 

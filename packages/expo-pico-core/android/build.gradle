@@ -206,10 +206,9 @@ dependencies {
     // ComponentActivity and OnBackPressedCallback for PicoPanelActivity.
     implementation "androidx.activity:activity:${safeExtGet('androidxActivityVersion', '1.8.2')}"
 
-    // PICO Platform SDK AAR — compile-only for controller haptics, so it is
-    // never bundled into the published npm package. Consumers place the AAR
-    // under vendor/pico-sdk/. See vendor/pico-sdk/README.md.
-    compileOnly fileTree(dir: '../../vendor/pico-sdk', include: ['*.aar'])
+    // Platform-service dependencies are resolved from Maven by the config
+    // plugin in the app's PICO flavor. This module has no compile-time
+    // dependency on a manually supplied SDK or a monorepo vendor directory.
 }
 
 // Adds the nitrogen-generated Kotlin to this module's source set. Run

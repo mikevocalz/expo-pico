@@ -9,44 +9,20 @@ import expo.modules.pico.BuildConfig
 import expo.modules.pico.PicoEskiuBridge
 
 /**
- * `PicoRuntime` — the live XR surface.
+ * `PicoRuntime` — Android sensor data, Eskiu helpers and XR API contracts.
  *
- * Where the data comes from, and why it is split:
- *
- * - **Android public APIs** back what they can. High-rate sensors are real
- *   `SensorManager` entries, so `getHighRateSensors()` returns actual
- *   hardware rather than a declaration.
- * - **Everything else needs the PICO XR SDK** — `PXR_Plugin` and friends,
- *   which ship as a vendored AAR under `vendor/pico-sdk/` and are declared
- *   `compileOnly` in `android/build.gradle` so they are never bundled into
- *   the published npm package. That directory is gitignored: the AAR is
- *   under the PICO Developer Agreement and cannot be redistributed.
- *
- * So this class does not reference `PXR_Plugin` types directly. A build
- * with no AAR dropped in has to compile, and a build with one has to work,
- * and a direct import cannot do both. Calls that need the SDK check
- * [xrSdkLinked] and fail with a message naming what is missing.
- *
- * The declared-capability flags below come from `BuildConfig`, which the
- * config plugin fills in at prebuild — they say what the app asked for,
- * which is a different question from whether the SDK is present. Both have
- * to be true for a call to work.
+ * SensorManager and PicoEskiuBridge back the implemented methods below.
+ * The remaining XR methods do not yet call a headset runtime. An SDK class
+ * on the classpath or a BuildConfig declaration cannot implement them, so
+ * they reject with NOT_IMPLEMENTED and are not advertised as available.
  */
 class HybridPicoRuntime : HybridPicoRuntimeSpec() {
 
-  /**
-   * Whether the PICO XR SDK is on the runtime classpath.
-   *
-   * Probed by name rather than imported, for the reason in the class doc.
-   */
-  private val xrSdkLinked: Boolean
-    get() = PicoDevice.classPresent(PXR_PLUGIN_CLASS)
-
   override val hapticsAvailable: Boolean
-    get() = BuildConfig.PICO_CONTROLLER_HAPTICS && xrSdkLinked
+    get() = false
 
   override val passthroughAvailable: Boolean
-    get() = BuildConfig.PICO_PASSTHROUGH && xrSdkLinked
+    get() = false
 
   /**
    * High-rate motion sensors, read from Android directly.
@@ -79,10 +55,10 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
 
   // --- Display -------------------------------------------------------
 
-  override fun getCurrentRefreshRate(): Promise<Double?> = needsXrSdk("getCurrentRefreshRate")
+  override fun getCurrentRefreshRate(): Promise<Double?> = unavailableXrImplementation("getCurrentRefreshRate")
 
   /**
-   * The rates the app declared, when the SDK cannot be asked.
+   * The rates the app declared; this is not a live headset query.
    *
    * These come from the plugin's `refreshRates` option, so they are what
    * the manifest advertises rather than what the headset currently offers.
@@ -91,20 +67,17 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
    * TypeScript side.
    */
   override fun getSupportedRefreshRates(): Promise<DoubleArray?> {
-    if (!xrSdkLinked) {
-      val declared = PicoDevice.splitList(BuildConfig.PICO_REFRESH_RATES)
-        .mapNotNull { it.toDoubleOrNull() }
-      return Promise.resolved(declared.takeIf { it.isNotEmpty() }?.toDoubleArray())
-    }
-    return needsXrSdk("getSupportedRefreshRates")
+    val declared = PicoDevice.splitList(BuildConfig.PICO_REFRESH_RATES)
+      .mapNotNull { it.toDoubleOrNull() }
+    return Promise.resolved(declared.takeIf { it.isNotEmpty() }?.toDoubleArray())
   }
 
-  override fun setRefreshRate(hz: Double): Promise<Boolean> = needsXrSdk("setRefreshRate")
+  override fun setRefreshRate(hz: Double): Promise<Boolean> = unavailableXrImplementation("setRefreshRate")
 
-  override fun getFoveationLevel(): Promise<PicoFoveationLevel?> = needsXrSdk("getFoveationLevel")
+  override fun getFoveationLevel(): Promise<PicoFoveationLevel?> = unavailableXrImplementation("getFoveationLevel")
 
   override fun setFoveationLevel(level: PicoFoveationLevel): Promise<Boolean> =
-    needsXrSdk("setFoveationLevel")
+    unavailableXrImplementation("setFoveationLevel")
 
   // --- Passthrough ---------------------------------------------------
 
@@ -186,7 +159,7 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
 
   // --- Input ---------------------------------------------------------
 
-  override fun getControllers(): Promise<Array<PicoController>?> = needsXrSdk("getControllers")
+  override fun getControllers(): Promise<Array<PicoController>?> = unavailableXrImplementation("getControllers")
 
   override fun triggerHaptic(
     hand: PicoHand,
@@ -221,8 +194,8 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
     needsCapability("getHrtfProfile", BuildConfig.PICO_SPATIAL_AUDIO, "spatialAudio")
 
   /**
-   * The passthrough dial is a hardware control on the headset. Reading it
-   * needs the XR SDK, so with no SDK linked there is nothing to listen to.
+   * The passthrough dial is a hardware control on the headset. Its native
+   * event delivery is not implemented, including when an SDK is linked.
    * Registration still returns a real id so JS subscribe/unsubscribe code
    * stays uniform; nothing is emitted.
    */
@@ -255,37 +228,22 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
 
   private var listenerCounter: Double = 0.0
 
-  /**
-   * Rejects with which of the two preconditions failed.
-   *
-   * Separating them matters for debugging: "you did not declare this
-   * capability" is fixed in `app.config.ts`, while "the SDK is not linked"
-   * is fixed by dropping the AAR into `vendor/pico-sdk/`. A single generic
-   * error would send the developer to the wrong place.
-   */
+  /** Configuration is useful context, but cannot complete native wiring. */
   private fun <T> needsCapability(
     what: String,
     declared: Boolean,
     optionName: String,
   ): Promise<T> {
-    if (!declared) {
-      return Promise.rejected(
-        IllegalStateException(
-          "CAPABILITY_NOT_DECLARED: $what requires `$optionName: true` in the " +
-            "@expo-pico/core plugin options. Add it and re-run prebuild."
-        )
-      )
-    }
-    return needsXrSdk(what)
+    val configurationNote = if (declared) "" else
+      " This app also does not declare `$optionName: true` in @expo-pico/core plugin options."
+    return unavailableXrImplementation(what, configurationNote)
   }
 
-  private fun <T> needsXrSdk(what: String): Promise<T> =
+  private fun <T> unavailableXrImplementation(what: String, configurationNote: String = ""): Promise<T> =
     Promise.rejected(
       IllegalStateException(
-        "XR_SDK_NOT_LINKED: $what requires the PICO XR SDK ($PXR_PLUGIN_CLASS), which " +
-          "is not on the classpath. The AAR is licensed under the PICO Developer " +
-          "Agreement and cannot be redistributed, so it is not vendored in this " +
-          "package — see vendor/pico-sdk/README.md for how to obtain and place it."
+        "NOT_IMPLEMENTED: @expo-pico/core.$what has no native XR implementation in this release. " +
+          "Adding an AAR or enabling plugin flags does not implement this API." + configurationNote
       )
     )
 
@@ -293,8 +251,6 @@ class HybridPicoRuntime : HybridPicoRuntimeSpec() {
   // so it is no longer private.
   companion object : HybridPicoRuntimeSpec.Companion {
     override fun constructor(): HybridPicoRuntime = HybridPicoRuntime()
-
-    const val PXR_PLUGIN_CLASS = "com.picovr.picovrlib.PXR_Plugin"
 
     val SENSOR_TYPES = listOf(
       Sensor.TYPE_ACCELEROMETER to PicoSensorType.ACCELEROMETER,

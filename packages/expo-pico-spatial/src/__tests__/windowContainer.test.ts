@@ -54,6 +54,50 @@ afterEach(() => {
   jest.dontMock('react-native-nitro-modules');
 });
 
+describe('unfinished native spatial APIs', () => {
+  it('reports NOT_IMPLEMENTED for scene mesh when the module exists but the capability is false', async () => {
+    const getSceneMesh = jest.fn(() =>
+      Promise.reject(
+        new Error('NOT_IMPLEMENTED: @expo-pico/spatial.getSceneMesh has no native implementation')
+      )
+    );
+    const api = loadWithNative(
+      fakeNative(
+        { sdkLinked: true, spatialPlatform: true },
+        { sceneMeshAvailable: false, getSceneMesh }
+      )
+    );
+
+    expect(api.isSceneMeshAvailable()).toBe(false);
+    await expect(api.getSceneMesh()).rejects.toMatchObject({ code: 'NOT_IMPLEMENTED' });
+    expect(getSceneMesh).toHaveBeenCalledTimes(1);
+    expect(api.openWindowContainer('main').ok).toBe(true);
+  });
+
+  it('does not mistake a linked SDK for an anchor implementation', async () => {
+    const api = loadWithNative(
+      fakeNative(
+        { sdkLinked: true, spatialPlatform: true },
+        {
+          createSpatialAnchor: () =>
+            Promise.reject(
+              new Error(
+                'NOT_IMPLEMENTED: @expo-pico/spatial.createSpatialAnchor has no native implementation'
+              )
+            ),
+        }
+      )
+    );
+
+    await expect(
+      api.createSpatialAnchor({
+        position: { x: 0, y: 0, z: 0 },
+        orientation: { x: 0, y: 0, z: 0, w: 1 },
+      })
+    ).rejects.toMatchObject({ code: 'NOT_IMPLEMENTED' });
+  });
+});
+
 describe('layoutReadinessFromProbe', () => {
   const allClassesPresent = {
     spatialUiScope: true,

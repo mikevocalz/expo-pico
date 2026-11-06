@@ -14,6 +14,7 @@ import { withPicoGradleProperties } from './withPicoGradleProperties';
 import { withPicoLocalProperties } from './withPicoLocalProperties';
 import { withPicoMainApplication } from './withPicoMainApplication';
 import { withPicoNewArchCheck } from './withPicoNewArchCheck';
+import { withPicoNativeArtifacts } from './withPicoNativeArtifacts';
 import { withPicoNitroModules } from './withPicoNitroModules';
 import { withPicoOneLauncherTile } from './withPicoOneLauncherTile';
 import { withPicoOpenXrLoaderOverlay } from './withPicoOpenXrLoaderOverlay';
@@ -90,6 +91,7 @@ const withPico: ConfigPlugin<PicoPluginOptions | void> = (config, rawOptions) =>
   // 16KB ELF alignment overlay — runs last so it sees the final
   // android/ tree (jniLibs are merged at packaging time).
   config = withPicoOpenXrLoaderOverlay(config, options);
+  config = withPicoNativeArtifacts(config, options);
 
   return config;
 };
