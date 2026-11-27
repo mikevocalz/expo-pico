@@ -36,9 +36,9 @@
     "react": "*",
     "react-native": "*"
   },
-  "gitHead": "ac5ed92556907b11b3c92479a64889850f96d910",
+  "gitHead": "596588242dad2ed19bff57992b66d4c3bf7d2b2a",
   "expoPico": {
-    "sourceCommit": "ac5ed92556907b11b3c92479a64889850f96d910",
+    "sourceCommit": "596588242dad2ed19bff57992b66d4c3bf7d2b2a",
     "upstream": "expo-horizon-core@58.0.1"
   },
   "dependencies": {
