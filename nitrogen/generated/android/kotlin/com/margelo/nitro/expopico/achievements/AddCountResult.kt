@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.achievements
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class AddCountResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is AddCountResult) return false
-    return Objects.deepEquals(this.apiName, other.apiName)
-      && Objects.deepEquals(this.currentCount, other.currentCount)
-      && Objects.deepEquals(this.targetCount, other.targetCount)
-      && Objects.deepEquals(this.justUnlocked, other.justUnlocked)
+    return this.apiName == other.apiName
+      && this.currentCount.toBits() == other.currentCount.toBits()
+      && this.targetCount.toBits() == other.targetCount.toBits()
+      && this.justUnlocked == other.justUnlocked
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      apiName,
-      currentCount,
-      targetCount,
-      justUnlocked
-    ).contentDeepHashCode()
+    var result = this.apiName.hashCode()
+    result = 31 * result + this.currentCount.hashCode()
+    result = 31 * result + this.targetCount.hashCode()
+    result = 31 * result + this.justUnlocked.hashCode()
+    return result
   }
 
   companion object {
