@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -40,23 +39,22 @@ data class SocialUser(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SocialUser) return false
-    return Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.displayName, other.displayName)
-      && Objects.deepEquals(this.avatarUrl, other.avatarUrl)
-      && Objects.deepEquals(this.presenceStatus, other.presenceStatus)
-      && Objects.deepEquals(this.presenceRichText, other.presenceRichText)
-      && Objects.deepEquals(this.isInSameApp, other.isInSameApp)
+    return this.userId == other.userId
+      && this.displayName == other.displayName
+      && (this.avatarUrl == null && other.avatarUrl == null || this.avatarUrl != null && other.avatarUrl != null && this.avatarUrl == other.avatarUrl)
+      && this.presenceStatus == other.presenceStatus
+      && (this.presenceRichText == null && other.presenceRichText == null || this.presenceRichText != null && other.presenceRichText != null && this.presenceRichText == other.presenceRichText)
+      && this.isInSameApp == other.isInSameApp
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      userId,
-      displayName,
-      avatarUrl,
-      presenceStatus,
-      presenceRichText,
-      isInSameApp
-    ).contentDeepHashCode()
+    var result = this.userId.hashCode()
+    result = 31 * result + this.displayName.hashCode()
+    result = 31 * result + (if (this.avatarUrl != null) this.avatarUrl.hashCode() else 0)
+    result = 31 * result + this.presenceStatus.hashCode()
+    result = 31 * result + (if (this.presenceRichText != null) this.presenceRichText.hashCode() else 0)
+    result = 31 * result + this.isInSameApp.hashCode()
+    return result
   }
 
   companion object {

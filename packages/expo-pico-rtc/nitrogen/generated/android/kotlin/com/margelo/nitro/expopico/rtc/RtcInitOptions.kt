@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rtc
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class RtcInitOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcInitOptions) return false
-    return Objects.deepEquals(this.appId, other.appId)
-      && Objects.deepEquals(this.audioScenario, other.audioScenario)
+    return (this.appId == null && other.appId == null || this.appId != null && other.appId != null && this.appId == other.appId)
+      && (this.audioScenario == null && other.audioScenario == null || this.audioScenario != null && other.audioScenario != null && this.audioScenario == other.audioScenario)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      appId,
-      audioScenario
-    ).contentDeepHashCode()
+    var result = (if (this.appId != null) this.appId.hashCode() else 0)
+    result = 31 * result + (if (this.audioScenario != null) this.audioScenario.hashCode() else 0)
+    return result
   }
 
   companion object {

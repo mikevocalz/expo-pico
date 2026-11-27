@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class InvitableUsersResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is InvitableUsersResult) return false
-    return Objects.deepEquals(this.users, other.users)
-      && Objects.deepEquals(this.nextPageToken, other.nextPageToken)
+    return this.users.contentDeepEquals(other.users)
+      && (this.nextPageToken == null && other.nextPageToken == null || this.nextPageToken != null && other.nextPageToken != null && this.nextPageToken == other.nextPageToken)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      users,
-      nextPageToken
-    ).contentDeepHashCode()
+    var result = this.users.contentDeepHashCode()
+    result = 31 * result + (if (this.nextPageToken != null) this.nextPageToken.hashCode() else 0)
+    return result
   }
 
   companion object {

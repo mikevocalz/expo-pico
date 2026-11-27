@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.iap
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -43,25 +42,24 @@ data class IapProduct(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is IapProduct) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.title, other.title)
-      && Objects.deepEquals(this.description, other.description)
-      && Objects.deepEquals(this.formattedPrice, other.formattedPrice)
-      && Objects.deepEquals(this.priceMicros, other.priceMicros)
-      && Objects.deepEquals(this.currency, other.currency)
-      && Objects.deepEquals(this.type, other.type)
+    return this.sku == other.sku
+      && this.title == other.title
+      && this.description == other.description
+      && this.formattedPrice == other.formattedPrice
+      && this.priceMicros.toBits() == other.priceMicros.toBits()
+      && this.currency == other.currency
+      && this.type == other.type
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      title,
-      description,
-      formattedPrice,
-      priceMicros,
-      currency,
-      type
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + this.title.hashCode()
+    result = 31 * result + this.description.hashCode()
+    result = 31 * result + this.formattedPrice.hashCode()
+    result = 31 * result + this.priceMicros.hashCode()
+    result = 31 * result + this.currency.hashCode()
+    result = 31 * result + this.type.hashCode()
+    return result
   }
 
   companion object {

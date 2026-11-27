@@ -22,7 +22,7 @@ Installing an SDK archive or enabling capability declarations does not implement
 Install the GitHub release packages and the pinned Nitro peer into an Expo SDK 58 app:
 
 ```bash
-npm install "github:mikevocalz/expo-pico#release/core" "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/spatial" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
+npm install "github:mikevocalz/expo-pico#release/core" "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/spatial" react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101
 ```
 
 The packages are not published on npm. See [Installing from GitHub](../../docs/INSTALL-FROM-GITHUB.md) for release pins and peer dependencies. Keep the package-manager lockfile.

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.account
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PicoUserProfile(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoUserProfile) return false
-    return Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.displayName, other.displayName)
-      && Objects.deepEquals(this.avatarUrl, other.avatarUrl)
+    return this.userId == other.userId
+      && this.displayName == other.displayName
+      && (this.avatarUrl == null && other.avatarUrl == null || this.avatarUrl != null && other.avatarUrl != null && this.avatarUrl == other.avatarUrl)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      userId,
-      displayName,
-      avatarUrl
-    ).contentDeepHashCode()
+    var result = this.userId.hashCode()
+    result = 31 * result + this.displayName.hashCode()
+    result = 31 * result + (if (this.avatarUrl != null) this.avatarUrl.hashCode() else 0)
+    return result
   }
 
   companion object {

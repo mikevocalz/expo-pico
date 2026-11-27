@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.subscription
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -43,25 +42,24 @@ data class ActiveSubscription(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is ActiveSubscription) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.orderId, other.orderId)
-      && Objects.deepEquals(this.purchaseToken, other.purchaseToken)
-      && Objects.deepEquals(this.currentPeriodStartMs, other.currentPeriodStartMs)
-      && Objects.deepEquals(this.currentPeriodEndMs, other.currentPeriodEndMs)
-      && Objects.deepEquals(this.autoRenewing, other.autoRenewing)
-      && Objects.deepEquals(this.status, other.status)
+    return this.sku == other.sku
+      && this.orderId == other.orderId
+      && this.purchaseToken == other.purchaseToken
+      && this.currentPeriodStartMs.toBits() == other.currentPeriodStartMs.toBits()
+      && this.currentPeriodEndMs.toBits() == other.currentPeriodEndMs.toBits()
+      && this.autoRenewing == other.autoRenewing
+      && this.status == other.status
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      orderId,
-      purchaseToken,
-      currentPeriodStartMs,
-      currentPeriodEndMs,
-      autoRenewing,
-      status
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + this.orderId.hashCode()
+    result = 31 * result + this.purchaseToken.hashCode()
+    result = 31 * result + this.currentPeriodStartMs.hashCode()
+    result = 31 * result + this.currentPeriodEndMs.hashCode()
+    result = 31 * result + this.autoRenewing.hashCode()
+    result = 31 * result + this.status.hashCode()
+    return result
   }
 
   companion object {

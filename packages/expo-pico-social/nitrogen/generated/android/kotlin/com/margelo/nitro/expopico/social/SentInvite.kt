@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class SentInvite(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SentInvite) return false
-    return Objects.deepEquals(this.inviteId, other.inviteId)
-      && Objects.deepEquals(this.toUserId, other.toUserId)
-      && Objects.deepEquals(this.destinationApiName, other.destinationApiName)
-      && Objects.deepEquals(this.sentAt, other.sentAt)
-      && Objects.deepEquals(this.expiresAt, other.expiresAt)
+    return this.inviteId == other.inviteId
+      && this.toUserId == other.toUserId
+      && this.destinationApiName == other.destinationApiName
+      && this.sentAt.toBits() == other.sentAt.toBits()
+      && this.expiresAt.toBits() == other.expiresAt.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      inviteId,
-      toUserId,
-      destinationApiName,
-      sentAt,
-      expiresAt
-    ).contentDeepHashCode()
+    var result = this.inviteId.hashCode()
+    result = 31 * result + this.toUserId.hashCode()
+    result = 31 * result + this.destinationApiName.hashCode()
+    result = 31 * result + this.sentAt.hashCode()
+    result = 31 * result + this.expiresAt.hashCode()
+    return result
   }
 
   companion object {

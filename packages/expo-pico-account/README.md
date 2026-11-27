@@ -35,7 +35,7 @@ empty results or `SERVICE_UNAVAILABLE` rather than throwing.
 ## Install
 
 ```bash
-npm install "github:mikevocalz/expo-pico#release/core" "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/account" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
+npm install "github:mikevocalz/expo-pico#release/core" "github:mikevocalz/expo-pico#release/platform-service-common" "github:mikevocalz/expo-pico#release/account" react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101
 ```
 
 Core is a peer dependency and supplies the config plugin. Account autolinks as

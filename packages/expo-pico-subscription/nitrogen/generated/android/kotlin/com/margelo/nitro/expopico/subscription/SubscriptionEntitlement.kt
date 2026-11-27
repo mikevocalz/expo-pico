@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.subscription
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class SubscriptionEntitlement(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SubscriptionEntitlement) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.status, other.status)
-      && Objects.deepEquals(this.currentSubscription, other.currentSubscription)
-      && Objects.deepEquals(this.expiresAtMs, other.expiresAtMs)
+    return this.sku == other.sku
+      && this.status == other.status
+      && (this.currentSubscription == null && other.currentSubscription == null || this.currentSubscription != null && other.currentSubscription != null && this.currentSubscription == other.currentSubscription)
+      && (this.expiresAtMs == null && other.expiresAtMs == null || this.expiresAtMs != null && other.expiresAtMs != null && this.expiresAtMs.toBits() == other.expiresAtMs.toBits())
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      status,
-      currentSubscription,
-      expiresAtMs
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + this.status.hashCode()
+    result = 31 * result + (if (this.currentSubscription != null) this.currentSubscription.hashCode() else 0)
+    result = 31 * result + (if (this.expiresAtMs != null) this.expiresAtMs.hashCode() else 0)
+    return result
   }
 
   companion object {

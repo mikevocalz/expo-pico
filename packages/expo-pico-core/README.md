@@ -103,20 +103,23 @@ Full plugin option reference. All options are optional; defaults shown below.
 
 All default to `false` / empty. Each emits `uses-feature` (`android:required="false"`), permission(s), and/or meta-data entries.
 
-| Option                    | Surfaces                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `handTracking`            | `pico.hardware.handtracking`                                                  |
-| `passthrough`             | `pico.hardware.passthrough`                                                   |
-| `sceneUnderstanding`      | `pico.software.scene` (plane-only)                                            |
-| `sceneMesh`               | `pico.software.scenemesh` (distinct from `sceneUnderstanding`)                |
-| `eyeTracking`             | `pico.hardware.eyetracking` + `com.picovr.permission.EYE_TRACKING`            |
-| `faceTracking`            | `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`          |
-| `bodyTracking`            | `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING` _(seam)_ |
-| `spatialAudio`            | `pico.hardware.spatialaudio` _(seam)_                                         |
-| `foveatedRendering`       | `pico.hardware.foveation` + `com.pico.foveation.enabled=true` meta _(seam)_   |
-| `boundary`                | `pico.hardware.boundary` + `com.picovr.permission.BOUNDARY` _(seam)_          |
-| `highSamplingRateSensors` | `android.permission.HIGH_SAMPLING_RATE_SENSORS`                               |
-| `refreshRates`            | `com.pico.refreshRates` meta with comma-separated Hz values _(seam)_          |
+| Option                    | Surfaces                                                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `handTracking`            | `pico.hardware.handtracking` + `com.picovr.permission.HAND_TRACKING`                                  |
+| `passthrough`             | `pico.hardware.passthrough`                                                                           |
+| `sceneUnderstanding`      | `pico.software.scene` (plane-only) + `com.picovr.permission.SPATIAL_DATA`                             |
+| `sceneMesh`               | `pico.software.scenemesh` (distinct from `sceneUnderstanding`) + `com.picovr.permission.SPATIAL_DATA` |
+| `spatialData`             | `com.picovr.permission.SPATIAL_DATA`, for spatial anchors without scene features                      |
+| `eyeTracking`             | `pico.hardware.eyetracking` + `com.picovr.permission.EYE_TRACKING`                                    |
+| `faceTracking`            | `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`                                  |
+| `bodyTracking`            | `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING` _(seam)_                         |
+| `spatialAudio`            | `pico.hardware.spatialaudio` _(seam)_                                                                 |
+| `foveatedRendering`       | `pico.hardware.foveation` + `com.pico.foveation.enabled=true` meta _(seam)_                           |
+| `boundary`                | `pico.hardware.boundary` + `com.picovr.permission.BOUNDARY` _(seam)_                                  |
+| `highSamplingRateSensors` | `android.permission.HIGH_SAMPLING_RATE_SENSORS`                                                       |
+| `refreshRates`            | `com.pico.refreshRates` meta with comma-separated Hz values _(seam)_                                  |
+
+PICO Spatial SDK 6.2.8 made hand, mesh and plane tracking runtime grants. `HAND_TRACKING` and `SPATIAL_DATA` are requested in the immersive activity: the root registered with `registerImmersiveScene()` asks on mount (after eye tracking), and `capabilities.hand.enable()` and the `capabilities.scene.*` calls ask before they run. A root that `registerImmersiveScene()` did not register calls `ensureImmersivePermissions(getXrMode())` on mount. Each permission is asked for at most once per process and only when the manifest declares it.
 
 Values marked _(seam)_ are best-known key names pending PICO doc confirmation. Emitted with `required="false"` so misnames are install-safe.
 

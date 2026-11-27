@@ -153,8 +153,8 @@ dependencies {
     implementation "com.facebook.react:react-android"
     implementation "com.facebook.react:hermes-android"
     implementation project(":react-native-nitro-modules")
-    compileOnly "com.pico.spatial.core:core:6.1.9"
-    compileOnly "com.pico.spatial.foundation:foundation:6.1.9"
+    compileOnly "com.pico.spatial.core:core:6.2.8"
+    compileOnly "com.pico.spatial.foundation:foundation:6.2.8"
 }
 
 // Adds the nitrogen-generated Kotlin to this module's source set. Run

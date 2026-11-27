@@ -1,7 +1,13 @@
 import { createElement, useEffect, type ComponentType } from 'react';
 import { AppRegistry } from 'react-native';
 
+import type { PicoXRMode } from './types';
+
 import { buildXrMode, ensureEyeTrackingPermission } from './eyeTrackingPermission';
+import {
+  ensureHandTrackingPermission,
+  ensureSpatialDataPermission,
+} from './picoTrackingPermissions';
 
 /**
  * Root component name PICO's immersive activity mounts.
@@ -38,25 +44,48 @@ export const IMMERSIVE_ROOT_COMPONENT = 'VRQuestScene';
  * helper with their own renderer integration.
  */
 export function registerImmersiveScene(component: ComponentType<object>): void {
-  const root = withImmersiveEyeTracking(component);
+  const root = withImmersivePermissions(component);
   AppRegistry.registerComponent(IMMERSIVE_ROOT_COMPONENT, () => root);
 }
 
 /**
- * Wraps the scene so the eye tracking request happens on mount, inside the
+ * Ask for every runtime permission the immersive scene uses, one dialog at a
+ * time, in the immersive activity: eye tracking, then PICO hand tracking, then
+ * PICO spatial data. Each request happens only when the manifest declares the
+ * permission and it is not granted, and at most once per process.
+ *
+ * The root registered with `registerImmersiveScene()` calls this on mount.
+ * Call it yourself only when the immersive activity mounts a root of its own,
+ * such as Viro's `ViroQuestEntryPoint`:
+ * `useEffect(() => { ensureImmersivePermissions(getXrMode()); }, [])`.
+ *
+ * Never rejects. It settles when the user has answered every dialog, so do
+ * not hold the scene's first frame on it.
+ */
+export async function ensureImmersivePermissions(mode: PicoXRMode): Promise<void> {
+  // Sequential: Android shows one grant dialog at a time, and a second
+  // request while one is open would be answered as denied.
+  await ensureEyeTrackingPermission(mode);
+  await ensureHandTrackingPermission(mode);
+  await ensureSpatialDataPermission(mode);
+}
+
+/**
+ * Wraps the scene so the permission requests happen on mount, inside the
  * immersive activity. Meta: "Hybrid apps that need eye tracking in immersive
  * mode must declare the permission but only request it at runtime when the
  * immersive activity launches." The 2D panel never asks.
  *
- * Fire-and-forget: the scene renders right away, and a denial leaves
- * selection on the hand ray. The once-per-process guard in
- * `ensureEyeTrackingPermission` keeps re-entries from prompting again.
+ * Fire-and-forget: the scene renders right away. A denied eye tracking grant
+ * leaves selection on the hand ray; denied PICO hand or spatial data grants
+ * leave those data sources empty. The once-per-process guards keep re-entries
+ * from prompting again.
  */
-function withImmersiveEyeTracking(Scene: ComponentType<object>): ComponentType<object> {
+function withImmersivePermissions(Scene: ComponentType<object>): ComponentType<object> {
   function ImmersiveSceneRoot(props: object) {
     useEffect(() => {
       // Never rejects; nothing to await.
-      ensureEyeTrackingPermission(buildXrMode()).catch(() => undefined);
+      ensureImmersivePermissions(buildXrMode()).catch(() => undefined);
     }, []);
     return createElement(Scene, props);
   }

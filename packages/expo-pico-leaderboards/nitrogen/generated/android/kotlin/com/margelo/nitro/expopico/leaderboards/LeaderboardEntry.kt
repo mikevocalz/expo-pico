@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.leaderboards
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -46,27 +45,26 @@ data class LeaderboardEntry(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is LeaderboardEntry) return false
-    return Objects.deepEquals(this.rank, other.rank)
-      && Objects.deepEquals(this.score, other.score)
-      && Objects.deepEquals(this.supplementaryMetric, other.supplementaryMetric)
-      && Objects.deepEquals(this.extraData, other.extraData)
-      && Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.displayName, other.displayName)
-      && Objects.deepEquals(this.isCurrentUser, other.isCurrentUser)
-      && Objects.deepEquals(this.updatedAtMs, other.updatedAtMs)
+    return this.rank.toBits() == other.rank.toBits()
+      && this.score.toBits() == other.score.toBits()
+      && (this.supplementaryMetric == null && other.supplementaryMetric == null || this.supplementaryMetric != null && other.supplementaryMetric != null && this.supplementaryMetric.toBits() == other.supplementaryMetric.toBits())
+      && (this.extraData == null && other.extraData == null || this.extraData != null && other.extraData != null && this.extraData == other.extraData)
+      && this.userId == other.userId
+      && this.displayName == other.displayName
+      && this.isCurrentUser == other.isCurrentUser
+      && this.updatedAtMs.toBits() == other.updatedAtMs.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      rank,
-      score,
-      supplementaryMetric,
-      extraData,
-      userId,
-      displayName,
-      isCurrentUser,
-      updatedAtMs
-    ).contentDeepHashCode()
+    var result = this.rank.hashCode()
+    result = 31 * result + this.score.hashCode()
+    result = 31 * result + (if (this.supplementaryMetric != null) this.supplementaryMetric.hashCode() else 0)
+    result = 31 * result + (if (this.extraData != null) this.extraData.hashCode() else 0)
+    result = 31 * result + this.userId.hashCode()
+    result = 31 * result + this.displayName.hashCode()
+    result = 31 * result + this.isCurrentUser.hashCode()
+    result = 31 * result + this.updatedAtMs.hashCode()
+    return result
   }
 
   companion object {

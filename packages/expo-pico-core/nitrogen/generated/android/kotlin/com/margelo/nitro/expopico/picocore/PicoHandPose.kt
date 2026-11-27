@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PicoHandPose(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoHandPose) return false
-    return Objects.deepEquals(this.leftHand, other.leftHand)
-      && Objects.deepEquals(this.rightHand, other.rightHand)
-      && Objects.deepEquals(this.aimEnabled, other.aimEnabled)
+    return (this.leftHand == null && other.leftHand == null || this.leftHand != null && other.leftHand != null && this.leftHand == other.leftHand)
+      && (this.rightHand == null && other.rightHand == null || this.rightHand != null && other.rightHand != null && this.rightHand == other.rightHand)
+      && this.aimEnabled == other.aimEnabled
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      leftHand,
-      rightHand,
-      aimEnabled
-    ).contentDeepHashCode()
+    var result = (if (this.leftHand != null) this.leftHand.hashCode() else 0)
+    result = 31 * result + (if (this.rightHand != null) this.rightHand.hashCode() else 0)
+    result = 31 * result + this.aimEnabled.hashCode()
+    return result
   }
 
   companion object {

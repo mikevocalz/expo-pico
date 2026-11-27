@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.iap
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class PurchaseResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PurchaseResult) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.orderId, other.orderId)
-      && Objects.deepEquals(this.purchaseToken, other.purchaseToken)
-      && Objects.deepEquals(this.purchasedAtMs, other.purchasedAtMs)
+    return this.sku == other.sku
+      && this.orderId == other.orderId
+      && this.purchaseToken == other.purchaseToken
+      && this.purchasedAtMs.toBits() == other.purchasedAtMs.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      orderId,
-      purchaseToken,
-      purchasedAtMs
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + this.orderId.hashCode()
+    result = 31 * result + this.purchaseToken.hashCode()
+    result = 31 * result + this.purchasedAtMs.hashCode()
+    return result
   }
 
   companion object {

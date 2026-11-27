@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.storage
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class StorageSyncProgressEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSyncProgressEvent) return false
-    return Objects.deepEquals(this.phase, other.phase)
-      && Objects.deepEquals(this.completedCount, other.completedCount)
-      && Objects.deepEquals(this.totalCount, other.totalCount)
+    return this.phase == other.phase
+      && this.completedCount.toBits() == other.completedCount.toBits()
+      && this.totalCount.toBits() == other.totalCount.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      phase,
-      completedCount,
-      totalCount
-    ).contentDeepHashCode()
+    var result = this.phase.hashCode()
+    result = 31 * result + this.completedCount.hashCode()
+    result = 31 * result + this.totalCount.hashCode()
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.subscription
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class SubscribeOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SubscribeOptions) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.promoCode, other.promoCode)
+    return this.sku == other.sku
+      && (this.promoCode == null && other.promoCode == null || this.promoCode != null && other.promoCode != null && this.promoCode == other.promoCode)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      promoCode
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + (if (this.promoCode != null) this.promoCode.hashCode() else 0)
+    return result
   }
 
   companion object {

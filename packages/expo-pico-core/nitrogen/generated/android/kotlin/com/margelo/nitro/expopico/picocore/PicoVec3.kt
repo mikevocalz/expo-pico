@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PicoVec3(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoVec3) return false
-    return Objects.deepEquals(this.x, other.x)
-      && Objects.deepEquals(this.y, other.y)
-      && Objects.deepEquals(this.z, other.z)
+    return this.x.toBits() == other.x.toBits()
+      && this.y.toBits() == other.y.toBits()
+      && this.z.toBits() == other.z.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      x,
-      y,
-      z
-    ).contentDeepHashCode()
+    var result = this.x.hashCode()
+    result = 31 * result + this.y.hashCode()
+    result = 31 * result + this.z.hashCode()
+    return result
   }
 
   companion object {

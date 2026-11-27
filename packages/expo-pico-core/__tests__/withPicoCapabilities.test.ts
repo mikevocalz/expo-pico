@@ -53,6 +53,8 @@ describe('applyCapabilityContract — no-op default', () => {
       PICO_PERMISSIONS.EYE_TRACKING,
       PICO_PERMISSIONS.FACE_TRACKING,
       PICO_PERMISSIONS.BODY_TRACKING,
+      PICO_PERMISSIONS.HAND_TRACKING,
+      PICO_PERMISSIONS.SPATIAL_DATA,
       PICO_PERMISSIONS.HIGH_SAMPLING_RATE_SENSORS,
     ]) {
       expect(permissionNames(m)).not.toContain(perm);
@@ -246,6 +248,63 @@ describe('applyCapabilityContract — boundary + scene mesh', () => {
     applyCapabilityContract(m, resolveOptions({ boundary: false }));
     expect(featureNames(m)).not.toContain(PICO_FEATURES.BOUNDARY);
     expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.BOUNDARY);
+  });
+});
+
+// PICO Spatial SDK 6.2.8: hand, mesh and plane tracking need a runtime grant.
+// The runtime can only ask for permissions the manifest declares.
+describe('applyCapabilityContract — hand tracking + spatial data', () => {
+  it('pins the PICO permission names', () => {
+    expect(PICO_PERMISSIONS.HAND_TRACKING).toBe('com.picovr.permission.HAND_TRACKING');
+    expect(PICO_PERMISSIONS.SPATIAL_DATA).toBe('com.picovr.permission.SPATIAL_DATA');
+  });
+
+  it('declares HAND_TRACKING with handTracking', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ handTracking: true }));
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.HAND_TRACKING);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.SPATIAL_DATA);
+  });
+
+  it('declares SPATIAL_DATA with spatialData alone', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ spatialData: true }));
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.SPATIAL_DATA);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.HAND_TRACKING);
+  });
+
+  it.each([{ sceneMesh: true }, { sceneUnderstanding: true }])(
+    'declares SPATIAL_DATA for %o, which cannot work without it',
+    (options) => {
+      const m = emptyManifest();
+      applyCapabilityContract(m, resolveOptions(options));
+      expect(permissionNames(m)).toContain(PICO_PERMISSIONS.SPATIAL_DATA);
+    }
+  );
+
+  it('declares each permission once across re-applies', () => {
+    const m = emptyManifest();
+    const options = resolveOptions({ handTracking: true, spatialData: true, sceneMesh: true });
+    applyCapabilityContract(m, options);
+    applyCapabilityContract(m, options);
+    const names = permissionNames(m);
+    expect(names.filter((n) => n === PICO_PERMISSIONS.HAND_TRACKING)).toHaveLength(1);
+    expect(names.filter((n) => n === PICO_PERMISSIONS.SPATIAL_DATA)).toHaveLength(1);
+  });
+
+  it('removes both when the options are turned off', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ handTracking: true, spatialData: true }));
+    applyCapabilityContract(m, resolveOptions({}));
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.HAND_TRACKING);
+    expect(permissionNames(m)).not.toContain(PICO_PERMISSIONS.SPATIAL_DATA);
+  });
+
+  it('keeps SPATIAL_DATA while sceneMesh still needs it', () => {
+    const m = emptyManifest();
+    applyCapabilityContract(m, resolveOptions({ spatialData: true, sceneMesh: true }));
+    applyCapabilityContract(m, resolveOptions({ sceneMesh: true }));
+    expect(permissionNames(m)).toContain(PICO_PERMISSIONS.SPATIAL_DATA);
   });
 });
 

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.achievements
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class UnlockAchievementResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is UnlockAchievementResult) return false
-    return Objects.deepEquals(this.apiName, other.apiName)
-      && Objects.deepEquals(this.justUnlocked, other.justUnlocked)
-      && Objects.deepEquals(this.unlockedAtMs, other.unlockedAtMs)
+    return this.apiName == other.apiName
+      && this.justUnlocked == other.justUnlocked
+      && this.unlockedAtMs.toBits() == other.unlockedAtMs.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      apiName,
-      justUnlocked,
-      unlockedAtMs
-    ).contentDeepHashCode()
+    var result = this.apiName.hashCode()
+    result = 31 * result + this.justUnlocked.hashCode()
+    result = 31 * result + this.unlockedAtMs.hashCode()
+    return result
   }
 
   companion object {

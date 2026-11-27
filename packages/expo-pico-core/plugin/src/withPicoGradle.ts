@@ -1,11 +1,6 @@
 import { ConfigPlugin, withAppBuildGradle, withProjectBuildGradle } from '@expo/config-plugins';
 
-import {
-  PICO_FLAVOR_ABI_FILTERS,
-  PICO_MAVEN_REPO,
-  PICO_PLATFORM_SDK_GROUP,
-  PICO_SDK_GROUP,
-} from './constants';
+import { DEAD_PICO_MAVEN_REPO, PICO_FLAVOR_ABI_FILTERS, PICO_MAVEN_REPO } from './constants';
 import {
   createPackageResolver,
   renderLocalAarBlock,
@@ -40,24 +35,35 @@ const HERMES_COMPAT_BLOCK = `
 
 const PICO_REPO_BLOCK = `
         ${PICO_REPO_MARKER}
-        maven {
-            url "${PICO_MAVEN_REPO}"
-            content {
-                includeGroup "${PICO_SDK_GROUP}"
-                includeGroup "${PICO_PLATFORM_SDK_GROUP}"
-            }
-        }
         // PICO Platform Service SDK (com.pico.pps:*) — public maven hosted
         // by Bytedance, referenced from the PPS integration doc at
         // https://developer.picoxr.com/document/platform_service/integrate-the-pico-platform-service-sdk/
         maven {
-            url "https://artifact.bytedance.com/repository/Volcengine/"
+            url "${PICO_MAVEN_REPO}"
             content {
                 includeGroup "com.pico.pps"
                 includeGroup "com.pico"
             }
         }
 `;
+
+/**
+ * The `maven { url "https://developer.pico-interactive.com/maven" ... }` entry
+ * that older versions wrote under the repo marker, with its content filter.
+ * The marker check below skips re-injection, so an android/ tree prebuilt by
+ * one of those versions keeps the entry until this pattern removes it.
+ */
+const DEAD_PICO_REPO_PATTERN = new RegExp(
+  String.raw`\n[ \t]*maven \{\s*url "` +
+    DEAD_PICO_MAVEN_REPO.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&') +
+    String.raw`"\s*content \{[^{}]*\}\s*\}`,
+  'g'
+);
+
+/** Removes the repository entry that older plugin versions wrote. */
+export function removeDeadPicoMavenRepo(contents: string): string {
+  return contents.replace(DEAD_PICO_REPO_PATTERN, '');
+}
 
 /**
  * Render the `productFlavors { ... }` block injected into `app/build.gradle`.
@@ -396,7 +402,7 @@ android.defaultConfig {
 
 export const withPicoProjectBuildGradle: ConfigPlugin<ResolvedPicoOptions> = (config, options) => {
   return withProjectBuildGradle(config, (config) => {
-    let contents = config.modResults.contents;
+    let contents = removeDeadPicoMavenRepo(config.modResults.contents);
 
     if (!gradleContains(contents, PICO_REPO_MARKER)) {
       const allProjectsRepoPattern = /allprojects\s*\{\s*repositories\s*\{/;

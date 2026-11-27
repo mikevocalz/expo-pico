@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.storage
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class StorageSaveOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSaveOptions) return false
-    return Objects.deepEquals(this.conflictPolicy, other.conflictPolicy)
-      && Objects.deepEquals(this.maxBytes, other.maxBytes)
+    return (this.conflictPolicy == null && other.conflictPolicy == null || this.conflictPolicy != null && other.conflictPolicy != null && this.conflictPolicy == other.conflictPolicy)
+      && (this.maxBytes == null && other.maxBytes == null || this.maxBytes != null && other.maxBytes != null && this.maxBytes.toBits() == other.maxBytes.toBits())
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      conflictPolicy,
-      maxBytes
-    ).contentDeepHashCode()
+    var result = (if (this.conflictPolicy != null) this.conflictPolicy.hashCode() else 0)
+    result = 31 * result + (if (this.maxBytes != null) this.maxBytes.hashCode() else 0)
+    return result
   }
 
   companion object {

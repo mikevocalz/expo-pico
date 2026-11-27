@@ -321,8 +321,15 @@ export { getPicoLocation, requestLocationPermission, isLocationAvailable } from 
 export {
   registerImmersiveScene,
   hasImmersiveSceneRegistered,
+  ensureImmersivePermissions,
   IMMERSIVE_ROOT_COMPONENT,
 } from './immersive';
+export {
+  ensureHandTrackingPermission,
+  ensureSpatialDataPermission,
+  PICO_HAND_TRACKING_PERMISSION,
+  PICO_SPATIAL_DATA_PERMISSION,
+} from './picoTrackingPermissions';
 export type { PicoCoordinates } from './location';
 export {
   ensureEyeTrackingPermission,
@@ -360,10 +367,10 @@ export type { ListenerSubscription } from './ListenerSubscription';
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
  *
- * Does not ask for eye tracking. Meta wants a hybrid app to request it only
- * once the immersive activity launches, so the root registered with
- * `registerImmersiveScene()` asks when it mounts there. See
- * {@link ensureEyeTrackingPermission}.
+ * Does not ask for eye tracking, hand tracking or spatial data. Meta wants a
+ * hybrid app to request eye tracking only once the immersive activity
+ * launches, so the root registered with `registerImmersiveScene()` asks for
+ * all three when it mounts there. See {@link ensureImmersivePermissions}.
  */
 export async function enterImmersiveScene(): Promise<boolean> {
   if (!hasImmersiveSceneRegistered()) {

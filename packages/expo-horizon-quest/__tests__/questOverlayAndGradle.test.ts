@@ -119,7 +119,7 @@ describe('quest flavor Gradle block', () => {
     }
 }
 dependencies {
-    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.0.0")
+    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.1.0")
 }
 `;
     const out = updateQuestFlavorBlock(input, opts);
@@ -146,7 +146,7 @@ android {
     }
 }
 dependencies {
-    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.0.0")
+    questImplementation("com.meta.metavrx:metavrx-bom:1.2026.1.0")
 }
 `;
     const out = updateQuestFlavorBlock(input, opts);
@@ -167,7 +167,7 @@ dependencies {
 }
 android {}
 dependencies {
-    questImplementation "com.meta.metavrx:metavrx-bom:1.2026.0.0"
+    questImplementation "com.meta.metavrx:metavrx-bom:1.2026.1.0"
 }
 `;
     const out = updateQuestFlavorBlock(input, opts);

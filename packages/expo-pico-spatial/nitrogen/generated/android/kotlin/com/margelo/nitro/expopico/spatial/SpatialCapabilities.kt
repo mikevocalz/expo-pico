@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -40,23 +39,22 @@ data class SpatialCapabilities(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialCapabilities) return false
-    return Objects.deepEquals(this.spaceStates, other.spaceStates)
-      && Objects.deepEquals(this.spatialAnchors, other.spatialAnchors)
-      && Objects.deepEquals(this.sceneUnderstanding, other.sceneUnderstanding)
-      && Objects.deepEquals(this.passthrough, other.passthrough)
-      && Objects.deepEquals(this.handTracking, other.handTracking)
-      && Objects.deepEquals(this.spatialSdkAvailable, other.spatialSdkAvailable)
+    return this.spaceStates == other.spaceStates
+      && this.spatialAnchors == other.spatialAnchors
+      && this.sceneUnderstanding == other.sceneUnderstanding
+      && this.passthrough == other.passthrough
+      && this.handTracking == other.handTracking
+      && this.spatialSdkAvailable == other.spatialSdkAvailable
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      spaceStates,
-      spatialAnchors,
-      sceneUnderstanding,
-      passthrough,
-      handTracking,
-      spatialSdkAvailable
-    ).contentDeepHashCode()
+    var result = this.spaceStates.hashCode()
+    result = 31 * result + this.spatialAnchors.hashCode()
+    result = 31 * result + this.sceneUnderstanding.hashCode()
+    result = 31 * result + this.passthrough.hashCode()
+    result = 31 * result + this.handTracking.hashCode()
+    result = 31 * result + this.spatialSdkAvailable.hashCode()
+    return result
   }
 
   companion object {

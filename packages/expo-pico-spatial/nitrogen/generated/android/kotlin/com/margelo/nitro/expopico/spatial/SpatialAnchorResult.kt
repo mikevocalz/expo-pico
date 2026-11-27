@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class SpatialAnchorResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialAnchorResult) return false
-    return Objects.deepEquals(this.id, other.id)
-      && Objects.deepEquals(this.anchorId, other.anchorId)
-      && Objects.deepEquals(this.persisted, other.persisted)
-      && Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.rotation, other.rotation)
+    return this.id == other.id
+      && this.anchorId == other.anchorId
+      && this.persisted == other.persisted
+      && this.position == other.position
+      && this.rotation == other.rotation
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      id,
-      anchorId,
-      persisted,
-      position,
-      rotation
-    ).contentDeepHashCode()
+    var result = this.id.hashCode()
+    result = 31 * result + this.anchorId.hashCode()
+    result = 31 * result + this.persisted.hashCode()
+    result = 31 * result + this.position.hashCode()
+    result = 31 * result + this.rotation.hashCode()
+    return result
   }
 
   companion object {

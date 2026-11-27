@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -46,27 +45,26 @@ data class PicoEyePose(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoEyePose) return false
-    return Objects.deepEquals(this.leftGazeOrigin, other.leftGazeOrigin)
-      && Objects.deepEquals(this.leftGazeDirection, other.leftGazeDirection)
-      && Objects.deepEquals(this.rightGazeOrigin, other.rightGazeOrigin)
-      && Objects.deepEquals(this.rightGazeDirection, other.rightGazeDirection)
-      && Objects.deepEquals(this.leftOpenness, other.leftOpenness)
-      && Objects.deepEquals(this.rightOpenness, other.rightOpenness)
-      && Objects.deepEquals(this.leftPupilDiameterMm, other.leftPupilDiameterMm)
-      && Objects.deepEquals(this.rightPupilDiameterMm, other.rightPupilDiameterMm)
+    return (this.leftGazeOrigin == null && other.leftGazeOrigin == null || this.leftGazeOrigin != null && other.leftGazeOrigin != null && this.leftGazeOrigin == other.leftGazeOrigin)
+      && (this.leftGazeDirection == null && other.leftGazeDirection == null || this.leftGazeDirection != null && other.leftGazeDirection != null && this.leftGazeDirection == other.leftGazeDirection)
+      && (this.rightGazeOrigin == null && other.rightGazeOrigin == null || this.rightGazeOrigin != null && other.rightGazeOrigin != null && this.rightGazeOrigin == other.rightGazeOrigin)
+      && (this.rightGazeDirection == null && other.rightGazeDirection == null || this.rightGazeDirection != null && other.rightGazeDirection != null && this.rightGazeDirection == other.rightGazeDirection)
+      && (this.leftOpenness == null && other.leftOpenness == null || this.leftOpenness != null && other.leftOpenness != null && this.leftOpenness.toBits() == other.leftOpenness.toBits())
+      && (this.rightOpenness == null && other.rightOpenness == null || this.rightOpenness != null && other.rightOpenness != null && this.rightOpenness.toBits() == other.rightOpenness.toBits())
+      && (this.leftPupilDiameterMm == null && other.leftPupilDiameterMm == null || this.leftPupilDiameterMm != null && other.leftPupilDiameterMm != null && this.leftPupilDiameterMm.toBits() == other.leftPupilDiameterMm.toBits())
+      && (this.rightPupilDiameterMm == null && other.rightPupilDiameterMm == null || this.rightPupilDiameterMm != null && other.rightPupilDiameterMm != null && this.rightPupilDiameterMm.toBits() == other.rightPupilDiameterMm.toBits())
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      leftGazeOrigin,
-      leftGazeDirection,
-      rightGazeOrigin,
-      rightGazeDirection,
-      leftOpenness,
-      rightOpenness,
-      leftPupilDiameterMm,
-      rightPupilDiameterMm
-    ).contentDeepHashCode()
+    var result = (if (this.leftGazeOrigin != null) this.leftGazeOrigin.hashCode() else 0)
+    result = 31 * result + (if (this.leftGazeDirection != null) this.leftGazeDirection.hashCode() else 0)
+    result = 31 * result + (if (this.rightGazeOrigin != null) this.rightGazeOrigin.hashCode() else 0)
+    result = 31 * result + (if (this.rightGazeDirection != null) this.rightGazeDirection.hashCode() else 0)
+    result = 31 * result + (if (this.leftOpenness != null) this.leftOpenness.hashCode() else 0)
+    result = 31 * result + (if (this.rightOpenness != null) this.rightOpenness.hashCode() else 0)
+    result = 31 * result + (if (this.leftPupilDiameterMm != null) this.leftPupilDiameterMm.hashCode() else 0)
+    result = 31 * result + (if (this.rightPupilDiameterMm != null) this.rightPupilDiameterMm.hashCode() else 0)
+    return result
   }
 
   companion object {

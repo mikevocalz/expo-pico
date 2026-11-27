@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rooms
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class CreateRoomOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is CreateRoomOptions) return false
-    return Objects.deepEquals(this.joinPolicy, other.joinPolicy)
-      && Objects.deepEquals(this.maxMembers, other.maxMembers)
-      && Objects.deepEquals(this.data, other.data)
+    return (this.joinPolicy == null && other.joinPolicy == null || this.joinPolicy != null && other.joinPolicy != null && this.joinPolicy == other.joinPolicy)
+      && (this.maxMembers == null && other.maxMembers == null || this.maxMembers != null && other.maxMembers != null && this.maxMembers.toBits() == other.maxMembers.toBits())
+      && (this.data == null && other.data == null || this.data != null && other.data != null && this.data == other.data)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      joinPolicy,
-      maxMembers,
-      data
-    ).contentDeepHashCode()
+    var result = (if (this.joinPolicy != null) this.joinPolicy.hashCode() else 0)
+    result = 31 * result + (if (this.maxMembers != null) this.maxMembers.hashCode() else 0)
+    result = 31 * result + (if (this.data != null) this.data.hashCode() else 0)
+    return result
   }
 
   companion object {

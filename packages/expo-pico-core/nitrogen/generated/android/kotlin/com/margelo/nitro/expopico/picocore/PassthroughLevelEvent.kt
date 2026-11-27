@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PassthroughLevelEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PassthroughLevelEvent) return false
-    return Objects.deepEquals(this.level, other.level)
-      && Objects.deepEquals(this.enabled, other.enabled)
+    return this.level.toBits() == other.level.toBits()
+      && this.enabled == other.enabled
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      level,
-      enabled
-    ).contentDeepHashCode()
+    var result = this.level.hashCode()
+    result = 31 * result + this.enabled.hashCode()
+    return result
   }
 
   companion object {

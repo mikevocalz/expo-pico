@@ -98,10 +98,11 @@ const pending = new Map<string, Promise<void>>();
  * review, which is why `enterImmersiveScene()` does not ask.
  *
  * The root registered with `registerImmersiveScene()` calls this when it
- * mounts in the immersive activity. Call it yourself only when the immersive
- * activity mounts a root of its own, such as Viro's `ViroQuestEntryPoint`:
- * `useEffect(() => { ensureEyeTrackingPermission(getXrMode()); }, [])`
- * in that scene.
+ * mounts in the immersive activity. When the immersive activity mounts a root
+ * of its own, such as Viro's `ViroQuestEntryPoint`, call
+ * `ensureImmersivePermissions(getXrMode())` from that scene instead: it asks
+ * for eye tracking and then for the PICO hand tracking and spatial data
+ * permissions.
  *
  * The promise never rejects. It settles when the user answers the system
  * dialog, so do not hold the scene's first frame on it.

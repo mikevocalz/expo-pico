@@ -43,7 +43,7 @@
     "react": "19.3.0",
     "react-native": "0.88.1",
     "expo-modules-core": "58.0.30",
-    "react-native-nitro-modules": "1.0.0-alpha.nightly.120.g33ef045b96c0"
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.138.g43e09c161101"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

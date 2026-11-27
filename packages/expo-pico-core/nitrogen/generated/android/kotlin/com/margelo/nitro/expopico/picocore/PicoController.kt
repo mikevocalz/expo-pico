@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class PicoController(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoController) return false
-    return Objects.deepEquals(this.hand, other.hand)
-      && Objects.deepEquals(this.connected, other.connected)
-      && Objects.deepEquals(this.batteryPct, other.batteryPct)
-      && Objects.deepEquals(this.model, other.model)
+    return this.hand == other.hand
+      && this.connected == other.connected
+      && this.batteryPct.toBits() == other.batteryPct.toBits()
+      && this.model == other.model
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      hand,
-      connected,
-      batteryPct,
-      model
-    ).contentDeepHashCode()
+    var result = this.hand.hashCode()
+    result = 31 * result + this.connected.hashCode()
+    result = 31 * result + this.batteryPct.hashCode()
+    result = 31 * result + this.model.hashCode()
+    return result
   }
 
   companion object {

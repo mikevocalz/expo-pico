@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.leaderboards
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class GetEntriesOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is GetEntriesOptions) return false
-    return Objects.deepEquals(this.filter, other.filter)
-      && Objects.deepEquals(this.startAt, other.startAt)
-      && Objects.deepEquals(this.pageSize, other.pageSize)
-      && Objects.deepEquals(this.pageToken, other.pageToken)
+    return (this.filter == null && other.filter == null || this.filter != null && other.filter != null && this.filter == other.filter)
+      && (this.startAt == null && other.startAt == null || this.startAt != null && other.startAt != null && this.startAt == other.startAt)
+      && (this.pageSize == null && other.pageSize == null || this.pageSize != null && other.pageSize != null && this.pageSize.toBits() == other.pageSize.toBits())
+      && (this.pageToken == null && other.pageToken == null || this.pageToken != null && other.pageToken != null && this.pageToken == other.pageToken)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      filter,
-      startAt,
-      pageSize,
-      pageToken
-    ).contentDeepHashCode()
+    var result = (if (this.filter != null) this.filter.hashCode() else 0)
+    result = 31 * result + (if (this.startAt != null) this.startAt.hashCode() else 0)
+    result = 31 * result + (if (this.pageSize != null) this.pageSize.hashCode() else 0)
+    result = 31 * result + (if (this.pageToken != null) this.pageToken.hashCode() else 0)
+    return result
   }
 
   companion object {

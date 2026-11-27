@@ -1,8 +1,15 @@
-export const PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
-export const PICO_SDK_GROUP = 'com.pvr';
-export const PICO_PLATFORM_SDK_GROUP = 'com.pvr.platform';
-export const PICO_PLATFORM_SDK_VERSION = '3.2.0';
-export const PICO_SPATIAL_SDK_VERSION = '1.0.0';
+/**
+ * PICO's public Maven, hosted by Bytedance. It serves the Platform Service SDK
+ * (com.pico.pps:*, com.pico:*) and the Spatial SDK (com.pico.spatial.*).
+ */
+export const PICO_MAVEN_REPO = 'https://artifact.bytedance.com/repository/Volcengine/';
+
+/**
+ * The repository older versions of this plugin wrote into the project
+ * build.gradle. It now answers 302 with a redirect to PICO's homepage, and no
+ * dependency resolves from it. `withPicoProjectBuildGradle` removes it.
+ */
+export const DEAD_PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
 
 export const MANIFEST_META = {
   PICO_APP_ID: 'pvr.app.id',
@@ -201,6 +208,19 @@ export const PICO_PERMISSIONS = {
   EYE_TRACKING: 'com.picovr.permission.EYE_TRACKING',
   /** Confirmed via the same sources as EYE_TRACKING. */
   FACE_TRACKING: 'com.picovr.permission.FACE_TRACKING',
+  /**
+   * Hand joint data. PICO's Unity OpenXR build processor writes it when hand
+   * tracking is on, and the runtime returns no hand joints without it. From
+   * PICO Spatial SDK 6.2.8 the user must also grant it at runtime.
+   */
+  HAND_TRACKING: 'com.picovr.permission.HAND_TRACKING',
+  /**
+   * Mixed reality spatial data: anchors, scene capture, planes and the
+   * spatial mesh. PICO's Unity SDK writes it for any of those features; calls
+   * without the grant fail with ERROR_PERMISSION_INSUFFICIENT. From PICO
+   * Spatial SDK 6.2.8 the user must grant it at runtime.
+   */
+  SPATIAL_DATA: 'com.picovr.permission.SPATIAL_DATA',
   /**
    * EXTENSION SEAM — key name unconfirmed in open docs. Best-known
    * naming pattern. Usable today because permissions declared but not

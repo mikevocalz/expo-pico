@@ -33,7 +33,7 @@ Works when your scene graph is complex and you don't want to re-author it in ano
 ### 1. Add `expo-pico-core` alongside Viro
 
 ```bash
-yarn add @expo-pico/core react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
+yarn add @expo-pico/core react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101
 ```
 
 ### 2. Update `app.config.ts`
