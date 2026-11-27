@@ -6516,18 +6516,18 @@ neo-async@^2.6.2:
   resolved "https://registry.npmjs.org/neo-async/-/neo-async-2.6.2.tgz"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nitro-core@1.0.0-alpha.nightly.120.g33ef045b96c0:
-  version "1.0.0-alpha.nightly.120.g33ef045b96c0"
-  resolved "https://registry.yarnpkg.com/nitro-core/-/nitro-core-1.0.0-alpha.nightly.120.g33ef045b96c0.tgz#74fc6e88af65c3f7ff53da49d29860b89654790d"
-  integrity sha512-HJLx09kp/mgG4v81WdxQ50ymuh4uS1vhD4OTyjRX+FNVS0K6i1picnUiLzfkr0qFwcDAkfTdXmYtaKO7j+hZEg==
+nitro-core@1.0.0-alpha.nightly.138.g43e09c161101:
+  version "1.0.0-alpha.nightly.138.g43e09c161101"
+  resolved "https://registry.yarnpkg.com/nitro-core/-/nitro-core-1.0.0-alpha.nightly.138.g43e09c161101.tgz#bf7a7afa927e8408bb4131dca145e3a914aa6d93"
+  integrity sha512-PTOpc4jUIzfsyWUWJgXT+3of9xqbOBCenS6dkhrEmYPvHsZ+VKMK61RO+ph38UKVZLAd/zLij3uh2ZU0g1AtYQ==
 
-nitrogen@1.0.0-alpha.nightly.120.g33ef045b96c0:
-  version "1.0.0-alpha.nightly.120.g33ef045b96c0"
-  resolved "https://registry.yarnpkg.com/nitrogen/-/nitrogen-1.0.0-alpha.nightly.120.g33ef045b96c0.tgz#a554f494881bd630bcd89914f243c401f3c6c6a2"
-  integrity sha512-bFfD2HaVx+yKz0O3eXEbFRJexsIM7k+O1Ijfh58RWjLfdfa3de6JLp1tFDmButwDVPXiU6dgzGSB6H7eCowjPg==
+nitrogen@1.0.0-alpha.nightly.138.g43e09c161101:
+  version "1.0.0-alpha.nightly.138.g43e09c161101"
+  resolved "https://registry.yarnpkg.com/nitrogen/-/nitrogen-1.0.0-alpha.nightly.138.g43e09c161101.tgz#c5b6aea9ebaa9a615fd2e30a009e0e0504edbd07"
+  integrity sha512-cFf+u0MQqy7e1uipRBoipkYVHMxN8KaB2LUs/9G0BHQPMZJu7KjVt7t1moPicBtrMPfZPDW/aClpUylYfNDpkA==
   dependencies:
     chalk "^5.3.0"
-    nitro-core "1.0.0-alpha.nightly.120.g33ef045b96c0"
+    nitro-core "1.0.0-alpha.nightly.138.g43e09c161101"
     ts-morph "^28.0.0"
     yargs "^18.1.0"
     zod "^4.4.3"
@@ -7113,12 +7113,12 @@ react-native-mmkv@^4.0.0:
   resolved "https://registry.yarnpkg.com/react-native-mmkv/-/react-native-mmkv-4.3.2.tgz#522978d2330932c538cce36093040826870ccb49"
   integrity sha512-49OAyfkg0/TMWiWELZN6VuVQPZPhizwL4DTmp8b7B1md3dB/s3LH3mGfC3T+lp9W0y/rqxZMEnotLFTIbOAenQ==
 
-react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0:
-  version "1.0.0-alpha.nightly.120.g33ef045b96c0"
-  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-1.0.0-alpha.nightly.120.g33ef045b96c0.tgz#9c3c6b631da94b2a0fd8325794e2a8d6e894824f"
-  integrity sha512-WEnHB+KAasRxq4rSH82IwECTaVAaNq3dFREOlHQ2Fp+RpPsBGMfbvWRUcLAyJIgwDo2Uqb1mpGd5ryzShLcA6A==
+react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101:
+  version "1.0.0-alpha.nightly.138.g43e09c161101"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-1.0.0-alpha.nightly.138.g43e09c161101.tgz#fd8771f76debd00d3dbfad5ece861b2a99dd985b"
+  integrity sha512-wMBTgHxy6WyzIVnccmXGjbQGTJWbix7kTYAP9BJWy6Cp6Dcdy0A+QWujGL/t6W/0smD1rYyLx1u7PQBJp8UjvA==
   dependencies:
-    nitro-core "1.0.0-alpha.nightly.120.g33ef045b96c0"
+    nitro-core "1.0.0-alpha.nightly.138.g43e09c161101"
 
 react-native-permissions@^5.6.0:
   version "5.6.0"

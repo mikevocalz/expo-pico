@@ -51,7 +51,7 @@ Kill the dev server once you see the QR code. We're about to switch to the Andro
 ## 2. Install the `expo-pico-core` plugin
 
 ```bash
-npm install "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.120.g33ef045b96c0
+npm install "github:mikevocalz/expo-pico#release/core" react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101
 ```
 
 Only `@expo-pico/core` and its Nitro peer are required for base build wiring. The packages install from GitHub release branches, not npm. Add siblings and their shared-service peer as documented in [Installing from GitHub](./INSTALL-FROM-GITHUB.md).
