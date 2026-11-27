@@ -1,6 +1,6 @@
 {
   "name": "@expo-pico/template",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Expo app starter for PICO 4 and PICO 4 Ultra, with an optional PICO OS 6 target.",
   "main": "index.js",
   "private": false,
