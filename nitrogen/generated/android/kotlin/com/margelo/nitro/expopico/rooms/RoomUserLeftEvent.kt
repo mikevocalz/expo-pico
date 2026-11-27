@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rooms
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class RoomUserLeftEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RoomUserLeftEvent) return false
-    return Objects.deepEquals(this.roomId, other.roomId)
-      && Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.reason, other.reason)
+    return this.roomId == other.roomId
+      && this.userId == other.userId
+      && this.reason == other.reason
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      roomId,
-      userId,
-      reason
-    ).contentDeepHashCode()
+    var result = this.roomId.hashCode()
+    result = 31 * result + this.userId.hashCode()
+    result = 31 * result + this.reason.hashCode()
+    return result
   }
 
   companion object {
