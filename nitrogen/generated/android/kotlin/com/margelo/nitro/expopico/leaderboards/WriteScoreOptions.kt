@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.leaderboards
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class WriteScoreOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is WriteScoreOptions) return false
-    return Objects.deepEquals(this.extraData, other.extraData)
-      && Objects.deepEquals(this.supplementaryMetric, other.supplementaryMetric)
-      && Objects.deepEquals(this.forceUpdate, other.forceUpdate)
+    return (this.extraData == null && other.extraData == null || this.extraData != null && other.extraData != null && this.extraData == other.extraData)
+      && (this.supplementaryMetric == null && other.supplementaryMetric == null || this.supplementaryMetric != null && other.supplementaryMetric != null && this.supplementaryMetric.toBits() == other.supplementaryMetric.toBits())
+      && (this.forceUpdate == null && other.forceUpdate == null || this.forceUpdate != null && other.forceUpdate != null && this.forceUpdate == other.forceUpdate)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      extraData,
-      supplementaryMetric,
-      forceUpdate
-    ).contentDeepHashCode()
+    var result = (if (this.extraData != null) this.extraData.hashCode() else 0)
+    result = 31 * result + (if (this.supplementaryMetric != null) this.supplementaryMetric.hashCode() else 0)
+    result = 31 * result + (if (this.forceUpdate != null) this.forceUpdate.hashCode() else 0)
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.leaderboards
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class WriteScoreResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is WriteScoreResult) return false
-    return Objects.deepEquals(this.apiName, other.apiName)
-      && Objects.deepEquals(this.didUpdate, other.didUpdate)
-      && Objects.deepEquals(this.previousScore, other.previousScore)
-      && Objects.deepEquals(this.newScore, other.newScore)
-      && Objects.deepEquals(this.newRank, other.newRank)
+    return this.apiName == other.apiName
+      && this.didUpdate == other.didUpdate
+      && (this.previousScore == null && other.previousScore == null || this.previousScore != null && other.previousScore != null && this.previousScore.toBits() == other.previousScore.toBits())
+      && this.newScore.toBits() == other.newScore.toBits()
+      && (this.newRank == null && other.newRank == null || this.newRank != null && other.newRank != null && this.newRank.toBits() == other.newRank.toBits())
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      apiName,
-      didUpdate,
-      previousScore,
-      newScore,
-      newRank
-    ).contentDeepHashCode()
+    var result = this.apiName.hashCode()
+    result = 31 * result + this.didUpdate.hashCode()
+    result = 31 * result + (if (this.previousScore != null) this.previousScore.hashCode() else 0)
+    result = 31 * result + this.newScore.hashCode()
+    result = 31 * result + (if (this.newRank != null) this.newRank.hashCode() else 0)
+    return result
   }
 
   companion object {
