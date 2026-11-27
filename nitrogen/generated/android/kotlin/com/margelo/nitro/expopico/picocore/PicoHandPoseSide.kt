@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PicoHandPoseSide(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoHandPoseSide) return false
-    return Objects.deepEquals(this.joints, other.joints)
-      && Objects.deepEquals(this.confidence, other.confidence)
+    return this.joints.contentDeepEquals(other.joints)
+      && this.confidence.toBits() == other.confidence.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      joints,
-      confidence
-    ).contentDeepHashCode()
+    var result = this.joints.contentDeepHashCode()
+    result = 31 * result + this.confidence.hashCode()
+    return result
   }
 
   companion object {

@@ -106,7 +106,8 @@ export type { DeclaredFeature, DeclaredPermission, DiagnosticFinding, Diagnostic
 export { capabilities, getDeclaredCapabilities, getDeclaredRefreshRates, getDeclaredTargetDevices, getCapabilitySnapshot, isCapabilityAvailable, display, eye, face, body, hand, boundary, scene, controllers, motionTracker, sensors, spatialAudio, } from './capabilities';
 export type { PicoBodyJoint, PicoCapabilityName, PicoCapabilitySnapshotEntry, PicoController, PicoDeclaredCapabilities, PicoDetectedPlane, PicoEyePose, PicoFoveationLevel, PicoHandPose, PicoHandPoseSide, PicoHighRateSensor, PicoMotionTracker, } from './types';
 export { getPicoLocation, requestLocationPermission, isLocationAvailable } from './location';
-export { registerImmersiveScene, hasImmersiveSceneRegistered, IMMERSIVE_ROOT_COMPONENT, } from './immersive';
+export { registerImmersiveScene, hasImmersiveSceneRegistered, ensureImmersivePermissions, IMMERSIVE_ROOT_COMPONENT, } from './immersive';
+export { ensureHandTrackingPermission, ensureSpatialDataPermission, PICO_HAND_TRACKING_PERMISSION, PICO_SPATIAL_DATA_PERMISSION, } from './picoTrackingPermissions';
 export type { PicoCoordinates } from './location';
 export { ensureEyeTrackingPermission, eyeTrackingPermissionFor, HORIZON_EYE_TRACKING_PERMISSION, PICO_EYE_TRACKING_PERMISSION, } from './eyeTrackingPermission';
 export default ExpoPicoModule;
@@ -135,10 +136,10 @@ export type { ListenerSubscription } from './ListenerSubscription';
  * Meta-hardware check on `Build.MANUFACTURER`/`BRAND`, so it never fires on
  * PICO. Use `exitVRScene()` from react-viro to come back to the panel.
  *
- * Does not ask for eye tracking. Meta wants a hybrid app to request it only
- * once the immersive activity launches, so the root registered with
- * `registerImmersiveScene()` asks when it mounts there. See
- * {@link ensureEyeTrackingPermission}.
+ * Does not ask for eye tracking, hand tracking or spatial data. Meta wants a
+ * hybrid app to request eye tracking only once the immersive activity
+ * launches, so the root registered with `registerImmersiveScene()` asks for
+ * all three when it mounts there. See {@link ensureImmersivePermissions}.
  */
 export declare function enterImmersiveScene(): Promise<boolean>;
 /** Whether this headset build has a marked immersive activity. */

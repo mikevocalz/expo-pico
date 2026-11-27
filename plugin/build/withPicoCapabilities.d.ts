@@ -9,6 +9,10 @@ import type { ResolvedPicoOptions } from './types';
  *   - Eye tracking:        `pico.hardware.eyetracking`  + `com.picovr.permission.EYE_TRACKING`
  *   - Face tracking:       `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`
  *   - Body tracking:       `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING`
+ *   - Hand tracking:       `com.picovr.permission.HAND_TRACKING` (the feature is
+ *                          written by withPicoAndroidManifest)
+ *   - Spatial data:        `com.picovr.permission.SPATIAL_DATA` for `spatialData`,
+ *                          `sceneMesh` or `sceneUnderstanding`
  *   - Spatial audio:       `pico.hardware.spatialaudio`
  *   - Foveated rendering:  `pico.hardware.foveation` + `com.pico.foveation.enabled` meta-data
  *   - High sampling rate:  `android.permission.HIGH_SAMPLING_RATE_SENSORS`

@@ -52,6 +52,7 @@ exports.PICO_OPTION_DEFAULTS = {
     handTracking: false,
     passthrough: false,
     sceneUnderstanding: false,
+    spatialData: false,
     entitlementCheck: false,
     eyeTracking: false,
     faceTracking: false,

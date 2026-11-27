@@ -91,6 +91,11 @@ export declare const body: {
     getJoints(): Promise<PicoBodyJoint[] | null>;
 };
 export declare const hand: {
+    /**
+     * On PICO builds, asks for `com.picovr.permission.HAND_TRACKING` first
+     * (PICO Spatial SDK 6.2.8 made it a runtime grant). The dialog opens only
+     * from the immersive activity; see `ensureHandTrackingPermission`.
+     */
     enable(): Promise<boolean>;
     disable(): Promise<boolean>;
     /** Per-hand joint pose snapshot. Null when disabled or SDK unavailable. */
@@ -190,6 +195,11 @@ export declare const capabilities: {
         getJoints(): Promise<PicoBodyJoint[] | null>;
     };
     hand: {
+        /**
+         * On PICO builds, asks for `com.picovr.permission.HAND_TRACKING` first
+         * (PICO Spatial SDK 6.2.8 made it a runtime grant). The dialog opens only
+         * from the immersive activity; see `ensureHandTrackingPermission`.
+         */
         enable(): Promise<boolean>;
         disable(): Promise<boolean>;
         /** Per-hand joint pose snapshot. Null when disabled or SDK unavailable. */

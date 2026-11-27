@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class PicoBodyJoint(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoBodyJoint) return false
-    return Objects.deepEquals(this.joint, other.joint)
-      && Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.rotation, other.rotation)
-      && Objects.deepEquals(this.confidence, other.confidence)
+    return this.joint == other.joint
+      && this.position == other.position
+      && this.rotation == other.rotation
+      && this.confidence.toBits() == other.confidence.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      joint,
-      position,
-      rotation,
-      confidence
-    ).contentDeepHashCode()
+    var result = this.joint.hashCode()
+    result = 31 * result + this.position.hashCode()
+    result = 31 * result + this.rotation.hashCode()
+    result = 31 * result + this.confidence.hashCode()
+    return result
   }
 
   companion object {

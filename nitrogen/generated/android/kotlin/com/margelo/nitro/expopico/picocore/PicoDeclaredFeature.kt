@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PicoDeclaredFeature(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredFeature) return false
-    return Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.required, other.required)
-      && Objects.deepEquals(this.glEsVersion, other.glEsVersion)
+    return this.name == other.name
+      && this.required == other.required
+      && (this.glEsVersion == null && other.glEsVersion == null || this.glEsVersion != null && other.glEsVersion != null && this.glEsVersion == other.glEsVersion)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      name,
-      required,
-      glEsVersion
-    ).contentDeepHashCode()
+    var result = this.name.hashCode()
+    result = 31 * result + this.required.hashCode()
+    result = 31 * result + (if (this.glEsVersion != null) this.glEsVersion.hashCode() else 0)
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PicoDeclaredPermission(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredPermission) return false
-    return Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.granted, other.granted)
+    return this.name == other.name
+      && this.granted == other.granted
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      name,
-      granted
-    ).contentDeepHashCode()
+    var result = this.name.hashCode()
+    result = 31 * result + this.granted.hashCode()
+    return result
   }
 
   companion object {

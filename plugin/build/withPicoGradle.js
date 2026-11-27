@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withPicoProjectBuildGradle = exports.withPicoAppBuildGradle = void 0;
+exports.removeDeadPicoMavenRepo = removeDeadPicoMavenRepo;
 exports.renderFlavorBlock = renderFlavorBlock;
 exports.renderFlavorXrModeBlock = renderFlavorXrModeBlock;
 exports.renderMissingDimensionBlock = renderMissingDimensionBlock;
@@ -30,24 +31,30 @@ const HERMES_COMPAT_BLOCK = `
 `;
 const PICO_REPO_BLOCK = `
         ${PICO_REPO_MARKER}
-        maven {
-            url "${constants_1.PICO_MAVEN_REPO}"
-            content {
-                includeGroup "${constants_1.PICO_SDK_GROUP}"
-                includeGroup "${constants_1.PICO_PLATFORM_SDK_GROUP}"
-            }
-        }
         // PICO Platform Service SDK (com.pico.pps:*) — public maven hosted
         // by Bytedance, referenced from the PPS integration doc at
         // https://developer.picoxr.com/document/platform_service/integrate-the-pico-platform-service-sdk/
         maven {
-            url "https://artifact.bytedance.com/repository/Volcengine/"
+            url "${constants_1.PICO_MAVEN_REPO}"
             content {
                 includeGroup "com.pico.pps"
                 includeGroup "com.pico"
             }
         }
 `;
+/**
+ * The `maven { url "https://developer.pico-interactive.com/maven" ... }` entry
+ * that older versions wrote under the repo marker, with its content filter.
+ * The marker check below skips re-injection, so an android/ tree prebuilt by
+ * one of those versions keeps the entry until this pattern removes it.
+ */
+const DEAD_PICO_REPO_PATTERN = new RegExp(String.raw `\n[ \t]*maven \{\s*url "` +
+    constants_1.DEAD_PICO_MAVEN_REPO.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&') +
+    String.raw `"\s*content \{[^{}]*\}\s*\}`, 'g');
+/** Removes the repository entry that older plugin versions wrote. */
+function removeDeadPicoMavenRepo(contents) {
+    return contents.replace(DEAD_PICO_REPO_PATTERN, '');
+}
 /**
  * Render the `productFlavors { ... }` block injected into `app/build.gradle`.
  *
@@ -343,7 +350,7 @@ android.defaultConfig {
 exports.withPicoAppBuildGradle = withPicoAppBuildGradle;
 const withPicoProjectBuildGradle = (config, options) => {
     return (0, config_plugins_1.withProjectBuildGradle)(config, (config) => {
-        let contents = config.modResults.contents;
+        let contents = removeDeadPicoMavenRepo(config.modResults.contents);
         if (!(0, utils_1.gradleContains)(contents, PICO_REPO_MARKER)) {
             const allProjectsRepoPattern = /allprojects\s*\{\s*repositories\s*\{/;
             let result = (0, utils_1.insertAfterPattern)(contents, allProjectsRepoPattern, PICO_REPO_BLOCK);

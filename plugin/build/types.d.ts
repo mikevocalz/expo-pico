@@ -123,9 +123,27 @@ export interface PicoPluginOptions {
      * @default Not added
      */
     defaultHeight?: string;
+    /**
+     * Declare hand tracking. Emits `uses-feature pico.hardware.handtracking`
+     * and the `com.picovr.permission.HAND_TRACKING` permission, which PICO's
+     * runtime needs before it returns hand joints. From PICO Spatial SDK 6.2.8
+     * the user grants it at runtime: the immersive scene asks when it mounts
+     * (`ensureHandTrackingPermission`), and so does `hand.enable()`.
+     * @default false
+     */
     handTracking?: boolean;
     passthrough?: boolean;
     sceneUnderstanding?: boolean;
+    /**
+     * Declare mixed reality spatial data: spatial anchors, scene capture,
+     * planes and the spatial mesh. Emits `com.picovr.permission.SPATIAL_DATA`.
+     * `sceneMesh` and `sceneUnderstanding` emit it too, because neither works
+     * without it; set this for anchors alone. From PICO Spatial SDK 6.2.8 the
+     * user grants it at runtime: the immersive scene asks when it mounts
+     * (`ensureSpatialDataPermission`), and so do the `scene.*` calls.
+     * @default false
+     */
+    spatialData?: boolean;
     entitlementCheck?: boolean;
     /**
      * Declare eye-tracking hardware support. Emits
@@ -530,6 +548,7 @@ export interface ResolvedPicoOptions {
     handTracking: boolean;
     passthrough: boolean;
     sceneUnderstanding: boolean;
+    spatialData: boolean;
     entitlementCheck: boolean;
     eyeTracking: boolean;
     faceTracking: boolean;

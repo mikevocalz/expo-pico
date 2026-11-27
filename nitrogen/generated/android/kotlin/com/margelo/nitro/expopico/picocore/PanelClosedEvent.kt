@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PanelClosedEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PanelClosedEvent) return false
-    return Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.reason, other.reason)
+    return this.name == other.name
+      && this.reason == other.reason
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      name,
-      reason
-    ).contentDeepHashCode()
+    var result = this.name.hashCode()
+    result = 31 * result + this.reason.hashCode()
+    return result
   }
 
   companion object {

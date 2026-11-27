@@ -10,6 +10,8 @@ exports.getDeclaredTargetDevices = getDeclaredTargetDevices;
 exports.getCapabilitySnapshot = getCapabilitySnapshot;
 exports.isCapabilityAvailable = isCapabilityAvailable;
 const ExpoPicoModule_1 = __importDefault(require("./ExpoPicoModule"));
+const eyeTrackingPermission_1 = require("./eyeTrackingPermission");
+const picoTrackingPermissions_1 = require("./picoTrackingPermissions");
 /**
  * Unified capability runtime surface.
  *
@@ -167,7 +169,13 @@ exports.body = {
     },
 };
 exports.hand = {
+    /**
+     * On PICO builds, asks for `com.picovr.permission.HAND_TRACKING` first
+     * (PICO Spatial SDK 6.2.8 made it a runtime grant). The dialog opens only
+     * from the immersive activity; see `ensureHandTrackingPermission`.
+     */
     async enable() {
+        await (0, picoTrackingPermissions_1.ensureHandTrackingPermission)((0, eyeTrackingPermission_1.buildXrMode)());
         return ExpoPicoModule_1.default.enableHandTracking();
     },
     async disable() {
@@ -198,21 +206,28 @@ exports.boundary = {
     },
 };
 // ─── Scene (planes + mesh) ──────────────────────────────────────────
+// Every scene call reads PICO spatial data, which PICO Spatial SDK 6.2.8 made
+// a runtime grant. Each one asks for `com.picovr.permission.SPATIAL_DATA` first
+// on PICO builds; see `ensureSpatialDataPermission`.
 exports.scene = {
     /** Detected plane list. Null when scene understanding unavailable. */
     async getPlanes() {
+        await (0, picoTrackingPermissions_1.ensureSpatialDataPermission)((0, eyeTrackingPermission_1.buildXrMode)());
         return ExpoPicoModule_1.default.getDetectedPlanes();
     },
     /** Request a new plane scan. Dispatch only — results arrive on next `getPlanes()`. */
     async refreshPlanes() {
+        await (0, picoTrackingPermissions_1.ensureSpatialDataPermission)((0, eyeTrackingPermission_1.buildXrMode)());
         return ExpoPicoModule_1.default.refreshScene();
     },
     /** Trigger a scene-mesh rescan. */
     async refreshMesh() {
+        await (0, picoTrackingPermissions_1.ensureSpatialDataPermission)((0, eyeTrackingPermission_1.buildXrMode)());
         return ExpoPicoModule_1.default.refreshSceneMesh();
     },
     /** Triangle count reported by the last mesh scan. Null when unavailable. */
     async getMeshTriangleCount() {
+        await (0, picoTrackingPermissions_1.ensureSpatialDataPermission)((0, eyeTrackingPermission_1.buildXrMode)());
         return ExpoPicoModule_1.default.getSceneMeshTriangleCount();
     },
 };

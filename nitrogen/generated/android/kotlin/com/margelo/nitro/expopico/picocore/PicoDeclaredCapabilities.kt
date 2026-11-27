@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -76,47 +75,46 @@ data class PicoDeclaredCapabilities(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDeclaredCapabilities) return false
-    return Objects.deepEquals(this.handTracking, other.handTracking)
-      && Objects.deepEquals(this.passthrough, other.passthrough)
-      && Objects.deepEquals(this.sceneUnderstanding, other.sceneUnderstanding)
-      && Objects.deepEquals(this.eyeTracking, other.eyeTracking)
-      && Objects.deepEquals(this.faceTracking, other.faceTracking)
-      && Objects.deepEquals(this.bodyTracking, other.bodyTracking)
-      && Objects.deepEquals(this.spatialAudio, other.spatialAudio)
-      && Objects.deepEquals(this.foveatedRendering, other.foveatedRendering)
-      && Objects.deepEquals(this.highSamplingRateSensors, other.highSamplingRateSensors)
-      && Objects.deepEquals(this.boundary, other.boundary)
-      && Objects.deepEquals(this.sceneMesh, other.sceneMesh)
-      && Objects.deepEquals(this.picoSenseController, other.picoSenseController)
-      && Objects.deepEquals(this.motionTracker, other.motionTracker)
-      && Objects.deepEquals(this.controllerHaptics, other.controllerHaptics)
-      && Objects.deepEquals(this.openXrLoader, other.openXrLoader)
-      && Objects.deepEquals(this.ndkAbiFilters, other.ndkAbiFilters)
-      && Objects.deepEquals(this.developerTools, other.developerTools)
-      && Objects.deepEquals(this.entitlementCheck, other.entitlementCheck)
+    return this.handTracking == other.handTracking
+      && this.passthrough == other.passthrough
+      && this.sceneUnderstanding == other.sceneUnderstanding
+      && this.eyeTracking == other.eyeTracking
+      && this.faceTracking == other.faceTracking
+      && this.bodyTracking == other.bodyTracking
+      && this.spatialAudio == other.spatialAudio
+      && this.foveatedRendering == other.foveatedRendering
+      && this.highSamplingRateSensors == other.highSamplingRateSensors
+      && this.boundary == other.boundary
+      && this.sceneMesh == other.sceneMesh
+      && this.picoSenseController == other.picoSenseController
+      && this.motionTracker == other.motionTracker
+      && this.controllerHaptics == other.controllerHaptics
+      && this.openXrLoader == other.openXrLoader
+      && this.ndkAbiFilters == other.ndkAbiFilters
+      && this.developerTools == other.developerTools
+      && this.entitlementCheck == other.entitlementCheck
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      handTracking,
-      passthrough,
-      sceneUnderstanding,
-      eyeTracking,
-      faceTracking,
-      bodyTracking,
-      spatialAudio,
-      foveatedRendering,
-      highSamplingRateSensors,
-      boundary,
-      sceneMesh,
-      picoSenseController,
-      motionTracker,
-      controllerHaptics,
-      openXrLoader,
-      ndkAbiFilters,
-      developerTools,
-      entitlementCheck
-    ).contentDeepHashCode()
+    var result = this.handTracking.hashCode()
+    result = 31 * result + this.passthrough.hashCode()
+    result = 31 * result + this.sceneUnderstanding.hashCode()
+    result = 31 * result + this.eyeTracking.hashCode()
+    result = 31 * result + this.faceTracking.hashCode()
+    result = 31 * result + this.bodyTracking.hashCode()
+    result = 31 * result + this.spatialAudio.hashCode()
+    result = 31 * result + this.foveatedRendering.hashCode()
+    result = 31 * result + this.highSamplingRateSensors.hashCode()
+    result = 31 * result + this.boundary.hashCode()
+    result = 31 * result + this.sceneMesh.hashCode()
+    result = 31 * result + this.picoSenseController.hashCode()
+    result = 31 * result + this.motionTracker.hashCode()
+    result = 31 * result + this.controllerHaptics.hashCode()
+    result = 31 * result + this.openXrLoader.hashCode()
+    result = 31 * result + this.ndkAbiFilters.hashCode()
+    result = 31 * result + this.developerTools.hashCode()
+    result = 31 * result + this.entitlementCheck.hashCode()
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 import com.margelo.nitro.core.Callback
 
 /**
@@ -25,13 +24,11 @@ data class ListenerSubscription(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is ListenerSubscription) return false
-    return Objects.deepEquals(this.remove, other.remove)
+    return this.remove == other.remove
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      remove
-    ).contentDeepHashCode()
+    return this.remove.hashCode()
   }
 
   companion object {

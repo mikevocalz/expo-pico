@@ -1,4 +1,5 @@
 import { type ComponentType } from 'react';
+import type { PicoXRMode } from './types';
 /**
  * Root component name PICO's immersive activity mounts.
  *
@@ -33,6 +34,21 @@ export declare const IMMERSIVE_ROOT_COMPONENT = "VRQuestScene";
  * helper with their own renderer integration.
  */
 export declare function registerImmersiveScene(component: ComponentType<object>): void;
+/**
+ * Ask for every runtime permission the immersive scene uses, one dialog at a
+ * time, in the immersive activity: eye tracking, then PICO hand tracking, then
+ * PICO spatial data. Each request happens only when the manifest declares the
+ * permission and it is not granted, and at most once per process.
+ *
+ * The root registered with `registerImmersiveScene()` calls this on mount.
+ * Call it yourself only when the immersive activity mounts a root of its own,
+ * such as Viro's `ViroQuestEntryPoint`:
+ * `useEffect(() => { ensureImmersivePermissions(getXrMode()); }, [])`.
+ *
+ * Never rejects. It settles when the user has answered every dialog, so do
+ * not hold the scene's first frame on it.
+ */
+export declare function ensureImmersivePermissions(mode: PicoXRMode): Promise<void>;
 /**
  * Whether a root component is registered for the immersive activity.
  *

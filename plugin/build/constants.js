@@ -1,11 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PICO_FLAVOR_ABI_FILTERS = exports.PICO_NATIVE_LIBRARIES = exports.PICO_PROHIBITED_PERMISSIONS = exports.PROFILE_MIN_SDK = exports.TARGET_PROFILE_MAP = exports.DEVICE_TARGET_MAP = exports.PICO_PERMISSIONS = exports.PICO_FEATURES = exports.PICO_SETTINGS_MARKER = exports.PICO_MAIN_APP_TRACKER_IMPORT_MARKER = exports.PICO_MAIN_APP_TRACKER_MARKER = exports.PICO_MAIN_APP_FLAGS_IMPORT_MARKER = exports.PICO_MAIN_APP_FLAGS_MARKER = exports.PICO_MAIN_APP_IMPORT_MARKER = exports.PICO_MAIN_APP_MARKER = exports.XR_MODE_MANIFEST_VALUE = exports.PICO_QUERY_PACKAGES = exports.LAUNCHER_CATEGORIES = exports.APP_TYPE_MANIFEST_VALUE = exports.MANIFEST_META = exports.PICO_SPATIAL_SDK_VERSION = exports.PICO_PLATFORM_SDK_VERSION = exports.PICO_PLATFORM_SDK_GROUP = exports.PICO_SDK_GROUP = exports.PICO_MAVEN_REPO = void 0;
-exports.PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
-exports.PICO_SDK_GROUP = 'com.pvr';
-exports.PICO_PLATFORM_SDK_GROUP = 'com.pvr.platform';
-exports.PICO_PLATFORM_SDK_VERSION = '3.2.0';
-exports.PICO_SPATIAL_SDK_VERSION = '1.0.0';
+exports.PICO_FLAVOR_ABI_FILTERS = exports.PICO_NATIVE_LIBRARIES = exports.PICO_PROHIBITED_PERMISSIONS = exports.PROFILE_MIN_SDK = exports.TARGET_PROFILE_MAP = exports.DEVICE_TARGET_MAP = exports.PICO_PERMISSIONS = exports.PICO_FEATURES = exports.PICO_SETTINGS_MARKER = exports.PICO_MAIN_APP_TRACKER_IMPORT_MARKER = exports.PICO_MAIN_APP_TRACKER_MARKER = exports.PICO_MAIN_APP_FLAGS_IMPORT_MARKER = exports.PICO_MAIN_APP_FLAGS_MARKER = exports.PICO_MAIN_APP_IMPORT_MARKER = exports.PICO_MAIN_APP_MARKER = exports.XR_MODE_MANIFEST_VALUE = exports.PICO_QUERY_PACKAGES = exports.LAUNCHER_CATEGORIES = exports.APP_TYPE_MANIFEST_VALUE = exports.MANIFEST_META = exports.DEAD_PICO_MAVEN_REPO = exports.PICO_MAVEN_REPO = void 0;
+/**
+ * PICO's public Maven, hosted by Bytedance. It serves the Platform Service SDK
+ * (com.pico.pps:*, com.pico:*) and the Spatial SDK (com.pico.spatial.*).
+ */
+exports.PICO_MAVEN_REPO = 'https://artifact.bytedance.com/repository/Volcengine/';
+/**
+ * The repository older versions of this plugin wrote into the project
+ * build.gradle. It now answers 302 with a redirect to PICO's homepage, and no
+ * dependency resolves from it. `withPicoProjectBuildGradle` removes it.
+ */
+exports.DEAD_PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
 exports.MANIFEST_META = {
     PICO_APP_ID: 'pvr.app.id',
     /**
@@ -193,6 +199,19 @@ exports.PICO_PERMISSIONS = {
     EYE_TRACKING: 'com.picovr.permission.EYE_TRACKING',
     /** Confirmed via the same sources as EYE_TRACKING. */
     FACE_TRACKING: 'com.picovr.permission.FACE_TRACKING',
+    /**
+     * Hand joint data. PICO's Unity OpenXR build processor writes it when hand
+     * tracking is on, and the runtime returns no hand joints without it. From
+     * PICO Spatial SDK 6.2.8 the user must also grant it at runtime.
+     */
+    HAND_TRACKING: 'com.picovr.permission.HAND_TRACKING',
+    /**
+     * Mixed reality spatial data: anchors, scene capture, planes and the
+     * spatial mesh. PICO's Unity SDK writes it for any of those features; calls
+     * without the grant fail with ERROR_PERMISSION_INSUFFICIENT. From PICO
+     * Spatial SDK 6.2.8 the user must grant it at runtime.
+     */
+    SPATIAL_DATA: 'com.picovr.permission.SPATIAL_DATA',
     /**
      * EXTENSION SEAM — key name unconfirmed in open docs. Best-known
      * naming pattern. Usable today because permissions declared but not

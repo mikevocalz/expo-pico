@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class PicoHighRateSensor(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoHighRateSensor) return false
-    return Objects.deepEquals(this.type, other.type)
-      && Objects.deepEquals(this.vendor, other.vendor)
-      && Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.maxHz, other.maxHz)
-      && Objects.deepEquals(this.minDelayMicros, other.minDelayMicros)
+    return this.type == other.type
+      && this.vendor == other.vendor
+      && this.name == other.name
+      && this.maxHz.toBits() == other.maxHz.toBits()
+      && this.minDelayMicros.toBits() == other.minDelayMicros.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      type,
-      vendor,
-      name,
-      maxHz,
-      minDelayMicros
-    ).contentDeepHashCode()
+    var result = this.type.hashCode()
+    result = 31 * result + this.vendor.hashCode()
+    result = 31 * result + this.name.hashCode()
+    result = 31 * result + this.maxHz.hashCode()
+    result = 31 * result + this.minDelayMicros.hashCode()
+    return result
   }
 
   companion object {

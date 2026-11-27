@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PanelSizeDp(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PanelSizeDp) return false
-    return Objects.deepEquals(this.widthDp, other.widthDp)
-      && Objects.deepEquals(this.heightDp, other.heightDp)
+    return this.widthDp.toBits() == other.widthDp.toBits()
+      && this.heightDp.toBits() == other.heightDp.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      widthDp,
-      heightDp
-    ).contentDeepHashCode()
+    var result = this.widthDp.hashCode()
+    result = 31 * result + this.heightDp.hashCode()
+    return result
   }
 
   companion object {

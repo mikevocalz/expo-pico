@@ -1,5 +1,7 @@
 import { ConfigPlugin } from '@expo/config-plugins';
 import type { ResolvedPicoOptions } from './types';
+/** Removes the repository entry that older plugin versions wrote. */
+export declare function removeDeadPicoMavenRepo(contents: string): string;
 /**
  * Render the `productFlavors { ... }` block injected into `app/build.gradle`.
  *
