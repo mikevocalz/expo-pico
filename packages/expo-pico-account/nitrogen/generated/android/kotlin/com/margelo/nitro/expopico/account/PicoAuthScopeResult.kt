@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.account
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -43,25 +42,24 @@ data class PicoAuthScopeResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoAuthScopeResult) return false
-    return Objects.deepEquals(this.authorizedScopes, other.authorizedScopes)
-      && Objects.deepEquals(this.accessToken, other.accessToken)
-      && Objects.deepEquals(this.refreshToken, other.refreshToken)
-      && Objects.deepEquals(this.idToken, other.idToken)
-      && Objects.deepEquals(this.authCode, other.authCode)
-      && Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.displayName, other.displayName)
+    return this.authorizedScopes.contentDeepEquals(other.authorizedScopes)
+      && this.accessToken == other.accessToken
+      && this.refreshToken == other.refreshToken
+      && this.idToken == other.idToken
+      && this.authCode == other.authCode
+      && this.userId == other.userId
+      && this.displayName == other.displayName
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      authorizedScopes,
-      accessToken,
-      refreshToken,
-      idToken,
-      authCode,
-      userId,
-      displayName
-    ).contentDeepHashCode()
+    var result = this.authorizedScopes.contentDeepHashCode()
+    result = 31 * result + this.accessToken.hashCode()
+    result = 31 * result + this.refreshToken.hashCode()
+    result = 31 * result + this.idToken.hashCode()
+    result = 31 * result + this.authCode.hashCode()
+    result = 31 * result + this.userId.hashCode()
+    result = 31 * result + this.displayName.hashCode()
+    return result
   }
 
   companion object {

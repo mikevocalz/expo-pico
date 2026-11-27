@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class LaunchAppOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is LaunchAppOptions) return false
-    return Objects.deepEquals(this.targetAppId, other.targetAppId)
-      && Objects.deepEquals(this.targetPackageName, other.targetPackageName)
-      && Objects.deepEquals(this.deepLinkMessage, other.deepLinkMessage)
+    return (this.targetAppId == null && other.targetAppId == null || this.targetAppId != null && other.targetAppId != null && this.targetAppId == other.targetAppId)
+      && (this.targetPackageName == null && other.targetPackageName == null || this.targetPackageName != null && other.targetPackageName != null && this.targetPackageName == other.targetPackageName)
+      && (this.deepLinkMessage == null && other.deepLinkMessage == null || this.deepLinkMessage != null && other.deepLinkMessage != null && this.deepLinkMessage == other.deepLinkMessage)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      targetAppId,
-      targetPackageName,
-      deepLinkMessage
-    ).contentDeepHashCode()
+    var result = (if (this.targetAppId != null) this.targetAppId.hashCode() else 0)
+    result = 31 * result + (if (this.targetPackageName != null) this.targetPackageName.hashCode() else 0)
+    result = 31 * result + (if (this.deepLinkMessage != null) this.deepLinkMessage.hashCode() else 0)
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class PicoDetectedPlane(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoDetectedPlane) return false
-    return Objects.deepEquals(this.id, other.id)
-      && Objects.deepEquals(this.label, other.label)
-      && Objects.deepEquals(this.center, other.center)
-      && Objects.deepEquals(this.extent, other.extent)
-      && Objects.deepEquals(this.normal, other.normal)
+    return this.id == other.id
+      && this.label == other.label
+      && this.center == other.center
+      && this.extent == other.extent
+      && this.normal == other.normal
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      id,
-      label,
-      center,
-      extent,
-      normal
-    ).contentDeepHashCode()
+    var result = this.id.hashCode()
+    result = 31 * result + this.label.hashCode()
+    result = 31 * result + this.center.hashCode()
+    result = 31 * result + this.extent.hashCode()
+    result = 31 * result + this.normal.hashCode()
+    return result
   }
 
   companion object {

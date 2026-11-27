@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.notifications
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class PicoPushMessage(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoPushMessage) return false
-    return Objects.deepEquals(this.msgId, other.msgId)
-      && Objects.deepEquals(this.data, other.data)
+    return this.msgId == other.msgId
+      && this.data == other.data
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      msgId,
-      data
-    ).contentDeepHashCode()
+    var result = this.msgId.hashCode()
+    result = 31 * result + this.data.hashCode()
+    return result
   }
 
   companion object {

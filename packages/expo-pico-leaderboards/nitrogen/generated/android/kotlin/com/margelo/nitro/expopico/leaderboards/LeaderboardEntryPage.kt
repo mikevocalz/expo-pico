@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.leaderboards
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class LeaderboardEntryPage(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is LeaderboardEntryPage) return false
-    return Objects.deepEquals(this.items, other.items)
-      && Objects.deepEquals(this.nextPageToken, other.nextPageToken)
-      && Objects.deepEquals(this.totalCount, other.totalCount)
+    return this.items.contentDeepEquals(other.items)
+      && (this.nextPageToken == null && other.nextPageToken == null || this.nextPageToken != null && other.nextPageToken != null && this.nextPageToken == other.nextPageToken)
+      && this.totalCount.toBits() == other.totalCount.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      items,
-      nextPageToken,
-      totalCount
-    ).contentDeepHashCode()
+    var result = this.items.contentDeepHashCode()
+    result = 31 * result + (if (this.nextPageToken != null) this.nextPageToken.hashCode() else 0)
+    result = 31 * result + this.totalCount.hashCode()
+    return result
   }
 
   companion object {

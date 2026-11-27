@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.subscription
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -49,29 +48,28 @@ data class SubscriptionProduct(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SubscriptionProduct) return false
-    return Objects.deepEquals(this.sku, other.sku)
-      && Objects.deepEquals(this.title, other.title)
-      && Objects.deepEquals(this.description, other.description)
-      && Objects.deepEquals(this.formattedPrice, other.formattedPrice)
-      && Objects.deepEquals(this.priceMicros, other.priceMicros)
-      && Objects.deepEquals(this.currency, other.currency)
-      && Objects.deepEquals(this.period, other.period)
-      && Objects.deepEquals(this.trialDays, other.trialDays)
-      && Objects.deepEquals(this.introductoryFormattedPrice, other.introductoryFormattedPrice)
+    return this.sku == other.sku
+      && this.title == other.title
+      && this.description == other.description
+      && this.formattedPrice == other.formattedPrice
+      && this.priceMicros.toBits() == other.priceMicros.toBits()
+      && this.currency == other.currency
+      && this.period == other.period
+      && this.trialDays.toBits() == other.trialDays.toBits()
+      && (this.introductoryFormattedPrice == null && other.introductoryFormattedPrice == null || this.introductoryFormattedPrice != null && other.introductoryFormattedPrice != null && this.introductoryFormattedPrice == other.introductoryFormattedPrice)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sku,
-      title,
-      description,
-      formattedPrice,
-      priceMicros,
-      currency,
-      period,
-      trialDays,
-      introductoryFormattedPrice
-    ).contentDeepHashCode()
+    var result = this.sku.hashCode()
+    result = 31 * result + this.title.hashCode()
+    result = 31 * result + this.description.hashCode()
+    result = 31 * result + this.formattedPrice.hashCode()
+    result = 31 * result + this.priceMicros.hashCode()
+    result = 31 * result + this.currency.hashCode()
+    result = 31 * result + this.period.hashCode()
+    result = 31 * result + this.trialDays.hashCode()
+    result = 31 * result + (if (this.introductoryFormattedPrice != null) this.introductoryFormattedPrice.hashCode() else 0)
+    return result
   }
 
   companion object {

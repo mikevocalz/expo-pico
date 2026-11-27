@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rooms
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -43,25 +42,24 @@ data class RoomInfo(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RoomInfo) return false
-    return Objects.deepEquals(this.roomId, other.roomId)
-      && Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.joinPolicy, other.joinPolicy)
-      && Objects.deepEquals(this.memberCount, other.memberCount)
-      && Objects.deepEquals(this.maxMembers, other.maxMembers)
-      && Objects.deepEquals(this.data, other.data)
-      && Objects.deepEquals(this.members, other.members)
+    return this.roomId == other.roomId
+      && (this.name == null && other.name == null || this.name != null && other.name != null && this.name == other.name)
+      && this.joinPolicy == other.joinPolicy
+      && this.memberCount.toBits() == other.memberCount.toBits()
+      && this.maxMembers.toBits() == other.maxMembers.toBits()
+      && this.data == other.data
+      && this.members.contentDeepEquals(other.members)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      roomId,
-      name,
-      joinPolicy,
-      memberCount,
-      maxMembers,
-      data,
-      members
-    ).contentDeepHashCode()
+    var result = this.roomId.hashCode()
+    result = 31 * result + (if (this.name != null) this.name.hashCode() else 0)
+    result = 31 * result + this.joinPolicy.hashCode()
+    result = 31 * result + this.memberCount.hashCode()
+    result = 31 * result + this.maxMembers.hashCode()
+    result = 31 * result + this.data.hashCode()
+    result = 31 * result + this.members.contentDeepHashCode()
+    return result
   }
 
   companion object {

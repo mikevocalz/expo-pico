@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -40,23 +39,22 @@ data class PicoMotionTracker(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoMotionTracker) return false
-    return Objects.deepEquals(this.id, other.id)
-      && Objects.deepEquals(this.attachment, other.attachment)
-      && Objects.deepEquals(this.connected, other.connected)
-      && Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.rotation, other.rotation)
-      && Objects.deepEquals(this.batteryPct, other.batteryPct)
+    return this.id == other.id
+      && this.attachment == other.attachment
+      && this.connected == other.connected
+      && this.position == other.position
+      && this.rotation == other.rotation
+      && this.batteryPct.toBits() == other.batteryPct.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      id,
-      attachment,
-      connected,
-      position,
-      rotation,
-      batteryPct
-    ).contentDeepHashCode()
+    var result = this.id.hashCode()
+    result = 31 * result + this.attachment.hashCode()
+    result = 31 * result + this.connected.hashCode()
+    result = 31 * result + this.position.hashCode()
+    result = 31 * result + this.rotation.hashCode()
+    result = 31 * result + this.batteryPct.hashCode()
+    return result
   }
 
   companion object {

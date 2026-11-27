@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class PicoIconMeshData(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoIconMeshData) return false
-    return Objects.deepEquals(this.vertices, other.vertices)
-      && Objects.deepEquals(this.indices, other.indices)
-      && Objects.deepEquals(this.vertexCount, other.vertexCount)
-      && Objects.deepEquals(this.indexCount, other.indexCount)
+    return this.vertices.contentEquals(other.vertices)
+      && this.indices.contentEquals(other.indices)
+      && this.vertexCount.toBits() == other.vertexCount.toBits()
+      && this.indexCount.toBits() == other.indexCount.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      vertices,
-      indices,
-      vertexCount,
-      indexCount
-    ).contentDeepHashCode()
+    var result = this.vertices.contentHashCode()
+    result = 31 * result + this.indices.contentHashCode()
+    result = 31 * result + this.vertexCount.hashCode()
+    result = 31 * result + this.indexCount.hashCode()
+    return result
   }
 
   companion object {

@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.storage
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class StorageQuota(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageQuota) return false
-    return Objects.deepEquals(this.usedBytes, other.usedBytes)
-      && Objects.deepEquals(this.totalBytes, other.totalBytes)
-      && Objects.deepEquals(this.entryCount, other.entryCount)
-      && Objects.deepEquals(this.maxEntries, other.maxEntries)
+    return this.usedBytes.toBits() == other.usedBytes.toBits()
+      && this.totalBytes.toBits() == other.totalBytes.toBits()
+      && this.entryCount.toBits() == other.entryCount.toBits()
+      && this.maxEntries.toBits() == other.maxEntries.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      usedBytes,
-      totalBytes,
-      entryCount,
-      maxEntries
-    ).contentDeepHashCode()
+    var result = this.usedBytes.hashCode()
+    result = 31 * result + this.totalBytes.hashCode()
+    result = 31 * result + this.entryCount.hashCode()
+    result = 31 * result + this.maxEntries.hashCode()
+    return result
   }
 
   companion object {

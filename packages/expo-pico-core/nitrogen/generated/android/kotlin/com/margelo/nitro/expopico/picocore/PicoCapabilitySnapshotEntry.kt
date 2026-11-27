@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.picocore
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -43,25 +42,24 @@ data class PicoCapabilitySnapshotEntry(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoCapabilitySnapshotEntry) return false
-    return Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.declared, other.declared)
-      && Objects.deepEquals(this.systemFeature, other.systemFeature)
-      && Objects.deepEquals(this.systemFeatureAvailable, other.systemFeatureAvailable)
-      && Objects.deepEquals(this.sdkClassFound, other.sdkClassFound)
-      && Objects.deepEquals(this.sdkAvailable, other.sdkAvailable)
-      && Objects.deepEquals(this.fullyAvailable, other.fullyAvailable)
+    return this.name == other.name
+      && this.declared == other.declared
+      && (this.systemFeature == null && other.systemFeature == null || this.systemFeature != null && other.systemFeature != null && this.systemFeature == other.systemFeature)
+      && (this.systemFeatureAvailable == null && other.systemFeatureAvailable == null || this.systemFeatureAvailable != null && other.systemFeatureAvailable != null && this.systemFeatureAvailable == other.systemFeatureAvailable)
+      && (this.sdkClassFound == null && other.sdkClassFound == null || this.sdkClassFound != null && other.sdkClassFound != null && this.sdkClassFound == other.sdkClassFound)
+      && this.sdkAvailable == other.sdkAvailable
+      && this.fullyAvailable == other.fullyAvailable
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      name,
-      declared,
-      systemFeature,
-      systemFeatureAvailable,
-      sdkClassFound,
-      sdkAvailable,
-      fullyAvailable
-    ).contentDeepHashCode()
+    var result = this.name.hashCode()
+    result = 31 * result + this.declared.hashCode()
+    result = 31 * result + (if (this.systemFeature != null) this.systemFeature.hashCode() else 0)
+    result = 31 * result + (if (this.systemFeatureAvailable != null) this.systemFeatureAvailable.hashCode() else 0)
+    result = 31 * result + (if (this.sdkClassFound != null) this.sdkClassFound.hashCode() else 0)
+    result = 31 * result + this.sdkAvailable.hashCode()
+    result = 31 * result + this.fullyAvailable.hashCode()
+    return result
   }
 
   companion object {

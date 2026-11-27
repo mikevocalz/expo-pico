@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.storage
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class StorageLoadResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageLoadResult) return false
-    return Objects.deepEquals(this.key, other.key)
-      && Objects.deepEquals(this.value, other.value)
-      && Objects.deepEquals(this.version, other.version)
-      && Objects.deepEquals(this.found, other.found)
+    return this.key == other.key
+      && (this.value == null && other.value == null || this.value != null && other.value != null && this.value == other.value)
+      && this.version.toBits() == other.version.toBits()
+      && this.found == other.found
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      key,
-      value,
-      version,
-      found
-    ).contentDeepHashCode()
+    var result = this.key.hashCode()
+    result = 31 * result + (if (this.value != null) this.value.hashCode() else 0)
+    result = 31 * result + this.version.hashCode()
+    result = 31 * result + this.found.hashCode()
+    return result
   }
 
   companion object {

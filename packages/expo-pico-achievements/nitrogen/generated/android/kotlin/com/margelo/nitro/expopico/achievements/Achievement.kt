@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.achievements
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -55,33 +54,32 @@ data class Achievement(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Achievement) return false
-    return Objects.deepEquals(this.apiName, other.apiName)
-      && Objects.deepEquals(this.title, other.title)
-      && Objects.deepEquals(this.description, other.description)
-      && Objects.deepEquals(this.type, other.type)
-      && Objects.deepEquals(this.visibility, other.visibility)
-      && Objects.deepEquals(this.target, other.target)
-      && Objects.deepEquals(this.bitfieldLength, other.bitfieldLength)
-      && Objects.deepEquals(this.iconUrl, other.iconUrl)
-      && Objects.deepEquals(this.isUnlocked, other.isUnlocked)
-      && Objects.deepEquals(this.unlockedAtMs, other.unlockedAtMs)
-      && Objects.deepEquals(this.progress, other.progress)
+    return this.apiName == other.apiName
+      && this.title == other.title
+      && this.description == other.description
+      && this.type == other.type
+      && this.visibility == other.visibility
+      && (this.target == null && other.target == null || this.target != null && other.target != null && this.target.toBits() == other.target.toBits())
+      && (this.bitfieldLength == null && other.bitfieldLength == null || this.bitfieldLength != null && other.bitfieldLength != null && this.bitfieldLength.toBits() == other.bitfieldLength.toBits())
+      && (this.iconUrl == null && other.iconUrl == null || this.iconUrl != null && other.iconUrl != null && this.iconUrl == other.iconUrl)
+      && this.isUnlocked == other.isUnlocked
+      && (this.unlockedAtMs == null && other.unlockedAtMs == null || this.unlockedAtMs != null && other.unlockedAtMs != null && this.unlockedAtMs.toBits() == other.unlockedAtMs.toBits())
+      && this.progress.toBits() == other.progress.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      apiName,
-      title,
-      description,
-      type,
-      visibility,
-      target,
-      bitfieldLength,
-      iconUrl,
-      isUnlocked,
-      unlockedAtMs,
-      progress
-    ).contentDeepHashCode()
+    var result = this.apiName.hashCode()
+    result = 31 * result + this.title.hashCode()
+    result = 31 * result + this.description.hashCode()
+    result = 31 * result + this.type.hashCode()
+    result = 31 * result + this.visibility.hashCode()
+    result = 31 * result + (if (this.target != null) this.target.hashCode() else 0)
+    result = 31 * result + (if (this.bitfieldLength != null) this.bitfieldLength.hashCode() else 0)
+    result = 31 * result + (if (this.iconUrl != null) this.iconUrl.hashCode() else 0)
+    result = 31 * result + this.isUnlocked.hashCode()
+    result = 31 * result + (if (this.unlockedAtMs != null) this.unlockedAtMs.hashCode() else 0)
+    result = 31 * result + this.progress.hashCode()
+    return result
   }
 
   companion object {

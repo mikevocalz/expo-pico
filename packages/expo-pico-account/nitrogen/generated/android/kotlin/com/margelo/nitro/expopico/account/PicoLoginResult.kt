@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.account
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class PicoLoginResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoLoginResult) return false
-    return Objects.deepEquals(this.status, other.status)
-      && Objects.deepEquals(this.userId, other.userId)
-      && Objects.deepEquals(this.accessToken, other.accessToken)
-      && Objects.deepEquals(this.code, other.code)
-      && Objects.deepEquals(this.message, other.message)
+    return this.status == other.status
+      && (this.userId == null && other.userId == null || this.userId != null && other.userId != null && this.userId == other.userId)
+      && (this.accessToken == null && other.accessToken == null || this.accessToken != null && other.accessToken != null && this.accessToken == other.accessToken)
+      && (this.code == null && other.code == null || this.code != null && other.code != null && this.code == other.code)
+      && (this.message == null && other.message == null || this.message != null && other.message != null && this.message == other.message)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      status,
-      userId,
-      accessToken,
-      code,
-      message
-    ).contentDeepHashCode()
+    var result = this.status.hashCode()
+    result = 31 * result + (if (this.userId != null) this.userId.hashCode() else 0)
+    result = 31 * result + (if (this.accessToken != null) this.accessToken.hashCode() else 0)
+    result = 31 * result + (if (this.code != null) this.code.hashCode() else 0)
+    result = 31 * result + (if (this.message != null) this.message.hashCode() else 0)
+    return result
   }
 
   companion object {

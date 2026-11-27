@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class WindowContainerProperties(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is WindowContainerProperties) return false
-    return Objects.deepEquals(this.width, other.width)
-      && Objects.deepEquals(this.height, other.height)
-      && Objects.deepEquals(this.depthOffset, other.depthOffset)
-      && Objects.deepEquals(this.resizable, other.resizable)
+    return (this.width == null && other.width == null || this.width != null && other.width != null && this.width.toBits() == other.width.toBits())
+      && (this.height == null && other.height == null || this.height != null && other.height != null && this.height.toBits() == other.height.toBits())
+      && (this.depthOffset == null && other.depthOffset == null || this.depthOffset != null && other.depthOffset != null && this.depthOffset.toBits() == other.depthOffset.toBits())
+      && (this.resizable == null && other.resizable == null || this.resizable != null && other.resizable != null && this.resizable == other.resizable)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      width,
-      height,
-      depthOffset,
-      resizable
-    ).contentDeepHashCode()
+    var result = (if (this.width != null) this.width.hashCode() else 0)
+    result = 31 * result + (if (this.height != null) this.height.hashCode() else 0)
+    result = 31 * result + (if (this.depthOffset != null) this.depthOffset.hashCode() else 0)
+    result = 31 * result + (if (this.resizable != null) this.resizable.hashCode() else 0)
+    return result
   }
 
   companion object {

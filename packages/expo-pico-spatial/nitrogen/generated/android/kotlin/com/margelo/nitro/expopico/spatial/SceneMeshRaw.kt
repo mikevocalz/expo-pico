@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class SceneMeshRaw(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SceneMeshRaw) return false
-    return Objects.deepEquals(this.vertices, other.vertices)
-      && Objects.deepEquals(this.indices, other.indices)
-      && Objects.deepEquals(this.normals, other.normals)
+    return this.vertices.contentEquals(other.vertices)
+      && this.indices.contentEquals(other.indices)
+      && (this.normals == null && other.normals == null || this.normals != null && other.normals != null && this.normals.contentEquals(other.normals))
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      vertices,
-      indices,
-      normals
-    ).contentDeepHashCode()
+    var result = this.vertices.contentHashCode()
+    result = 31 * result + this.indices.contentHashCode()
+    result = 31 * result + (if (this.normals != null) this.normals.contentHashCode() else 0)
+    return result
   }
 
   companion object {

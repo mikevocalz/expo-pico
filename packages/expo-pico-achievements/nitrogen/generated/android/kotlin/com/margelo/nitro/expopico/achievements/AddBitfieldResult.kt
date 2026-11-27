@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.achievements
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class AddBitfieldResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is AddBitfieldResult) return false
-    return Objects.deepEquals(this.apiName, other.apiName)
-      && Objects.deepEquals(this.currentBitsSet, other.currentBitsSet)
-      && Objects.deepEquals(this.totalBits, other.totalBits)
-      && Objects.deepEquals(this.justUnlocked, other.justUnlocked)
+    return this.apiName == other.apiName
+      && this.currentBitsSet.toBits() == other.currentBitsSet.toBits()
+      && this.totalBits.toBits() == other.totalBits.toBits()
+      && this.justUnlocked == other.justUnlocked
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      apiName,
-      currentBitsSet,
-      totalBits,
-      justUnlocked
-    ).contentDeepHashCode()
+    var result = this.apiName.hashCode()
+    result = 31 * result + this.currentBitsSet.hashCode()
+    result = 31 * result + this.totalBits.hashCode()
+    result = 31 * result + this.justUnlocked.hashCode()
+    return result
   }
 
   companion object {

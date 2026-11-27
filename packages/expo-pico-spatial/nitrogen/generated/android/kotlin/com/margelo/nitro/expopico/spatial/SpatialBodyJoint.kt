@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class SpatialBodyJoint(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialBodyJoint) return false
-    return Objects.deepEquals(this.name, other.name)
-      && Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.rotation, other.rotation)
+    return this.name == other.name
+      && this.position == other.position
+      && this.rotation == other.rotation
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      name,
-      position,
-      rotation
-    ).contentDeepHashCode()
+    var result = this.name.hashCode()
+    result = 31 * result + this.position.hashCode()
+    result = 31 * result + this.rotation.hashCode()
+    return result
   }
 
   companion object {
