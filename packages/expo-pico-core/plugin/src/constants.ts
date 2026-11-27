@@ -1,8 +1,15 @@
-export const PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
-export const PICO_SDK_GROUP = 'com.pvr';
-export const PICO_PLATFORM_SDK_GROUP = 'com.pvr.platform';
-export const PICO_PLATFORM_SDK_VERSION = '3.2.0';
-export const PICO_SPATIAL_SDK_VERSION = '1.0.0';
+/**
+ * PICO's public Maven, hosted by Bytedance. It serves the Platform Service SDK
+ * (com.pico.pps:*, com.pico:*) and the Spatial SDK (com.pico.spatial.*).
+ */
+export const PICO_MAVEN_REPO = 'https://artifact.bytedance.com/repository/Volcengine/';
+
+/**
+ * The repository older versions of this plugin wrote into the project
+ * build.gradle. It now answers 302 with a redirect to PICO's homepage, and no
+ * dependency resolves from it. `withPicoProjectBuildGradle` removes it.
+ */
+export const DEAD_PICO_MAVEN_REPO = 'https://developer.pico-interactive.com/maven';
 
 export const MANIFEST_META = {
   PICO_APP_ID: 'pvr.app.id',
