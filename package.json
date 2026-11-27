@@ -34,8 +34,8 @@
     "@expo-pico/core": ">=1.0.0",
     "react": ">=19.3.0 <20",
     "react-native": ">=0.88.0 <0.89",
-    "react-native-nitro-modules": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
-    "nitro-core": ">=1.0.0-alpha.nightly.120.g33ef045b96c0",
+    "react-native-nitro-modules": ">=1.0.0-alpha.nightly.138.g43e09c161101",
+    "nitro-core": ">=1.0.0-alpha.nightly.138.g43e09c161101",
     "@expo-pico/platform-service-common": "^1.0.0"
   },
   "peerDependenciesMeta": {
@@ -65,8 +65,8 @@
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
   },
-  "gitHead": "ac5ed92556907b11b3c92479a64889850f96d910",
+  "gitHead": "596588242dad2ed19bff57992b66d4c3bf7d2b2a",
   "expoPico": {
-    "sourceCommit": "ac5ed92556907b11b3c92479a64889850f96d910"
+    "sourceCommit": "596588242dad2ed19bff57992b66d4c3bf7d2b2a"
   }
 }
