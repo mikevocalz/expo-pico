@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.notifications
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PicoPushRevocation(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoPushRevocation) return false
-    return Objects.deepEquals(this.msgId, other.msgId)
-      && Objects.deepEquals(this.revokeId, other.revokeId)
-      && Objects.deepEquals(this.revokeData, other.revokeData)
+    return this.msgId == other.msgId
+      && this.revokeId == other.revokeId
+      && this.revokeData == other.revokeData
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      msgId,
-      revokeId,
-      revokeData
-    ).contentDeepHashCode()
+    var result = this.msgId.hashCode()
+    result = 31 * result + this.revokeId.hashCode()
+    result = 31 * result + this.revokeData.hashCode()
+    return result
   }
 
   companion object {

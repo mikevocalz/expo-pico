@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.notifications
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class NotificationPermissionResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is NotificationPermissionResult) return false
-    return Objects.deepEquals(this.status, other.status)
-      && Objects.deepEquals(this.prompted, other.prompted)
+    return this.status == other.status
+      && this.prompted == other.prompted
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      status,
-      prompted
-    ).contentDeepHashCode()
+    var result = this.status.hashCode()
+    result = 31 * result + this.prompted.hashCode()
+    return result
   }
 
   companion object {

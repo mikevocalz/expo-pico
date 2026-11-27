@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.notifications
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class NotificationToken(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is NotificationToken) return false
-    return Objects.deepEquals(this.token, other.token)
-      && Objects.deepEquals(this.provider, other.provider)
-      && Objects.deepEquals(this.registeredAtMs, other.registeredAtMs)
+    return this.token == other.token
+      && this.provider == other.provider
+      && this.registeredAtMs.toBits() == other.registeredAtMs.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      token,
-      provider,
-      registeredAtMs
-    ).contentDeepHashCode()
+    var result = this.token.hashCode()
+    result = 31 * result + this.provider.hashCode()
+    result = 31 * result + this.registeredAtMs.hashCode()
+    return result
   }
 
   companion object {
