@@ -1,6 +1,6 @@
 import { ConfigPlugin, withAppBuildGradle } from '@expo/config-plugins';
 
-export const SPATIAL_SDK_VERSION = '6.1.9';
+export const SPATIAL_SDK_VERSION = '6.2.8';
 
 const SPATIAL_SDK_RUNTIME_MARKER = '// expo-pico-spatial: PICO Spatial SDK runtime';
 
@@ -44,10 +44,28 @@ dependencies {
 `;
 }
 
+const SPATIAL_SDK_COORDINATE = /"com\.pico\.spatial\.core:core:[^"]+"/g;
+
+/**
+ * Appends the runtime block to app/build.gradle, or moves an existing block
+ * to `version`. A block written by an earlier release keeps its marker, so
+ * without the rewrite an android/ tree that is not prebuilt with --clean
+ * would stay on the old SDK.
+ */
+export function applySpatialSdkRuntimeBlock(
+  contents: string,
+  version: string = SPATIAL_SDK_VERSION
+): string {
+  const start = contents.indexOf(SPATIAL_SDK_RUNTIME_MARKER);
+  if (start === -1) return contents + renderSpatialSdkRuntimeBlock(version);
+  return (
+    contents.slice(0, start) +
+    contents.slice(start).replace(SPATIAL_SDK_COORDINATE, `"com.pico.spatial.core:core:${version}"`)
+  );
+}
+
 export const withPicoSpatialSdkRuntime: ConfigPlugin = (config) =>
   withAppBuildGradle(config, (config) => {
-    if (!config.modResults.contents.includes(SPATIAL_SDK_RUNTIME_MARKER)) {
-      config.modResults.contents += renderSpatialSdkRuntimeBlock();
-    }
+    config.modResults.contents = applySpatialSdkRuntimeBlock(config.modResults.contents);
     return config;
   });
