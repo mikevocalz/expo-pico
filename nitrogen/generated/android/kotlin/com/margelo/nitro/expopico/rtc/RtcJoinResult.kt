@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rtc
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -37,21 +36,20 @@ data class RtcJoinResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcJoinResult) return false
-    return Objects.deepEquals(this.status, other.status)
-      && Objects.deepEquals(this.channelId, other.channelId)
-      && Objects.deepEquals(this.uid, other.uid)
-      && Objects.deepEquals(this.code, other.code)
-      && Objects.deepEquals(this.message, other.message)
+    return this.status == other.status
+      && (this.channelId == null && other.channelId == null || this.channelId != null && other.channelId != null && this.channelId == other.channelId)
+      && (this.uid == null && other.uid == null || this.uid != null && other.uid != null && this.uid.toBits() == other.uid.toBits())
+      && (this.code == null && other.code == null || this.code != null && other.code != null && this.code == other.code)
+      && (this.message == null && other.message == null || this.message != null && other.message != null && this.message == other.message)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      status,
-      channelId,
-      uid,
-      code,
-      message
-    ).contentDeepHashCode()
+    var result = this.status.hashCode()
+    result = 31 * result + (if (this.channelId != null) this.channelId.hashCode() else 0)
+    result = 31 * result + (if (this.uid != null) this.uid.hashCode() else 0)
+    result = 31 * result + (if (this.code != null) this.code.hashCode() else 0)
+    result = 31 * result + (if (this.message != null) this.message.hashCode() else 0)
+    return result
   }
 
   companion object {

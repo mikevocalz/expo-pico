@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rtc
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class RtcUserJoinedEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcUserJoinedEvent) return false
-    return Objects.deepEquals(this.uid, other.uid)
-      && Objects.deepEquals(this.channelId, other.channelId)
-      && Objects.deepEquals(this.elapsed, other.elapsed)
+    return this.uid.toBits() == other.uid.toBits()
+      && this.channelId == other.channelId
+      && this.elapsed.toBits() == other.elapsed.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      uid,
-      channelId,
-      elapsed
-    ).contentDeepHashCode()
+    var result = this.uid.hashCode()
+    result = 31 * result + this.channelId.hashCode()
+    result = 31 * result + this.elapsed.hashCode()
+    return result
   }
 
   companion object {

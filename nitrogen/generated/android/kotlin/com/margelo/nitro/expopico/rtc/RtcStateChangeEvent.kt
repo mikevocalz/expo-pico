@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.rtc
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class RtcStateChangeEvent(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is RtcStateChangeEvent) return false
-    return Objects.deepEquals(this.state, other.state)
-      && Objects.deepEquals(this.reason, other.reason)
+    return this.state == other.state
+      && this.reason == other.reason
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      state,
-      reason
-    ).contentDeepHashCode()
+    var result = this.state.hashCode()
+    result = 31 * result + this.reason.hashCode()
+    return result
   }
 
   companion object {
