@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.storage
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class StorageSyncResult(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is StorageSyncResult) return false
-    return Objects.deepEquals(this.syncedCount, other.syncedCount)
-      && Objects.deepEquals(this.conflictCount, other.conflictCount)
-      && Objects.deepEquals(this.errorCount, other.errorCount)
-      && Objects.deepEquals(this.syncedAt, other.syncedAt)
+    return this.syncedCount.toBits() == other.syncedCount.toBits()
+      && this.conflictCount.toBits() == other.conflictCount.toBits()
+      && this.errorCount.toBits() == other.errorCount.toBits()
+      && this.syncedAt.toBits() == other.syncedAt.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      syncedCount,
-      conflictCount,
-      errorCount,
-      syncedAt
-    ).contentDeepHashCode()
+    var result = this.syncedCount.hashCode()
+    result = 31 * result + this.conflictCount.hashCode()
+    result = 31 * result + this.errorCount.hashCode()
+    result = 31 * result + this.syncedAt.hashCode()
+    return result
   }
 
   companion object {
