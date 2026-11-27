@@ -1,4 +1,9 @@
 import ExpoPicoModule from './ExpoPicoModule';
+import { buildXrMode } from './eyeTrackingPermission';
+import {
+  ensureHandTrackingPermission,
+  ensureSpatialDataPermission,
+} from './picoTrackingPermissions';
 import type {
   PicoBodyJoint,
   PicoCapabilityName,
@@ -186,7 +191,13 @@ export const body = {
 };
 
 export const hand = {
+  /**
+   * On PICO builds, asks for `com.picovr.permission.HAND_TRACKING` first
+   * (PICO Spatial SDK 6.2.8 made it a runtime grant). The dialog opens only
+   * from the immersive activity; see `ensureHandTrackingPermission`.
+   */
   async enable(): Promise<boolean> {
+    await ensureHandTrackingPermission(buildXrMode());
     return ExpoPicoModule.enableHandTracking();
   },
   async disable(): Promise<boolean> {
@@ -221,21 +232,28 @@ export const boundary = {
 
 // ─── Scene (planes + mesh) ──────────────────────────────────────────
 
+// Every scene call reads PICO spatial data, which PICO Spatial SDK 6.2.8 made
+// a runtime grant. Each one asks for `com.picovr.permission.SPATIAL_DATA` first
+// on PICO builds; see `ensureSpatialDataPermission`.
 export const scene = {
   /** Detected plane list. Null when scene understanding unavailable. */
   async getPlanes(): Promise<PicoDetectedPlane[] | null> {
+    await ensureSpatialDataPermission(buildXrMode());
     return ExpoPicoModule.getDetectedPlanes();
   },
   /** Request a new plane scan. Dispatch only — results arrive on next `getPlanes()`. */
   async refreshPlanes(): Promise<boolean> {
+    await ensureSpatialDataPermission(buildXrMode());
     return ExpoPicoModule.refreshScene();
   },
   /** Trigger a scene-mesh rescan. */
   async refreshMesh(): Promise<boolean> {
+    await ensureSpatialDataPermission(buildXrMode());
     return ExpoPicoModule.refreshSceneMesh();
   },
   /** Triangle count reported by the last mesh scan. Null when unavailable. */
   async getMeshTriangleCount(): Promise<number | null> {
+    await ensureSpatialDataPermission(buildXrMode());
     return ExpoPicoModule.getSceneMeshTriangleCount();
   },
 };

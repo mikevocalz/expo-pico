@@ -346,7 +346,10 @@ describe('immersive permission routing and device features', () => {
     mountImmersiveRoot();
     await settle();
 
-    expect(mockGetDeclaredPermissions).not.toHaveBeenCalled();
+    // The PICO hand tracking and spatial data checks that follow read the
+    // manifest too, so the eye-specific signal is that no feature lookup or
+    // request happens.
+    expect(mockHasSystemFeature).not.toHaveBeenCalled();
     expect(mockRequest).not.toHaveBeenCalled();
   });
 

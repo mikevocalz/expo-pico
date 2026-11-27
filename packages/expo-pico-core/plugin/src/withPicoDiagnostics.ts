@@ -128,6 +128,7 @@ export function runDiagnosticChecks(
       ['handTracking', 'handTracking'],
       ['passthrough', 'passthrough'],
       ['sceneUnderstanding', 'sceneUnderstanding'],
+      ['spatialData', 'spatialData'],
       ['eyeTracking', 'eyeTracking'],
       ['faceTracking', 'faceTracking'],
       ['bodyTracking', 'bodyTracking'],

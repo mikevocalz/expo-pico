@@ -12,6 +12,10 @@ import type { ResolvedPicoOptions } from './types';
  *   - Eye tracking:        `pico.hardware.eyetracking`  + `com.picovr.permission.EYE_TRACKING`
  *   - Face tracking:       `pico.hardware.facetracking` + `com.picovr.permission.FACE_TRACKING`
  *   - Body tracking:       `pico.hardware.bodytracking` + `com.picovr.permission.BODY_TRACKING`
+ *   - Hand tracking:       `com.picovr.permission.HAND_TRACKING` (the feature is
+ *                          written by withPicoAndroidManifest)
+ *   - Spatial data:        `com.picovr.permission.SPATIAL_DATA` for `spatialData`,
+ *                          `sceneMesh` or `sceneUnderstanding`
  *   - Spatial audio:       `pico.hardware.spatialaudio`
  *   - Foveated rendering:  `pico.hardware.foveation` + `com.pico.foveation.enabled` meta-data
  *   - High sampling rate:  `android.permission.HIGH_SAMPLING_RATE_SENSORS`
@@ -56,6 +60,12 @@ export function applyCapabilityContract(
   upsertPermission(permissions, PICO_PERMISSIONS.EYE_TRACKING, options.eyeTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.FACE_TRACKING, options.faceTracking);
   upsertPermission(permissions, PICO_PERMISSIONS.BODY_TRACKING, options.bodyTracking);
+  upsertPermission(permissions, PICO_PERMISSIONS.HAND_TRACKING, options.handTracking);
+  upsertPermission(
+    permissions,
+    PICO_PERMISSIONS.SPATIAL_DATA,
+    options.spatialData || options.sceneMesh || options.sceneUnderstanding
+  );
   upsertPermission(permissions, PICO_PERMISSIONS.BOUNDARY, options.boundary);
   upsertPermission(permissions, PICO_PERMISSIONS.CONTROLLER, options.picoSenseController);
   upsertPermission(permissions, PICO_PERMISSIONS.MOTION_TRACKER, options.motionTracker);
