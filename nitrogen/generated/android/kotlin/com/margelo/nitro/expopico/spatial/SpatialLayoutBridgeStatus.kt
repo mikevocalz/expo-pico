@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class SpatialLayoutBridgeStatus(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialLayoutBridgeStatus) return false
-    return Objects.deepEquals(this.sdkLinked, other.sdkLinked)
-      && Objects.deepEquals(this.spatialPlatform, other.spatialPlatform)
-      && Objects.deepEquals(this.reason, other.reason)
-      && Objects.deepEquals(this.lastError, other.lastError)
+    return this.sdkLinked == other.sdkLinked
+      && this.spatialPlatform == other.spatialPlatform
+      && (this.reason == null && other.reason == null || this.reason != null && other.reason != null && this.reason == other.reason)
+      && (this.lastError == null && other.lastError == null || this.lastError != null && other.lastError != null && this.lastError == other.lastError)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      sdkLinked,
-      spatialPlatform,
-      reason,
-      lastError
-    ).contentDeepHashCode()
+    var result = this.sdkLinked.hashCode()
+    result = 31 * result + this.spatialPlatform.hashCode()
+    result = 31 * result + (if (this.reason != null) this.reason.hashCode() else 0)
+    result = 31 * result + (if (this.lastError != null) this.lastError.hashCode() else 0)
+    return result
   }
 
   companion object {

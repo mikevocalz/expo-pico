@@ -1,5 +1,5 @@
 import { ConfigPlugin } from '@expo/config-plugins';
-export declare const SPATIAL_SDK_VERSION = "6.1.9";
+export declare const SPATIAL_SDK_VERSION = "6.2.8";
 /**
  * Gradle appended to app/build.gradle when `enableSpatialSdk` is true.
  *
@@ -10,5 +10,12 @@ export declare const SPATIAL_SDK_VERSION = "6.1.9";
  * expo-pico-core registers is filtered to com.pico.pps and com.pico.
  */
 export declare function renderSpatialSdkRuntimeBlock(version?: string): string;
+/**
+ * Appends the runtime block to app/build.gradle, or moves an existing block
+ * to `version`. A block written by an earlier release keeps its marker, so
+ * without the rewrite an android/ tree that is not prebuilt with --clean
+ * would stay on the old SDK.
+ */
+export declare function applySpatialSdkRuntimeBlock(contents: string, version?: string): string;
 export declare const withPicoSpatialSdkRuntime: ConfigPlugin;
 //# sourceMappingURL=withPicoSpatialSdkRuntime.d.ts.map

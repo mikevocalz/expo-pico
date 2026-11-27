@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -28,15 +27,14 @@ data class SpatialPose(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is SpatialPose) return false
-    return Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.orientation, other.orientation)
+    return this.position == other.position
+      && this.orientation == other.orientation
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      position,
-      orientation
-    ).contentDeepHashCode()
+    var result = this.position.hashCode()
+    result = 31 * result + this.orientation.hashCode()
+    return result
   }
 
   companion object {

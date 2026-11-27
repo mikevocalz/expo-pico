@@ -1,6 +1,6 @@
 export interface PicoSpatialPluginOptions {
     /**
-     * Adds `com.pico.spatial.core:core:6.1.9` (PICO Spatial SDK 6, public on the
+     * Adds `com.pico.spatial.core:core:6.2.8` (PICO Spatial SDK 6, public on the
      * Volcengine Maven) to the pico and dual flavors so openWindowContainer and
      * closeWindowContainer can run on PICO OS 6. On PICO OS 5 they still return
      * false. Linking the SDK also marks the app as spatial on OS 6.

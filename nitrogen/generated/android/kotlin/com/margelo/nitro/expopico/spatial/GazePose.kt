@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.spatial
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class GazePose(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is GazePose) return false
-    return Objects.deepEquals(this.position, other.position)
-      && Objects.deepEquals(this.direction, other.direction)
-      && Objects.deepEquals(this.valid, other.valid)
+    return this.position == other.position
+      && this.direction == other.direction
+      && this.valid == other.valid
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      position,
-      direction,
-      valid
-    ).contentDeepHashCode()
+    var result = this.position.hashCode()
+    result = 31 * result + this.direction.hashCode()
+    result = 31 * result + this.valid.hashCode()
+    return result
   }
 
   companion object {
