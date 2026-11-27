@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -34,19 +33,18 @@ data class FriendRequest(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is FriendRequest) return false
-    return Objects.deepEquals(this.requestId, other.requestId)
-      && Objects.deepEquals(this.fromUser, other.fromUser)
-      && Objects.deepEquals(this.toUserId, other.toUserId)
-      && Objects.deepEquals(this.sentAt, other.sentAt)
+    return this.requestId == other.requestId
+      && this.fromUser == other.fromUser
+      && this.toUserId == other.toUserId
+      && this.sentAt.toBits() == other.sentAt.toBits()
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      requestId,
-      fromUser,
-      toUserId,
-      sentAt
-    ).contentDeepHashCode()
+    var result = this.requestId.hashCode()
+    result = 31 * result + this.fromUser.hashCode()
+    result = 31 * result + this.toUserId.hashCode()
+    result = 31 * result + this.sentAt.hashCode()
+    return result
   }
 
   companion object {

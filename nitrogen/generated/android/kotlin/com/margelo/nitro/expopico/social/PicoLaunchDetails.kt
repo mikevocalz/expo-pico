@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -52,31 +51,30 @@ data class PicoLaunchDetails(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PicoLaunchDetails) return false
-    return Objects.deepEquals(this.launchType, other.launchType)
-      && Objects.deepEquals(this.launchResult, other.launchResult)
-      && Objects.deepEquals(this.launchSource, other.launchSource)
-      && Objects.deepEquals(this.deepLinkMessage, other.deepLinkMessage)
-      && Objects.deepEquals(this.destinationApiName, other.destinationApiName)
-      && Objects.deepEquals(this.trackingId, other.trackingId)
-      && Objects.deepEquals(this.lobbySessionId, other.lobbySessionId)
-      && Objects.deepEquals(this.matchSessionId, other.matchSessionId)
-      && Objects.deepEquals(this.extra, other.extra)
-      && Objects.deepEquals(this.clientAction, other.clientAction)
+    return this.launchType == other.launchType
+      && this.launchResult == other.launchResult
+      && this.launchSource == other.launchSource
+      && this.deepLinkMessage == other.deepLinkMessage
+      && this.destinationApiName == other.destinationApiName
+      && this.trackingId == other.trackingId
+      && this.lobbySessionId == other.lobbySessionId
+      && this.matchSessionId == other.matchSessionId
+      && this.extra == other.extra
+      && this.clientAction == other.clientAction
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      launchType,
-      launchResult,
-      launchSource,
-      deepLinkMessage,
-      destinationApiName,
-      trackingId,
-      lobbySessionId,
-      matchSessionId,
-      extra,
-      clientAction
-    ).contentDeepHashCode()
+    var result = this.launchType.hashCode()
+    result = 31 * result + this.launchResult.hashCode()
+    result = 31 * result + this.launchSource.hashCode()
+    result = 31 * result + this.deepLinkMessage.hashCode()
+    result = 31 * result + this.destinationApiName.hashCode()
+    result = 31 * result + this.trackingId.hashCode()
+    result = 31 * result + this.lobbySessionId.hashCode()
+    result = 31 * result + this.matchSessionId.hashCode()
+    result = 31 * result + this.extra.hashCode()
+    result = 31 * result + this.clientAction.hashCode()
+    return result
   }
 
   companion object {

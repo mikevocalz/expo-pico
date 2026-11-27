@@ -9,7 +9,6 @@ package com.margelo.nitro.expopico.social
 
 import androidx.annotation.Keep
 import com.facebook.proguard.annotations.DoNotStrip
-import java.util.Objects
 
 
 /**
@@ -31,17 +30,16 @@ data class PresenceOptions(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is PresenceOptions) return false
-    return Objects.deepEquals(this.status, other.status)
-      && Objects.deepEquals(this.richText, other.richText)
-      && Objects.deepEquals(this.destinationApiName, other.destinationApiName)
+    return this.status == other.status
+      && (this.richText == null && other.richText == null || this.richText != null && other.richText != null && this.richText == other.richText)
+      && (this.destinationApiName == null && other.destinationApiName == null || this.destinationApiName != null && other.destinationApiName != null && this.destinationApiName == other.destinationApiName)
   }
 
   override fun hashCode(): Int {
-    return arrayOf<Any?>(
-      status,
-      richText,
-      destinationApiName
-    ).contentDeepHashCode()
+    var result = this.status.hashCode()
+    result = 31 * result + (if (this.richText != null) this.richText.hashCode() else 0)
+    result = 31 * result + (if (this.destinationApiName != null) this.destinationApiName.hashCode() else 0)
+    return result
   }
 
   companion object {
